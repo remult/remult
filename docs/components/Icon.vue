@@ -71,6 +71,7 @@ const props = defineProps<{
   sizeIco?: number
   isShiny?: boolean
   newTab?: boolean // New prop to control target behavior
+  techName?: string
 }>()
 const getIcon = (tech: string) => {
   switch (tech) {
@@ -162,7 +163,7 @@ const linkRel = computed(() =>
         :class="{ 'shiny-button': isShiny }"
         :sizeIco="sizeIco"
       />
-      <span>{{ tech }}</span>
+      <span>{{ techName || tech }}</span>
     </a>
     <template v-else>
       <component

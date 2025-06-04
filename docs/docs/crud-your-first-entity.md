@@ -7,20 +7,20 @@ Remult entity classes are shared between frontend and backend code.
 ```ts
 // shared/product.ts
 
-import { Entity, Fields } from 'remult';
+import { Entity, Fields } from 'remult'
 
 @Entity('products', {
-    allowApiCrud: true
+  allowApiCrud: true,
 })
 export class Product {
-    @Fields.uuid()
-    id!: string;
+  @Fields.uuid()
+  id!: string
 
-    @Fields.string()
-    name = '';
+  @Fields.string()
+  name = ''
 
-    @Fields.number()
-    unitPrice = 0;
+  @Fields.number()
+  unitPrice = 0
 }
 ```
 
@@ -33,15 +33,17 @@ All Remult server middleware options contain an `entities` array. Use it to regi
 ```ts
 // backend/index.ts
 
-import express from 'express';
-import { remultExpress } from 'remult/remult-express';
-import { Product } from '../shared/product';
+import express from 'express'
+import { remultApi } from 'remult/remult-express'
+import { Product } from '../shared/product'
 
-const app = express();
+const app = express()
 
-app.use(remultExpress({
-  entities: [Product]
-}));
+app.use(
+  remultApi({
+    entities: [Product],
+  }),
+)
 ```
 
 ## Query and Mutate data in Front-end code
@@ -49,26 +51,26 @@ app.use(remultExpress({
 ```ts
 // frontend/code.ts
 
-import { remult } from 'remult';
-import { Product } from '../shared/product';
+import { repo } from 'remult'
+import { Product } from '../shared/product'
 
-const productsRepo = remult.repo(Product);
+const productsRepo = repo(Product)
 
 async function playWithRemult() {
-    // add a new product to the backend database
-    await productsRepo.insert({ name: 'Tofu', unitPrice: 5 });
+  // add a new product to the backend database
+  await productsRepo.insert({ name: 'Tofu', unitPrice: 5 })
 
-    // fetch products from backend database
-    const products = await productsRepo.find();
-    console.log(products);
+  // fetch products from backend database
+  const products = await productsRepo.find()
+  console.log(products)
 
-    // update product data
-    const tofu = products.filter(p => p.name === 'Tofu');
-    await productsRepo.save({ ...tofu, unitPrice: tofu.unitPrice + 5});
+  // update product data
+  const tofu = products.filter((p) => p.name === 'Tofu')
+  await productsRepo.save({ ...tofu, unitPrice: tofu.unitPrice + 5 })
 
-    // delete product
-    await productsRepo.delete(tofu);
+  // delete product
+  await productsRepo.delete(tofu)
 }
 
-playWithRemult();
+playWithRemult()
 ```

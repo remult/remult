@@ -19,7 +19,7 @@ Remult offers an alternative: automatic schema synchronization. **By default, Re
 For manual control, Remult allows disabling automatic schema synchronization:
 
 ```typescript
-const api = remultExpress({
+const api = remultApi({
   entities: [], // Your entities here
   ensureSchema: false, // Disables automatic schema synchronization, Default: true
 })
@@ -30,7 +30,7 @@ const api = remultExpress({
 In certain scenarios, you might want to manually trigger the `ensureSchema` function to ensure that your database schema is up-to-date with your entity definitions. Here's how you can do it:
 
 ```ts
-remult.dataProvider.ensureSchema!(entities.map((x) => remult.repo(x).metadata))
+remult.dataProvider.ensureSchema!(entities.map((x) => repo(x).metadata))
 ```
 
 ## Quick Start: Introducing Migrations to Your Application
@@ -92,10 +92,10 @@ By following these steps, you ensure that your application securely and flexibly
 Next, adjust your `api.ts` file to use the configurations from the `config.ts` file, and disable the `ensureSchema` migrations:
 
 ```ts
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import { dataProvider, entities } from './config'
 
-export const api = remultExpress({
+export const api = remultApi({
   entities,
   dataProvider,
   ensureSchema: false,
@@ -213,13 +213,13 @@ You have a couple of options for when and how to run your migrations:
 
   ```ts
   // src/server/api.ts
-  import { remultExpress } from 'remult/remult-express'
+  import { remultApi } from 'remult/remult-express'
   import { dataProvider, entities } from './config'
   import { migrate } from 'remult/migrations/migrate'
   import { migrations } from './migrations/migrations'
   import { remult } from 'remult'
 
-  export const api = remultExpress({
+  export const api = remultApi({
     entities,
     dataProvider,
     initApi: async () => {

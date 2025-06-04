@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { remultHono } from '../../core/remult-hono.js'
+import { remultApi } from '../../core/remult-hono.js'
 import { serve } from '@hono/node-server'
 import { createRemultServer } from '../../core/server/index.js'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
@@ -14,7 +14,7 @@ describe('test holo server', async () => {
 
   beforeAll(async () => {
     const app = new Hono()
-    const api = remultHono({
+    const api = remultApi({
       entities: [Task],
       admin: true,
       modules: [someRoutes],

@@ -1,5 +1,5 @@
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import { Customer } from './shared/Customer'
 import { Order } from './shared/Order'
 import { seedData } from './shared/SeedData'
@@ -8,7 +8,7 @@ import { Product } from '../shared/Product'
 import { ProductInOrder } from '../shared/ProductInOrder'
 
 export const app = express()
-export const api = remultExpress({
+export const api = remultApi({
   entities: [Order, Customer, Product, ProductInOrder],
   dataProvider: new InMemoryDataProvider(),
   initApi: async () => {

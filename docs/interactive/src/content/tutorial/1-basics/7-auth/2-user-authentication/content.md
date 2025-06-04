@@ -104,7 +104,7 @@ app.use(
   }),
 )
 
-export const api = remultExpress({
+export const api = remultApi({
   entities: [Task],
   controllers: [TasksController, AuthController],
   getUser: (request) => request.session?.['user'],

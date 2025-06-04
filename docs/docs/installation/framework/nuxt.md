@@ -54,10 +54,10 @@ export default defineNuxtConfig({
    In the `server/api/` directory, create a dynamic API route that integrates Remult with Nuxt. The following code sets up the API and defines the entities to be used:
 
    ```ts [server/api/[...remult].ts]
-   import { remultNuxt } from 'remult/remult-nuxt'
+   import { remultApi } from 'remult/remult-nuxt'
    import { Task } from '../../demo/todo/Task.js'
 
-   export const api = remultNuxt({
+   export const api = remultApi({
      admin: true,
      entities: [Task],
    })

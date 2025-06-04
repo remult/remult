@@ -8,12 +8,12 @@ import type {
 } from './server/remult-api-server.js'
 import { createRemultServer } from './server/index.js'
 
-export function remultExpress(
+export function remultApi(
   options?: RemultServerOptions<express.Request> & {
     bodyParser?: boolean
     bodySizeLimit?: string
   },
-): RemultExpressServer {
+): remultApiServer {
   let app = express.Router()
 
   if (!options) {
@@ -49,7 +49,7 @@ export function remultExpress(
   })
 }
 
-export type RemultExpressServer = express.RequestHandler &
+export type remultApiServer = express.RequestHandler &
   RemultServerCore<express.Request> & {
     withRemult: (
       req: express.Request,
@@ -57,3 +57,6 @@ export type RemultExpressServer = express.RequestHandler &
       next: VoidFunction,
     ) => void
   } & Pick<RemultServer<express.Request>, 'withRemultAsync'>
+
+/** @deprecated use remultApi instead */
+export const remultExpress = remultApi

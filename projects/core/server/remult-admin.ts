@@ -7,9 +7,11 @@ import type { ClassType } from '../classType.js'
 import type { Remult } from '../src/context.js'
 import { getHtml } from './get-remult-admin-html.js'
 import { getValueList } from '../src/remult3/RepositoryImplementation.js'
-import { EntityFilter } from '../src/remult3/remult3.js'
+import type { EntityFilter } from '../src/remult3/remult3.js'
+import { InputTypes } from '../inputTypes.js'
 
 export interface EntityUIInfo {
+  superKey: string
   key: string
   caption: string
   fields: FieldUIInfo[]
@@ -19,6 +21,8 @@ export interface EntityUIInfo {
   color?: string
 }
 export interface EntityRelationToManyInfo extends RelationFields {
+  key: string
+  caption: string
   entityKey: string
   where?: any
 }
@@ -41,26 +45,32 @@ export interface FieldRelationToOneInfo extends RelationFields {
   captionField: string
   where?: any
 }
-export interface AdminOptions extends DisplayOptions {
+export interface AdminEntitiesOptions {
   entities: ClassType<any>[]
   remult: Remult
 }
-export interface DisplayOptions {
-  baseUrl?: string
+export interface AdminDisplayOptions {
+  rootPath: string
+  head: string,
+  requireAuthToken: boolean
+  disableLiveQuery: boolean
 }
 
-export default function remultAdminHtml(options: AdminOptions) {
-  let { remult, entities, ...optionsFromServer } = { ...options }
-  return getHtml().replace(
-    '<!--PLACE_HERE-->',
-    `<script>
-  const optionsFromServer = ${JSON.stringify(optionsFromServer)}
+export default function remultAdminHtml(options: AdminDisplayOptions) {
+  const { head, rootPath, requireAuthToken, disableLiveQuery } = options
+  return getHtml()
+    .replace('<!--PLACE_HERE_HEAD-->', head)
+    .replace(
+      '<!--PLACE_HERE_BODY-->',
+      `<script>
+  window.optionsFromServer = ${JSON.stringify({ rootPath, requireAuthToken, disableLiveQuery })}
 </script>`,
-  )
+    )
 }
 
-export function buildEntityInfo(options: AdminOptions) {
+export function buildEntityInfo(options: AdminEntitiesOptions) {
   const entities: EntityUIInfo[] = []
+
   for (const metadata of options.entities.map(
     (e) => options.remult.repo(e).metadata,
   )) {
@@ -83,11 +93,11 @@ export function buildEntityInfo(options: AdminOptions) {
           const relRepo = options.remult.repo(info.toEntity)
           const where =
             typeof info.options.findOptions === 'object' &&
-            info.options.findOptions.where
+              info.options.findOptions.where
               ? Filter.entityFilterToJson(
-                  relRepo.metadata,
-                  info.options.findOptions.where,
-                )
+                relRepo.metadata,
+                info.options.findOptions.where,
+              )
               : undefined
           const idField = relRepo.metadata.idMetadata.field.key
           if (info.type === 'reference' || info.type === 'toOne') {
@@ -116,6 +126,8 @@ export function buildEntityInfo(options: AdminOptions) {
                 ...relInfo,
                 where,
                 entityKey: relRepo.metadata.key,
+                key: x.key,
+                caption: x.caption,
               })
             }
             continue
@@ -130,15 +142,15 @@ export function buildEntityInfo(options: AdminOptions) {
           relationToOne: relation,
           inputType: x.inputType,
           type:
-            x.valueConverter.fieldTypeInDb == 'json'
+            x.inputType === InputTypes.json
               ? 'json'
               : x.valueType === Number
-              ? 'number'
-              : x.valueType === Boolean
-              ? 'boolean'
-              : x.valueType === Date
-              ? 'date'
-              : 'string',
+                ? 'number'
+                : x.valueType === Boolean
+                  ? 'boolean'
+                  : x.valueType === Date
+                    ? 'date'
+                    : 'string',
         })
       } catch (error) {
         console.error(
@@ -149,9 +161,18 @@ export function buildEntityInfo(options: AdminOptions) {
     }
 
     if (metadata.apiReadAllowed) {
+      let superKey = metadata.key
+      let caption = metadata.caption
+      const nbOfEntities = entities.filter((e) => e.key === metadata.key).length
+      if (nbOfEntities > 0) {
+        superKey = metadata.key + '_ext_' + nbOfEntities
+        caption = metadata.caption + '*'.repeat(nbOfEntities)
+      }
+
       entities.push({
+        superKey,
         key: metadata.key,
-        caption: metadata.caption,
+        caption,
         ids,
         fields,
         relations,
@@ -159,6 +180,7 @@ export function buildEntityInfo(options: AdminOptions) {
       })
     }
   }
+
   return entities
 }
 

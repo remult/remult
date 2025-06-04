@@ -18,13 +18,13 @@ In your `index.ts` (or server file), configure the `dataProvider` to use Oracle 
 // index.ts
 
 import express from "express"
-import { remultExpress } from "remult/remult-express"
+import { remultApi } from "remult/remult-express"
 import { createKnexDataProvider } from "remult/remult-knex"
 
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: createKnexDataProvider({
       // Knex client configuration for Oracle
       client: "oracledb",
@@ -47,7 +47,7 @@ If you're already using a `knex` instance, you can easily plug it into Remult:
 ```ts
 import express from 'express'
 import { KnexDataProvider } from 'remult/remult-knex'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import knex from 'knex'
 
 const knexDb = knex({
@@ -62,7 +62,7 @@ const knexDb = knex({
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: new KnexDataProvider(knexDb), // Reuse your existing knex provider
   }),
 )

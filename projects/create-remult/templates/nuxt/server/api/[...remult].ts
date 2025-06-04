@@ -1,5 +1,5 @@
 import { Entity, Fields } from "remult";
-import { remultNuxt } from "remult/remult-nuxt";
+import { remultApi } from "remult/remult-nuxt";
 
 @Entity("tasks", {
   allowApiCrud: true,
@@ -9,7 +9,7 @@ class Task {
   id = "";
 }
 
-export const api = remultNuxt({
+export const api = remultApi({
   entities: [Task],
   admin: true,
 });

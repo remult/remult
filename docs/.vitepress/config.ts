@@ -2,6 +2,8 @@ import { defineConfig } from 'vitepress'
 import { DefaultTheme } from 'vitepress/theme'
 import { tabsMarkdownPlugin } from 'vitepress-plugin-tabs'
 import toolbarConfig from './toolbar-config.json'
+import { fileURLToPath, URL } from 'node:url'
+import { transformerTwoslash } from '@shikijs/vitepress-twoslash'
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -97,7 +99,7 @@ const sidebar = tutorials.reduce(
         items: [
           { text: 'Fields', link: '/docs/field-types' },
           {
-            text: 'Relations 🚀',
+            text: 'Relations',
             link: '/docs/entity-relations',
             collapsed: true,
             items: [
@@ -156,20 +158,20 @@ const sidebar = tutorials.reduce(
                 link: '/docs/installation/framework/vue',
               },
               {
-                text: 'Next.js',
-                link: '/docs/installation/framework/nextjs',
-              },
-              {
                 text: 'Sveltekit',
                 link: '/docs/installation/framework/sveltekit',
               },
               {
-                text: 'Nuxt',
-                link: '/docs/installation/framework/nuxt',
+                text: 'Next.js',
+                link: '/docs/installation/framework/nextjs',
               },
               {
                 text: 'SolidStart',
                 link: '/docs/installation/framework/solid',
+              },
+              {
+                text: 'Nuxt',
+                link: '/docs/installation/framework/nuxt',
               },
             ],
           },
@@ -210,10 +212,6 @@ const sidebar = tutorials.reduce(
             collapsed: true,
             items: [
               {
-                text: 'Json files',
-                link: '/docs/installation/database/json',
-              },
-              {
                 text: 'PostgreSQL',
                 link: '/docs/installation/database/postgresql',
               },
@@ -234,16 +232,16 @@ const sidebar = tutorials.reduce(
                 link: '/docs/installation/database/better-sqlite3',
               },
               {
+                text: 'sqljs',
+                link: '/docs/installation/database/sqljs',
+              },
+              {
                 text: 'MSSQL',
                 link: '/docs/installation/database/mssql',
               },
               {
                 text: 'Bun SQLite',
                 link: '/docs/installation/database/bun-sqlite',
-              },
-              {
-                text: 'sqljs',
-                link: '/docs/installation/database/sqljs',
               },
               {
                 text: 'Turso',
@@ -256,6 +254,10 @@ const sidebar = tutorials.reduce(
               {
                 text: 'Oracle',
                 link: '/docs/installation/database/oracle',
+              },
+              {
+                text: 'Json files',
+                link: '/docs/installation/database/json',
               },
             ],
           },
@@ -301,7 +303,7 @@ const sidebar = tutorials.reduce(
             link: '/docs/running-sql-on-the-server',
           },
           {
-            text: 'Using Remult in Non-Remult Routes',
+            text: 'Using in Non-Remult Routes',
             link: '/docs/using-remult-in-custom-backend-code',
           },
           {
@@ -425,6 +427,21 @@ export default defineConfig({
   cleanUrls: true,
 
   vite: {
+    resolve: {
+      alias: [
+        {
+          find: /^.*\/VPHome\.vue$/,
+          replacement: fileURLToPath(
+            new URL('../Homepage.vue', import.meta.url),
+          ),
+        },
+      ],
+    },
+    build: {
+      rollupOptions: {
+        external: ['node:url']
+      }
+    },
     plugins: [
       {
         name: 'llms',
@@ -454,7 +471,7 @@ export default defineConfig({
                   const indexContent = fs.readFileSync(indexPath, 'utf-8')
                   const indexFrontmatter = parseFrontmatter(indexContent)
                   dirTitle = indexFrontmatter?.title || ''
-                } catch (e) {}
+                } catch (e) { }
                 const newTitles = dirTitle
                   ? [...parentTitles, dirTitle]
                   : parentTitles
@@ -570,12 +587,12 @@ export default defineConfig({
             format(
               docsContent.filter(({ link }) => !linkToSkip.includes(link)),
             ) +
-              interactiveFiles
-                .filter((c) => c.contentRaw)
-                .map((c) => {
-                  return `# Interactive Tutorial - ${c.title}\n\n${c.contentRaw}\n\n`
-                })
-                .join('\n'),
+            interactiveFiles
+              .filter((c) => c.contentRaw)
+              .map((c) => {
+                return `# Interactive Tutorial - ${c.title}\n\n${c.contentRaw}\n\n`
+              })
+              .join('\n'),
           )
 
           fs.writeFileSync(
@@ -630,7 +647,10 @@ Boost your TypeScript stack with SSOT entities and say goodbye to boilerplate co
   ],
 
   themeConfig: {
-    logo: '/logo.png',
+    logo: {
+      dark: '/logo-white.svg',
+      light: '/logo-dark.svg'
+    },
     editLink: {
       pattern: 'https://github.com/remult/remult/edit/main/docs/:path',
     },
@@ -663,10 +683,12 @@ Boost your TypeScript stack with SSOT entities and say goodbye to boilerplate co
       message: 'MIT Licensed | Made by the Remult team with ❤️',
     },
   },
+
   markdown: {
-    theme: 'dark-plus',
+    theme: 'tokyo-night',
     config(md) {
       md.use(tabsMarkdownPlugin)
     },
+    codeTransformers: [transformerTwoslash({})],
   },
 })

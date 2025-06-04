@@ -1,8 +1,8 @@
-import { remultNuxt } from '../../../../core/remult-nuxt.js'
+import { remultApi } from 'remult/remult-nuxt'
 import { Task } from '~/shared/Task.js'
 import { someRoutes } from '../../../shared/modules/someRoutes.js'
 
-export const api = remultNuxt({
+export const api = remultApi({
   entities: [Task],
   admin: true,
   modules: [someRoutes],

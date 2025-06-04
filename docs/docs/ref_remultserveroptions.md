@@ -51,7 +51,7 @@ admin: true
 
 #### example:
 ```ts
-admin: ()=> remult.isAllowed('admin')
+admin: () => remult.isAllowed('admin')
 ```
 
 
@@ -65,7 +65,7 @@ This method is called whenever there is an error in the API lifecycle.
 
 #### example:
 ```ts
-export const api = remultExpress({
+export const api = remultApi({
   error: async (e) => {
     if (e.httpStatusCode == 400) {
       e.sendError(500, { message: "An error occurred" })

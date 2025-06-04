@@ -1,5 +1,5 @@
 import fastify from 'fastify'
-import { remultFastify } from '../../core/remult-fastify.js'
+import { remultApi } from '../../core/remult-fastify.js'
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { Task } from '../../test-servers/shared/Task.js'
@@ -15,7 +15,7 @@ describe('test fastify server', async () => {
   beforeAll(async () => {
     return new Promise<void>(async (res) => {
       const app = fastify()
-      const api = remultFastify({
+      const api = remultApi({
         entities: [Task],
         admin: true,
         modules: [someRoutes],

@@ -63,6 +63,17 @@ export function commonDbTests(
   { createEntity, getRemult, getDb }: DbTestProps,
   options?: DbTestOptions,
 ) {
+  it('not in 0', async () => {
+    const r = await createEntity(stam)
+    await r.insert([
+      { id: 0, title: 'noam' },
+      { id: 1, title: 'yael' },
+      { id: 2, title: 'ronen' },
+    ])
+    expect(
+      await r.count({ $and: [{ id: { $nin: [0] } }, { id: { $nin: [2] } }] }),
+    ).toBe(1)
+  })
   it('what', async () => {
     const r = await createEntity(stam)
     await r.create({ id: 1, title: 'noam' }).save()
@@ -559,7 +570,7 @@ export function commonDbTests(
     })
     expect(rows.length).toBe(2)
   })
-  it('Test unique Validation,', async () => {
+  it('Test unique Validation', async () => {
     let type = class extends newCategories {
       a!: string
     }

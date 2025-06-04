@@ -11,7 +11,7 @@ npm install --save-dev tsx
 
 ### Bootstrap Remult in the Backend
 
-Remult is integrated into your backend using the `remultHono` adapter for Hono.
+Remult is integrated into your backend using the `remultApi` adapter for Hono.
 
 1. **Create the API File**
 
@@ -20,9 +20,9 @@ Remult is integrated into your backend using the `remultHono` adapter for Hono.
    ```ts
    // src/server/api.ts
 
-   import { remultHono } from 'remult/remult-hono'
+   import { remultApi } from 'remult/remult-hono'
 
-   export const api = remultHono()
+   export const api = remultApi()
    ```
 
 2. **Register the Middleware**

@@ -1,6 +1,6 @@
 import Hapi, { type Plugin } from '@hapi/hapi'
 import { PassThrough } from 'stream'
-import { remultHapi } from '../../core/remult-hapi'
+import { remultApi } from '../../core/remult-hapi'
 import { Task } from '../shared/Task'
 import { remult } from '../../core/'
 
@@ -59,7 +59,7 @@ const init = async () => {
     host: '127.0.0.1',
   })
 
-  const api = remultHapi({ entities: [Task], admin: true })
+  const api = remultApi({ entities: [Task], admin: true })
   await server.register(api)
   await server.register({
     plugin: routesPlugin,

@@ -10,7 +10,7 @@ import type {
 import { createRemultServer } from './server/index.js'
 import { parse, serialize } from 'cookie'
 
-export function remultNuxt(
+export function remultApi(
   options: RemultServerOptions<H3Event>,
 ): RemultNuxtServer {
   const result = createRemultServer<H3Event>(options, {
@@ -49,9 +49,9 @@ export function remultNuxt(
       redirect: (url, status) => {
         event.node.res.writeHead(status ?? 307, { Location: url })
       },
-      end: () => {},
-      send: () => {},
-      json: () => {},
+      end: () => { },
+      send: () => { },
+      json: () => { },
       status: () => {
         return response
       },
@@ -90,3 +90,6 @@ export type RemultNuxtServer = RemultServerCore<H3Event> &
   ((event: H3Event) => Promise<any>) & {
     withRemult: RemultServer<H3Event>['withRemultAsync']
   }
+
+/** @deprecated use remultApi instead */
+export const remultNuxt = remultApi

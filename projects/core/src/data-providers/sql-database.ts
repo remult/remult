@@ -14,10 +14,8 @@ import type {
 } from '../sql-command.js'
 
 import type { FieldMetadata } from '../column-interfaces.js'
-import type { Remult } from '../context.js'
 import type {
   CustomSqlFilterBuilderFunction,
-  dbNamesOfOptions,
   EntityDbNamesBase,
 } from '../filter/filter-consumer-bridge-to-sql-request.js'
 import {
@@ -64,11 +62,10 @@ import { isOfType } from '../isOfType.js'
  */
 export class SqlDatabase
   implements
-    DataProvider,
-    HasWrapIdentifier,
-    CanBuildMigrations,
-    SqlCommandFactory
-{
+  DataProvider,
+  HasWrapIdentifier,
+  CanBuildMigrations,
+  SqlCommandFactory {
   /**
    * Gets the SQL database from the data provider.
    * @param dataProvider - The data provider.
@@ -226,7 +223,7 @@ export class SqlDatabase
     var b = new FilterConsumerBridgeToSqlRequest(
       sqlCommand,
       dbNames ||
-        (await dbNamesOfWithForceSqlExpression(r.metadata, wrapIdentifier)),
+      (await dbNamesOfWithForceSqlExpression(r.metadata, wrapIdentifier)),
     )
     b._addWhere = false
     await (
@@ -292,7 +289,7 @@ class LogSQLCommand implements SqlCommand {
   constructor(
     private origin: SqlCommand,
     private logToConsole: typeof SqlDatabase.LogToConsole,
-  ) {}
+  ) { }
 
   args: any = {}
   addParameterAndReturnSqlToken(val: any) {
@@ -347,7 +344,7 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
     private sql: SqlDatabase,
     private iAmUsed: (e: EntityDbNamesBase) => Promise<void>,
     private strategy: SqlImplementation,
-  ) {}
+  ) { }
 
   async init() {
     let dbNameProvider: EntityDbNamesBase =
@@ -517,9 +514,9 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
       if (sqlResult.rows.length != 1)
         throw new Error(
           'Failed to update row with id ' +
-            id +
-            ', rows updated: ' +
-            sqlResult.rows.length,
+          id +
+          ', rows updated: ' +
+          sqlResult.rows.length,
         )
       return this.buildResultRow(colKeys, sqlResult.rows[0], sqlResult)
     })
@@ -577,7 +574,7 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
           if (typeof id !== 'number')
             throw new Error(
               'Auto increment, for a database that is does not support returning syntax, should return an array with the single last added id. Instead it returned: ' +
-                JSON.stringify(id),
+              JSON.stringify(id),
             )
           return this.find({
             where: new Filter((x) =>
@@ -672,9 +669,8 @@ export async function groupByImpl(
         if (x.isServerExpression) {
         } else {
           const dbName = await e.$dbNameOf(x)
-          select += `, ${aggregateSqlSyntax(operator, dbName)} as ${
-            x.key
-          }_${operator}`
+          select += `, ${aggregateSqlSyntax(operator, dbName)} as ${x.key
+            }_${operator}`
         }
 
         const turnToNumber =

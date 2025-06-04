@@ -32,7 +32,13 @@ A human readable name for the field. Can be used to achieve a consistent caption
 ## allowNull
 If it can store null in the database
 ## required
-If a value is required
+If a value is required. Short-cut to say `validate: Validators.required`.
+
+
+#### see:
+ - option [validate](https://remult.dev/docs/ref_field#validate) below
+ - validator [required](https://remult.dev/docs/ref_validators#required)
+
 ## includeInApi
 Specifies whether this field should be included in the API. This can be configured
 based on access control levels.
@@ -57,12 +63,22 @@ salary = 0;
 Determines whether this field can be updated via the API. This setting can also
 be controlled based on user roles or other access control checks.
 
+_It happens after entity level authorization AND if it's allowed._
+
 
 #### example:
 ```ts
 // Prevent API from updating this field
 @Fields.string({ allowApiUpdate: false })
 createdBy = remult.user?.id;
+```
+
+
+#### example:
+```ts
+// Allow API update only on new items
+@Fields.string<Category>({ allowApiUpdate: (c) => getEntityRef(c).isNew() })
+Description = ""
 ```
 
 

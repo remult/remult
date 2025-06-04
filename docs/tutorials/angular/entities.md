@@ -39,15 +39,15 @@ export class Task {
 }
 ```
 
-3. In the server's `api` module, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultExpress()` middleware:
+3. In the server's `api` module, register the `Task` entity with Remult by adding `entities: [Task]` to an `options` object you pass to the `remultApi()` middleware:
 
 ```ts{4,7}
 // src/server/api.ts
 
-import { remultExpress } from "remult/remult-express"
+import { remultApi } from "remult/remult-express"
 import { Task } from "../shared/Task"
 
-export const api = remultExpress({
+export const api = remultApi({
   entities: [Task]
 })
 ```
@@ -91,22 +91,22 @@ curl http://localhost:3002/api/tasks -d "[{\"title\": \"Read a book\"},{\"title\
 5. Refresh the browser again, to see that the tasks were stored in the db.
 
 ::: warning Wait, where is the backend database?
-While remult supports [many relational and non-relational databases](https://remult.dev/docs/databases.html), in this tutorial we start by storing entity data in a backend **JSON file**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.
+While remult supports [many relational and non-relational databases](https://remult.dev/docs/installation/database/), in this tutorial we start by storing entity data in a backend **JSON file**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.
 :::
 
 ## Admin UI
 
 ### Enabling the Admin UI
 
-Add the Admin UI to your Angular application by setting the `admin` option to `true` in the `remultExpress()`
+Add the Admin UI to your Angular application by setting the `admin` option to `true` in the `remultApi()`
 
 ::: code-group
 
 ```ts [src/server/api.ts]
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import { Task } from '../shared/Task.js'
 
-export const api = remultExpress({
+export const api = remultApi({
   entities: [Task],
   admin: true, // Enable the Admin UI
 })

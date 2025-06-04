@@ -1,4 +1,4 @@
-import { expect, it, beforeEach, describe } from 'vitest'
+import { expect, it, beforeEach, describe, afterEach } from 'vitest'
 import type { DataProvider } from '../../core'
 import {
   Entity,
@@ -12,7 +12,10 @@ import {
 import type { ClassType } from '../../core/classType'
 import { allDbTests } from './shared-tests'
 import { entity } from '../tests/dynamic-classes'
-import { TestApiDataProvider } from '../../core/server/test-api-data-provider.js'
+import {
+  AsyncLock,
+  TestApiDataProvider,
+} from '../../core/server/test-api-data-provider.js'
 
 describe('Rest', () => {
   var db: DataProvider
@@ -30,8 +33,13 @@ describe('Rest', () => {
     db = TestApiDataProvider({
       dataProvider: serverRemult.dataProvider,
     })
+    // A hack to workaround the fact that the test `Test unique Validation` uses the external remult to count in a the field validation
+    AsyncLock.enabled = false
     remult = new Remult()
     remult.dataProvider = db
+  })
+  afterEach(() => {
+    AsyncLock.enabled = true
   })
   allDbTests(
     {

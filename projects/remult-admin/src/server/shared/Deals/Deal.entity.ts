@@ -43,6 +43,8 @@ export class Deal {
   contacts?: DealContact[]
   @Fields.json()
   items = [{ id: 1, quantity: 5 }]
+  @Fields.json()
+  itemsNumbers: number[] = [];
 
   @BackendMethod({ allowed: Allow.authenticated })
   static async DealDroppedOnKanban(
@@ -113,10 +115,10 @@ export class Deal {
     const existingContacts = isNew
       ? []
       : await dealContactRepo.find({
-          include: {
-            contact: false,
-          },
-        })
+        include: {
+          contact: false,
+        },
+      })
     const contactsToDelete = existingContacts.filter(
       (c) => !contacts.includes(c.contactId),
     )

@@ -13,11 +13,11 @@ Open `backend/index.ts` and add the following lines to include the `Task` in the
 
 ```ts title="backend/index.ts" add={2,3,6-9}
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import { Task } from '../shared/Task.js'
 
 export const app = express()
-export const api = remultExpress({
+export const api = remultApi({
   entities: [Task],
 })
 app.use(api)
@@ -25,9 +25,9 @@ app.use(api)
 
 ### Code Explanation
 
-- We import the necessary `remultExpress` module for integrating Remult with Express.
+- We import the necessary `remultApi` module for integrating Remult with Express.
 - We import the `Task` entity from the `shared` folder.
-- We use the `remultExpress` function to set up the Remult REST API and register the `Task` entity in its `entities` array.
+- We use the `remultApi` function to set up the Remult REST API and register the `Task` entity in its `entities` array.
 - Finally, we tell Express to use the API with `app.use(api)`.
 
 ### See that it works

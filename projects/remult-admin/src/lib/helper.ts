@@ -6,16 +6,30 @@ export function getHeader(
   LSCtx: TLSContext,
   init?: RequestInit,
 ) {
-  return SSCtx.settings.bearerAuth
+  const headers = SSCtx.settings.bearerAuth
     ? {
-        ...init?.headers,
-        authorization: 'Bearer ' + SSCtx.settings.bearerAuth,
-      }
+      ...init?.headers,
+      authorization: 'Bearer ' + SSCtx.settings.bearerAuth,
+    }
     : LSCtx.settings.keyForBearerAuth
-    ? {
+      ? {
         ...init?.headers,
         authorization:
           'Bearer ' + localStorage.getItem(LSCtx.settings.keyForBearerAuth),
       }
-    : init?.headers
+      : init?.headers
+
+  if (!LSCtx.settings.customHeaders) {
+    return headers
+  }
+
+  const customHeaders = (LSCtx.settings.customHeaders ?? '').split('\n').reduce((acc, line) => {
+    const [key, value] = line.split(':').map(part => part.trim())
+    return { ...acc, [key]: value }
+  }, {})
+
+  return {
+    ...headers,
+    ...customHeaders,
+  }
 }

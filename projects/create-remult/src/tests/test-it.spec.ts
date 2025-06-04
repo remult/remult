@@ -24,19 +24,19 @@ describe("api file variations", async () => {
   test("basic", () => {
     expect(buildApiFile(DATABASES.json, Servers.express, false, false, false))
       .toMatchInlineSnapshot(`
-        "import { remultExpress } from "remult/remult-express";
+        "import { remultApi } from "remult/remult-express";
           
-        export const api = remultExpress({});"
+        export const api = remultApi({});"
       `);
   });
   test("with db", () => {
     expect(
       buildApiFile(DATABASES.postgres, Servers.express, false, false, false),
     ).toMatchInlineSnapshot(`
-      "import { remultExpress } from "remult/remult-express";
+      "import { remultApi } from "remult/remult-express";
       import { createPostgresDataProvider } from "remult/postgres";
         
-      export const api = remultExpress({
+      export const api = remultApi({
         dataProvider: createPostgresDataProvider({
           connectionString: process.env["DATABASE_URL"]    
         }),
@@ -47,12 +47,12 @@ describe("api file variations", async () => {
     expect(
       buildApiFile(DATABASES.postgres, Servers.express, true, false, false),
     ).toMatchInlineSnapshot(`
-      "import { remultExpress } from "remult/remult-express";
+      "import { remultApi } from "remult/remult-express";
       import { createPostgresDataProvider } from "remult/postgres";
       import { getUserFromRequest } from "./auth.js";
       import { User } from "../demo/auth/User.js";
         
-      export const api = remultExpress({
+      export const api = remultApi({
         getUser: getUserFromRequest,
         initApi: async () => {
           await User.createDemoUsers();
@@ -76,14 +76,14 @@ describe("api file variations", async () => {
         ),
       ),
     ).toMatchInlineSnapshot(`
-      "import { remultSveltekit } from "remult/remult-sveltekit";
+      "import { remultApi } from "remult/remult-sveltekit";
       import { createKnexDataProvider } from "remult/remult-knex";
       import { MSSQL_SERVER, MSSQL_DATABASE, MSSQL_USER, MSSQL_PASSWORD, MSSQL_INSTANCE } from "$env/static/private";
       import { building } from "$app/environment";
       import { getUserFromRequest } from "./auth";
       import { User } from "../demo/auth/User";
         
-      export const api = remultSveltekit({
+      export const api = remultApi({
         getUser: getUserFromRequest,
         initApi: async () => {
           await User.createDemoUsers();
@@ -118,7 +118,7 @@ describe("api file variations", async () => {
         ),
       ),
     ).toMatchInlineSnapshot(`
-      "import { remultSveltekit } from "remult/remult-sveltekit";
+      "import { remultApi } from "remult/remult-sveltekit";
       import { MongoClient } from "mongodb";
       import { MONGO_URL, MONGO_DB } from "$env/static/private";
       import { building } from "$app/environment";
@@ -126,7 +126,7 @@ describe("api file variations", async () => {
       import { getUserFromRequest } from "./auth";
       import { User } from "../demo/auth/User";
         
-      export const api = remultSveltekit({
+      export const api = remultApi({
         getUser: getUserFromRequest,
         initApi: async () => {
           await User.createDemoUsers();
@@ -143,11 +143,11 @@ describe("api file variations", async () => {
   test("with auth", () => {
     expect(buildApiFile(DATABASES.json, Servers.express, true, false, false))
       .toMatchInlineSnapshot(`
-        "import { remultExpress } from "remult/remult-express";
+        "import { remultApi } from "remult/remult-express";
         import { getUserFromRequest } from "./auth.js";
         import { User } from "../demo/auth/User.js";
           
-        export const api = remultExpress({
+        export const api = remultApi({
           getUser: getUserFromRequest,
           initApi: async () => {
             await User.createDemoUsers();
@@ -433,10 +433,10 @@ import { Roles } from "./Roles.js";`),
       ...basicArgs,
     });
     expect(fs.readFileSync(apiPath).toString()).toMatchInlineSnapshot(`
-      "import { remultNuxt } from "remult/remult-nuxt";
+      "import { remultApi } from "remult/remult-nuxt";
       import { Task } from "../../demo/todo/Task.js";
         
-      export const api = remultNuxt({
+      export const api = remultApi({
         admin: true,
         entities: [Task],
       });

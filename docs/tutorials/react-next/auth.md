@@ -188,7 +188,7 @@ Once an authentication flow is established, integrating it with Remult in the ba
 
 import { getUserOnServer } from "./auth"
 
-const api = remultNextApp({
+const api = remultApi({
   //...
   getUser: getUserOnServer,
 })

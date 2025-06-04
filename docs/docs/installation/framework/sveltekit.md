@@ -38,9 +38,9 @@ To set up Remult in your SvelteKit project:
 ::: code-group
 
 ```ts [src/server/api.ts]
-import { remultSveltekit } from 'remult/remult-sveltekit'
+import { remultApi } from 'remult/remult-sveltekit'
 
-export const api = remultSveltekit({})
+export const api = remultApi({})
 ```
 
 :::
@@ -257,15 +257,30 @@ To take full advantage of it, add this snippet:
 
   // To be done once in the application.
   function initRemultSvelteReactivity() {
-    Remult.entityRefInit = (x) => {
+    // Auth reactivity (remult.user, remult.authenticated(), ...)
+    {
       let update = () => {}
       let s = createSubscriber((u) => {
         update = u
       })
-      x.subscribe({
+      remult.subscribeAuth({
         reportObserved: () => s(),
         reportChanged: () => update(),
       })
+    }
+
+    // Entities reactivity
+    {
+      Remult.entityRefInit = (x) => {
+        let update = () => {}
+        let s = createSubscriber((u) => {
+          update = u
+        })
+        x.subscribe({
+          reportObserved: () => s(),
+          reportChanged: () => update(),
+        })
+      }
     }
   }
   initRemultSvelteReactivity()
@@ -294,3 +309,74 @@ Then you can use `$state`, `$derived` like any other places
 ```
 
 :::
+
+### Focus on auth reactivity
+
+Anywhere in your frontend code you can set `remult.user = xxx` and all remult auth reactivity will work (remult.user, remult.authenticated(), ...)
+
+```ts
+const logout = async () => {
+  try {
+    remult.user = await AuthController.signOut()
+  } catch (error) {
+    alert(error.message)
+  }
+}
+```
+
+If you want `remult.user` to be filled in SSR, here is the code:
+
+::: code-group
+
+```svelte [src/routes/+layout.svelte]
+<script lang="ts">
+  import { untrack } from 'svelte'
+  import type { LayoutData } from './$types'
+
+  interface Props {
+    data: LayoutData
+    children?: import('svelte').Snippet
+  }
+
+  let { data, children }: Props = $props()
+
+  $effect(() => {
+    // Trigger the effect only on data.user update
+    data.user
+    untrack(() => {
+      remult.user = data.user
+    })
+  })
+
+  // initRemultSvelteReactivity stuff
+</script>
+
+{@render children?.()}
+```
+
+```ts [src/routes/+layout.server.ts]
+import { remult } from 'remult'
+
+import type { LayoutServerLoad } from './$types'
+
+export const load = (async () => {
+  return { user: remult.user }
+}) satisfies LayoutServerLoad
+```
+
+:::
+
+And you can trigger this with :
+
+```ts
+import { invalidateAll } from '$app/navigation'
+
+const logout = async () => {
+  try {
+    await AuthController.signOut()
+    invalidateAll() // [!code ++] // This will trigger the layout.server.ts load function
+  } catch (error) {
+    alert(error.message)
+  }
+}
+```

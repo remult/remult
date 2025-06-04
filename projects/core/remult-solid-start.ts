@@ -9,7 +9,7 @@ import { createRemultServer, remultHandlerToResponse } from './server/index.js'
 import type { APIEvent } from '@solidjs/start/server' // don't remove - augments requestEvent
 import { parse, serialize } from 'cookie'
 
-export function remultSolidStart(
+export function remultApi(
   options: RemultServerOptions<RequestEvent>,
 ): RemultSolidStartServer {
   let result = createRemultServer<RequestEvent>(options, {
@@ -27,13 +27,13 @@ export function remultSolidStart(
   const serverHandler = async () => {
     const event = await getRequestEvent()
     let sseResponse: Response | undefined = undefined
-    if (event) event.locals['_tempOnClose'] = () => {}
+    if (event) event.locals['_tempOnClose'] = () => { }
 
     const response: GenericResponse & ResponseRequiredForSSE = {
-      end: () => {},
-      json: () => {},
-      send: () => {},
-      redirect: () => {},
+      end: () => { },
+      json: () => { },
+      send: () => { },
+      redirect: () => { },
       setCookie: (name, value, options) => {
         event?.response.headers.set(
           'Set-Cookie',
@@ -56,7 +56,7 @@ export function remultSolidStart(
       status: () => {
         return response
       },
-      write: () => {},
+      write: () => { },
       writeHead: (status, headers) => {
         if (status === 200 && headers) {
           const contentType = headers['Content-Type']
@@ -73,7 +73,7 @@ export function remultSolidStart(
                 }
               },
               cancel: () => {
-                response.write = () => {}
+                response.write = () => { }
                 event?.locals?.['_tempOnClose']?.()
               },
             })
@@ -123,3 +123,6 @@ export type RemultSolidStartServer = RemultServerCore<RequestEvent> & {
   POST: RequestHandler
   DELETE: RequestHandler
 }
+
+/** @deprecated use remultApi instead */
+export const remultSolidStart = remultApi

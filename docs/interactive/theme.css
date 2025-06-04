@@ -1,0 +1,9 @@
+:root[data-theme='dark'] {
+    --tk-background-primary: rgb(5, 5, 40);
+    --tk-background-secondary: rgb(10, 10, 50);
+    --tk-background-active: rgb(15, 15, 60);
+    --tk-background-brighter: rgb(20, 20, 60);
+    --tk-border-primary: rgb(20, 20, 60);
+    --tk-border-secondary: rgb(20, 20, 60);
+    --tk-border-brighter: rgb(31, 31, 97);
+}

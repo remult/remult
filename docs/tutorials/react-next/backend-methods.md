@@ -71,7 +71,7 @@ The `@BackendMethod` decorator tells Remult to expose the method as an API endpo
 //...
 import { TasksController } from "./shared/TaskController"
 
-export const api = remultNextApp({
+export const api = remultApi({
   //...
   controllers: [TasksController]
 })

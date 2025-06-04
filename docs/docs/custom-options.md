@@ -127,7 +127,7 @@ declare module 'remult' {
 Then, set the `origin` property in the `initRequest` option in the `api.ts` file:
 
 ```ts
-export const api = remultExpress({
+export const api = remultApi({
   initRequest: async (_, req) => {
     remult.context.origin = req.headers.origin // [!code highlight]
   },

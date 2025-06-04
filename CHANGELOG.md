@@ -1,6 +1,60 @@
-# Changelog
-
 All notable changes to this project will be documented in this file.
+
+## [3.0.4] 2025-5-26
+
+- Fixed issue where cases when multiple `$ne` or `$nin` were used with rest data provider and the value 0 - the 0 value would sometime not be sent to the server
+
+## [3.0.3] 2025-5-23
+
+- Few doc updates by @jycouet in https://github.com/remult/remult/pull/704
+- add removeItem method to JsonEntityIndexedDbStorage by @TGlide in https://github.com/remult/remult/pull/703
+- :construction: UPDATE: sveltekit data is now always returning application/json by @jycouet in https://github.com/remult/remult/pull/706
+- Fix undefined error in TestApiDataProvider with multiple relations
+
+## [3.0.2] 2025-5-13
+
+- Update DuckDB adapter to use new @duckdb/node-api package - #700
+  Big thanks to @jc955 for his first contribution
+
+## [3.0.1] 2025-5-9
+
+- https://github.com/remult/remult/pull/697 - escape backtick in migrations code
+  Big thanks to @fapspirit for his first contribution
+
+## [3.0.0] 2025-5-7
+
+- Unified the function name used to setup remult api to `remultApi` (Instead of `remultExpress` etc...)
+- Added a `dataProvider` function to `EntityOptions` that allows you to select a dataProvider per entity.
+- Admin UI:
+  - you can now add custom headers requests (`key: value` format)
+  - In diagram, you can visualize `ToOne` relations with the color of the entity on the left.
+  - add `requireAuthToken` to admin options to open settings dialog to set the bearer token directly.
+  - add `disableLiveQuery` to admin options to control if live query is used. (can be overwritten by local storage settings)
+
+## [2.7.34] 2025-4-29
+
+- Added support for sql expression based entity to knex data provider
+
+## [2.7.33] 2025-4-5
+
+- Fixed bug with API Update of null with dateOnly
+- Fixed admin to show json editor also for arrays
+
+## [2.7.32] 2025-3-18
+
+- Added `subscribeAuth` to remult to support reactivity
+- Admin ui:
+  - Fixed issue where json editor was not working when the json field was an array
+  - Fixed issue where json field did not trigger the change detection (color green)
+
+## [2.7.31] 2025-3-9
+
+- `ValueConverters.Number.fromInput(null)` now returns `null` _(was undefined before)_.
+
+## [2.7.30] 2025-3-2
+
+- Fixed `where` containing a `$not` from `api` to work in addition with other filters.
+- More fixes to remult admin
 
 ## [2.7.29] 2025-2-9
 

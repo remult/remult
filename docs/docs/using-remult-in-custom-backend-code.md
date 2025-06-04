@@ -44,32 +44,34 @@ Use the `api.withRemultAsync` method in promises
 
 ```ts
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
+import { remult, repo } from 'remult'
 
-const app = express();
-...
-const api = remultExpress({
-  entities:[Task]
+const app = express()
+// ...
+const api = remultApi({
+  entities: [Task],
 })
 app.post('/api/customSetAll', async (req, res) => {
   // use remult in a specific piece of code // [!code highlight]
-  await api.withRemultAsync(req, async ()=> { // [!code highlight]
+  await api.withRemultAsync(req, async () => {
+    // [!code highlight]
     if (!remult.authenticated()) {
-      res.sendStatus(403);
-      return;
+      res.sendStatus(403)
+      return
     }
-    if (!remult.isAllowed("admin")) {
-      res.sendStatus(403);
-      return;
+    if (!remult.isAllowed('admin')) {
+      res.sendStatus(403)
+      return
     }
-    const taskRepo = remult.repo(Task);
+    const taskRepo = repo(Task)
     for (const task of await taskRepo.find()) {
-      task.completed = req.body.completed;
-      await taskRepo.save(task);
+      task.completed = req.body.completed
+      await taskRepo.save(task)
     }
-    res.send();
+    res.send()
   })
-});
+})
 ```
 
 You can also use it without sending the request object, for non request related code
@@ -87,12 +89,12 @@ setInterval(async () => {
 <!-- prettier-ignore-start -->
 ```ts 
 import fastify from 'fastify'
-import { remultFastify } from 'remult/remult-fastify'
+import { remultApi } from 'remult/remult-fastify'
 
 (async () => {
   const server = fastify()
 
-  await server.register(remultFastify({})) // [!code highlight]
+  await server.register(remultApi({})) // [!code highlight]
   server.get('/api/test', async (req, res) => {
     return {
       result: await api.withRemult(req, () => remult.repo(Task).count()), // [!code highlight]
@@ -111,11 +113,11 @@ import { remultFastify } from 'remult/remult-fastify'
 <!-- prettier-ignore-start -->
 ```ts 
 import { Hono } from 'hono'
-import { remultHono } from 'remult/remult-hono'
+import { remultApi } from 'remult/remult-hono'
 
 const app = new Hono()
 
-const api = remultHono({}) 
+const api = remultApi({}) 
 app.get('/test1', api.withRemult, async (c) => // [!code highlight]
   c.text('hello ' + (await repo(Task).count())),
 )
@@ -227,11 +229,11 @@ export const handle = sequence(
 == Hapi
 ```ts 
 import { type Plugin, server } from '@hapi/hapi'
-import { remultHapi } from 'remult/remult-hapi'
+import { remultApi } from 'remult/remult-hapi'
 
 (async () => {
   const hapi = server({ port: 3000 })
-  const api = remultHapi({})
+  const api = remultApi({})
   await hapi.register(api) // [!code highlight]
 
   server.route({

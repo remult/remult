@@ -9,7 +9,7 @@ Static backend methods represent the most straightforward type, transmitting the
 1. **Define the Backend Method:**
 
 ```typescript
-import { BackendMethod, remult } from 'remult'
+import { BackendMethod, repo } from 'remult'
 import { Task } from './Task'
 
 export class TasksController {
@@ -19,7 +19,7 @@ export class TasksController {
    */
   @BackendMethod({ allowed: true })
   static async setAll(completed: boolean) {
-    const taskRepo = remult.repo(Task)
+    const taskRepo = repo(Task)
 
     for (const task of await taskRepo.find()) {
       await taskRepo.save({ ...task, completed })
@@ -43,8 +43,8 @@ These options offer granular control over authorization, allowing you to tailor 
 2. **Register the Controller:**
 
 ```typescript
-// Register TasksController in the controllers array of the remultExpress options
-export const api = remultExpress({
+// Register TasksController in the controllers array of the remultApi options
+export const api = remultApi({
   entities: [Task],
   controllers: [TasksController],
 })

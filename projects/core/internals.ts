@@ -21,6 +21,7 @@ export {
 export { getEntitySettings } from './src/remult3/getEntityRef.js'
 export { __updateEntityBasedOnWhere } from './src/filter/filter-interfaces.js'
 export const actionInfo = remultStatic.actionInfo
+export { isOfType } from './src/isOfType.js'
 
 export type { ClassType } from './classType.js'
 

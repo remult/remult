@@ -1,3 +1,4 @@
+/* Root Variables */
 :root {
   /* --vp-home-hero-name-color: transparent;
   --vp-home-hero-name-background: -webkit-linear-gradient(
@@ -11,43 +12,350 @@
     #0066c8 30%
   );
   --vp-home-hero-image-filter: blur(110px);
-}
-
-/* .vitepress/theme/custom.css */
-:root {
-  --vp-c-brand-1: rgb(0, 102, 200);
+  
+  --vp-c-brand-1: rgb(5, 6, 57);
   --vp-c-brand-2: rgb(0, 102, 200);
   --vp-c-brand-3: rgb(0, 102, 200);
   --vp-c-brand-soft: rgb(0, 102, 200, 0.14);
+  --vp-c-text: #545459;
 
-  /* start dark code samples */
+  /* Code block variables */
   --vp-code-block-color: rgba(255, 255, 245, 0.86);
-  --vp-code-block-bg: #161618;
+  --vp-code-block-bg: #f6f6f7;
   --vp-code-block-divider-color: #000000;
-
   --vp-code-lang-color: rgba(235, 235, 245, 0.38);
-
-  --vp-code-line-highlight-color: #000000;
+  --vp-code-line-highlight-color: #26287e;
   --vp-code-line-number-color: rgba(235, 235, 245, 0.38);
-
   --vp-code-copy-code-border-color: rgba(82, 82, 89, 0.32);
   --vp-code-copy-code-bg: #252529;
   --vp-code-copy-code-hover-border-color: rgba(82, 82, 89, 0.32);
   --vp-code-copy-code-hover-bg: #323238;
   --vp-code-copy-code-active-text: rgba(255, 255, 245, 0.86);
-
   --vp-code-tab-text-color: rgba(235, 235, 245, 0.6);
   --vp-code-tab-hover-text-color: rgba(255, 255, 245, 0.86);
   --vp-code-tab-active-text-color: rgba(255, 255, 245, 0.86);
-  /* end dark code samples*/
+  --vp-code-font-size: 14px;
+
+  /* Layout variables */
+  --vp-nav-height: 48px;
+  --vp-sidebar-width: 250px;
+  --vp-c-bg-sidebar: #f6f6f7;
 }
 
-.dark {
+/* Dark theme variables */
+.dark.dark {
   --vp-c-brand-1: rgb(0, 153, 300);
   --vp-c-brand-2: rgb(0, 153, 300);
   --vp-c-brand-3: rgb(0, 153, 300);
   --vp-c-brand-soft: rgb(0, 153, 300, 0.14);
+  --vp-c-text: #ffffff;
+  --vp-c-text-1: #ffffff;
+  --vp-c-text-2: #d6d6f1;
+  --vp-c-text-3: #bebee9;
+  --vp-sidebar-bg-color: rgba(2, 2, 36, 1);
+  --vp-c-bg: rgb(5, 5, 40);
+  --vp-c-bg-alt: rgba(5, 7, 57, 1);
+  --vp-c-bg-soft: rgba(5, 7, 57, 1);
+  --vp-c-bg-elv: rgba(5, 7, 57, 1);
+  --vp-c-gutter: rgb(13, 16, 88);
+  --vp-c-bg-sidebar: rgba(2, 2, 36, 1);
+  --vp-plugin-tabs-tab-bg: #101147;
+  --vp-plugin-tabs-tab-divider: #1c1d65;
+  --vp-c-divider: #1b1b54;
+  --vp-c-border: #1b1b54;
 }
-div[class*='language-'] {
-  --vp-c-bg: var(--vp-code-block-bg);
+
+/* Base styles */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--vp-c-divider) transparent;
 }
+
+body:has(.VPContent.is-home) {
+  --vp-nav-height: 64px;
+}
+
+/* App styles */
+#app {
+  /* Code blocks */
+  .shiki.shiki {
+    code {
+      line-height: 1.7;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+    }
+
+    code .line {
+      padding: 0 18px;
+      width: 100%;
+      display: block;
+    }
+
+    code .line:empty {
+      height: 1rem;
+    }
+
+    code .line.highlighted {
+      background-color: var(--vp-code-line-highlight-color);
+      margin: 0;
+    }
+
+    code .line.diff.add {
+      background-color: #003d00;
+    }
+
+    code .line.diff.remove {
+      background-color: #3d0000;
+    }
+  }
+
+  .shiki.shiki.tokyo-night {
+    background-color: #050638 !important;
+  }
+
+  .vp-code-group .tabs {
+    background-color: var(--vp-c-bg-alt);
+  }
+
+  .vp-code-group .tabs .tab {
+    background-color: var(--vp-c-bg-alt);
+  }
+
+  .vp-code-group .tabs label,
+  .vp-code-group .tabs label:hover {
+    color: var(--vp-c-text);
+  }
+
+  .vp-code-group input:checked+label {
+    font-weight: 600;
+    color: var(--vp-c-brand-2);
+  }
+
+  /* Navigation */
+  .VPNavBar:not(.has-sidebar):not(.home.top) {
+    background-color: rgba(255,255, 255, 0.75);
+    backdrop-filter: blur(12px) saturate(120%);
+    border-bottom: 1px solid var(--vp-c-divider);
+  }
+
+  .dark & .VPNavBar:not(.has-sidebar):not(.home.top) {
+    background-color: rgba(5, 5, 57, 0.5);
+    backdrop-filter: blur(15px) saturate(120%);
+    border-bottom: 1px solid var(--vp-c-divider);
+  }
+
+  .VPNavBar:not(.has-sidebar):not(.home.top) .divider {
+    opacity: 0;
+  }
+
+  .VPNavBar.has-sidebar {
+    .VPNavBarSearch {
+      padding-left: 0;
+
+      .DocSearch-Button {
+        height: 48px;
+        padding: 0 1rem;
+        border-radius: 0;
+        border: none;
+        background-color: transparent;
+        border-right: 1px solid var(--vp-c-divider);
+      }
+
+      .DocSearch-Button:hover {
+        background-color: var(--vp-c-bg-alt);
+        border: none;
+        border-right: 1px solid var(--vp-c-divider);
+      }
+    }
+  }
+
+  .VPNavBar.has-sidebar .title {
+    padding: 0;
+    height: calc(var(--vp-nav-height) + 1px);
+    
+    .title {
+      border-right: 1px solid var(--vp-c-divider);
+      background-color: var(--vp-c-bg-sidebar);
+      padding: 0 1rem;
+      width: var(--vp-sidebar-width);
+      margin-left: auto;
+    }
+  }
+
+  .VPNavBar .VPSocialLinks:before,
+  .VPNavBar .VPNavBarAppearance:before {
+    height: 48px;
+  }
+
+  &:has(.is-home) .VPNavBar .VPSocialLinks:before,
+  &:has(.is-home) .VPNavBar .VPNavBarAppearance:before {
+    opacity: .5;
+    height: 24px;
+  }
+
+  .VPNavBar.has-sidebar .divider {
+    padding-left: calc((100% - var(--vp-layout-max-width)) / 2 + var(--vp-sidebar-width));
+  }
+
+  .VPNavBar.has-sidebar .divider-line {
+    background-color: var(--vp-c-divider);
+  }
+
+  .VPNavBar.has-sidebar .title {
+    background: var(--vp-c-bg-sidebar);
+  }
+
+  .VPDocAside {
+    ul {
+      list-style: none;
+    }
+  }
+
+  /* Sidebar */
+  .VPSidebar {
+    padding: 0;
+    border-right: 1px solid var(--vp-c-divider);
+    height: calc(100vh - var(--vp-nav-height));
+    top: var(--vp-nav-height);
+    margin-top: 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--vp-c-divider) transparent;
+  }
+
+  .nav .group {
+    width: 100%;
+    padding: .5rem 1rem;
+
+    .VPSidebarItem {
+      padding-bottom: 0;
+
+      .text {
+        padding: 2px 0;
+      }
+    }
+  }
+
+  .VPSidebarItem.level-1 .text {
+    font-weight: 400;
+  }
+
+  .VPSidebarItem.is-active > .item .VPLink .text {
+    color: var(--vp-c-brand-2);
+    font-weight: 500;
+  }
+
+  .VPNav .title span {
+    display: none;
+  }
+
+  /* Media Queries */
+  @media screen and (max-width: 1024px) {
+    .l-home {
+      flex-direction: column;
+    }
+
+    .l-home__title {
+      width: 100%;
+    }
+
+    .l-home__content {
+      width: 100%;
+    }
+
+    .l-home h2 {
+      font-size: 2rem;
+    }
+  }
+
+  @media screen and (max-width: 960px) {
+    .VPSidebar {
+      height: 100vh;
+      top: 0;
+    }
+
+    .VPNavBar.has-sidebar {
+      .VPNavBarSearch {
+        .DocSearch-Button {
+          border-right: none;
+        }
+
+        .DocSearch-Button:hover {
+          border-right: none;
+        }
+      }
+    }
+
+    .VPNavBar.has-sidebar .title {
+      background: transparent;
+
+      .title {
+        border-right: none;
+        background-color: transparent;
+        padding: 0;
+        width: 100%;
+        margin-left: 0;
+      }
+    }
+  }
+
+  @media screen and (min-width: 1440px) {
+    .VPSidebar {
+      padding: auto;
+    }
+
+    .VPNavBar.has-sidebar .divider-line {
+      background: linear-gradient(to right, var(--vp-c-divider) 80%, transparent);
+    }
+
+    .nav .group {
+      width: var(--vp-sidebar-width);
+      margin-left: auto;
+      border-top: 1px solid transparent;
+      border-image: linear-gradient(to right, transparent, var(--vp-c-divider)) 1;
+    }
+
+    .VPNavBarTitle.has-sidebar .title {
+      border-bottom: 1px solid transparent;
+      border-image: linear-gradient(to right, transparent, var(--vp-c-divider)) 1;
+    }
+  }
+}
+
+  /* Home page */
+  .l-home {
+    display: flex;
+    gap: 3rem;
+    max-width: 1280px;
+    margin: 4rem auto;
+    padding: 0 1rem;
+  }
+
+  .l-home__title {
+    display: flex;
+    width: 33.33%;
+    flex-direction: column;
+
+    p {
+      margin-top: 0;
+    }
+  }
+
+  .l-home__content {
+    display: flex;
+    width: 66.66%;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .l-home h2 {
+    font-weight: 300;
+    font-size: 2.5rem;
+    line-height: 1.2;
+  }
+
+  .l-home h3 {
+    font-weight: 300;
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }

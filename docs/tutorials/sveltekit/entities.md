@@ -60,10 +60,10 @@ For a complete list of supported field types, see the [Field Types](../../docs/f
 ::: code-group
 
 ```ts [src/server/api.ts]
-import { remultSveltekit } from 'remult/remult-sveltekit'
+import { remultApi } from 'remult/remult-sveltekit'
 import { Task } from '../shared/Task' // [!code ++]
 
-export const api = remultSveltekit({
+export const api = remultApi({
   entities: [Task], // [!code ++]
 })
 ```
@@ -93,22 +93,22 @@ curl http://localhost:5173/api/tasks -d "[{\"title\": \"Read a book\"},{\"title\
 5. Refresh the browser again, to see that the new tasks were stored in the db.
 
 ::: warning Wait, where is the backend database?
-While remult supports [many relational and non-relational databases](https://remult.dev/docs/databases.html), in this tutorial we start off by storing entity data in a backend **JSON file**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.
+While remult supports [many relational and non-relational databases](https://remult.dev/docs/installation/database/), in this tutorial we start off by storing entity data in a backend **JSON file**. Notice that a `db` folder has been created under the root folder, with a `tasks.json` file containing the created tasks.
 :::
 
 ## Admin UI
 
 ### Enabling the Admin UI
 
-Add the Admin UI to your Sveltekit application by setting the `admin` option to `true` in the `remultSveltekit()`
+Add the Admin UI to your Sveltekit application by setting the `admin` option to `true` in the `remultApi()`
 
 ::: code-group
 
 ```ts [src/server/api.ts]
-import { remultSveltekit } from 'remult/remult-sveltekit'
+import { remultApi } from 'remult/remult-sveltekit'
 import { Task } from '../shared/Task'
 
-export const api = remultSveltekit({
+export const api = remultApi({
   entities: [Task],
   admin: true, // Enable the Admin UI
 })

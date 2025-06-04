@@ -1,3 +1,3 @@
-import { remultExpress } from 'remult/remult-express';
+import { remultApi } from 'remult/remult-express';
 
-export const api = remultExpress({ admin: true });
+export const api = remultApi({ admin: true });

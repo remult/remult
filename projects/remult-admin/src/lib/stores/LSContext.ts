@@ -8,14 +8,17 @@ export type TLSContext = {
   settings: {
     search: string
     dispayCaption: boolean
+    numberOfRows: number
     confirmDelete: boolean
     diagramLayoutAlgorithm: 'grid-bfs' | 'grid-dfs' | 'line'
     keyForBearerAuth: string
-    apiUrl: string
+    // apiUrl: string
+    disableLiveQuery: boolean | undefined
+    customHeaders: string
   }
 }
 
-const LSContextKey = 'LSRemultAdmin_2024_08_29'
+export const LSSS_ContextKey = 'RemultAdmin_2025_05_07'
 
 const LSContextDefaults: TLSContext = {
   currentLocationHash: '/',
@@ -24,14 +27,17 @@ const LSContextDefaults: TLSContext = {
     search: '',
     dispayCaption: true,
     confirmDelete: true,
+    numberOfRows: 25,
     diagramLayoutAlgorithm: 'grid-dfs',
     keyForBearerAuth: '',
-    apiUrl: '/api',
+    // apiUrl: window.optionsFromServer?.rootPath ?? '/api',
+    disableLiveQuery: undefined,
+    customHeaders: '',
   },
 }
 
 const LSCurrentContext = browser
-  ? JSON.parse(localStorage.getItem(LSContextKey)!) || LSContextDefaults
+  ? JSON.parse(localStorage.getItem(LSSS_ContextKey)!) || LSContextDefaults
   : LSContextDefaults
 
 /**
@@ -56,9 +62,9 @@ export const LSContext = store()
 LSContext.subscribe((value) => {
   if (browser) {
     if (!value) {
-      localStorage.setItem(LSContextKey, JSON.stringify(LSContextDefaults))
+      localStorage.setItem(LSSS_ContextKey, JSON.stringify(LSContextDefaults))
     } else {
-      localStorage.setItem(LSContextKey, JSON.stringify(value))
+      localStorage.setItem(LSSS_ContextKey, JSON.stringify(value))
     }
   }
 })

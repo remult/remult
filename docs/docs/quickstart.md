@@ -38,11 +38,11 @@ Remult is initialized on the server-side as a request handling middleware, with 
 
 ```ts [Express]
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 
 const app = express()
 
-app.use(remultExpress({})) // [!code highlight]
+app.use(remultApi({})) // [!code highlight]
 
 app.listen(3000)
 ```
@@ -50,12 +50,12 @@ app.listen(3000)
 <!-- prettier-ignore-start -->
 ```ts [Fastify]
 import fastify from 'fastify'
-import { remultFastify } from 'remult/remult-fastify'
+import { remultApi } from 'remult/remult-fastify'
 
 (async () => {
   const server = fastify()
 
-  await server.register(remultFastify({})) // [!code highlight]
+  await server.register(remultApi({})) // [!code highlight]
 
   server.listen({ port: 3000 })
 })()
@@ -65,9 +65,9 @@ import { remultFastify } from 'remult/remult-fastify'
 ```ts [Next.js]
 // src/app/api/[...remult]/route.ts
 
-import { remultNextApp } from 'remult/remult-next'
+import { remultApi } from 'remult/remult-next'
 
-export const api = remultNextApp({}) // [!code highlight]
+export const api = remultApi({}) // [!code highlight]
 
 export const { GET, POST, PUT, DELETE } = api
 ```
@@ -75,9 +75,9 @@ export const { GET, POST, PUT, DELETE } = api
 ```ts [Sveltekit]
 // src/routes/api/[...remult]/+server.ts
 
-import { remultSveltekit } from 'remult/remult-sveltekit'
+import { remultApi } from 'remult/remult-sveltekit'
 
-export const _api = remultSveltekit({}) // [!code highlight]
+export const _api = remultApi({}) // [!code highlight]
 
 export const { GET, POST, PUT, DELETE } = _api
 ```
@@ -85,9 +85,9 @@ export const { GET, POST, PUT, DELETE } = _api
 ```ts [nuxt.js]
 // server/api/[...remult].ts
 
-import { remultNuxt } from 'remult/remult-nuxt'
+import { remultApi } from 'remult/remult-nuxt'
 
-export const api = remultNuxt({})
+export const api = remultApi({})
 
 export default defineEventHandler(api)
 
@@ -120,12 +120,12 @@ export default defineEventHandler(api)
 <!-- prettier-ignore-start -->
 ```ts [Hapi]
 import { type Plugin, server } from '@hapi/hapi'
-import { remultHapi } from 'remult/remult-hapi'
+import { remultApi } from 'remult/remult-hapi'
 
 (async () => {
   const hapi = server({ port: 3000 })
 
-  await hapi.register(remultHapi({})) // [!code highlight]
+  await hapi.register(remultApi({})) // [!code highlight]
 
   hapi.start()
 })()
@@ -135,11 +135,11 @@ import { remultHapi } from 'remult/remult-hapi'
 ```ts [Hono]
 import { Hono } from 'hono'
 import { serve } from '@hono/node-server'
-import { remultHono } from 'remult/remult-hono'
+import { remultApi } from 'remult/remult-hono'
 
 const app = new Hono()
 
-const api = remultHono({}) // [!code highlight]
+const api = remultApi({}) // [!code highlight]
 app.route('', api) // [!code highlight]
 
 serve(app)
@@ -148,12 +148,12 @@ serve(app)
 ```ts [Nest]
 // src/main.ts
 
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
 
-  app.use(remultExpress({})) // [!code highlight]
+  app.use(remultApi({})) // [!code highlight]
 
   await app.listen(3000)
 }
@@ -207,7 +207,7 @@ Set the `dataProvider` property:
 
 ```ts{3,7,11-15}
 import express from "express"
-import { remultExpress } from "remult/remult-express"
+import { remultApi } from "remult/remult-express"
 import { createPostgresDataProvider } from "remult/postgres"
 
 const app = express()
@@ -215,7 +215,7 @@ const app = express()
 const connectionString = "postgres://user:password@host:5432/database"
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider:
       createPostgresDataProvider({
         connectionString, // default: process.env["DATABASE_URL"]
@@ -231,13 +231,13 @@ Or use your existing postgres connection
 import { Pool } from 'pg'
 import { SqlDatabase } from 'remult'
 import { PostgresDataProvider } from 'remult/postgres'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 const pg = new Pool({
   connectionString: '....',
 })
 const app = express()
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: new SqlDatabase(new PostgresDataProvider(pg)),
   }),
 )
@@ -255,13 +255,13 @@ Set the `dataProvider` property:
 
 ```ts{3,9-18}
 import express from "express"
-import { remultExpress } from "remult/remult-express"
+import { remultApi } from "remult/remult-express"
 import { createKnexDataProvider } from "remult/remult-knex"
 
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: createKnexDataProvider({
       // Knex client configuration for MySQL
       client: "mysql2",
@@ -281,7 +281,7 @@ Or use your existing knex provider
 ```ts
 import express from 'express'
 import { KnexDataProvider } from 'remult/remult-knex'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import knex from 'knex'
 
 const knexDb = knex({
@@ -292,7 +292,7 @@ const knexDb = knex({
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: new KnexDataProvider(knexDb), // [!code highlight]
   }),
 )
@@ -310,14 +310,14 @@ Set the `dataProvider` property:
 
 ```ts{3-4,10-14}
 import express from "express"
-import { remultExpress } from "remult/remult-express"
+import { remultApi } from "remult/remult-express"
 import { MongoClient } from "mongodb"
 import { MongoDataProvider } from "remult/remult-mongo"
 
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: async () => {
       const client = new MongoClient("mongodb://localhost:27017/local")
       await client.connect()
@@ -343,7 +343,7 @@ Set the `dataProvider` property:
 
 ```ts
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import { SqlDatabase } from 'remult' // [!code highlight]
 import Database from 'better-sqlite3' // [!code highlight]
 import { BetterSqlite3DataProvider } from 'remult/remult-better-sqlite3' // [!code highlight]
@@ -351,7 +351,7 @@ import { BetterSqlite3DataProvider } from 'remult/remult-better-sqlite3' // [!co
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: new SqlDatabase( // [!code highlight]
       new BetterSqlite3DataProvider(new Database('./mydb.sqlite')), // [!code highlight]
     ), // [!code highlight]
@@ -373,7 +373,7 @@ Set the `dataProvider` property:
 
 ```ts
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import { SqlDatabase } from 'remult' // [!code highlight]
 import sqlite3 from 'sqlite3' // [!code highlight]
 import { Sqlite3DataProvider } from 'remult/remult-sqlite3' // [!code highlight]
@@ -381,7 +381,7 @@ import { Sqlite3DataProvider } from 'remult/remult-sqlite3' // [!code highlight]
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: new SqlDatabase( // [!code highlight]
       new Sqlite3DataProvider(new sqlite3.Database('./mydb.sqlite')), // [!code highlight]
     ), // [!code highlight]
@@ -395,7 +395,7 @@ Set the `dataProvider` property:
 
 ```ts
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import { SqlDatabase } from 'remult' // [!code highlight]
 import { Database } from 'bun:sqlite' // [!code highlight]
 import { BunSqliteDataProvider } from 'remult/remult-bun-sqlite' // [!code highlight]
@@ -403,7 +403,7 @@ import { BunSqliteDataProvider } from 'remult/remult-bun-sqlite' // [!code highl
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: new SqlDatabase( // [!code highlight]
       new BunSqliteDataProvider(new Database('./mydb.sqlite')), // [!code highlight]
     ), // [!code highlight]
@@ -423,7 +423,7 @@ Set the `dataProvider` property:
 
 ```ts
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import { SqlDatabase } from 'remult' // [!code highlight]
 import initSqlJs from 'sql.js' // [!code highlight]
 import { SqlJsDataProvider } from 'remult/remult-sql-js' // [!code highlight]
@@ -431,7 +431,7 @@ import { SqlJsDataProvider } from 'remult/remult-sql-js' // [!code highlight]
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: new SqlDatabase( // [!code highlight]
       new SqlJsDataProvider(initSqlJs().then((x) => new x.Database())), // [!code highlight]
     ), // [!code highlight]
@@ -452,7 +452,7 @@ Set the `dataProvider` property:
 <!-- prettier-ignore-start -->
 ```ts
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import { SqlDatabase } from 'remult' // [!code highlight]
 import { createClient } from '@libsql/client' // [!code highlight]
 import { TursoDataProvider } from 'remult/remult-turso' // [!code highlight]
@@ -460,7 +460,7 @@ import { TursoDataProvider } from 'remult/remult-turso' // [!code highlight]
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: new SqlDatabase( // [!code highlight]
       new TursoDataProvider( // [!code highlight]
         createClient({ // [!code highlight]
@@ -488,13 +488,13 @@ Set the `dataProvider` property:
 // index.ts
 
 import express from "express"
-import { remultExpress } from "remult/remult-express"
+import { remultApi } from "remult/remult-express"
 import { createKnexDataProvider } from "remult/remult-knex"
 
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: createKnexDataProvider({
       // Knex client configuration for MSSQL
       client: "mssql",
@@ -519,7 +519,7 @@ Or use your existing knex provider
 ```ts
 import express from 'express'
 import { KnexDataProvider } from 'remult/remult-knex'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import knex from 'knex'
 
 const knexDb = knex({
@@ -530,7 +530,7 @@ const knexDb = knex({
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: new KnexDataProvider(knexDb), // [!code highlight]
   }),
 )
@@ -540,24 +540,26 @@ app.use(
 Install DuckDB:
 
 ```sh
-npm i duckdb
+npm i @duckdb/node-api
 ```
 
 Set the `dataProvider` property:
 
 ```ts
 import express from 'express'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import { SqlDatabase } from 'remult' // [!code highlight]
-import { Database } from 'duckdb' // [!code highlight]
+import { DuckDBInstance } from '@duckdb/node-api' // [!code highlight]
 import { DuckDBDataProvider } from 'remult/remult-duckdb' // [!code highlight]
 
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: new SqlDatabase( // [!code highlight]
-      new DuckDBDataProvider(new Database(':memory:')), // [!code highlight]
+      new DuckDBDataProvider(
+        (await DuckDBInstance.create(':memory:')).connect(),
+      ), // [!code highlight]
     ), // [!code highlight]
   }),
 )
@@ -577,13 +579,13 @@ Set the `dataProvider` property:
 // index.ts
 
 import express from "express"
-import { remultExpress } from "remult/remult-express"
+import { remultApi } from "remult/remult-express"
 import { createKnexDataProvider } from "remult/remult-knex"
 
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: createKnexDataProvider({
       // Knex client configuration for Oracle
       client: "oracledb",
@@ -602,7 +604,7 @@ Or use your existing knex provider
 ```ts
 import express from 'express'
 import { KnexDataProvider } from 'remult/remult-knex'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 import knex from 'knex'
 
 const knexDb = knex({
@@ -613,7 +615,7 @@ const knexDb = knex({
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: new KnexDataProvider(knexDb), // [!code highlight]
   }),
 )
@@ -627,14 +629,14 @@ Set the `dataProvider` property:
 // index.ts
 
 import express from "express"
-import { remultExpress } from "remult/remult-express"
+import { remultApi } from "remult/remult-express"
 import { JsonDataProvider } from "remult"
 import { JsonEntityFileStorage } from "remult/server"
 
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     dataProvider: async () =>
       new JsonDataProvider(new JsonEntityFileStorage("./db"))
   })
@@ -654,7 +656,7 @@ Here are examples of integrating some commonly used auth providers:
 ```ts [express-session]
 import express from 'express'
 import session from 'express-session'
-import { remultExpress } from 'remult/remult-express'
+import { remultApi } from 'remult/remult-express'
 
 const app = express()
 
@@ -669,7 +671,7 @@ app.post('/api/signIn', (req, res) => {
 })
 
 app.use(
-  remultExpress({
+  remultApi({
     getUser: (req) => req.session!['user'], // [!code highlight]
   }),
 )
@@ -678,11 +680,11 @@ app.use(
 ```ts{8-13} [next-auth]
 // src/app/api/[...remult]/route.ts
 
-import { remultNextApp } from 'remult/remult-next'
+import { remultApi } from 'remult/remult-next'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../auth/[...nextauth]/route'
 
-export const api = remultNextApp({
+export const api = remultApi({
   getUser: async () => {
     const user = (await getServerSession(authOptions))?.user
     return user?.email && user?.name
@@ -731,7 +733,7 @@ All Remult server middleware options contain an [`entities`](./ref_remultservero
 // backend/index.ts
 
 app.use(
-  remultExpress({
+  remultApi({
     entities: [Product], // [!code highlight]
   }),
 )
@@ -739,15 +741,15 @@ app.use(
 
 ## Using your Entity on the Client
 
-To start querying and mutating data from the client-side using Remult, use the [`remult.repo`](./ref_remult.md#repo) function to create a [`Repository`](./ref_repository.md) object for your entity class. This approach simplifies data operations, allowing you to interact with your backend with the assurance of type safety.
+To start querying and mutating data from the client-side using Remult, use the [`repo`](./ref_remult.md#repo) function to create a [`Repository`](./ref_repository.md) object for your entity class. This approach simplifies data operations, allowing you to interact with your backend with the assurance of type safety.
 
 ```ts
 // frontend/code.ts
 
-import { remult } from 'remult'
+import { repo } from 'remult'
 import { Product } from '../shared/product'
 
-const productsRepo = remult.repo(Product)
+const productsRepo = repo(Product)
 
 async function playWithRemult() {
   // add a new product to the backend database

@@ -9,7 +9,7 @@ import type {
 import { createRemultServer, remultHandlerToResponse } from './server/index.js'
 import { parse } from 'cookie'
 
-export function remultSveltekit(
+export function remultApi(
   options: RemultServerOptions<RequestEvent>,
 ): RemultSveltekitServer {
   let result = createRemultServer<RequestEvent>(options, {
@@ -18,7 +18,7 @@ export function remultSveltekit(
       method: event.request.method,
       on: (e: 'close', do1: VoidFunction) => {
         if (e === 'close') {
-          ;(event.locals as any)['_tempOnClose'] = do1
+          ; (event.locals as any)['_tempOnClose'] = do1
         }
       },
     }),
@@ -26,13 +26,13 @@ export function remultSveltekit(
   })
   const serverHandler: RequestHandler = async (event) => {
     let sseResponse: Response | undefined = undefined
-    ;(event.locals as any)['_tempOnClose'] = () => {}
+      ; (event.locals as any)['_tempOnClose'] = () => { }
 
     const response: GenericResponse & ResponseRequiredForSSE = {
-      end: () => {},
-      json: () => {},
-      send: () => {},
-      redirect: () => {},
+      end: () => { },
+      json: () => { },
+      send: () => { },
+      redirect: () => { },
       setCookie: (name, value, options) => {
         event.cookies.set(name, value, {
           ...options,
@@ -55,7 +55,7 @@ export function remultSveltekit(
       status: () => {
         return response
       },
-      write: () => {},
+      write: () => { },
       writeHead: (status, headers) => {
         if (status === 200 && headers) {
           const contentType = headers['Content-Type']
@@ -72,8 +72,8 @@ export function remultSveltekit(
                 }
               },
               cancel: () => {
-                response.write = () => {}
-                ;(event.locals as any)['_tempOnClose']()
+                response.write = () => { }
+                  ; (event.locals as any)['_tempOnClose']()
               },
             })
             sseResponse = new Response(stream, { headers })
@@ -115,3 +115,6 @@ export type RemultSveltekitServer = RemultServerCore<RequestEvent> &
     POST: RequestHandler
     DELETE: RequestHandler
   }
+
+/** @deprecated use remultApi instead */
+export const remultSveltekit = remultApi

@@ -1,3 +1,3 @@
-import { remultSveltekit } from 'remult/remult-sveltekit'
+import { remultApi } from "remult/remult-sveltekit";
 
-export const api = remultSveltekit({})
+export const api = remultApi({});

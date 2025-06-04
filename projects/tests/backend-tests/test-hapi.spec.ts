@@ -1,5 +1,5 @@
 import { type Plugin, server } from '@hapi/hapi'
-import { remultHapi } from '../../core/remult-hapi.js'
+import { remultApi } from '../../core/remult-hapi.js'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { Task } from '../../test-servers/shared/Task.js'
 import { Remult, remult } from '../../core'
@@ -13,7 +13,7 @@ describe('test hapi server', async () => {
   beforeAll(async () => {
     return new Promise<void>(async (res) => {
       const app = server({ port })
-      const api = remultHapi({
+      const api = remultApi({
         entities: [Task],
         admin: true,
         modules: [someRoutes],

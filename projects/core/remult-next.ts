@@ -25,7 +25,7 @@ export function remultNext(
   // @ts-ignore TODO JYC
   return Object.assign(
     (req: NextApiRequest, res: GenericResponse) =>
-      result.handle(req, res).then(() => {}),
+      result.handle(req, res).then(() => { }),
     result,
     {
       getRemult: (req: NextApiRequest) => result.getRemult(req),
@@ -84,7 +84,7 @@ export type RemultNextServer = RemultServerCore<NextApiRequest> &
 
 const encoder = new TextEncoder()
 
-export function remultNextApp(
+export function remultApi(
   options?: RemultServerOptions<Request>,
 ): RemultNextAppServer {
   let result = createRemultServer<Request>(options!, {
@@ -95,7 +95,7 @@ export function remultNextApp(
 
       on: (e: 'close', do1: VoidFunction) => {
         if (e === 'close') {
-          ;(req as any)['_tempOnClose'] = do1
+          ; (req as any)['_tempOnClose'] = do1
         }
       },
     }),
@@ -103,11 +103,11 @@ export function remultNextApp(
   const handler = async (req: Request) => {
     {
       let sseResponse: Response | undefined = undefined
-      ;(req as any)['_tempOnClose'] = () => {}
+        ; (req as any)['_tempOnClose'] = () => { }
 
       const response: GenericResponse & ResponseRequiredForSSE = {
-        redirect: () => {},
-        setCookie: (name, value, options) => {},
+        redirect: () => { },
+        setCookie: (name, value, options) => { },
         getCookie: (name, options) => {
           const val = req.headers.get('cookie')
           if (val) {
@@ -115,14 +115,14 @@ export function remultNextApp(
           }
           return undefined
         },
-        deleteCookie: () => {},
-        end: () => {},
-        json: () => {},
-        send: () => {},
+        deleteCookie: () => { },
+        end: () => { },
+        json: () => { },
+        send: () => { },
         status: () => {
           return response
         },
-        write: () => {},
+        write: () => { },
         writeHead: (status, headers) => {
           if (status === 200 && headers) {
             const contentType = headers['Content-Type']
@@ -139,8 +139,8 @@ export function remultNextApp(
                   }
                 },
                 cancel: () => {
-                  response.write = () => {}
-                  ;(req as any)['_tempOnClose']()
+                  response.write = () => { }
+                    ; (req as any)['_tempOnClose']()
                 },
               })
               sseResponse = new Response(stream, { headers })
@@ -176,3 +176,6 @@ export type RemultNextAppServer = RemultServerCore<Request> & {
   DELETE: (req: Request) => Promise<Response | undefined>
   withRemult<T>(what: () => Promise<T>): Promise<T>
 }
+
+/** @deprecated use remultApi instead */
+export const remultNextApp = remultApi

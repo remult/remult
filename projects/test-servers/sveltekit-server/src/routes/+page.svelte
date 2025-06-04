@@ -1,8 +1,12 @@
 <script lang="ts">
+  import { repo } from 'remult'
   import { TasksController } from '../shared/TasksController'
+  import { Task } from '../shared/Task.js'
 
   const add = async () => {
     await TasksController.addHeader('Hello_' + new Date().getSeconds() + '_s')
+
+    await repo(Task).find({})
   }
 </script>
 

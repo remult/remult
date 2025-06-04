@@ -74,7 +74,7 @@ npm i remult
 
 ### Bootstrap Remult in the back-end
 
-Remult is bootstrapped in a `Next.js` using a [catch all dynamic API route](https://nextjs.org/docs/app/building-your-application/routing/dynamic-routes#catch-all-segments), that passes the handling of requests to an object created using the `remultNextApp` function.
+Remult is bootstrapped in a `Next.js` using a [catch all dynamic API route](https://nextjs.org/docs/app/building-your-application/routing/dynamic-routes#catch-all-segments), that passes the handling of requests to an object created using the `remultApi` function.
 
 1. Open your IDE.
 
@@ -83,9 +83,9 @@ Remult is bootstrapped in a `Next.js` using a [catch all dynamic API route](http
    ```ts
    // src/api.ts
 
-   import { remultNextApp } from 'remult/remult-next'
+   import { remultApi } from 'remult/remult-next'
 
-   export const api = remultNextApp({})
+   export const api = remultApi({})
    ```
 
 3. Create an `api` directory within the app folder, and inside it, create a `[...remult]` subdirectory. Inside the `app/api/[...remult]` directory, craft a `route.ts` file with the following code. This file functions as a catch all route for the Next.js API route, effectively managing all incoming API requests.

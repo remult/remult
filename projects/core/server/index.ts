@@ -61,7 +61,10 @@ export const remultHandlerToResponse = (
     if (responseFromRemultHandler.content)
       return new Response(responseFromRemultHandler.content, {
         status: responseFromRemultHandler.statusCode,
-        headers: responseFromRemultHandler.headers,
+        headers: {
+          'Content-Type': 'text/html',
+          ...responseFromRemultHandler.headers
+        },
       })
 
     if (responseFromRemultHandler.redirectUrl)
@@ -72,6 +75,9 @@ export const remultHandlerToResponse = (
 
     return new Response(JSON.stringify(responseFromRemultHandler.data), {
       status: responseFromRemultHandler.statusCode,
+      headers: {
+        'Content-Type': 'application/json',
+      },
     })
   }
   return new Response('Not Found', {

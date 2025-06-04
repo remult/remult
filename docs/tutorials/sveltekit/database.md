@@ -33,13 +33,13 @@ DATABASE_URL=postgresql://username:password@host:port/dbname[?paramspec]
 ::: code-group
 
 ```ts [src/server/api.ts]
-import { remultSveltekit } from 'remult/remult-sveltekit'
+import { remultApi } from 'remult/remult-sveltekit'
 import { Task } from './shared/Task'
 import { TasksController } from './shared/TasksController'
 import { createPostgresDataProvider } from 'remult/postgres' // [!code ++]
 import { DATABASE_URL } from '$env/static/private' // [!code ++]
 
-export const api = remultSveltekit({
+export const api = remultApi({
   entities: [Task],
   controllers: [TasksController],
   dataProvider: DATABASE_URL // [!code ++]

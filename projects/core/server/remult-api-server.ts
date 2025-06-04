@@ -101,10 +101,17 @@ export interface RemultServerOptions<RequestType> {
    * @example
    * admin: true
    * @example
-   * admin: ()=> remult.isAllowed('admin')
+   * admin: () => remult.isAllowed('admin')
    * @see [allowed](http://remult.dev/docs/allowed.html)
    */
-  admin?: Allowed //{allowed?:Allowed,url?:string}
+  admin?:
+    | Allowed
+    | {
+        allow: Allowed
+        customHtmlHead?: (remult: Remult) => string
+        requireAuthToken?: boolean
+        disableLiveQuery?: boolean
+      }
 
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
@@ -121,7 +128,7 @@ export interface RemultServerOptions<RequestType> {
    *
    * @returns A promise that resolves when the error handling is complete.
    * @example
-   * export const api = remultExpress({
+   * export const api = remultApi({
    *   error: async (e) => {
    *     if (e.httpStatusCode == 400) {
    *       e.sendError(500, { message: "An error occurred" })
@@ -573,7 +580,14 @@ export class RemultServerImplementation<RequestType>
       if (this.options.admin !== undefined && this.options.admin !== false) {
         const admin = () =>
           this.process(async (remult, req, res, orig, origResponse) => {
-            if (remult.isAllowed(this.options.admin)) {
+            const allowed = isOfType<{ allow: Allowed }>(
+              this.options.admin,
+              'allow',
+            )
+              ? this.options.admin.allow
+              : this.options.admin
+
+            if (remult.isAllowed(allowed)) {
               if (orig?.params?.id === '__entities-metadata') {
                 res.success(
                   buildEntityInfo({
@@ -582,11 +596,22 @@ export class RemultServerImplementation<RequestType>
                   }),
                 )
               } else {
+                let head = '<title>Admin</title>'
+                let requireAuthToken = false
+                let disableLiveQuery = false
+                if (isOfType<{ allow: Allowed }>(this.options.admin, 'allow')) {
+                  head = this.options.admin.customHtmlHead?.(remult) ?? head
+                  requireAuthToken =
+                    this.options.admin.requireAuthToken ?? requireAuthToken
+                  disableLiveQuery =
+                    this.options.admin.disableLiveQuery ?? disableLiveQuery
+                }
                 origResponse.send(
                   remultAdminHtml({
-                    remult: remult,
-                    entities: this.options.entities!,
-                    baseUrl: this.options.rootPath + '/admin',
+                    rootPath: this.options.rootPath ?? '/api',
+                    head,
+                    requireAuthToken,
+                    disableLiveQuery,
                   }),
                 )
               }

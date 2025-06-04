@@ -97,14 +97,14 @@ _Example:_
 // backend/index.ts
 
 import express from 'express'
-import { remultExpress } from 'remult/remult-express' // adapters for: Fastify,Next.js, Nuxt, SvelteKit, SolidStart, Nest, more...
+import { remultApi } from 'remult/remult-express' // adapters for: Fastify,Next.js, Nuxt, SvelteKit, SolidStart, Nest, more...
 import { createPostgresDataProvider } from 'remult/postgres' // supported: PostgreSQL, MySQL, SQLite, MongoDB, MSSQL and Oracle
 import { Product } from '../shared/product'
 
 const app = express()
 
 app.use(
-  remultExpress({
+  remultApi({
     entities: [Product],
     dataProvider: createPostgresDataProvider({
       connectionString: 'postgres://user:password@host:5432/database"',
@@ -271,7 +271,9 @@ export class Category {
 
 ### Automatic admin UI
 
-![Automatic admin UI](static/images/admin-ui.gif)
+![Automatic admin UI](https://raw.githubusercontent.com/remult/remult/main/static/images/admin-ui.gif)
+
+Learn more [here](https://remult.dev/docs/admin-ui).
 
 ## What about complex CRUD?
 
@@ -365,7 +367,7 @@ DSL. Remult attempts to strike a better balance.
 
 ## Contributing
 
-Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Contributions are welcome. See [CONTRIBUTING.md](https://github.com/remult/remult/blob/main/CONTRIBUTING.md).
 
 - :speech_balloon: Any feedback or suggestions? Start a
   [discussion](https://github.com/remult/remult/discussions).

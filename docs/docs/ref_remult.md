@@ -16,8 +16,11 @@ const taskRepo = remult.repo(Task);
 Arguments:
 * **entity** - the entity to use
 * **dataProvider** - an optional alternative data provider to use. Useful for writing to offline storage or an alternative data provider
-## user
-Returns the current user's info
+## subscribeAuth
+* **subscribeAuth**
+
+Arguments:
+* **listener**
 ## initUser
 Fetches user information from the backend and updates the `remult.user` object.
 Typically used during application initialization and user authentication.
@@ -92,9 +95,9 @@ Arguments:
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({
-    limit:10,
-    page:2
+   await repo(Products).find({
+     limit: 10,
+     page: 2
    })
    ```
    * **page** - Determines the page number that will be used to extract the data
@@ -102,9 +105,9 @@ Arguments:
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({
-    limit:10,
-    page:2
+   await repo(Products).find({
+     limit: 10,
+    page: 2
    })
    ```
    * **load**
@@ -148,13 +151,13 @@ Arguments:
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
+   await repo(Products).find({ orderBy: { name: "asc" }})
    ```
    
    
    #### example:
    ```ts
-   await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
+   await repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
    ```
 ## clearAllCache
 * **clearAllCache**
@@ -164,6 +167,8 @@ A helper callback that is called whenever an entity is created.
 context information that can be used to store custom information that will be disposed as part of the `remult` object
 ## apiClient
 The api client that will be used by `remult` to perform calls to the `api`
+## user
+* **user**
 ## liveQueryStorage
 * **liveQueryStorage**
 ## subscriptionServer

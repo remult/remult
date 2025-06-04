@@ -712,7 +712,7 @@ export class FilterSerializer implements FilterConsumer {
   add(key: string, val: any) {
     if (val === undefined) this.hasUndefined = true
     let r = this.result
-    if (!r[key]) {
+    if (r[key] === undefined) {
       r[key] = val
       return
     }
@@ -930,8 +930,12 @@ export function buildFilterFromRequestParameters(
         })
     }
 
-    if (not.length == 1 && !where.$not) {
-      where = not[0]
+    if (not.length == 1) {
+      if (!where.$not) {
+        where.$not = not[0].$not
+      } else {
+        where.$not.push(not[0].$not)
+      }
     } else {
       addAnd({
         $and: not,

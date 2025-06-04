@@ -18,6 +18,13 @@ export class Tag {
   tag = ''
   @Fields.string({ inputType: 'color' })
   color = ''
+  // For error testing
+  // @Fields.string({
+  //   serverExpression: () => {
+  //     throw new Error('returning an error from serverExpression')
+  //   }
+  // })
+  // serverInfo = 'info'
 }
 
 export const colors = [

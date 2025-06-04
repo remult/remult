@@ -6,17 +6,17 @@ import type {
   RepositoryOverloads,
 } from '../remult3/RepositoryImplementation.js'
 import { getEntityMetadata } from '../remult3/RepositoryImplementation.js'
-import { getRelationFieldInfo } from '../remult3/relationInfoMember.js'
 import type {
   EntityFilter,
   EntityMetadata,
   MembersOnly,
-  RelationOptions,
 } from '../remult3/remult3.js'
 import type {
   HasWrapIdentifier,
   SqlCommandWithParameters,
 } from '../sql-command.js'
+import { entityDbName } from './entityDbName.js'
+import { fieldDbName } from './fieldDbName.js'
 import type { Filter, FilterConsumer } from './filter-interfaces.js'
 
 export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
@@ -37,7 +37,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   constructor(
     private r: SqlCommandWithParameters,
     private nameProvider: EntityDbNamesBase,
-  ) {}
+  ) { }
 
   custom(key: string, customItem: any): void {
     throw new Error('Custom filter should be translated before it gets here')
@@ -100,11 +100,11 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
         if (val && val.length > 0)
           this.addToWhere(
             this.nameProvider.$dbNameOf(col) +
-              ' in (' +
-              val
-                .map((x) => this.r.param(col.valueConverter.toDb(x)))
-                .join(',') +
-              ')',
+            ' in (' +
+            val
+              .map((x) => this.r.param(col.valueConverter.toDb(x)))
+              .join(',') +
+            ')',
           )
         else this.addToWhere('1 = 0 /*isIn with no values*/')
       })(),
@@ -133,10 +133,10 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
       (async () => {
         this.addToWhere(
           'lower (' +
-            this.nameProvider.$dbNameOf(col) +
-            ") like lower ('%" +
-            val.replace(/'/g, "''") +
-            "%')",
+          this.nameProvider.$dbNameOf(col) +
+          ") like lower ('%" +
+          val.replace(/'/g, "''") +
+          "%')",
         )
       })(),
     )
@@ -146,10 +146,10 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
       (async () => {
         this.addToWhere(
           'not lower (' +
-            this.nameProvider.$dbNameOf(col) +
-            ") like lower ('%" +
-            val.replace(/'/g, "''") +
-            "%')",
+          this.nameProvider.$dbNameOf(col) +
+          ") like lower ('%" +
+          val.replace(/'/g, "''") +
+          "%')",
         )
       })(),
     )
@@ -159,10 +159,10 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
       (async () => {
         this.addToWhere(
           'lower (' +
-            this.nameProvider.$dbNameOf(col) +
-            ") like lower ('" +
-            val.replace(/'/g, "''") +
-            "%')",
+          this.nameProvider.$dbNameOf(col) +
+          ") like lower ('" +
+          val.replace(/'/g, "''") +
+          "%')",
         )
       })(),
     )
@@ -172,10 +172,10 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
       (async () => {
         this.addToWhere(
           'lower (' +
-            this.nameProvider.$dbNameOf(col) +
-            ") like lower ('%" +
-            val.replace(/'/g, "''") +
-            "')",
+          this.nameProvider.$dbNameOf(col) +
+          ") like lower ('%" +
+          val.replace(/'/g, "''") +
+          "')",
         )
       })(),
     )
@@ -237,8 +237,7 @@ export type CustomSqlFilterBuilderFunction = (
  * Represents a custom SQL filter builder.
  */
 export class CustomSqlFilterBuilder
-  implements SqlCommandWithParameters, HasWrapIdentifier
-{
+  implements SqlCommandWithParameters, HasWrapIdentifier {
   constructor(
     private r: SqlCommandWithParameters,
     public wrapIdentifier: (name: string) => string,
@@ -301,7 +300,7 @@ export function shouldNotCreateField<entityType>(
 ) {
   return Boolean(
     field.isServerExpression ||
-      (field.options.sqlExpression && field.dbName != dbNames.$dbNameOf(field)),
+    (field.options.sqlExpression && field.dbName != dbNames.$dbNameOf(field)),
   )
 }
 export function shouldCreateEntity(
@@ -380,68 +379,7 @@ async function internalDbNamesOf<entityType>(
       else if (options.tableName === true) {
         r = result.$entityName + '.' + r
       }
-    ;(result as any)[field.key] = r
+    ; (result as any)[field.key] = r
   }
   return result as EntityDbNames<entityType>
-}
-
-export async function entityDbName(
-  metadata: EntityMetadata,
-  wrapIdentifier: (name: string) => string = (x) => x,
-) {
-  if (metadata.options.sqlExpression) {
-    if (typeof metadata.options.sqlExpression === 'string')
-      return metadata.options.sqlExpression
-    else if (typeof metadata.options.sqlExpression === 'function') {
-      const prev = metadata.options.sqlExpression
-      try {
-        metadata.options.sqlExpression =
-          "recursive sqlExpression call for entity '" + metadata.key + "'. "
-        return await prev(metadata as any)
-      } finally {
-        metadata.options.sqlExpression = prev
-      }
-    }
-  }
-  return wrapIdentifier(metadata.dbName)
-}
-
-const sqlExpressionInProgressKey = Symbol.for(`sqlExpressionInProgressKey`)
-export async function fieldDbName(
-  f: FieldMetadata,
-  meta: EntityMetadata,
-  wrapIdentifier: (name: string) => string = (x) => x,
-  forceSqlExpression = false,
-) {
-  try {
-    if (f.options.sqlExpression) {
-      let result: string
-      if (typeof f.options.sqlExpression === 'function') {
-        if ((f as any)[sqlExpressionInProgressKey] && !forceSqlExpression) {
-          return "recursive sqlExpression call for field '" + f.key + "'. \0"
-        }
-        try {
-          ;(f as any)[sqlExpressionInProgressKey] = true
-
-          result = await f.options.sqlExpression(meta)
-          if (!result.includes('\0')) f.options.sqlExpression = () => result
-        } finally {
-          delete (f as any)[sqlExpressionInProgressKey]
-        }
-      } else result = f.options.sqlExpression
-      if (!result) return f.dbName
-      return result
-    }
-    const rel = getRelationFieldInfo(f)
-    let field =
-      rel?.type === 'toOne' &&
-      ((f.options as RelationOptions<any, any, any>).field as string)
-    if (field) {
-      let fInfo = meta.fields.find(field)
-      if (fInfo)
-        return fieldDbName(fInfo, meta, wrapIdentifier, forceSqlExpression)
-    }
-    return wrapIdentifier(f.dbName)
-  } finally {
-  }
 }

@@ -626,8 +626,7 @@ export interface EntityMetadata<entityType = unknown> {
   /** true if the current user is allowed to update an entity instance
    * @see {@link EntityOptions.allowApiUpdate
    * @example
-   * const taskRepo = remult.repo(Task);
-   * if (taskRepo.metadata.apiUpdateAllowed(task)){
+   * if (repo(Task).metadata.apiUpdateAllowed(task)){
    *   // Allow user to edit the entity
    * }
    */
@@ -635,8 +634,7 @@ export interface EntityMetadata<entityType = unknown> {
   /** true if the current user is allowed to read from entity
    * @see {@link EntityOptions.allowApiRead}
    * @example
-   * const taskRepo = remult.repo(Task);
-   * if (taskRepo.metadata.apiReadAllowed){
+   * if (repo(Task).metadata.apiReadAllowed){
    *   await taskRepo.find()
    * }
    */
@@ -644,8 +642,7 @@ export interface EntityMetadata<entityType = unknown> {
   /** true if the current user is allowed to delete an entity instance
    * * @see {@link EntityOptions.allowApiDelete}
    * @example
-   * const taskRepo = remult.repo(Task);
-   * if (taskRepo.metadata.apiDeleteAllowed(task)){
+   * if (repo(Task).metadata.apiDeleteAllowed(task)){
    *   // display delete button
    * }
    */
@@ -653,8 +650,7 @@ export interface EntityMetadata<entityType = unknown> {
   /** true if the current user is allowed to create an entity instance
    * @see {@link EntityOptions.allowApiInsert}
    * @example
-   * const taskRepo = remult.repo(Task);
-   * if (taskRepo.metadata.apiInsertAllowed(task)){
+   * if (repo(Task).metadata.apiInsertAllowed(task)){
    *   // display insert button
    * }
    */
@@ -878,6 +874,20 @@ export interface EntityOptions<entityType = unknown> {
     | ((entity: FieldsMetadata<entityType>) => FieldMetadata | FieldMetadata[])
   entityRefInit?: (ref: EntityRef<entityType>, row: entityType) => void
   apiRequireId?: Allowed
+  /**
+   * A function that allows customizing the data provider for the entity.
+   * @param defaultDataProvider The default data provider defined in the `remult` object.
+   * @example
+   * dataProvider: (dp) => {
+   *   if (!dp.isProxy) // usually indicates that we're on the backend
+   *     return getASpacificDataProvider();
+   *   return null
+   * }
+   * @returns A custom data provider for the entity.
+   */
+  dataProvider?: (
+    defaultDataProvider: DataProvider,
+  ) => DataProvider | Promise<DataProvider> | undefined | null
 }
 export declare type EntityOrderBy<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?: "asc" | "desc"
@@ -960,8 +970,7 @@ export declare function Field<entityType = unknown, valueType = unknown>(
 export interface FieldMetadata<valueType = unknown, entityType = unknown> {
   /** The field's member name in an object.
    * @example
-   * const taskRepo = remult.repo(Task);
-   * console.log(taskRepo.metadata.fields.title.key);
+   * console.log(repo(Task).metadata.fields.title.key);
    * // result: title
    */
   readonly key: entityType extends object ? keyof entityType & string : string
@@ -992,8 +1001,7 @@ export interface FieldMetadata<valueType = unknown, entityType = unknown> {
   readonly allowNull: boolean
   /** The class that contains this field
    * @example
-   * const taskRepo = remult.repo(Task);
-   * Task == taskRepo.metadata.fields.title.target //will return true
+   * Task == repo(Task).metadata.fields.title.target //will return true
    */
   readonly target: ClassType<valueType>
   /**
@@ -1017,9 +1025,8 @@ export interface FieldMetadata<valueType = unknown, entityType = unknown> {
    * Determines if the current user is allowed to update a specific entity instance.
    
    * @example
-   * const taskRepo = remult.repo(Task);
    * // Check if the current user is allowed to update a specific task
-   * if (taskRepo.metadata.apiUpdateAllowed(task)){
+   * if (repo(Task).metadata.apiUpdateAllowed(task)){
    *   // Allow user to edit the entity
    * }
    * @see {@link FieldOptions#allowApiUpdate} for configuration details
@@ -1088,10 +1095,16 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
   /**
    * Determines whether this field can be updated via the API. This setting can also
    * be controlled based on user roles or other access control checks.
+   *
+   * _It happens after entity level authorization AND if it's allowed._
    * @example
    * // Prevent API from updating this field
    * @Fields.string({ allowApiUpdate: false })
    * createdBy = remult.user?.id;
+   * @example
+   * // Allow API update only on new items
+   * @Fields.string<Category>({ allowApiUpdate: (c) => getEntityRef(c).isNew() })
+   * Description = ""
    * @see [allowed](https://remult.dev/docs/allowed.html)
    * @see [Access Control](https://remult.dev/docs/access-control)
    * @type {AllowedForInstance<entityType>}
@@ -1647,17 +1660,17 @@ export interface FindFirstOptionsBase<entityType>
 export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
   /** Determines the number of rows returned by the request, on the browser the default is 100 rows
    * @example
-   * await this.remult.repo(Products).find({
-   *  limit:10,
-   *  page:2
+   * await repo(Products).find({
+   *   limit: 10,
+   *   page: 2
    * })
    */
   limit?: number
   /** Determines the page number that will be used to extract the data
    * @example
-   * await this.remult.repo(Products).find({
-   *  limit:10,
-   *  page:2
+   * await repo(Products).find({
+   *   limit: 10,
+   *  page: 2
    * })
    */
   page?: number
@@ -1671,9 +1684,9 @@ export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
   where?: EntityFilter<entityType>
   /** Determines the order of items returned .
    * @example
-   * await this.remult.repo(Products).find({ orderBy: { name: "asc" }})
+   * await repo(Products).find({ orderBy: { name: "asc" }})
    * @example
-   * await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
+   * await repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
    */
   orderBy?: EntityOrderBy<entityType>
 }
@@ -1892,6 +1905,7 @@ export declare class JsonEntityIndexedDbStorage implements JsonEntityStorage {
   supportsRawJson: boolean
   getItem(entityDbName: string): Promise<string>
   setItem(entityDbName: string, json: string): Promise<void>
+  removeItem(entityDbName: string): Promise<void>
 }
 export declare class JsonEntityOpfsStorage implements JsonEntityStorage {
   getItem(entityDbName: string): Promise<string>
@@ -2300,8 +2314,12 @@ export declare class Remult {
    * @param dataProvider - an optional alternative data provider to use. Useful for writing to offline storage or an alternative data provider
    */
   repo: <T>(entity: ClassType<T>, dataProvider?: DataProvider) => Repository<T>
+  private _subscribers?
+  subscribeAuth(listener: RefSubscriber): Unsubscribe
+  private __user?
   /** Returns the current user's info */
-  user?: UserInfo
+  get user(): UserInfo | undefined
+  set user(user: UserInfo | undefined)
   /**
    * Fetches user information from the backend and updates the `remult.user` object.
    * Typically used during application initialization and user authentication.
@@ -2704,13 +2722,36 @@ export interface Repository<entityType> {
    *
    */
   create(item?: Partial<MembersOnly<entityType>>): entityType
+  /**
+   * Translates an entity to a json object.
+   * - Ready to be sent to the client _(Date & co are managed)_
+   * - Strip out fields that are not allowed to be sent to the client! Check: [Field.includeInApi](http://remult.dev/docs/ref_field#includeinapi)
+   *
+   * @example
+   * ```ts
+   * const tasks = repo(Task).toJson(repo(Task).find())
+   * ```
+   *
+   * @param item Can be an array or a single entity, awaitable or not
+   */
   toJson(item: Promise<entityType[]>): Promise<any[]>
   toJson(item: entityType[]): any[]
   toJson(item: Promise<entityType>): Promise<any>
   toJson(item: entityType): any
-  /** Translates a json object to an item instance */
-  fromJson(x: any[], isNew?: boolean): entityType[]
-  fromJson(x: any, isNew?: boolean): entityType
+  /**
+   * Translates a json object to an item instance.
+   *
+   * @example
+   * ```ts
+   * const data = // from the server
+   * const tasks = repo(Task).fromJson(data)
+   * ```
+   *
+   * @param data Can be an array or a single element
+   * @param isNew To help the creation of the instance
+   */
+  fromJson(data: any[], isNew?: boolean): entityType[]
+  fromJson(data: any, isNew?: boolean): entityType
   /** returns an `entityRef` for an item returned by `create`, `find` etc... */
   getEntityRef(item: entityType): EntityRef<entityType>
   /** Provides information about the fields of the Repository's entity
@@ -3150,7 +3191,7 @@ export declare class Validators {
     defaultMessage: ValueValidationMessage<unknown>
   }
   /**
-   * Validator to check if a related value exists in the database.
+   * Validator to check if a related value exists in the database. By side-effect it loads relation data so it is directly available in [lifecycle hooks](https://remult.dev/docs/lifecycle-hooks)
    */
   static relationExists: Validator<unknown>
   /**
@@ -3433,14 +3474,14 @@ export declare function withRemult<T>(
 ## ./remult-express.js
 
 ```ts
-export declare function remultExpress(
+export declare function remultApi(
   options?: RemultServerOptions<express.Request> & {
     bodyParser?: boolean
     bodySizeLimit?: string
   },
-): RemultExpressServer
+): remultApiServer
 //[ ] RemultServerOptions from ./server/remult-api-server.js is not exported
-export type RemultExpressServer = express.RequestHandler &
+export type remultApiServer = express.RequestHandler &
   RemultServerCore<express.Request> & {
     withRemult: (
       req: express.Request,
@@ -3450,18 +3491,20 @@ export type RemultExpressServer = express.RequestHandler &
   } & Pick<RemultServer<express.Request>, "withRemultAsync">
 //[ ] RemultServerCore from ./server/remult-api-server.js is not exported
 //[ ] RemultServer from ./server/remult-api-server.js is not exported
+export const remultExpress: typeof remultApi
 ```
 
 ## ./remult-next.js
 
 ```ts
+export declare function remultApi(
+  options?: RemultServerOptions<Request>,
+): RemultNextAppServer
+//[ ] RemultServerOptions from ./server/index.js is not exported
 export declare function remultNext(
   options: RemultServerOptions<NextApiRequest>,
 ): RemultNextServer
-//[ ] RemultServerOptions from ./server/index.js is not exported
-export declare function remultNextApp(
-  options?: RemultServerOptions<Request>,
-): RemultNextAppServer
+export const remultNextApp: typeof remultApi
 export type RemultNextAppServer = RemultServerCore<Request> & {
   GET: (req: Request) => Promise<Response | undefined>
   PUT: (req: Request) => Promise<Response | undefined>
@@ -3696,10 +3739,17 @@ export interface RemultServerOptions<RequestType> {
    * @example
    * admin: true
    * @example
-   * admin: ()=> remult.isAllowed('admin')
+   * admin: () => remult.isAllowed('admin')
    * @see [allowed](http://remult.dev/docs/allowed.html)
    */
-  admin?: Allowed
+  admin?:
+    | Allowed
+    | {
+        allow: Allowed
+        customHtmlHead?: (remult: Remult) => string
+        requireAuthToken?: boolean
+        disableLiveQuery?: boolean
+      }
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
   /**
@@ -3715,7 +3765,7 @@ export interface RemultServerOptions<RequestType> {
    *
    * @returns A promise that resolves when the error handling is complete.
    * @example
-   * export const api = remultExpress({
+   * export const api = remultApi({
    *   error: async (e) => {
    *     if (e.httpStatusCode == 400) {
    *       e.sendError(500, { message: "An error occurred" })
@@ -3948,10 +3998,17 @@ export interface RemultServerOptions<RequestType> {
    * @example
    * admin: true
    * @example
-   * admin: ()=> remult.isAllowed('admin')
+   * admin: () => remult.isAllowed('admin')
    * @see [allowed](http://remult.dev/docs/allowed.html)
    */
-  admin?: Allowed
+  admin?:
+    | Allowed
+    | {
+        allow: Allowed
+        customHtmlHead?: (remult: Remult) => string
+        requireAuthToken?: boolean
+        disableLiveQuery?: boolean
+      }
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
   /**
@@ -3967,7 +4024,7 @@ export interface RemultServerOptions<RequestType> {
    *
    * @returns A promise that resolves when the error handling is complete.
    * @example
-   * export const api = remultExpress({
+   * export const api = remultApi({
    *   error: async (e) => {
    *     if (e.httpStatusCode == 400) {
    *       e.sendError(500, { message: "An error occurred" })
@@ -4043,10 +4100,11 @@ export declare class SseSubscriptionServer implements SubscriptionServer {
 ## ./remult-fastify.js
 
 ```ts
-export declare function remultFastify(
+export declare function remultApi(
   options: RemultServerOptions<FastifyRequest>,
 ): RemultFastifyServer
 //[ ] RemultServerOptions from ./server/remult-api-server.js is not exported
+export const remultFastify: typeof remultApi
 export type RemultFastifyServer = FastifyPluginCallback &
   RemultServerCore<FastifyRequest> & {
     withRemult: RemultServer<FastifyRequest>["withRemultAsync"]
@@ -4058,10 +4116,11 @@ export type RemultFastifyServer = FastifyPluginCallback &
 ## ./remult-hapi.js
 
 ```ts
-export declare function remultHapi(
+export declare function remultApi(
   options: RemultServerOptions<Request>,
 ): RemultHapiServer
 //[ ] RemultServerOptions from ./server/index.js is not exported
+export const remultHapi: typeof remultApi
 export type RemultHapiServer = Plugin<any, any> &
   RemultServerCore<Request> & {
     withRemult: RemultServer<Request>["withRemultAsync"]
@@ -4073,10 +4132,11 @@ export type RemultHapiServer = Plugin<any, any> &
 ## ./remult-hono.js
 
 ```ts
-export declare function remultHono(
+export declare function remultApi(
   options: RemultServerOptions<Context<Env, "", BlankInput>>,
 ): RemultHonoServer
 //[ ] RemultServerOptions from ./server/index.js is not exported
+export const remultHono: typeof remultApi
 export type RemultHonoServer = Hono &
   RemultServerCore<Context<Env, "", BlankInput>> & {
     withRemult: <T>(
@@ -4103,11 +4163,12 @@ export interface FreshResponse {
   json(data: unknown, init?: ResponseInit): any
 }
 //[ ] ResponseInit from TBD is not exported
-export declare function remultFresh(
+export declare function remultApi(
   options: RemultServerOptions<FreshRequest>,
   response: FreshResponse,
 ): RemultFresh
 //[ ] RemultServerOptions from ./server/remult-api-server.js is not exported
+export const remultFresh: typeof remultApi
 export interface RemultFresh extends RemultServerCore<FreshRequest> {
   handle(req: FreshRequest, ctx: FreshContext): Promise<any>
 }
@@ -4116,10 +4177,11 @@ export interface RemultFresh extends RemultServerCore<FreshRequest> {
 ## ./remult-sveltekit.js
 
 ```ts
-export declare function remultSveltekit(
+export declare function remultApi(
   options: RemultServerOptions<RequestEvent>,
 ): RemultSveltekitServer
 //[ ] RemultServerOptions from ./server/index.js is not exported
+export const remultSveltekit: typeof remultApi
 export type RemultSveltekitServer = RemultServerCore<RequestEvent> &
   Handle & {
     withRemult: RemultServer<RequestEvent>["withRemultAsync"]
@@ -4461,7 +4523,8 @@ export declare class TursoDataProvider extends SqliteCoreDataProvider {
 
 ```ts
 export declare class DuckDBDataProvider extends SqliteCoreDataProvider {
-  constructor(db: Database)
+  private connection
+  constructor(connection: DuckDBConnection)
   wrapIdentifier(name: string): string
   getCreateTableSql(entity: EntityMetadata<any>): Promise<string[]>
   addColumnSqlSyntax(
@@ -4623,6 +4686,8 @@ export declare function getRelationFieldInfo(
   field: FieldMetadata,
 ): RelationFieldInfo | undefined
 export declare function getRelationInfo(options: FieldOptions): RelationInfo
+export declare function isOfType<T>(obj: any, checkMethod: keyof T): obj is T
+//[ ] FirstTypeNode from TBD is not exported
 export interface RelationFieldInfo {
   type: "reference" | "toOne" | "toMany"
   options: RelationOptions<unknown, unknown, unknown>
@@ -4674,10 +4739,11 @@ export declare function sqlRelationsFilter<entityType>(
 ## ./remult-nuxt.js
 
 ```ts
-export declare function remultNuxt(
+export declare function remultApi(
   options: RemultServerOptions<H3Event>,
 ): RemultNuxtServer
 //[ ] RemultServerOptions from ./server/index.js is not exported
+export const remultNuxt: typeof remultApi
 export type RemultNuxtServer = RemultServerCore<H3Event> &
   ((event: H3Event) => Promise<any>) & {
     withRemult: RemultServer<H3Event>["withRemultAsync"]
@@ -4689,10 +4755,11 @@ export type RemultNuxtServer = RemultServerCore<H3Event> &
 ## ./remult-solid-start.js
 
 ```ts
-export declare function remultSolidStart(
+export declare function remultApi(
   options: RemultServerOptions<RequestEvent>,
 ): RemultSolidStartServer
 //[ ] RemultServerOptions from ./server/index.js is not exported
+export const remultSolidStart: typeof remultApi
 export type RemultSolidStartServer = RemultServerCore<RequestEvent> & {
   withRemult<T>(what: () => Promise<T>): Promise<T>
   GET: RequestHandler

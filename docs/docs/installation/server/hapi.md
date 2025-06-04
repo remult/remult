@@ -20,9 +20,9 @@ Remult is integrated into your backend as a Hapi plugin.
    ```ts
    // src/server/api.ts
 
-   import { remultHapi } from 'remult/remult-hapi'
+   import { remultApi } from 'remult/remult-hapi'
 
-   export const api = remultHapi()
+   export const api = remultApi()
    ```
 
 2. **Register the Middleware**

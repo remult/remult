@@ -4,6 +4,8 @@
   import ColumnType from '../../icons/ColumnType.svelte'
   import type { FieldUIInfo } from '../../../../../core/server/remult-admin.js'
   import Key from '../../icons/Key.svelte'
+  import { godStore } from '../../../stores/GodStore.js'
+  import ToOne from '../../icons/ToOne.svelte'
 
   type $$Props = NodeProps
 
@@ -21,7 +23,17 @@
   <div class="entity-name">{data.caption}</div>
   <div class="entity-fields">
     {#each getFields() as f}
-      <div class="entity-field">
+      <div
+        class="entity-field"
+        style={f.relationToOne
+          ? `border-left: 3px solid 
+              hsla(${
+                $godStore.tables.find(
+                  (t) => t.key === f.relationToOne.entityKey,
+                )?.color
+              }, 70%, 50%, 1); padding: 8px 8px 8px 5px`
+          : 'padding: 8px'}
+      >
         <Handle
           type="source"
           position={Position.Left}
@@ -33,19 +45,28 @@
           id={`${f.key}-target-left`}
         />
         <span
-          style="display: flex; justify-content: space-between; {Object.keys(
-            data.ids,
-          ).includes(f.key)
-            ? 'font-weight: bold;'
-            : ''}"
+          class="field-caption
+            {Object.keys(data.ids).includes(f.key) ? 'field-caption-key' : ''}"
         >
           {$LSContext.settings.dispayCaption ? f.caption : f.key}
           <span>
             {#if Object.keys(data.ids).includes(f.key)}
               <Key></Key>
             {/if}
-            <ColumnType type={f.type} isSelect={f.values && f.values.length > 0}
-            ></ColumnType>
+            {#if f.relationToOne && f.relationToOne && Object.values(f.relationToOne.fields).length === 1}
+              {#if Object.values(f.relationToOne.fields)[0] === f.key}
+                <ColumnType
+                  type={f.type}
+                  isSelect={f.values && f.values.length > 0}
+                ></ColumnType>
+              {/if}
+              <ToOne></ToOne>
+            {:else}
+              <ColumnType
+                type={f.type}
+                isSelect={f.values && f.values.length > 0}
+              ></ColumnType>
+            {/if}
           </span>
         </span>
         <Handle
@@ -64,6 +85,15 @@
 </div>
 
 <style>
+  .field-caption {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .field-caption-key {
+    font-weight: bold;
+  }
+
   .entity-fields {
     border: 1px solid #cbd2d9;
     border-top: 0;
@@ -100,7 +130,6 @@
 
   .entity-field {
     position: relative;
-    padding: 8px;
     font-size: 0.9rem;
     color: rgb(96 111 123);
     padding-inline-start: 16px;
