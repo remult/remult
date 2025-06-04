@@ -7,7 +7,7 @@ import type {
   RemultServer,
 } from './server/index.js'
 import { createRemultServer, remultHandlerToResponse } from './server/index.js'
-import { parse, serialize } from './src/remult-cookie.js'
+import { DEFAULT_COOKIE_OPTIONS, parse, serialize } from './src/remult-cookie.js'
 
 export function remultApi(
   options: RemultServerOptions<RequestEvent>,
@@ -35,67 +35,17 @@ export function remultApi(
       send: () => {},
       redirect: () => {},
       setCookie: (name, value, options = {}) => {
-        // Use the secure defaults from serialize function
-        const cookieString = serialize(name, value, options)
-        
-        // Parse the cookie string to extract the individual parts for SvelteKit
-        const parts = cookieString.split(';').map((part) => part.trim())
-        const [nameValue] = parts
-        const [, cookieValue] = nameValue.split('=')
-
-        // Extract options from the cookie string
-        const cookieOptions: any = {}
-        parts.slice(1).forEach((part) => {
-          const [key, val] = part.split('=')
-          switch (key.toLowerCase()) {
-            case 'path':
-              cookieOptions.path = val
-              break
-            case 'max-age':
-              cookieOptions.maxAge = parseInt(val)
-              break
-            case 'httponly':
-              cookieOptions.httpOnly = true
-              break
-            case 'secure':
-              cookieOptions.secure = true
-              break
-            case 'samesite':
-              cookieOptions.sameSite = val.toLowerCase()
-              break
-          }
-        })
-
-        event.cookies.set(name, cookieValue, cookieOptions)
+        // @ts-ignore
+        event.cookies.set(name, cookieValue, { ...DEFAULT_COOKIE_OPTIONS, ...options})
       },
       getCookie: (name, options) => {
         const cookieHeader = event.request.headers.get('cookie')
         return cookieHeader ? parse(cookieHeader, options)[name] : undefined
       },
       deleteCookie: (name, options = {}) => {
-        const cookieOptions = { ...options, maxAge: 0 }
-        const cookieString = serialize(name, '', cookieOptions)
-        // Parse and apply similar to setCookie
-        const parts = cookieString.split(';').map((part) => part.trim())
-        const parsedOptions: any = { maxAge: 0 }
-        parts.slice(1).forEach((part) => {
-          const [key, val] = part.split('=')
-          switch (key.toLowerCase()) {
-            case 'path':
-              parsedOptions.path = val
-              break
-            case 'httponly':
-              parsedOptions.httpOnly = true
-              break
-            case 'secure':
-              parsedOptions.secure = true
-              break
-            case 'samesite':
-              parsedOptions.sameSite = val?.toLowerCase()
-              break
-          }
-        })
-        event.cookies.delete(name, parsedOptions)
+        const cookieOptions = { ...DEFAULT_COOKIE_OPTIONS, ...options, maxAge: 0 }
+        // @ts-ignore
+        event.cookies.delete(name, cookieOptions)
       },
       status: () => {
         return response

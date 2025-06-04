@@ -2,7 +2,7 @@ import type { CookieParseOptions, CookieSerializeOptions } from 'cookie'
 import { parse as parseCookie, serialize as serializeCookie } from 'cookie'
 
 // Default cookie options
-const DEFAULT_COOKIE_OPTIONS = {
+export const DEFAULT_COOKIE_OPTIONS = {
   path: '/',
   httpOnly: true,
   secure: true,

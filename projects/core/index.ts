@@ -6,7 +6,7 @@ export type { ClassType } from './classType.js'
 /*
  * Public API Surface of remult
  */
-export {
+export type {
   ValidateFieldEvent,
   MembersOnly,
   NumericKeys,
@@ -57,14 +57,14 @@ export {
   FindFirstOptionsBase,
 } from './src/remult3/remult3.js'
 export {
-  EntityBase,
-  ControllerBase,
+  type EntityBase,
+  type ControllerBase,
   FieldType,
   getFields,
   ValueListFieldType,
   getValueList,
-  ValueListFieldOptions,
-  ValueListInfo,
+  type ValueListFieldOptions,
+  type ValueListInfo,
   CaptionTransformer,
 } from './src/remult3/RepositoryImplementation.js'
 export { Entity } from './src/remult3/entity.js'
@@ -72,8 +72,8 @@ export { getEntityRef } from './src/remult3/getEntityRef.js'
 export {
   Field,
   Fields,
-  StringFieldOptions,
-  Relations,
+  type StringFieldOptions,
+  type Relations,
 } from './src/remult3/Fields.js'
 export { IdEntity } from './src/remult3/IdEntity.js'
 
@@ -82,29 +82,29 @@ export {
   describeBackendMethods,
   describeEntity,
 } from './src/remult3/classDescribers.js'
-export { EntityOptions, PreprocessFilterEvent } from './src/entity.js'
+export { type EntityOptions, type PreprocessFilterEvent } from './src/entity.js'
 export {
-  DataProvider,
-  EntityDataProvider,
-  EntityDataProviderGroupByOptions,
-  EntityDataProviderFindOptions,
-  ErrorInfo,
-  EntityError,
-  RestDataProviderHttpProvider,
+  type DataProvider,
+  type EntityDataProvider,
+  type EntityDataProviderGroupByOptions,
+  type EntityDataProviderFindOptions,
+  type ErrorInfo,
+  type EntityError,
+  type RestDataProviderHttpProvider,
 } from './src/data-interfaces.js' //V
 export {
-  SqlCommand,
-  SqlCommandWithParameters,
-  SqlImplementation,
-  SqlResult,
+  type SqlCommand,
+  type SqlCommandWithParameters,
+  type SqlImplementation,
+  type SqlResult,
 } from './src/sql-command.js' //V
 export {
-  FieldMetadata,
-  FieldOptions,
-  FieldValidator,
-  ValueConverter,
-  ValueListItem, // reconsider, maybe it should go to remult angular as the abstraction ?
-  ValueOrExpression,
+  type FieldMetadata,
+  type FieldOptions,
+  type FieldValidator,
+  type ValueConverter,
+  type ValueListItem, // reconsider, maybe it should go to remult angular as the abstraction ?
+  type ValueOrExpression,
 } from './src/column-interfaces.js' // revisit input type
 export { RestDataProvider } from './src/data-providers/rest-data-provider.js' //V
 export { InMemoryDataProvider } from './src/data-providers/in-memory-database.js' //V
@@ -113,14 +113,14 @@ export { SqlDatabase } from './src/data-providers/sql-database.js' //V
 export {
   CustomSqlFilterBuilder,
   dbNamesOf,
-  dbNamesOfOptions,
-  CustomSqlFilterBuilderFunction,
-  EntityDbNames,
+  type dbNamesOfOptions,
+  type CustomSqlFilterBuilderFunction,
+  type EntityDbNames,
 } from './src/filter/filter-consumer-bridge-to-sql-request.js'
 
 export {
   JsonDataProvider,
-  JsonEntityStorage,
+  type JsonEntityStorage,
 } from './src/data-providers/json-data-provider.js' //V
 export { JsonEntityOpfsStorage } from './src/data-providers/json-entity-opfs-storage.js'
 export { JsonEntityIndexedDbStorage } from './src/data-providers/json-entity-indexed-db-data-provider.js'
@@ -128,40 +128,40 @@ export { JsonEntityIndexedDbStorage } from './src/data-providers/json-entity-ind
 //export * from './src/data-api'; //reconsider if to make internal
 export {
   Controller,
-  BackendMethodOptions,
+  type BackendMethodOptions,
   BackendMethod,
   ProgressListener,
   ForbiddenError,
 } from './src/server-action.js'
 
 export {
-  Allowed,
+  type Allowed,
   Allow,
   Remult,
   withRemult,
-  RemultContext,
-  ApiClient,
+  type RemultContext,
+  type ApiClient,
   isBackend,
-  AllowedForInstance,
-  EventDispatcher,
-  EventSource,
-  UserInfo,
+  type AllowedForInstance,
+  type EventDispatcher,
+  type EventSource,
+  type UserInfo,
 } from './src/context.js'
-export { ExternalHttpProvider } from './src/buildRestDataProvider.js'
-export { SortSegment, Sort } from './src/sort.js'
-export { CompoundIdField } from './src/CompoundIdField.js'
+export { type ExternalHttpProvider } from './src/buildRestDataProvider.js'
+export { type SortSegment, Sort } from './src/sort.js'
+export { type CompoundIdField } from './src/CompoundIdField.js'
 export {
   Filter,
-  FilterConsumer,
-  FilterPreciseValues,
+  type FilterConsumer,
+  type FilterPreciseValues,
 } from './src/filter/filter-interfaces.js'
 export { UrlBuilder } from './urlBuilder.js'
 export {
   Validators,
-  ValidationMessage,
-  ValueValidationMessage,
-  Validator,
-  ValidatorWithArgs,
+  type ValidationMessage,
+  type ValueValidationMessage,
+  type Validator,
+  type ValidatorWithArgs,
   valueValidator,
   createValidator,
   createValidatorWithArgs,
@@ -176,18 +176,18 @@ import { remult } from './src/remult-proxy.js'
 //export { getId } from './src/remult3/getId';
 
 export {
-  SubscriptionServer,
-  LiveQueryStorage,
-  StoredQuery,
-  InMemoryLiveQueryStorage,
+  type SubscriptionServer,
+  type LiveQueryStorage,
+  type StoredQuery,
+  type InMemoryLiveQueryStorage,
 } from './src/live-query/SubscriptionServer.js'
 export {
-  SubscriptionListener,
-  SubscriptionClientConnection,
-  SubscriptionClient,
-  SubscriptionChannel,
-  LiveQueryChange,
-  Unsubscribe,
+  type SubscriptionListener,
+  type SubscriptionClientConnection,
+  type SubscriptionClient,
+  type SubscriptionChannel,
+  type LiveQueryChange,
+  type Unsubscribe,
 } from './src/live-query/SubscriptionChannel.js'
 
 /**
