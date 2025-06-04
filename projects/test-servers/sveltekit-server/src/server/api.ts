@@ -2,10 +2,10 @@ import { type RequestEvent } from '@sveltejs/kit'
 import { Task } from '../shared/Task'
 import { TasksController } from '../shared/TasksController'
 import { remult } from 'remult'
-import { remultSveltekit } from 'remult/remult-sveltekit'
+import { remultApi } from 'remult/remult-sveltekit'
 import { someRoutes } from '../../../shared/modules/someRoutes'
 
-export const api = remultSveltekit({
+export const api = remultApi({
   entities: [Task],
   controllers: [TasksController],
   admin: true,
