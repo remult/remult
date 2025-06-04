@@ -17,5 +17,5 @@ export function parse(cookieHeader: string, options: CookieParseOptions = {}) {
 
 export function serialize(name: string, value: string, options: CookieSerializeOptions = {}) {
 	const cookieOptions = { ...DEFAULT_COOKIE_OPTIONS, ...options }
-  return serializeCookie(name, value, { ...DEFAULT_COOKIE_OPTIONS, ...cookieOptions })
+  return serializeCookie(name, value, cookieOptions)
 }
