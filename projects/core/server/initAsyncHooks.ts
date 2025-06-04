@@ -19,7 +19,9 @@ let init = false
  * 
  * initAsyncHooks();
  * 
- * // Now we have isolated async contexts with multiple `withRemult()`, without needing to initialize a `remultApi`!
+ * // Thx to the `initAsyncHooks` above, 
+ * // we have isolated async contexts with multiple `withRemult()`, 
+ * // without needing to initialize a `remultApi` all the time!
  * withRemult(async () => {
  *     remult.user = { id: '42' };
  *     repo(Task).find()
