@@ -2,11 +2,28 @@
   import { repo } from 'remult'
   import { TasksController } from '../shared/TasksController'
   import { Task } from '../shared/Task.js'
+  import { onMount } from 'svelte'
 
-  const add = async () => {
+  let tasks: Task[] = $state([])
+
+  onMount(async () => {
+    tasks = await repo(Task).find()
+  })
+
+  const addCookie = async () => {
     await TasksController.addHeader('Hello_' + new Date().getSeconds() + '_s')
+  }
 
-    await repo(Task).find({})
+  const addTask = async () => {
+    const t = await repo(Task).insert({
+      title: 'Task ' + new Date().toISOString(),
+    })
+    tasks.push(t)
+  }
+
+  const deleteTask = async (task: Task) => {
+    await repo(Task).delete(task)
+    tasks = tasks.filter((t) => t.id !== task.id)
   }
 </script>
 
@@ -19,4 +36,18 @@
 
 <h2>SvelteKit</h2>
 
-<button on:click={add}>Add to Header & Cookie</button>
+<button onclick={addCookie}>Add to Header & Cookie</button>
+
+<hr />
+
+<h2>Tasks</h2>
+<button onclick={addTask}>Add a random Task</button>
+
+<ul>
+  {#each tasks as task}
+    <li>
+      <button onclick={() => deleteTask(task)}>Delete</button>
+      {task.title}
+    </li>
+  {/each}
+</ul>

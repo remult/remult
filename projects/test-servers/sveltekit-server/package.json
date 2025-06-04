@@ -7,21 +7,23 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "d1": "wrangler dev"
   },
   "devDependencies": {
     "@sveltejs/adapter-node": "^4.0.1",
     "@sveltejs/kit": "^2.20.7",
-    "@sveltejs/vite-plugin-svelte": "^3.0.0",
-    "svelte": "^4.2.0",
-    "svelte-check": "^3.0.1",
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "miniflare": "^4.20250525.1",
+    "svelte": "^5.3.0",
+    "svelte-check": "^4.1.5",
     "tslib": "^2.4.1",
     "typescript": "^5.0.0",
-    "vite": "^5.4.19"
+    "vite": "^6.3.0"
   },
   "type": "module",
   "dependencies": {
     "graphql-yoga": "^3.9.1",
-    "remult": "^0.25.5-exp.20"
+    "remult": "../../../dist/remult"
   }
 }
