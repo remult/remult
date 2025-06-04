@@ -36,6 +36,7 @@
   },
   "private": true,
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250604.0",
     "@duckdb/node-api": "^1.2.2-alpha.18",
     "@fastify/express": "^2.0.1",
     "@fastify/middie": "^8.0.0",
@@ -71,6 +72,7 @@
     "axios": "^0.28.0",
     "better-sqlite3": "^9.1.1",
     "class-validator": "^0.14.0",
+    "cloudflare": "^4.3.0",
     "concurrently": "^7.2.2",
     "copyfiles": "^2.4.1",
     "dependency-cruiser": "^13.1.5",
@@ -112,13 +114,7 @@
     "typescript": "^5.5.3",
     "uuid": "^8.3.2",
     "vitest": "3.1.2",
-    "webdriverio": "^8.15.10",
-    "@cloudflare/workers-types": "^4.20250601.0"
-  },
-  "peerDependencies": {
-    "solid-js": "^1.9.7",
-    "cloudflare": "^4.3.0",
-    "h3": "^1.15.3"
+    "webdriverio": "^8.15.10"
   },
   "browser": {
     "jsonwebtoken": false,

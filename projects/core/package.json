@@ -27,15 +27,17 @@
   },
   "exports": {
     ".": "./index.js",
-    "./remult-express": "./remult-express.js",
-    "./remult-next": "./remult-next.js",
     "./server": "./server/index.js",
     "./server/core": "./server/core.js",
+    "./remult-express": "./remult-express.js",
+    "./remult-next": "./remult-next.js",
     "./remult-fastify": "./remult-fastify.js",
     "./remult-hapi": "./remult-hapi.js",
     "./remult-hono": "./remult-hono.js",
     "./remult-fresh": "./remult-fresh.js",
     "./remult-sveltekit": "./remult-sveltekit.js",
+    "./remult-nuxt": "./remult-nuxt.js",
+    "./remult-solid-start": "./remult-solid-start.js",
     "./postgres": "./postgres/index.js",
     "./postgres/schema-builder": "./postgres/schema-builder.js",
     "./remult-knex": "./remult-knex/index.js",
@@ -52,8 +54,6 @@
     "./migrations": "./migrations/index.js",
     "./ably": "./ably.js",
     "./graphql": "./graphql.js",
-    "./internals": "./internals.js",
-    "./remult-nuxt": "./remult-nuxt.js",
-    "./remult-solid-start": "./remult-solid-start.js"
+    "./internals": "./internals.js"
   }
 }
