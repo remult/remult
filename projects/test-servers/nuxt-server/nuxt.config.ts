@@ -12,5 +12,12 @@ export default defineNuxtConfig({
         },
       },
     },
-  },
+    rollupConfig: {
+      external: (id) => {
+        // TMP
+        // Exclude the problematic file from transformation
+        return id.includes('get-remult-admin-html.js')
+      }
+    }
+  }
 })

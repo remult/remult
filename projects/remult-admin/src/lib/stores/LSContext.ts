@@ -1,6 +1,5 @@
+import { isBrowser } from '@melt-ui/svelte/internal/helpers'
 import { writable } from 'svelte/store'
-
-const browser = typeof window !== 'undefined'
 
 export type TLSContext = {
   currentLocationHash: string
@@ -36,7 +35,7 @@ const LSContextDefaults: TLSContext = {
   },
 }
 
-const LSCurrentContext = browser
+const LSCurrentContext = isBrowser
   ? JSON.parse(localStorage.getItem(LSSS_ContextKey)!) || LSContextDefaults
   : LSContextDefaults
 
@@ -60,7 +59,7 @@ const store = () => {
 export const LSContext = store()
 
 LSContext.subscribe((value) => {
-  if (browser) {
+  if (isBrowser) {
     if (!value) {
       localStorage.setItem(LSSS_ContextKey, JSON.stringify(LSContextDefaults))
     } else {

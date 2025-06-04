@@ -1,7 +1,6 @@
 import { writable } from 'svelte/store'
 import { LSSS_ContextKey } from './LSContext.js'
-
-const browser = typeof window !== 'undefined'
+import { isBrowser } from '@melt-ui/svelte/internal/helpers'
 
 export type TSSContext = {
   settings: {
@@ -17,7 +16,7 @@ const SSContextDefaults: TSSContext = {
   forbiddenEntities: [],
 }
 
-const SSCurrentContext = browser
+const SSCurrentContext = isBrowser
   ? JSON.parse(sessionStorage.getItem(LSSS_ContextKey)!) || SSContextDefaults
   : SSContextDefaults
 
@@ -41,7 +40,7 @@ const store = () => {
 export const SSContext = store()
 
 SSContext.subscribe((value) => {
-  if (browser) {
+  if (isBrowser) {
     if (!value) {
       sessionStorage.setItem(LSSS_ContextKey, JSON.stringify(SSContextDefaults))
     } else {

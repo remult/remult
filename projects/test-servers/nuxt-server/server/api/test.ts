@@ -1,6 +1,6 @@
 import { remult } from 'remult'
-import { Task } from '~/shared/Task.js'
 import { api } from './[...remult].js'
+import { Task } from '../../../shared/modules/task/Task.js'
 
 export default defineEventHandler(async (event) => {
   return api.withRemult(event, async () => {
