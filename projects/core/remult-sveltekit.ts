@@ -7,50 +7,95 @@ import type {
   RemultServer,
 } from './server/index.js'
 import { createRemultServer, remultHandlerToResponse } from './server/index.js'
-import { parse } from './src/remult-cookie.js'
+import { parse, serialize } from './src/remult-cookie.js'
 
 export function remultApi(
   options: RemultServerOptions<RequestEvent>,
 ): RemultSveltekitServer {
-  let result = createRemultServer<RequestEvent>(options, {
+  const result = createRemultServer<RequestEvent>(options, {
     buildGenericRequestInfo: (event) => ({
       url: event.request.url,
       method: event.request.method,
       on: (e: 'close', do1: VoidFunction) => {
         if (e === 'close') {
-          ; (event.locals as any)['_tempOnClose'] = do1
+          ;(event.locals as any)['_tempOnClose'] = do1
         }
       },
     }),
     getRequestBody: (event) => event.request.json(),
   })
+
   const serverHandler: RequestHandler = async (event) => {
     let sseResponse: Response | undefined = undefined
-      ; (event.locals as any)['_tempOnClose'] = () => { }
+    ;(event.locals as any)['_tempOnClose'] = () => {}
 
     const response: GenericResponse & ResponseRequiredForSSE = {
-      end: () => { },
-      json: () => { },
-      send: () => { },
-      redirect: () => { },
-      setCookie: (name, value, options) => {
-        event.cookies.set(name, value, {
-          ...options,
-          path: options?.path ?? '/',
+      end: () => {},
+      json: () => {},
+      send: () => {},
+      redirect: () => {},
+      setCookie: (name, value, options = {}) => {
+        // Use the secure defaults from serialize function
+        const cookieString = serialize(name, value, options)
+        
+        // Parse the cookie string to extract the individual parts for SvelteKit
+        const parts = cookieString.split(';').map((part) => part.trim())
+        const [nameValue] = parts
+        const [, cookieValue] = nameValue.split('=')
+
+        // Extract options from the cookie string
+        const cookieOptions: any = {}
+        parts.slice(1).forEach((part) => {
+          const [key, val] = part.split('=')
+          switch (key.toLowerCase()) {
+            case 'path':
+              cookieOptions.path = val
+              break
+            case 'max-age':
+              cookieOptions.maxAge = parseInt(val)
+              break
+            case 'httponly':
+              cookieOptions.httpOnly = true
+              break
+            case 'secure':
+              cookieOptions.secure = true
+              break
+            case 'samesite':
+              cookieOptions.sameSite = val.toLowerCase()
+              break
+          }
         })
+
+        event.cookies.set(name, cookieValue, cookieOptions)
       },
       getCookie: (name, options) => {
-        const val = event.request.headers.get('cookie')
-        if (val) {
-          return parse(val, options)[name]
-        }
-        return undefined
+        const cookieHeader = event.request.headers.get('cookie')
+        return cookieHeader ? parse(cookieHeader, options)[name] : undefined
       },
-      deleteCookie: (name, options) => {
-        event.cookies.delete(name, {
-          ...options,
-          path: options?.path ?? '/',
+      deleteCookie: (name, options = {}) => {
+        const cookieOptions = { ...options, maxAge: 0 }
+        const cookieString = serialize(name, '', cookieOptions)
+        // Parse and apply similar to setCookie
+        const parts = cookieString.split(';').map((part) => part.trim())
+        const parsedOptions: any = { maxAge: 0 }
+        parts.slice(1).forEach((part) => {
+          const [key, val] = part.split('=')
+          switch (key.toLowerCase()) {
+            case 'path':
+              parsedOptions.path = val
+              break
+            case 'httponly':
+              parsedOptions.httpOnly = true
+              break
+            case 'secure':
+              parsedOptions.secure = true
+              break
+            case 'samesite':
+              parsedOptions.sameSite = val?.toLowerCase()
+              break
+          }
         })
+        event.cookies.delete(name, parsedOptions)
       },
       status: () => {
         return response
@@ -58,7 +103,7 @@ export function remultApi(
       setHeaders: (headers) => {
         event.setHeaders(headers)
       },
-      write: () => { },
+      write: () => {},
       writeHead: (status, headers) => {
         if (status === 200 && headers) {
           const contentType = headers['Content-Type']
@@ -75,8 +120,8 @@ export function remultApi(
                 }
               },
               cancel: () => {
-                response.write = () => { }
-                  ; (event.locals as any)['_tempOnClose']()
+                response.write = () => {}
+                ;(event.locals as any)['_tempOnClose']()
               },
             })
             sseResponse = new Response(stream, { headers })
@@ -93,9 +138,11 @@ export function remultApi(
       event.url.toString(),
     )
   }
+
   const handler: Handle = async ({ event, resolve }) => {
     return result.withRemultAsync(event, async () => await resolve(event))
   }
+
   return Object.assign(handler, {
     getRemult: (req: RequestEvent) => result.getRemult(req),
     openApiDoc: (options: { title: string }) => result.openApiDoc(options),

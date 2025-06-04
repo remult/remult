@@ -13,36 +13,36 @@ import type {
   RemultServerOptions,
 } from './server/index.js'
 import { createRemultServer, remultHandlerToResponse } from './server/index.js'
-import { parse } from './src/remult-cookie.js'
+import { parse, serialize } from './src/remult-cookie.js'
 
 export function remultNext(
   options: RemultServerOptions<NextApiRequest>,
 ): RemultNextServer {
-  let result = createRemultServer(options, {
+  const result = createRemultServer(options, {
     buildGenericRequestInfo: (req) => req,
     getRequestBody: async (req) => req.body,
   })
-  // @ts-ignore TODO JYC
+  
   return Object.assign(
-    (req: NextApiRequest, res: GenericResponse) =>
-      result.handle(req, res).then(() => { }),
+    (req: NextApiRequest, res: any) =>
+      result.handle(req, res).then(() => {}),
     result,
     {
       getRemult: (req: NextApiRequest) => result.getRemult(req),
-      openApiDoc: (arg: any) => result.openApiDoc(arg),
+      openApiDoc: (options: any) => result.openApiDoc(options),
       withRemult: <T>(req: NextApiRequest, what: () => Promise<T>) =>
         result.withRemultAsync(req, what),
     },
     {
       getServerSideProps: (getServerPropsFunction: any) => {
         return (context: any) => {
-          return new Promise<GetServerSidePropsResult<any>>((res, err) => {
+          return new Promise<GetServerSidePropsResult<any>>((resolve, reject) => {
             result.withRemult(context, undefined!, async () => {
               try {
-                let r = await getServerPropsFunction(context)
-                res(JSON.parse(JSON.stringify(r)))
+                const r = await getServerPropsFunction(context)
+                resolve(JSON.parse(JSON.stringify(r)))
               } catch (e) {
-                err(e)
+                reject(e)
               }
             })
           })
@@ -87,79 +87,82 @@ const encoder = new TextEncoder()
 export function remultApi(
   options?: RemultServerOptions<Request>,
 ): RemultNextAppServer {
-  let result = createRemultServer<Request>(options!, {
+  const result = createRemultServer<Request>(options!, {
     getRequestBody: (req) => req.json(),
     buildGenericRequestInfo: (req) => ({
       url: req?.url,
       method: req?.method,
-
       on: (e: 'close', do1: VoidFunction) => {
         if (e === 'close') {
-          ; (req as any)['_tempOnClose'] = do1
+          ;(req as any)['_tempOnClose'] = do1
         }
       },
     }),
   })
+
   const handler = async (req: Request) => {
-    {
-      let sseResponse: Response | undefined = undefined
-        ; (req as any)['_tempOnClose'] = () => { }
+    let sseResponse: Response | undefined = undefined
+    ;(req as any)['_tempOnClose'] = () => {}
 
-      const response: GenericResponse & ResponseRequiredForSSE = {
-        redirect: () => { },
-        setCookie: (name, value, options) => { },
-        getCookie: (name, options) => {
-          const val = req.headers.get('cookie')
-          if (val) {
-            return parse(val, options)[name]
+    const response: GenericResponse & ResponseRequiredForSSE = {
+      redirect: () => {},
+      setCookie: (name, value, options = {}) => {
+        // For Next.js app router, we can't set cookies directly in the response handler
+        // This would need to be handled at the route level using next/headers
+        console.warn('setCookie not fully supported in Next.js app router - use cookies() from next/headers instead')
+      },
+      getCookie: (name, options) => {
+        const cookieHeader = req.headers.get('cookie')
+        return cookieHeader ? parse(cookieHeader, options)[name] : undefined
+      },
+      deleteCookie: (name, options = {}) => {
+        // Similar limitation as setCookie
+        console.warn('deleteCookie not fully supported in Next.js app router - use cookies() from next/headers instead')
+      },
+      end: () => {},
+      json: () => {},
+      send: () => {},
+      status: () => {
+        return response
+      },
+      setHeaders: () => {
+        // No-op for Next.js app router - headers must be set in route handler return
+      },
+      write: () => {},
+      writeHead: (status, headers) => {
+        if (status === 200 && headers) {
+          const contentType = headers['Content-Type']
+          if (contentType === 'text/event-stream') {
+            const messages: string[] = []
+            response.write = (x) => messages.push(x)
+            const stream = new ReadableStream({
+              start: (controller) => {
+                for (const message of messages) {
+                  controller.enqueue(encoder.encode(message))
+                }
+                response.write = (data) => {
+                  controller.enqueue(encoder.encode(data))
+                }
+              },
+              cancel: () => {
+                response.write = () => {}
+                ;(req as any)['_tempOnClose']()
+              },
+            })
+            sseResponse = new Response(stream, { headers })
           }
-          return undefined
-        },
-        deleteCookie: () => { },
-        end: () => { },
-        json: () => { },
-        send: () => { },
-        status: () => {
-          return response
-        },
-        setHeaders: () => {
-          // No-op for Next.js app router - headers must be set in route handler return
-        },
-        write: () => { },
-        writeHead: (status, headers) => {
-          if (status === 200 && headers) {
-            const contentType = headers['Content-Type']
-            if (contentType === 'text/event-stream') {
-              const messages: string[] = []
-              response.write = (x) => messages.push(x)
-              const stream = new ReadableStream({
-                start: (controller) => {
-                  for (const message of messages) {
-                    controller.enqueue(encoder.encode(message))
-                  }
-                  response.write = (data) => {
-                    controller.enqueue(encoder.encode(data))
-                  }
-                },
-                cancel: () => {
-                  response.write = () => { }
-                    ; (req as any)['_tempOnClose']()
-                },
-              })
-              sseResponse = new Response(stream, { headers })
-            }
-          }
-        },
-      }
-
-      const responseFromRemultHandler = await result.handle(req, response)
-      return remultHandlerToResponse(
-        responseFromRemultHandler,
-        sseResponse,
-        req.url,
-      )
+        }
+      },
     }
+
+    const responseFromRemultHandler = await result.handle(req, response)
+    return remultHandlerToResponse(
+      responseFromRemultHandler,
+      sseResponse,
+      req.url,
+    )
   }
+
   return {
     getRemult: (req) => result.getRemult(req),
     openApiDoc: (options: { title: string }) => result.openApiDoc(options),
@@ -171,7 +174,7 @@ export function remultApi(
       result.withRemultAsync<T>({} as any, what),
   }
 }
-// [ ] V1.5 Add handle, similar to handle in next page router.
+
 export type RemultNextAppServer = RemultServerCore<Request> & {
   GET: (req: Request) => Promise<Response | undefined>
   PUT: (req: Request) => Promise<Response | undefined>

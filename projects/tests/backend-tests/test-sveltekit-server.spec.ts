@@ -3,7 +3,7 @@ import { testAsExpressMW } from './all-server-tests.js'
 //@ts-ignore
 import { handler } from '../../test-servers/sveltekit-server/build/handler.js'
 import axios from 'axios'
-import { remult } from '../../core/index.js'
+import { remult } from '../../core'
 
 describe('test sveltekit server', async () => {
   testAsExpressMW(

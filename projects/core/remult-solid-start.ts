@@ -12,7 +12,7 @@ import { parse, serialize } from './src/remult-cookie.js'
 export function remultApi(
   options: RemultServerOptions<RequestEvent>,
 ): RemultSolidStartServer {
-  let result = createRemultServer<RequestEvent>(options, {
+  const result = createRemultServer<RequestEvent>(options, {
     buildGenericRequestInfo: (event) => ({
       url: event.request.url,
       method: event.request.method,
@@ -24,33 +24,32 @@ export function remultApi(
     }),
     getRequestBody: (event) => event.request.json(),
   })
+
   const serverHandler = async () => {
     const event = await getRequestEvent()
     let sseResponse: Response | undefined = undefined
-    if (event) event.locals['_tempOnClose'] = () => { }
+    if (event) event.locals['_tempOnClose'] = () => {}
 
     const response: GenericResponse & ResponseRequiredForSSE = {
-      end: () => { },
-      json: () => { },
-      send: () => { },
-      redirect: () => { },
-      setCookie: (name, value, options) => {
+      end: () => {},
+      json: () => {},
+      send: () => {},
+      redirect: () => {},
+      setCookie: (name, value, options = {}) => {
         event?.response.headers.set(
           'Set-Cookie',
           serialize(name, value, options),
         )
       },
       getCookie: (name, options) => {
-        const val = event?.request.headers.get('cookie')
-        if (val) {
-          return parse(val, options)[name]
-        }
-        return undefined
+        const cookieHeader = event?.request.headers.get('cookie')
+        return cookieHeader ? parse(cookieHeader, options)[name] : undefined
       },
-      deleteCookie: (name, options) => {
+      deleteCookie: (name, options = {}) => {
+        const cookieOptions = { ...options, maxAge: 0 }
         event?.response.headers.set(
           'Set-Cookie',
-          serialize(name, '', { ...options, maxAge: 0 }),
+          serialize(name, '', cookieOptions),
         )
       },
       status: () => {
@@ -61,7 +60,7 @@ export function remultApi(
           event?.response.headers.set(key, value)
         })
       },
-      write: () => { },
+      write: () => {},
       writeHead: (status, headers) => {
         if (status === 200 && headers) {
           const contentType = headers['Content-Type']
@@ -78,7 +77,7 @@ export function remultApi(
                 }
               },
               cancel: () => {
-                response.write = () => { }
+                response.write = () => {}
                 event?.locals?.['_tempOnClose']?.()
               },
             })
@@ -96,17 +95,8 @@ export function remultApi(
     )
   }
 
-  const handler = {} //async ({ event, resolve }) => {
-  //   if (event.url.pathname.startsWith(options!.rootPath!)) {
-  //     const result = await serverHandler(event)
-  //     if (result != null && result?.status != 404) return result
-  //   }
-  //   return new Promise<Response>((res) => {
-  //     result.withRemult(event, undefined!, async () => {
-  //       res(await resolve(event))
-  //     })
-  //   })
-  // }
+  const handler = {} // Placeholder for potential future use
+
   return Object.assign(handler, {
     getRemult: (req: RequestEvent) => result.getRemult(req),
     openApiDoc: (options: { title: string }) => result.openApiDoc(options),
@@ -119,9 +109,10 @@ export function remultApi(
     DELETE: serverHandler,
   })
 }
+
 type RequestHandler = (event: RequestEvent) => Promise<Response>
+
 export type RemultSolidStartServer = RemultServerCore<RequestEvent> & {
-  // Handle &
   withRemult<T>(what: () => Promise<T>): Promise<T>
   GET: RequestHandler
   PUT: RequestHandler
