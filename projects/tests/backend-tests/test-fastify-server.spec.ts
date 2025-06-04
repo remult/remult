@@ -3,7 +3,7 @@ import { remultApi } from '../../core/remult-fastify.js'
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { Task } from '../../test-servers/shared/modules/task/Task.js'
-import { someRoutes } from '../../test-servers/shared/modules/someRoutes.js'
+import { someRoutes } from '../../test-servers/shared/modules/someRoutes/server.js'
 import { Remult, remult } from '../../core'
 import { RemultAsyncLocalStorage } from '../../core/src/context.js'
 import { allServerTests } from './all-server-tests.js'

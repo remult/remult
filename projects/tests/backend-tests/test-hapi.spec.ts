@@ -5,7 +5,7 @@ import { Task } from '../../test-servers/shared/modules/task/Task.js'
 import { Remult, remult } from '../../core'
 import { RemultAsyncLocalStorage } from '../../core/src/context.js'
 import { allServerTests } from './all-server-tests.js'
-import { someRoutes } from '../../test-servers/shared/modules/someRoutes.js'
+import { someRoutes } from '../../test-servers/shared/modules/someRoutes/server.js'
 describe('test hapi server', async () => {
   let destroy: () => Promise<void>
   let port = 3010
