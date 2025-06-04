@@ -1,11 +1,12 @@
-import { Remult, ProgressListener, getEntityRef } from '../../core'
-import { isBackend } from '../../core'
-import { remult } from '../../core/src/remult-proxy'
-import { Entity, Fields } from '../../core'
-import { BackendMethod } from '../../core/src/server-action'
-import { Validators } from '../../core/src/validators'
-import { expect } from 'vitest'
-import { createId } from '@paralleldrive/cuid2'
+import {
+  Validators,
+  BackendMethod,
+  Entity,
+  Fields,
+  remult,
+  Remult,
+  ProgressListener,
+} from '../../../../../dist/remult'
 
 @Entity<Task>('tasks', {
   allowApiCrud: true,

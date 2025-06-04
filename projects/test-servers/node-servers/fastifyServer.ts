@@ -2,7 +2,7 @@ import fastify from 'fastify'
 import { remultApi } from '../../core/remult-fastify'
 import fs from 'fs'
 import { remult } from '../../core/src/remult-proxy'
-import { Task } from '../shared/Task'
+import { Task } from '../shared/modules/task/Task'
 ;(async () => {
   const server = fastify()
   const api = remultApi({

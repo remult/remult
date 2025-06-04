@@ -1,7 +1,7 @@
 import express from 'express'
 import { remult } from '../../core'
 import { createRemultServer } from '../../core/server/index'
-import { Task } from '../shared/Task'
+import { Task } from '../shared/modules/task/Task'
 
 const app = express()
 app.use(express.json())

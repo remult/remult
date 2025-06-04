@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import EventSource from 'eventsource'
-import { Task } from '../../test-servers/shared/Task.js'
+import { Task } from '../../test-servers/shared/modules/task/Task.js'
 import { Remult, RestDataProvider, remult, repo, withRemult } from '../../core'
 import axios from 'axios'
 

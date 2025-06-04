@@ -1,11 +1,15 @@
 <script lang="ts">
   import { repo } from 'remult'
-  import { TasksController } from '../shared/TasksController'
-  import { Task } from '../shared/Task.js'
+  import { Task } from '../../../shared/modules/task/Task.js'
+  import { ResBackendMethodController } from '../../../shared/modules/resBackendMethod/ResBackendMethodController.js'
 
   const add = async () => {
-    await TasksController.addHeader('Hello_' + new Date().getSeconds() + '_s')
-
+    await ResBackendMethodController.addHeader(
+      'Hello_h_' + new Date().getSeconds() + '_s',
+    )
+    await ResBackendMethodController.addCookie(
+      'Hello_c_' + new Date().getSeconds() + '_s',
+    )
     await repo(Task).find({})
   }
 </script>

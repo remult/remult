@@ -1,7 +1,7 @@
 import { type Plugin, server } from '@hapi/hapi'
 import { remultApi } from '../../core/remult-hapi.js'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { Task } from '../../test-servers/shared/Task.js'
+import { Task } from '../../test-servers/shared/modules/task/Task.js'
 import { Remult, remult } from '../../core'
 import { RemultAsyncLocalStorage } from '../../core/src/context.js'
 import { allServerTests } from './all-server-tests.js'

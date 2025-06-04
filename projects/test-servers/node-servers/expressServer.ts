@@ -4,7 +4,7 @@ import { remultGraphql } from '../../core/graphql'
 import { remultApi } from '../../core/remult-express'
 import { repo } from '../../core'
 import { remult } from '../../core/src/remult-proxy'
-import { Task } from '../shared/Task'
+import { Task } from '../shared/modules/task/Task'
 
 const app = express()
 const api = remultApi({

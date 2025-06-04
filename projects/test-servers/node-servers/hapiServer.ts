@@ -1,7 +1,7 @@
 import Hapi, { type Plugin } from '@hapi/hapi'
 import { PassThrough } from 'stream'
 import { remultApi } from '../../core/remult-hapi'
-import { Task } from '../shared/Task'
+import { Task } from '../shared/modules/task/Task'
 import { remult } from '../../core/'
 
 const routesPlugin: Plugin<undefined> = {

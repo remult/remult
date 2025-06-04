@@ -2,7 +2,7 @@ import koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import { PassThrough } from 'stream'
 import { createRemultServer } from '../../core/server/index'
-import { Task } from '../shared/Task'
+import { Task } from '../shared/modules/task/Task'
 
 const app = new koa()
 

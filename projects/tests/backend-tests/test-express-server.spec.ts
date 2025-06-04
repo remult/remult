@@ -1,7 +1,7 @@
 import express from 'express'
 import { type remultApiServer, remultApi } from '../../core/remult-express.js'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { Task, test_compound_id } from '../../test-servers/shared/Task.js'
+import { Task, test_compound_id } from '../../test-servers/shared/modules/task/Task.js'
 import {
   InMemoryDataProvider,
   Remult,

@@ -1,7 +1,7 @@
 import express from 'express'
 
 import { createRemultServerCore } from '../../core/server/expressBridge'
-import { Task } from '../shared/Task'
+import { Task } from '../shared/modules/task/Task'
 
 const app = express()
 app.use(express.json())

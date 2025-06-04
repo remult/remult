@@ -5,7 +5,7 @@ import { RemultAsyncLocalStorage } from '../../core/src/context'
 import { InMemoryDataProvider } from '../../core/src/data-providers/in-memory-database'
 import { remult } from '../../core/src/remult-proxy'
 
-import { Task } from '../../test-servers/shared/Task'
+import { Task } from '../../test-servers/shared/modules/task/Task'
 import { Categories } from '../tests/remult-3-entities'
 
 const servers = {
