@@ -11,7 +11,7 @@ import {
   type GenericResponse,
 } from './server/index.js'
 import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
-import { parse, serialize } from 'cookie'
+import { parse, serialize } from './src/remult-cookie.js'
 
 export function remultApi(
   options: RemultServerOptions<Context<Env, '', BlankInput>>,

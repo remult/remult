@@ -1,4 +1,4 @@
-import { BackendMethod, remult } from '../../../../../dist/remult'
+import { BackendMethod, remult } from '../../../../core'
 
 export class ResBackendMethodController {
   @BackendMethod({ allowed: true })

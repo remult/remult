@@ -7,7 +7,7 @@ import type {
   RemultServer,
 } from './server/index.js'
 import { createRemultServer, remultHandlerToResponse } from './server/index.js'
-import { parse } from 'cookie'
+import { parse } from './src/remult-cookie.js'
 
 export function remultApi(
   options: RemultServerOptions<RequestEvent>,

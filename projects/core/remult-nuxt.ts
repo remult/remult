@@ -8,7 +8,7 @@ import type {
   RemultServer,
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
-import { parse, serialize } from 'cookie'
+import { parse, serialize } from './src/remult-cookie.js'
 
 export function remultApi(
   options: RemultServerOptions<H3Event>,

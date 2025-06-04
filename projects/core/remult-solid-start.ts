@@ -7,7 +7,7 @@ import type {
 } from './server/index.js'
 import { createRemultServer, remultHandlerToResponse } from './server/index.js'
 import type { APIEvent } from '@solidjs/start/server' // don't remove - augments requestEvent
-import { parse, serialize } from 'cookie'
+import { parse, serialize } from './src/remult-cookie.js'
 
 export function remultApi(
   options: RemultServerOptions<RequestEvent>,

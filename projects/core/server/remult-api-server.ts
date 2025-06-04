@@ -42,7 +42,7 @@ import { remultStatic } from '../src/remult-static.js'
 import remultAdminHtml, { buildEntityInfo } from './remult-admin.js'
 import { isOfType } from '../src/isOfType.js'
 import { initDataProviderOrJson } from './initDataProviderOrJson.js'
-import type { CookieParseOptions, CookieSerializeOptions } from 'cookie'
+import type { CookieParseOptions, CookieSerializeOptions } from '../src/remult-cookie.js'
 import fs from 'fs'
 import { join, extname } from 'path'
 

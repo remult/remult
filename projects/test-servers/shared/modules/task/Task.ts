@@ -6,7 +6,7 @@ import {
   remult,
   Remult,
   ProgressListener,
-} from '../../../../../dist/remult'
+} from '../../../../core'
 
 @Entity<Task>('tasks', {
   allowApiCrud: true,

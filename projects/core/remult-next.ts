@@ -13,7 +13,7 @@ import type {
   RemultServerOptions,
 } from './server/index.js'
 import { createRemultServer, remultHandlerToResponse } from './server/index.js'
-import { parse } from 'cookie'
+import { parse } from './src/remult-cookie.js'
 
 export function remultNext(
   options: RemultServerOptions<NextApiRequest>,

@@ -1,4 +1,4 @@
-import { Module } from '../../../../core/server/index.js'
+import { Module } from '../../../../core/server'
 
 export const someRoutes = new Module({
   key: 'some-routes',
