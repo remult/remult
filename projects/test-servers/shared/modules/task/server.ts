@@ -1,4 +1,4 @@
-import { Module } from '../../../../core/server/index.js'
+import { Module } from '../../../../core/server'
 import { Task } from './Task.js'
 
 export const taskModule = new Module({
