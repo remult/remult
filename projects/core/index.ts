@@ -149,7 +149,7 @@ export {
 } from './src/context.js'
 export { type ExternalHttpProvider } from './src/buildRestDataProvider.js'
 export { type SortSegment, Sort } from './src/sort.js'
-export { type CompoundIdField } from './src/CompoundIdField.js'
+export { CompoundIdField } from './src/CompoundIdField.js'
 export {
   Filter,
   type FilterConsumer,
