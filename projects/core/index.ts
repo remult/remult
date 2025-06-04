@@ -57,14 +57,14 @@ export type {
   FindFirstOptionsBase,
 } from './src/remult3/remult3.js'
 export {
-  type EntityBase,
+  EntityBase,
   type ControllerBase,
   FieldType,
   getFields,
   ValueListFieldType,
   getValueList,
   type ValueListFieldOptions,
-  type ValueListInfo,
+  ValueListInfo,
   CaptionTransformer,
 } from './src/remult3/RepositoryImplementation.js'
 export { Entity } from './src/remult3/entity.js'
@@ -73,7 +73,7 @@ export {
   Field,
   Fields,
   type StringFieldOptions,
-  type Relations,
+  Relations,
 } from './src/remult3/Fields.js'
 export { IdEntity } from './src/remult3/IdEntity.js'
 
