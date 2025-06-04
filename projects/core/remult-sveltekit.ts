@@ -35,8 +35,7 @@ export function remultApi(
       send: () => {},
       redirect: () => {},
       setCookie: (name, value, options = {}) => {
-        // @ts-ignore
-        event.cookies.set(name, cookieValue, { ...DEFAULT_COOKIE_OPTIONS, ...options})
+        event.cookies.set(name, value, { ...DEFAULT_COOKIE_OPTIONS, ...options})
       },
       getCookie: (name, options) => {
         const cookieHeader = event.request.headers.get('cookie')
@@ -44,7 +43,6 @@ export function remultApi(
       },
       deleteCookie: (name, options = {}) => {
         const cookieOptions = { ...DEFAULT_COOKIE_OPTIONS, ...options, maxAge: 0 }
-        // @ts-ignore
         event.cookies.delete(name, cookieOptions)
       },
       status: () => {
