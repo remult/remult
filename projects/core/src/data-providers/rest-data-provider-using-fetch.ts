@@ -74,8 +74,8 @@ function onSuccess(response: Response) {
   if (response.status >= 200 && response.status < 300) return response.json()
   else {
     throw response
-      .json<Record<string, unknown>>()
-      .then((x) => {
+      .json()
+      .then((x: any) => {
         return {
           ...x,
           message: x.message || response.statusText,
