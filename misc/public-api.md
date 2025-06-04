@@ -2380,10 +2380,34 @@ export declare class Remult {
   static entityRefInit?: (ref: EntityRef<any>, row: any) => void
   /** context information that can be used to store custom information that will be disposed as part of the `remult` object */
   readonly context: RemultContext
+  /** Provides access to response methods like setCookie, getCookie, deleteCookie, etc. Available only during server-side request processing. */
+  get res():
+    | {
+        setCookie(name: string, value: string, opts?: any): void
+        getCookie(name: string, opts?: any): string | undefined
+        deleteCookie(name: string, opts?: any): void
+        redirect(url: string, status?: number): void
+        status(statusCode: number): any
+        json(data: any): void
+        send(html: string, headers?: Record<string, string>): void
+        end(): void
+      }
+    | undefined
   /** The api client that will be used by `remult` to perform calls to the `api` */
   apiClient: ApiClient
 }
-export interface RemultContext {}
+export interface RemultContext {
+  res?: {
+    setCookie(name: string, value: string, opts?: any): void
+    getCookie(name: string, opts?: any): string | undefined
+    deleteCookie(name: string, opts?: any): void
+    redirect(url: string, status?: number): void
+    status(statusCode: number): any
+    json(data: any): void
+    send(html: string, headers?: Record<string, string>): void
+    end(): void
+  }
+}
 export declare function repo<entityType>(
   entity: ClassType<entityType>,
   dataProvider?: DataProvider,

@@ -9,25 +9,27 @@ export const api = remultApi({
   entities: [Task],
   controllers: [TasksController],
   admin: true,
-  initRequest: async (event) => {
-    remult.context.setHeaders = (headers) => {
-      event.setHeaders(headers)
-    }
-    remult.context.setCookie = (name, value) => {
-      event.cookies.set(name, value, { path: '.' })
-    }
-  },
+  // OLD APPROACH - Framework-specific initialization (no longer needed!)
+  // initRequest: async (event) => {
+  //   remult.context.setHeaders = (headers) => {
+  //     event.setHeaders(headers)
+  //   }
+  //   remult.context.setCookie = (name, value) => {
+  //     event.cookies.set(name, value, { path: '.' })
+  //   }
+  // },
   initApi: (api) => {
     console.log('Ready 💪')
+    console.log('🍪 Response methods now available via remult.res in backend methods!')
   },
 
-  // TODO JYC: I need help to fix this!
+  // Note: modules work now because we use the framework-agnostic remult.res approach
   modules: [someRoutes],
 })
 
-declare module 'remult' {
-  export interface RemultContext {
-    setHeaders(headers: Record<string, string>): void
-    setCookie(...args: Parameters<RequestEvent['cookies']['set']>): void
-  }
-}
+// declare module 'remult' {
+//   export interface RemultContext {
+//     setHeaders(headers: Record<string, string>): void
+//     setCookie(...args: Parameters<RequestEvent['cookies']['set']>): void
+//   }
+// }

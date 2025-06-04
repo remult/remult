@@ -66,6 +66,9 @@ export class RemultProxy implements Remult {
   get context(): RemultContext {
     return remultStatic.remultFactory().context
   }
+  get res(): NonNullable<RemultContext['res']> {
+    return remultStatic.remultFactory().res
+  }
 
   get dataProvider(): DataProvider {
     return remultStatic.remultFactory().dataProvider
