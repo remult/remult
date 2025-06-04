@@ -112,7 +112,13 @@
     "typescript": "^5.5.3",
     "uuid": "^8.3.2",
     "vitest": "3.1.2",
-    "webdriverio": "^8.15.10"
+    "webdriverio": "^8.15.10",
+    "@cloudflare/workers-types": "^4.20250601.0"
+  },
+  "peerDependencies": {
+    "solid-js": "^1.9.7",
+    "cloudflare": "^4.3.0",
+    "h3": "^1.15.3"
   },
   "browser": {
     "jsonwebtoken": false,
