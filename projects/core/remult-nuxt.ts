@@ -1,4 +1,4 @@
-import type { ResponseRequiredForSSE } from 'SseSubscriptionServer.js'
+import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 import type { H3Event } from 'h3'
 import { readBody, setResponseStatus } from 'h3'
 import type {
@@ -8,6 +8,7 @@ import type {
   RemultServer,
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
+import { parse, serialize } from './src/remult-cookie.js'
 
 export function remultApi(
   options: RemultServerOptions<H3Event>,
@@ -25,24 +26,49 @@ export function remultApi(
     },
     getRequestBody: async (event) => await readBody(event),
   })
+
   const handler = async (event: H3Event) => {
     let sse = false
 
     const response: GenericResponse & ResponseRequiredForSSE = {
+      // setCookie: (name, value, options = {}) => {
+      //   event.node.res.setHeader('Set-Cookie', serialize(name, value, options))
+      // },
+      // getCookie: (name, options) => {
+      //   const cookieHeader = event.node.req.headers.cookie
+      //   return cookieHeader ? parse(cookieHeader, options)[name] : undefined
+      // },
+      // deleteCookie: (name, options = {}) => {
+      //   const cookieOptions = { ...options, maxAge: 0 }
+      //   event.node.res.setHeader('Set-Cookie', serialize(name, '', cookieOptions))
+      // },
+      // redirect: (url, statusCode = 307) => {
+      //   event.node.res.writeHead(statusCode, { Location: url })
+      // },
       end: () => {},
-      send: () => {},
+      send: (html, headers) => {
+        if (headers?.['Content-Type']) {
+          event.node.res.setHeader('Content-Type', headers['Content-Type'])
+        }
+      },
       json: () => {},
       status: () => {
         return response
       },
-      write: (what) => {
-        event.node.res.write(what)
+      // setHeaders: (headers) => {
+      //   Object.entries(headers).forEach(([key, value]) => {
+      //     event.node.res.setHeader(key, value)
+      //   })
+      // },
+      write: (data) => {
+        event.node.res.write(data)
       },
       writeHead: (status, headers) => {
         sse = true
         event.node.res.writeHead(status, headers)
       },
     }
+
     const r = await result.handle(event, response)
 
     if (sse) {

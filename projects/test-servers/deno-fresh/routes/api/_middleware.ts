@@ -1,12 +1,14 @@
 // routes/_middleware.ts
 
 import { remultFresh } from 'remult/remult-fresh'
-import { Task } from '../../shared/task.ts'
+import { Task } from '../../shared/task.js'
+import { someRoutes } from '../../../shared/modules/someRoutes/server.js'
 
 export const api = remultFresh(
   {
     entities: [Task],
-    admin:true
+    admin: true,
+    modules: [someRoutes],
   },
   Response,
 )
