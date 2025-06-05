@@ -575,6 +575,63 @@ export function allServerTests(
       }
     }),
   )
+
+  describe('extra routes', () => {
+    it(
+      'test 404 in extra routes of module',
+      withRemultForTest(async () => {
+        try {
+          await axios.get(remult.apiClient.url + '/nothing')
+          expect('should never').toBe('be here')
+        } catch (error) {
+          expect(error).toMatchInlineSnapshot(
+            `[AxiosError: Request failed with status code 404]`,
+          )
+        }
+      }),
+    )
+
+    it(
+      'should get html',
+      withRemultForTest(async () => {
+        const result = await axios.get(remult.apiClient.url + '/new-route')
+        expect(result.data).toMatchInlineSnapshot(`
+          {
+            "Soooooo": "Cool! A new new-route!",
+          }
+        `)
+      }),
+    )
+
+    // it(
+    //   'should redirect',
+    //   withRemultForTest(async () => {
+    //     try {
+    //       await axios.get(remult.apiClient.url + '/redirect', {
+    //         maxRedirects: 0, // Prevent following redirects completely
+    //       })
+    //       expect('should never').toBe('be here')
+    //     } catch (error: any) {
+    //       // Axios throws on redirects when maxRedirects is 0
+    //       expect(error.response.status).toBe(307)
+    //       expect(error.response.headers.location).toContain('/api/html')
+    //     }
+    //   }),
+    // )
+
+    // it(
+    //   'should setCookie',
+    //   withRemultForTest(async () => {
+    //     const result = await axios.get(remult.apiClient.url + '/setCookie')
+    //     expect(result.headers['set-cookie']).toMatchInlineSnapshot(`
+    //         [
+    //           "the_cookie_name=Hello; Path=/; HttpOnly; Secure; SameSite=Lax",
+    //         ]
+    //       `)
+    //   }),
+    // )
+  })
+
   async function create3Tasks() {
     const taskRepo = remult.repo(Task)
 

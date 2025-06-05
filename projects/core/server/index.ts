@@ -29,6 +29,9 @@ export {
   RemultServerOptions,
   SpecificRoute,
   queuedJobInfo,
+  Module,
+  ModuleInput,
+  RawRoutes,
 } from './remult-api-server.js'
 
 export function createRemultServer<RequestType>(

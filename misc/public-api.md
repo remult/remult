@@ -3611,6 +3611,29 @@ export declare class JsonEntityFileStorage implements JsonEntityStorage {
 export declare class JsonFileDataProvider extends JsonDataProvider {
   constructor(folderPath: string)
 }
+export declare class Module<RequestType> {
+  key: string
+  priority?: number
+  entities?: ClassType<unknown>[]
+  controllers?: ClassType<unknown>[]
+  initApi?: RemultServerOptions<RequestType>["initApi"]
+  initRequest?: RemultServerOptions<RequestType>["initRequest"]
+  rawRoutes?: RawRoutes<RequestType>
+  modules?: Module<RequestType>[]
+  constructor(options: ModuleInput<RequestType>)
+}
+//[ ] ClassType from TBD is not exported
+export interface ModuleInput<RequestType> {
+  key: string
+  /** @default 0 */
+  priority?: number
+  entities?: ClassType<unknown>[]
+  controllers?: ClassType<unknown>[]
+  initApi?: RemultServerOptions<RequestType>["initApi"]
+  initRequest?: RemultServerOptions<RequestType>["initRequest"]
+  rawRoutes?: RawRoutes<RequestType>
+  modules?: Module<RequestType>[]
+}
 export interface queuedJobInfo {
   info: queuedJobInfoResponse
   userId: string
@@ -3623,6 +3646,13 @@ export interface QueueStorage {
   createJob(url: string, userId?: string): Promise<string>
   getJobInfo(queuedJobId: string): Promise<queuedJobInfo>
 }
+export interface RawRoutes<RequestType> {
+  (args: {
+    add: (relativePath: `/${string}`) => SpecificRoute<RequestType>
+    rootPath: string
+  }): void
+}
+//[ ] TemplateLiteralType from TBD is not exported
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
   withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): void
@@ -3749,13 +3779,10 @@ export interface RemultServerOptions<RequestType> {
   rawRoutes?: RawRoutes<RequestType>
   modules?: Module<RequestType>[]
 }
-//[ ] ClassType from TBD is not exported
 //[ ] UserInfo from TBD is not exported
 //[ ] SubscriptionServer from TBD is not exported
 //[ ] Allowed from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
-//[ ] RawRoutes from TBD is not exported
-//[ ] Module from TBD is not exported
 export type SpecificRoute<RequestType> = {
   get(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
   put(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
