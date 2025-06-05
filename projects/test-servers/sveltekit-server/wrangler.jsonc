@@ -1,0 +1,12 @@
+{
+  "name": "worker-name",
+  "compatibility_date": "2025-06-05",
+  "main": "src/cf-worker/index.ts",
+  "d1_databases": [
+    {
+      "binding": "DBRemult",
+      "database_name": "remult-d1-db",
+      "database_id": "....."
+    }
+  ]
+}

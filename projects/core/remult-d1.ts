@@ -3,16 +3,34 @@
 import { type SqlCommand, SqlDatabase, type SqlResult } from "./index.js"
 import { SqliteCoreDataProvider } from "./remult-sqlite-core.js"
 
+/**
+ * This is a wrapper around the D1Database binding.
+ * 
+ * @example
+ * import { createD1DataProvider } from 'remult/remult-d1'
+ * import { getPlatformProxy } from 'wrangler'
+ * 
+ * async function initDataProvider() {
+ *  // example with `DBRemult` as D1Database binding name
+ *  const { env } = await getPlatformProxy<{ DBRemult: D1Database }>()
+ *  return createD1DataProvider(env.DBRemult)
+ * }
+ * 
+ * const api = remultApi({
+ *  dataProvider: initDataProvider(),
+ * })
+ */
 export function createD1DataProvider(d1: D1Database) {
 	return new SqlDatabase(new D1DataProvider(new D1BindingClient(d1)))
 }
 
+/**
+ * For production or local d1 using binding
+ *
+ * @example
+ * const dataProvider = new SqlDatabase(new D1DataProvider(new D1BindingClient(d1)))
+ */
 export class D1DataProvider extends SqliteCoreDataProvider {
-	/**
-	 * For production or local d1 using binding
-	 *
-	 * const dataProvider = new SqlDatabase(new D1DataProvider(new D1BindingClient(d1)))
-	 */
 	constructor(private d1: D1Client) {
 		super(
 			() => new D1Command(this.d1),
@@ -29,12 +47,13 @@ export interface D1Client {
 	execute(sql: string, params?: unknown[]): Promise<D1RowObject[]>
 }
 
+/**
+ * Simple d1 client that wraps the d1 binding directly
+ *
+ * @example
+ * const d1 = new D1BindingClient(env.DB)
+ */
 export class D1BindingClient implements D1Client {
-	/**
-	 * Simple d1 client that wraps the d1 binding directly
-	 *
-	 * const d1 = new D1BindingClient(env.DB)
-	 */
 	constructor(private d1: D1Database) { }
 
 	async execute(sql: string, params: unknown[] = []) {
