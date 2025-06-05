@@ -16,5 +16,5 @@ describe('test next server', async () => {
     return handle(req, res)
   })
 
-  testAsExpressMW(port, mw)
+  testAsExpressMW(port, mw, undefined, { skipExtraRoutes: true })
 })

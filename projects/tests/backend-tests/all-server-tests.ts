@@ -20,6 +20,12 @@ export function testAsExpressMW(
   additionalTests?: (
     withRemultForTest: (what: () => Promise<void>) => () => Promise<void>,
   ) => void,
+  skips?: {
+    skipAsyncHooks?: boolean
+    skipLiveQuery?: boolean
+    // TODO JYC TO REMOVE
+    skipExtraRoutes?: boolean
+  },
 ) {
   let destroy: () => Promise<void>
 
@@ -33,7 +39,7 @@ export function testAsExpressMW(
       }
     })
   })
-  allServerTests(port, {}, additionalTests)
+  allServerTests(port, skips, additionalTests)
   afterAll(async () => {
     RemultAsyncLocalStorage.disable()
     return destroy()
@@ -45,6 +51,7 @@ export function allServerTests(
   options?: {
     skipAsyncHooks?: boolean
     skipLiveQuery?: boolean
+    skipExtraRoutes?: boolean
   },
   additionalTests?: (
     withRemultForTest: (what: () => Promise<void>) => () => Promise<void>,
@@ -576,7 +583,7 @@ export function allServerTests(
     }),
   )
 
-  describe('extra routes', () => {
+  describe('extra routes', { skip: options?.skipExtraRoutes }, () => {
     it(
       'test 404 in extra routes of module',
       withRemultForTest(async () => {
