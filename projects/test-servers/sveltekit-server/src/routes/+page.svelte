@@ -2,15 +2,28 @@
   import { repo } from 'remult'
   import { Task } from '../../../shared/modules/task/Task.js'
   import { ResBackendMethodController } from '../../../shared/modules/resBackendMethod/ResBackendMethodController.js'
+  import { onMount } from 'svelte'
 
-  const add = async () => {
+  let tasks: Task[] = []
+
+  const addHeaderCookie = async () => {
     await ResBackendMethodController.addHeader(
       'Hello_h_' + new Date().getSeconds() + '_s',
     )
     await ResBackendMethodController.addCookie(
       'Hello_c_' + new Date().getSeconds() + '_s',
     )
-    await repo(Task).find({})
+  }
+
+  onMount(async () => {
+    tasks = await repo(Task).find({})
+  })
+
+  const addTask = async () => {
+    const t = await repo(Task).insert({
+      title: 'Task ' + new Date().toISOString(),
+    })
+    tasks = [...tasks, t]
   }
 </script>
 
@@ -23,7 +36,7 @@
 
 <h2>SvelteKit</h2>
 
-<button on:click={add}>Add to Header & Cookie</button>
+<button on:click={addHeaderCookie}>Add to Header & Cookie</button>
 
 <ul>
   <li>
@@ -54,3 +67,17 @@
     <a href="/api/ff">Go to /api/ff (should be 404!)</a>
   </li>
 </ul>
+
+<h2>Tasks</h2>
+<button on:click={addTask}>Add Task</button>
+{#each tasks as task}
+  <li>
+    <button
+      on:click={() => {
+        repo(Task).delete(task)
+        tasks = tasks.filter((t) => t.id !== task.id)
+      }}>Delete</button
+    >
+    {task.title}
+  </li>
+{/each}
