@@ -1,5 +1,4 @@
-// import { Module } from 'remult/server'
-import { Module } from '../../../../core/server'
+import { Module } from 'remult/server'
 
 export const someRoutes = new Module({
   key: 'some-routes',

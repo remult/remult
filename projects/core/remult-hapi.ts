@@ -12,17 +12,165 @@ import {
   type RemultServerOptions,
   type GenericRequestHandler,
   type GenericResponse,
-  type GenericRouter,
   type RemultServer,
 } from './server/index.js'
+import {
+  RouteImplementation,
+  type ServerCoreOptions,
+} from './server/remult-api-server.js'
 import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 import { PassThrough } from 'stream'
+import { parse, serialize } from './src/remult-cookie.js'
+
+class HapiRouteImplementation extends RouteImplementation<Request> {
+  constructor(
+    private server: Server,
+    coreOptions: ServerCoreOptions<Request>,
+  ) {
+    super(coreOptions)
+  }
+
+  route(path: string): SpecificRoute<Request> {
+    const parentRoute = super.route(path)
+    return this.createHapiRoute(path, parentRoute)
+  }
+
+  createRouteHandlers(
+    path: string,
+    m: Map<string, GenericRequestHandler<Request>>,
+  ): SpecificRoute<Request> {
+    const parentRoute = super.createRouteHandlers(path, m)
+    return this.createHapiRoute(path, parentRoute, m)
+  }
+
+  private createHapiRoute(
+    path: string,
+    parentRoute: SpecificRoute<Request>,
+    methodMap?: Map<string, GenericRequestHandler<Request>>,
+  ): SpecificRoute<Request> {
+    const hapiPath = path.replace(/:id\b/g, '{id}')
+
+    const registerMethod = (
+      method: 'get' | 'post' | 'put' | 'delete',
+      handler: GenericRequestHandler<Request>,
+    ) => {
+      methodMap?.set(method, handler)
+      this.server.route({
+        method: method.toUpperCase(),
+        path: hapiPath,
+        handler: this.createHapiHandler(handler),
+      })
+      return route
+    }
+
+    const route = {
+      delete: (handler: GenericRequestHandler<Request>) =>
+        registerMethod('delete', handler),
+      get: (handler: GenericRequestHandler<Request>) =>
+        registerMethod('get', handler),
+      post: (handler: GenericRequestHandler<Request>) =>
+        registerMethod('post', handler),
+      put: (handler: GenericRequestHandler<Request>) =>
+        registerMethod('put', handler),
+      staticFolder: parentRoute.staticFolder,
+    } as SpecificRoute<Request>
+
+    return route
+  }
+
+  private createHapiHandler(handler: GenericRequestHandler<Request>) {
+    return (request: Request<ReqRefDefaults>, h: ResponseToolkit) => {
+      return new Promise((resolve, reject) => {
+        let status = 200
+        let stream: PassThrough
+
+        const response: GenericResponse & ResponseRequiredForSSE = {
+          // setCookie: (name, value, options = {}) => {
+          //   resolve(
+          //     h
+          //       .response()
+          //       .header('Set-Cookie', serialize(name, value, options)),
+          //   )
+          // },
+          // getCookie: (name, options) => {
+          //   const cookieHeader = request.headers.cookie
+          //   return cookieHeader ? parse(cookieHeader, options)[name] : undefined
+          // },
+          // deleteCookie: (name, options = {}) => {
+          //   const cookieOptions = { ...options, maxAge: 0 }
+          //   resolve(
+          //     h
+          //       .response()
+          //       .header('Set-Cookie', serialize(name, '', cookieOptions)),
+          //   )
+          // },
+          // redirect: (url, statusCode = 307) => {
+          //   resolve(h.response().redirect(url).code(statusCode))
+          // },
+          status(statusCode) {
+            status = statusCode
+            return response
+          },
+          end() {
+            resolve(h.response().code(status))
+          },
+          send(html, headers) {
+            let hapiResponse = h.response(html).code(status)
+            if (headers?.['Content-Type']) {
+              hapiResponse = hapiResponse.type(headers['Content-Type'])
+            }
+            resolve(hapiResponse)
+          },
+          json(data) {
+            resolve(h.response(data === null ? 'null' : data).code(status))
+          },
+          // setHeaders: (headers) => {
+          //   let hapiResponse = h.response().code(status)
+          //   Object.entries(headers).forEach(([key, value]) => {
+          //     hapiResponse = hapiResponse.header(key, value)
+          //   })
+          //   resolve(hapiResponse)
+          // },
+          write(data) {
+            stream.write(data)
+          },
+          writeHead(statusCode, headers) {
+            stream = new PassThrough()
+            resolve(
+              h
+                .response(stream)
+                .code(statusCode)
+                .header('content-type', 'text/event-stream')
+                .header('content-encoding', 'identity'),
+            )
+          },
+        }
+
+        // Add close event listener to the request
+        Object.assign(request, {
+          on(event: 'close', listener: () => {}) {
+            request.raw.req.on('close', () => {
+              listener()
+              console.log('Connection closed')
+            })
+          },
+        })
+
+        try {
+          handler(request as any, response, () => {})
+        } catch (err) {
+          reject(err)
+        }
+      })
+    }
+  }
+}
 
 export function remultApi(
   options: RemultServerOptions<Request>,
 ): RemultHapiServer {
   const api = createRemultServer(options, {
-    buildGenericRequestInfo: (req) => ({
+    buildGenericRequestInfo: (req: Request) => ({
       method: req.method,
       params: req.params,
       query: req.query,
@@ -31,112 +179,34 @@ export function remultApi(
         req.raw.req.on('close', do1)
       },
     }),
-    getRequestBody: async (req) => req.payload,
+    getRequestBody: async (req: Request) => req.payload,
   })
 
   const routesPlugin: Plugin<undefined> = {
     name: 'remultPlugin',
     register: async (server: Server) => {
-      function hapiHandler(handler: GenericRequestHandler<Request>) {
-        return (request: Request<ReqRefDefaults>, h: ResponseToolkit) => {
-          return new Promise((res, rej) => {
-            let status = 200
+      const router = new HapiRouteImplementation(server, {
+        buildGenericRequestInfo: (req: Request) => ({
+          method: req.method,
+          params: req.params,
+          query: req.query,
+          url: req.url.pathname,
+          on: (e: 'close', do1: VoidFunction) => {
+            req.raw.req.on('close', do1)
+          },
+        }),
+        getRequestBody: async (req: Request) => req.payload,
+      })
 
-            let stream: PassThrough
-
-            let r: GenericResponse & ResponseRequiredForSSE = {
-              status(statusCode) {
-                status = statusCode
-                return r
-              },
-              end() {
-                res(h.response().code(status))
-              },
-              send(html) {
-                res(h.response(html).code(status))
-              },
-              json(data) {
-                res(h.response(data === null ? 'null' : data).code(status))
-              },
-              write(data) {
-                stream.write(data)
-              },
-              writeHead(status, headers) {
-                stream = new PassThrough()
-                res(
-                  h
-                    .response(stream)
-                    .header('content-type', 'text/event-stream')
-                    .header('content-encoding', 'identity'),
-                )
-              },
-            }
-            try {
-              Object.assign(request, {
-                on(event: 'close', listener: () => {}) {
-                  request.raw.req.on('close', () => {
-                    listener()
-                    console.log('Connection closed')
-                  })
-                },
-              })
-              handler(request as any, r, () => {})
-            } catch (err) {
-              rej(err)
-            }
-          })
-        }
-      }
-
-      let hapiRouter: GenericRouter<Request> = {
-        route(path) {
-          path = path.replace(/:id\b/g, '{id}')
-          let r = {
-            get(handler) {
-              server.route({
-                method: 'GET',
-                path,
-                handler: hapiHandler(handler),
-              })
-              return r
-            },
-            post(handler) {
-              server.route({
-                method: 'POST',
-                path,
-                handler: hapiHandler(handler),
-              })
-              return r
-            },
-            put(handler) {
-              server.route({
-                method: 'PUT',
-                path,
-                handler: hapiHandler(handler),
-              })
-              return r
-            },
-            delete(handler) {
-              server.route({
-                method: 'DELETE',
-                path,
-                handler: hapiHandler(handler),
-              })
-              return r
-            },
-          } as SpecificRoute<Request>
-          return r
-        },
-      }
-      api.registerRouter(hapiRouter)
+      api.registerRouter(router)
     },
   }
 
   return Object.assign(routesPlugin, {
-    getRemult: (x: Request) => api.getRemult(x),
-    openApiDoc: (x: any) => api.openApiDoc(x),
-    withRemult: <T>(req: Request, what: () => Promise<T>) =>
-      api.withRemultAsync<T>(req, what),
+    getRemult: (req: Request) => api.getRemult(req),
+    openApiDoc: (options: any) => api.openApiDoc(options),
+    withRemult: <T>(req: Request, action: () => Promise<T>) =>
+      api.withRemultAsync<T>(req, action),
   })
 }
 
