@@ -42,6 +42,7 @@ import { verifyFieldRelationInfo } from './remult3/relationInfoMember.js'
 import { remultStatic, resetFactory } from './remult-static.js'
 import { initDataProvider } from '../server/initDataProvider.js'
 import { SubscribableImp } from './remult3/SubscribableImp.js'
+import { getEntitySettings } from './remult3/getEntityRef.js'
 
 export class RemultAsyncLocalStorage {
   static enable() {
@@ -115,10 +116,11 @@ export class Remult {
     entity: ClassType<T>,
     dataProvider?: DataProvider,
   ): Repository<T> => {
-    const info = createOldEntity(entity, this)
+    let info = getEntitySettings(entity)!(remult)
+
     if (dataProvider === undefined) {
-      if (info?.options?.dataProvider) {
-        const d = info.options.dataProvider(this.dataProvider)
+      if (info?.dataProvider) {
+        const d = info.dataProvider(this.dataProvider)
         if (d instanceof Promise) {
           dataProvider = new DataProviderPromiseWrapper(d)
         } else {
@@ -144,7 +146,7 @@ export class Remult {
           entity,
           this,
           dataProvider,
-          info,
+          createOldEntity(entity, this),
         ) as Repository<any>),
       )
 
