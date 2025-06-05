@@ -6,7 +6,7 @@ import type {
   RemultServerOptions,
   RemultServer,
 } from './server/index.js'
-import { createRemultServer } from './server/index.js'
+import { createRemultServer, remultHandlerToResponse } from './server/index.js'
 
 export function remultApi(
   options: RemultServerOptions<RequestEvent>,
@@ -62,28 +62,11 @@ export function remultApi(
     }
 
     const responseFromRemultHandler = await result.handle(event, response)
-    if (sseResponse !== undefined) {
-      return sseResponse
-    }
-    if (responseFromRemultHandler !== undefined) {
-      if (responseFromRemultHandler.html)
-        return new Response(responseFromRemultHandler.html, {
-          status: responseFromRemultHandler.statusCode,
-          headers: {
-            'Content-Type': 'text/html',
-          },
-        })
-      const res = new Response(JSON.stringify(responseFromRemultHandler.data), {
-        status: responseFromRemultHandler.statusCode,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      return res
-    }
-    return new Response('Not Found', {
-      status: 404,
-    })
+    return remultHandlerToResponse(
+      responseFromRemultHandler,
+      sseResponse,
+      event.url.toString(),
+    )
   }
   const handler: Handle = async ({ event, resolve }) => {
     return result.withRemultAsync(event, async () => await resolve(event))

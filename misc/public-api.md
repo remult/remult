@@ -1075,7 +1075,10 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
   caption?: string
   /** If it can store null in the database */
   allowNull?: boolean
-  /** If a value is required */
+  /** If a value is required. Short-cut to say `validate: Validators.required`.
+        @see option [validate](https://remult.dev/docs/ref_field#validate) below
+        @see validator [required](https://remult.dev/docs/ref_validators#required)
+     */
   required?: boolean
   /**
    * Specifies whether this field should be included in the API. This can be configured
@@ -3620,6 +3623,12 @@ export interface QueueStorage {
   createJob(url: string, userId?: string): Promise<string>
   getJobInfo(queuedJobId: string): Promise<queuedJobInfo>
 }
+export const remultHandlerToResponse: (
+  responseFromRemultHandler: ServerHandleResponse | undefined,
+  sseResponse: Response | undefined,
+  requestUrl: string,
+) => Response
+//[ ] ServerHandleResponse from ./remult-api-server.js is not exported
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
   withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): void
@@ -3633,7 +3642,6 @@ export interface RemultServer<RequestType>
     what: () => Promise<T>,
   ): Promise<T>
 }
-//[ ] ServerHandleResponse from TBD is not exported
 export interface RemultServerCore<RequestType> {
   getRemult(req?: RequestType): Promise<Remult>
   openApiDoc(options: { title: string; version?: string }): any

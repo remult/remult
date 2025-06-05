@@ -203,9 +203,11 @@ export type GenericRequestHandler<RequestType> = (
 ) => void
 
 export interface ServerHandleResponse {
+  statusCode: number
   data?: any
   html?: string
-  statusCode: number
+  headers?: Record<string, string>
+  redirectUrl?: string
 }
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
