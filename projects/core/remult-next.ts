@@ -19,13 +19,35 @@ import { toResponse } from './server/toResponse.js'
 export function remultNext(
   options: RemultServerOptions<NextApiRequest>,
 ): RemultNextServer {
+  const api = remultApi({
+    ...options,
+    getUser: options.getUser
+      ? async (req: Request) => {
+          const nextReq = req as unknown as NextApiRequest
+          return options.getUser!(nextReq)
+        }
+      : undefined,
+  } as RemultServerOptions<Request>)
+
   const result = createRemultServer(options, {
     buildGenericRequestInfo: (req) => req,
     getRequestBody: async (req) => req.body,
   })
 
+  const handler = async (req: NextApiRequest, res: any) => {
+    const response = await api.GET(req as unknown as Request)
+    if (response) {
+      res.status(response.status)
+      response.headers.forEach((value, key) => {
+        res.setHeader(key, value)
+      })
+      const text = await response.text()
+      res.send(text)
+    }
+  }
+
   return Object.assign(
-    (req: NextApiRequest, res: any) => result.handle(req, res).then(() => {}),
+    handler,
     result,
     {
       getRemult: (req: NextApiRequest) => result.getRemult(req),

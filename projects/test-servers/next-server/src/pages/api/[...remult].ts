@@ -1,4 +1,4 @@
-import { remultApi } from 'remult/remult-next'
+import { remultNext } from 'remult/remult-next'
 import { Task } from '../../shared/Task'
 import { Module } from 'remult/server'
 
@@ -53,7 +53,7 @@ const someRoutes = new Module({
   },
 })
 
-const api = remultApi({
+const api = remultNext({
   entities: [Task],
   admin: true,
   modules: [someRoutes as any],
