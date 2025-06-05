@@ -5,7 +5,7 @@ import type {
   RemultServerCore,
   RemultServerOptions,
 } from './server/index.js'
-import { createRemultServer } from './server/index.js'
+import { createRemultServer, remultHandlerToResponse } from './server/index.js'
 import type { APIEvent } from '@solidjs/start/server' // don't remove - augments requestEvent
 
 export function remultApi(
@@ -26,16 +26,16 @@ export function remultApi(
   const serverHandler = async () => {
     const event = await getRequestEvent()
     let sseResponse: Response | undefined = undefined
-    if (event) event.locals['_tempOnClose'] = () => { }
+    if (event) event.locals['_tempOnClose'] = () => {}
 
     const response: GenericResponse & ResponseRequiredForSSE = {
-      end: () => { },
-      json: () => { },
-      send: () => { },
+      end: () => {},
+      json: () => {},
+      send: () => {},
       status: () => {
         return response
       },
-      write: () => { },
+      write: () => {},
       writeHead: (status, headers) => {
         if (status === 200 && headers) {
           const contentType = headers['Content-Type']
@@ -52,7 +52,7 @@ export function remultApi(
                 }
               },
               cancel: () => {
-                response.write = () => { }
+                response.write = () => {}
                 event?.locals?.['_tempOnClose']?.()
               },
             })
@@ -63,25 +63,11 @@ export function remultApi(
     }
 
     const responseFromRemultHandler = await result.handle(event!, response)
-    if (sseResponse !== undefined) {
-      return sseResponse
-    }
-    if (responseFromRemultHandler) {
-      if (responseFromRemultHandler.html)
-        return new Response(responseFromRemultHandler.html, {
-          status: responseFromRemultHandler.statusCode,
-          headers: {
-            'Content-Type': 'text/html',
-          },
-        })
-      const res = new Response(JSON.stringify(responseFromRemultHandler.data), {
-        status: responseFromRemultHandler.statusCode,
-      })
-      return res
-    }
-    return new Response('Not Found', {
-      status: 404,
-    })
+    return remultHandlerToResponse(
+      responseFromRemultHandler,
+      sseResponse,
+      event?.request.url,
+    )
   }
 
   const handler = {} //async ({ event, resolve }) => {

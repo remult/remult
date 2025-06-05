@@ -80,7 +80,7 @@ export function remultApi(
                   })
                 },
               })
-              handler(request as any, r, () => { })
+              handler(request as any, r, () => {})
             } catch (err) {
               rej(err)
             }

@@ -3626,7 +3626,7 @@ export interface QueueStorage {
 export const remultHandlerToResponse: (
   responseFromRemultHandler: ServerHandleResponse | undefined,
   sseResponse: Response | undefined,
-  requestUrl: string,
+  requestUrl: string | undefined,
 ) => Response
 //[ ] ServerHandleResponse from ./remult-api-server.js is not exported
 export interface RemultServer<RequestType>

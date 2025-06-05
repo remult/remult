@@ -29,9 +29,9 @@ export function remultApi(
     let sse = false
 
     const response: GenericResponse & ResponseRequiredForSSE = {
-      end: () => { },
-      send: () => { },
-      json: () => { },
+      end: () => {},
+      send: () => {},
+      json: () => {},
       status: () => {
         return response
       },

@@ -48,7 +48,7 @@ export function createRemultServer<RequestType>(
 export const remultHandlerToResponse = (
   responseFromRemultHandler: ServerHandleResponse | undefined,
   sseResponse: Response | undefined,
-  requestUrl: string,
+  requestUrl: string | undefined,
 ) => {
   if (sseResponse !== undefined) {
     return sseResponse

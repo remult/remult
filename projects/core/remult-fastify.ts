@@ -47,7 +47,7 @@ export function remultApi(
           req.raw.on(event, listener)
         },
       })
-      handler(req, myRes, () => { })
+      handler(req, myRes, () => {})
     }
     return response
   }
