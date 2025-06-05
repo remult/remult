@@ -8,7 +8,7 @@ import type {
 import { createRemultServer } from './server/index.js'
 import type { APIEvent } from '@solidjs/start/server' // don't remove - augments requestEvent
 type localAPIEvent = APIEvent
-import { remultHandlerToResponse } from './server/remultHandlerToResponse.js'
+import { toResponse } from './server/toResponse.js'
 
 export function remultApi(
   options: RemultServerOptions<RequestEvent>,
@@ -64,12 +64,12 @@ export function remultApi(
       },
     }
 
-    const responseFromRemultHandler = await result.handle(event!, response)
-    return remultHandlerToResponse(
-      responseFromRemultHandler,
+    const remultHandlerResponse = await result.handle(event!, response)
+    return toResponse({
       sseResponse,
-      event?.request.url,
-    )
+      remultHandlerResponse,
+      requestUrl: event?.request.url,
+    })
   }
 
   const handler = {} //async ({ event, resolve }) => {

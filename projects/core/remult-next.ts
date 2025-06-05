@@ -13,7 +13,7 @@ import type {
   RemultServerOptions,
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
-import { remultHandlerToResponse } from './server/remultHandlerToResponse.js'
+import { toResponse } from './server/toResponse.js'
 
 export function remultNext(
   options: RemultServerOptions<NextApiRequest>,
@@ -138,12 +138,12 @@ export function remultApi(
         },
       }
 
-      const responseFromRemultHandler = await result.handle(req, response)
-      return remultHandlerToResponse(
-        responseFromRemultHandler,
+      const remultHandlerResponse = await result.handle(req, response)
+      return toResponse({
         sseResponse,
-        req.url,
-      )
+        remultHandlerResponse,
+        requestUrl: req.url,
+      })
     }
   }
   return {

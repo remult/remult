@@ -7,7 +7,7 @@ import type {
   RemultServer,
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
-import { remultHandlerToResponse } from './server/remultHandlerToResponse.js'
+import { toResponse } from './server/toResponse.js'
 
 export function remultApi(
   options: RemultServerOptions<RequestEvent>,
@@ -62,12 +62,12 @@ export function remultApi(
       },
     }
 
-    const responseFromRemultHandler = await result.handle(event, response)
-    return remultHandlerToResponse(
-      responseFromRemultHandler,
+    const remultHandlerResponse = await result.handle(event, response)
+    return toResponse({
       sseResponse,
-      event.url.toString(),
-    )
+      remultHandlerResponse,
+      requestUrl: event.url.toString(),
+    })
   }
   const handler: Handle = async ({ event, resolve }) => {
     return result.withRemultAsync(event, async () => await resolve(event))
