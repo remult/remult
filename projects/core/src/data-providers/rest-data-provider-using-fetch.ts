@@ -75,7 +75,7 @@ function onSuccess(response: Response) {
   else {
     throw response
       .json()
-      .then((x) => {
+      .then((x: any) => {
         return {
           ...x,
           message: x.message || response.statusText,

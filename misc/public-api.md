@@ -1075,7 +1075,10 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
   caption?: string
   /** If it can store null in the database */
   allowNull?: boolean
-  /** If a value is required */
+  /** If a value is required. Short-cut to say `validate: Validators.required`.
+        @see option [validate](https://remult.dev/docs/ref_field#validate) below
+        @see validator [required](https://remult.dev/docs/ref_validators#required)
+     */
   required?: boolean
   /**
    * Specifies whether this field should be included in the API. This can be configured
@@ -4411,6 +4414,56 @@ export declare class DuckDBDataProvider extends SqliteCoreDataProvider {
 }
 //[ ] EntityMetadata from ./index.js is not exported
 //[ ] FieldMetadata from ./index.js is not exported
+```
+
+## ./remult-d1.js
+
+```ts
+export declare function createD1DataProvider(d1: D1Database): SqlDatabase
+//[ ] D1Database from TBD is not exported
+export declare class D1BindingClient implements D1Client {
+  private d1
+  /**
+   * Simple d1 client that wraps the d1 binding directly
+   *
+   * const d1 = new D1BindingClient(env.DB)
+   */
+  constructor(d1: D1Database)
+  execute(sql: string, params?: unknown[]): Promise<D1RowObject[]>
+}
+export interface D1Client {
+  execute(sql: string, params?: unknown[]): Promise<D1RowObject[]>
+}
+export declare class D1DataProvider extends SqliteCoreDataProvider {
+  private d1
+  /**
+   * For production or local d1 using binding
+   *
+   * const dataProvider = new SqlDatabase(new D1DataProvider(new D1BindingClient(d1)))
+   */
+  constructor(d1: D1Client)
+}
+export type D1RowObject = Record<string, unknown>
+```
+
+## ./remult-d1-http.js
+
+```ts
+export declare function createD1HttpDataProvider(
+  creds: D1Credentials,
+): SqlDatabase
+type D1Credentials = {
+  accountId: string
+  apiToken: string
+  databaseId: string
+}
+export declare class D1HttpClient implements D1Client {
+  private d1
+  private accountId
+  private databaseId
+  constructor({ accountId, databaseId, apiToken }: D1Credentials)
+  execute(sql: string, params?: unknown[]): Promise<D1RowObject[]>
+}
 ```
 
 ## ./remult-bun-sqlite.js
