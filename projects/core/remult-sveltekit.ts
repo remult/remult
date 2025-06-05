@@ -17,7 +17,7 @@ export function remultApi(
       method: event.request.method,
       on: (e: 'close', do1: VoidFunction) => {
         if (e === 'close') {
-          ; (event.locals as any)['_tempOnClose'] = do1
+          ;(event.locals as any)['_tempOnClose'] = do1
         }
       },
     }),
@@ -25,16 +25,16 @@ export function remultApi(
   })
   const serverHandler: RequestHandler = async (event) => {
     let sseResponse: Response | undefined = undefined
-      ; (event.locals as any)['_tempOnClose'] = () => { }
+    ;(event.locals as any)['_tempOnClose'] = () => {}
 
     const response: GenericResponse & ResponseRequiredForSSE = {
-      end: () => { },
-      json: () => { },
-      send: () => { },
+      end: () => {},
+      json: () => {},
+      send: () => {},
       status: () => {
         return response
       },
-      write: () => { },
+      write: () => {},
       writeHead: (status, headers) => {
         if (status === 200 && headers) {
           const contentType = headers['Content-Type']
@@ -51,8 +51,8 @@ export function remultApi(
                 }
               },
               cancel: () => {
-                response.write = () => { }
-                  ; (event.locals as any)['_tempOnClose']()
+                response.write = () => {}
+                ;(event.locals as any)['_tempOnClose']()
               },
             })
             sseResponse = new Response(stream, { headers })
@@ -77,7 +77,7 @@ export function remultApi(
         status: responseFromRemultHandler.statusCode,
         headers: {
           'Content-Type': 'application/json',
-        }
+        },
       })
       return res
     }
