@@ -12,7 +12,8 @@ import type {
   RemultServerCore,
   RemultServerOptions,
 } from './server/index.js'
-import { createRemultServer, remultHandlerToResponse } from './server/index.js'
+import { createRemultServer } from './server/index.js'
+import { remultHandlerToResponse } from './server/remultHandlerToResponse.js'
 
 export function remultNext(
   options: RemultServerOptions<NextApiRequest>,

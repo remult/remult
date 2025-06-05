@@ -5,8 +5,10 @@ import type {
   RemultServerCore,
   RemultServerOptions,
 } from './server/index.js'
-import { createRemultServer, remultHandlerToResponse } from './server/index.js'
+import { createRemultServer } from './server/index.js'
 import type { APIEvent } from '@solidjs/start/server' // don't remove - augments requestEvent
+type localAPIEvent = APIEvent
+import { remultHandlerToResponse } from './server/remultHandlerToResponse.js'
 
 export function remultApi(
   options: RemultServerOptions<RequestEvent>,

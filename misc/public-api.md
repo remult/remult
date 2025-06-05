@@ -3623,12 +3623,6 @@ export interface QueueStorage {
   createJob(url: string, userId?: string): Promise<string>
   getJobInfo(queuedJobId: string): Promise<queuedJobInfo>
 }
-export const remultHandlerToResponse: (
-  responseFromRemultHandler: ServerHandleResponse | undefined,
-  sseResponse: Response | undefined,
-  requestUrl: string | undefined,
-) => Response
-//[ ] ServerHandleResponse from ./remult-api-server.js is not exported
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
   withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): void
@@ -3642,6 +3636,7 @@ export interface RemultServer<RequestType>
     what: () => Promise<T>,
   ): Promise<T>
 }
+//[ ] ServerHandleResponse from TBD is not exported
 export interface RemultServerCore<RequestType> {
   getRemult(req?: RequestType): Promise<Remult>
   openApiDoc(options: { title: string; version?: string }): any
