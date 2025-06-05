@@ -13,8 +13,8 @@
   --color-darker: rgb(5, 5, 40);
   --color-darkest: rgb(1, 1, 20);
 
-  --color-light: #a8a9fa;
-  --color-lighter: #eee;
+  --color-light: #7f80c1;
+  --color-lighter: #babbfc;
   --color-lightest: #fff;
 
   --color-green: #2ed157;
@@ -76,7 +76,7 @@ body {
 
 p {
   font-size: 0.8rem;
-  color: var(--color-light);
+  color: var(--color-lighter);
 }
 
 p+p {
@@ -118,13 +118,13 @@ h3 {
 button,
 .button,
 input[type="text"] {
-  border-radius: 8px;
+  border-radius: 5px;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
   font-size: 0.8rem;
   font-weight: 500;
   font-family: inherit;
-  background-color: var(--color-darker);
+  background-color: var(--color-dark);
   color: var(--color-light);
   cursor: pointer;
   transition: all 150ms;
@@ -157,7 +157,7 @@ button:has(img),
 
 button:hover,
 .button:hover {
-  background: var(--color-dark);
+  background: var(--color-blue);
   color: var(--color-lightest);
 }
 
@@ -273,7 +273,7 @@ input[type="text"] {
   position: relative;
   background: var(--color-darkest);
   padding: 12px;
-  border-radius: 12px;
+  border-radius: 5px;
   flex-grow: 1;
   flex-shrink: 0;
   margin: 6px;
@@ -283,6 +283,10 @@ input[type="text"] {
   transform: translateY(16px);
   /* Initial transform state */
   animation: fadeIn 1200ms cubic-bezier(0.075, 0.82, 0.165, 1) forwards;
+}
+
+.tile.auth p {
+  min-height: 3em;
 }
 
 @keyframes fadeIn {
@@ -337,7 +341,7 @@ input[type="text"] {
 .tile__subtitle {
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-light);
+  color: var(--color-lighter);
   margin-top: 4px;
 }
 
@@ -479,7 +483,7 @@ input[type="text"] {
 
 .todo__task.completed {
   text-decoration: line-through;
-  color: var(--color-dark);
+  color: var(--color-light);
 }
 
 .todo__task span {
