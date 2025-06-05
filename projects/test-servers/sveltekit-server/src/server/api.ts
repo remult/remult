@@ -1,14 +1,14 @@
-import { remultApi } from 'remult/remult-sveltekit'
+import { remultApi } from '../../../../core/remult-sveltekit.js'
 import { someRoutes } from '../../../shared/modules/someRoutes/server.js'
 import { resBackendMethodModule } from '../../../shared/modules/resBackendMethod/server.js'
 import { taskModule } from '../../../shared/modules/task/server.js'
 import type { RequestEvent } from '@sveltejs/kit'
-import type { Module } from 'remult/server'
+import type { Module } from '../../../../core/server'
 
 export const api = remultApi({
   admin: true,
 
-  initApi: (api) => {
+  initApi: () => {
     console.log('Ready 💪')
   },
 

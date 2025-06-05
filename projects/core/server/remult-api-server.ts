@@ -592,7 +592,7 @@ export class RemultServerImplementation<RequestType>
                 res.success(
                   buildEntityInfo({
                     remult,
-                    entities: this.options.entities ?? [],
+                    entities: this.entities ?? [],
                   }),
                 )
               } else {
