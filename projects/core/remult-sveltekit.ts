@@ -7,12 +7,17 @@ import type {
   RemultServer,
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
+import {
+  DEFAULT_COOKIE_OPTIONS,
+  parse,
+  serialize,
+} from './src/remult-cookie.js'
 import { toResponse } from './server/toResponse.js'
 
 export function remultApi(
   options: RemultServerOptions<RequestEvent>,
 ): RemultSveltekitServer {
-  let result = createRemultServer<RequestEvent>(options, {
+  const result = createRemultServer<RequestEvent>(options, {
     buildGenericRequestInfo: (event) => ({
       url: event.request.url,
       method: event.request.method,
@@ -24,6 +29,7 @@ export function remultApi(
     }),
     getRequestBody: (event) => event.request.json(),
   })
+
   const serverHandler: RequestHandler = async (event) => {
     let sseResponse: Response | undefined = undefined
     ;(event.locals as any)['_tempOnClose'] = () => {}
@@ -32,9 +38,24 @@ export function remultApi(
       end: () => {},
       json: () => {},
       send: () => {},
+      // redirect: () => {},
+      // setCookie: (name, value, options = {}) => {
+      //   event.cookies.set(name, value, { ...DEFAULT_COOKIE_OPTIONS, ...options})
+      // },
+      // getCookie: (name, options) => {
+      //   const cookieHeader = event.request.headers.get('cookie')
+      //   return cookieHeader ? parse(cookieHeader, options)[name] : undefined
+      // },
+      // deleteCookie: (name, options = {}) => {
+      //   const cookieOptions = { ...DEFAULT_COOKIE_OPTIONS, ...options, maxAge: 0 }
+      //   event.cookies.delete(name, cookieOptions)
+      // },
       status: () => {
         return response
       },
+      // setHeaders: (headers) => {
+      //   event.setHeaders(headers)
+      // },
       write: () => {},
       writeHead: (status, headers) => {
         if (status === 200 && headers) {
@@ -62,16 +83,18 @@ export function remultApi(
       },
     }
 
-    const remultHandlerResponse = await result.handle(event, response)
+    const responseFromRemultHandler = await result.handle(event, response)
     return toResponse({
       sseResponse,
-      remultHandlerResponse,
+      remultHandlerResponse: responseFromRemultHandler,
       requestUrl: event.url.toString(),
     })
   }
+
   const handler: Handle = async ({ event, resolve }) => {
     return result.withRemultAsync(event, async () => await resolve(event))
   }
+
   return Object.assign(handler, {
     getRemult: (req: RequestEvent) => result.getRemult(req),
     openApiDoc: (options: { title: string }) => result.openApiDoc(options),
