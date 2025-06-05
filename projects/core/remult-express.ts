@@ -32,6 +32,7 @@ export function remultApi(
     buildGenericRequestInfo: (req) => req,
     getRequestBody: async (req) => req.body,
   }) as RemultServerImplementation<express.Request>
+  // @ts-ignore JYC TODO
   server.registerRouter(app)
 
   return Object.assign(app, {

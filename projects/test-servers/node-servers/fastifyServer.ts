@@ -12,11 +12,11 @@ import { Task } from '../shared/Task'
       throw 'not allowed'
     },
   })
-  const openApiDocument = api.openApiDoc({ title: 'tasks' })
-  fs.writeFileSync(
-    '/temp/test.json',
-    JSON.stringify(openApiDocument, undefined, 2),
-  )
+  // const openApiDocument = api.openApiDoc({ title: 'tasks' })
+  // fs.writeFileSync(
+  //   '/temp/test.json',
+  //   JSON.stringify(openApiDocument, undefined, 2),
+  // )
   await server.register(api)
 
   server.get('/api/test', async (req, res) => {

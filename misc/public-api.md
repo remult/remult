@@ -3543,7 +3543,7 @@ export type RemultNextServer = RemultServerCore<NextApiRequest> &
 
 ## ./server/index.js
 
-```ts
+````ts
 export declare function createRemultServer<RequestType>(
   options: RemultServerOptions<RequestType>,
   serverCoreOptions?: ServerCoreOptions<RequestType>,
@@ -3589,7 +3589,7 @@ export interface GenericRequestInfo {
 }
 export interface GenericResponse {
   json(data: any): void
-  send(html: string): void
+  send(html: string, headers?: Record<string, string>): void
   status(statusCode: number): GenericResponse
   end(): void
 }
@@ -3735,18 +3735,47 @@ export interface RemultServerOptions<RequestType> {
     responseBody: any
     sendError: (httpStatusCode: number, body: any) => void
   }) => Promise<void> | undefined
+  /**
+   * Adding some extra routes. It will automatically add the `rootPath` _(default: `/api`)_ to the route.
+   * ```
+   * rawRoutes({ add }) {
+   *   add('/new-route').get((req, res) => {
+   *     return res.json({ Soooooo: 'Cool!' })
+   *   })
+   * }
+   * ```
+   * This will add the route `/api/new-route` to the api.
+   */
+  rawRoutes?: RawRoutes<RequestType>
+  modules?: Module<RequestType>[]
 }
 //[ ] ClassType from TBD is not exported
 //[ ] UserInfo from TBD is not exported
 //[ ] SubscriptionServer from TBD is not exported
 //[ ] Allowed from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
+//[ ] RawRoutes from TBD is not exported
+//[ ] Module from TBD is not exported
 export type SpecificRoute<RequestType> = {
   get(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
   put(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
   post(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
   delete(
     handler: GenericRequestHandler<RequestType>,
+  ): SpecificRoute<RequestType>
+  /**
+   * Serves static files from a folder
+   * @param folderPath The path to the folder containing static files
+   * @param options Configuration options for serving static files
+   */
+  staticFolder(
+    folderPath: string,
+    options?: {
+      packageName?: string
+      editFile?: (filePath: string, content: string) => string
+      /** List of file extensions and their corresponding content types */
+      contentTypes?: Record<string, string>
+    },
   ): SpecificRoute<RequestType>
 }
 export declare class SseSubscriptionServer implements SubscriptionServer {
@@ -3762,11 +3791,11 @@ export declare function TestApiDataProvider(
   options?: Pick<RemultServerOptions<unknown>, "ensureSchema" | "dataProvider">,
 ): RestDataProvider
 //[ ] RestDataProvider from TBD is not exported
-```
+````
 
 ## ./server/core.js
 
-```ts
+````ts
 export declare function createRemultServerCore<RequestType>(
   options: RemultServerOptions<RequestType>,
   serverCoreOptions: ServerCoreOptions<RequestType>,
@@ -3812,7 +3841,7 @@ export interface GenericRequestInfo {
 }
 export interface GenericResponse {
   json(data: any): void
-  send(html: string): void
+  send(html: string, headers?: Record<string, string>): void
   status(statusCode: number): GenericResponse
   end(): void
 }
@@ -3948,6 +3977,19 @@ export interface RemultServerOptions<RequestType> {
     responseBody: any
     sendError: (httpStatusCode: number, body: any) => void
   }) => Promise<void> | undefined
+  /**
+   * Adding some extra routes. It will automatically add the `rootPath` _(default: `/api`)_ to the route.
+   * ```
+   * rawRoutes({ add }) {
+   *   add('/new-route').get((req, res) => {
+   *     return res.json({ Soooooo: 'Cool!' })
+   *   })
+   * }
+   * ```
+   * This will add the route `/api/new-route` to the api.
+   */
+  rawRoutes?: RawRoutes<RequestType>
+  modules?: Module<RequestType>[]
 }
 //[ ] ClassType from TBD is not exported
 //[ ] UserInfo from TBD is not exported
@@ -3957,12 +3999,28 @@ export interface RemultServerOptions<RequestType> {
 //[ ] LiveQueryStorage from TBD is not exported
 //[ ] Allowed from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
+//[ ] RawRoutes from TBD is not exported
+//[ ] Module from TBD is not exported
 export type SpecificRoute<RequestType> = {
   get(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
   put(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
   post(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
   delete(
     handler: GenericRequestHandler<RequestType>,
+  ): SpecificRoute<RequestType>
+  /**
+   * Serves static files from a folder
+   * @param folderPath The path to the folder containing static files
+   * @param options Configuration options for serving static files
+   */
+  staticFolder(
+    folderPath: string,
+    options?: {
+      packageName?: string
+      editFile?: (filePath: string, content: string) => string
+      /** List of file extensions and their corresponding content types */
+      contentTypes?: Record<string, string>
+    },
   ): SpecificRoute<RequestType>
 }
 export declare class SseSubscriptionServer implements SubscriptionServer {
@@ -3974,7 +4032,7 @@ export declare class SseSubscriptionServer implements SubscriptionServer {
   )
   publishMessage<T>(channel: string, message: any): Promise<void>
 }
-```
+````
 
 ## ./remult-fastify.js
 
