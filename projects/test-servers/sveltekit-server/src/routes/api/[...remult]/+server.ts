@@ -10,7 +10,7 @@ export const _api = remultApi({
   entities: [Task],
   controllers: [TasksController],
   admin: true,
-  modules: [someRoutes],
+  modules: [someRoutes as any],
   // JYC TODO: TO REMOVE
   initRequest: async (event) => {
     remult.context.setHeaders = (headers) => {

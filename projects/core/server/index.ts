@@ -17,7 +17,7 @@ export {
   JsonFileDataProvider,
 } from './JsonEntityFileStorage.js'
 export { TestApiDataProvider } from './test-api-data-provider.js'
-export {
+export type {
   GenericRequestHandler,
   GenericRequestInfo,
   GenericResponse,
@@ -29,10 +29,10 @@ export {
   RemultServerOptions,
   SpecificRoute,
   queuedJobInfo,
-  Module,
   ModuleInput,
   RawRoutes,
 } from './remult-api-server.js'
+export { Module } from './remult-api-server.js'
 
 export function createRemultServer<RequestType>(
   options: RemultServerOptions<RequestType>,

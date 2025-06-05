@@ -9,6 +9,7 @@ import type {
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
 import { parse, serialize } from './src/remult-cookie.js'
+import { toResponse } from './server/toResponse.js'
 
 export function remultApi(
   options: RemultServerOptions<H3Event>,
@@ -28,7 +29,7 @@ export function remultApi(
   })
 
   const handler = async (event: H3Event) => {
-    let sse = false
+    let sseResponse: Response | undefined = undefined
 
     const response: GenericResponse & ResponseRequiredForSSE = {
       // setCookie: (name, value, options = {}) => {
@@ -64,23 +65,23 @@ export function remultApi(
         event.node.res.write(data)
       },
       writeHead: (status, headers) => {
-        sse = true
         event.node.res.writeHead(status, headers)
+        sseResponse = new Response(null, { headers })
       },
     }
+    // TODO: bring back SSE here ?
+    // if (sse) {
+    //   await new Promise((resolve) => {
+    //     event.node.req.on('close', () => resolve({}))
+    //   })
+    // }
 
-    const r = await result.handle(event, response)
-
-    if (sse) {
-      await new Promise((resolve) => {
-        event.node.req.on('close', () => resolve({}))
-      })
-    }
-    if (r) {
-      if (r.statusCode !== 200) setResponseStatus(event, r.statusCode)
-      if (r.html) return r.html
-      return r.data == null ? 'null' : r.data
-    }
+    const remultHandlerResponse = await result.handle(event, response)
+    return toResponse({
+      // sseResponse,
+      remultHandlerResponse,
+      requestUrl: event.web?.request?.url.toString(),
+    })
   }
 
   return Object.assign(handler, {
@@ -89,12 +90,20 @@ export function remultApi(
     withRemult<T>(request: H3Event, what: () => Promise<T>): Promise<T> {
       return result.withRemultAsync(request, what)
     },
+    GET: handler,
+    PUT: handler,
+    POST: handler,
+    DELETE: handler,
   })
 }
 
 export type RemultNuxtServer = RemultServerCore<H3Event> &
   ((event: H3Event) => Promise<any>) & {
     withRemult: RemultServer<H3Event>['withRemultAsync']
+    GET: (event: H3Event) => Promise<any>
+    PUT: (event: H3Event) => Promise<any>
+    POST: (event: H3Event) => Promise<any>
+    DELETE: (event: H3Event) => Promise<any>
   }
 
 /** @deprecated use remultApi instead */

@@ -157,16 +157,28 @@ export function remultApi(
       },
     }
 
-    const responseFromRemultHandler = await result.handle(req, response)
+    const remultHandlerResponse = await result.handle(req, response)
     return toResponse({
       sseResponse,
-      remultHandlerResponse: responseFromRemultHandler,
+      remultHandlerResponse,
       requestUrl: req.url,
     })
   }
 
-  return {
-    getRemult: (req) => result.getRemult(req),
+  const nextApiHandler = async (req: NextApiRequest, res: any) => {
+    const response = await handler(req as unknown as Request)
+    if (response) {
+      res.status(response.status)
+      response.headers.forEach((value, key) => {
+        res.setHeader(key, value)
+      })
+      const text = await response.text()
+      res.send(text)
+    }
+  }
+
+  return Object.assign(nextApiHandler, {
+    getRemult: (req: any) => result.getRemult(req),
     openApiDoc: (options: { title: string }) => result.openApiDoc(options),
     GET: handler,
     POST: handler,
@@ -174,7 +186,7 @@ export function remultApi(
     DELETE: handler,
     withRemult: <T>(what: () => Promise<T>) =>
       result.withRemultAsync<T>({} as any, what),
-  }
+  })
 }
 
 export type RemultNextAppServer = RemultServerCore<Request> & {

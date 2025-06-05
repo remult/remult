@@ -4711,6 +4711,10 @@ export const remultNuxt: typeof remultApi
 export type RemultNuxtServer = RemultServerCore<H3Event> &
   ((event: H3Event) => Promise<any>) & {
     withRemult: RemultServer<H3Event>["withRemultAsync"]
+    GET: (event: H3Event) => Promise<any>
+    PUT: (event: H3Event) => Promise<any>
+    POST: (event: H3Event) => Promise<any>
+    DELETE: (event: H3Event) => Promise<any>
   }
 //[ ] RemultServerCore from ./server/index.js is not exported
 //[ ] RemultServer from ./server/index.js is not exported
