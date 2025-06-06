@@ -15,15 +15,15 @@ export const someRoutes = new Module({
       res.send('<h1>Hello World</h1>')
     })
 
-    // add('/redirect').get((req, res) => {
-    //   res.redirect('/api/html')
-    // })
+    add('/redirect').get((req, res) => {
+      res.redirect('/api/html')
+    })
 
-    // add('/redirect-ext').get((req, res) => {
-    //   res.redirect(
-    //     'https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages',
-    //   )
-    // })
+    add('/redirect-ext').get((req, res) => {
+      res.redirect(
+        'https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages',
+      )
+    })
 
     // add('/setCookie').get((req, res) => {
     //   res.setCookie(COOKIE_NAME, 'Hello')

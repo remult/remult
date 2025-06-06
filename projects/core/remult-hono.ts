@@ -92,9 +92,9 @@ class HonoRouteImplementation extends RouteImplementation<
             //   const cookieOptions = { ...options, maxAge: 0 }
             //   resolve(c.header('Set-Cookie', serialize(name, '', cookieOptions)))
             // },
-            // redirect: (url, statusCode = 307) => {
-            //   resolve(c.redirect(url as any, statusCode as any))
-            // },
+            redirect: (url, statusCode = 307) => {
+              resolve(c.redirect(url as any, statusCode as any))
+            },
             json: (data: any) => {
               resolve(c.json(data))
             },

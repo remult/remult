@@ -27,6 +27,9 @@ export function remultNext(
     ;(req as any)['_tempOnClose'] = () => {}
 
     const response: GenericResponse & ResponseRequiredForSSE = {
+      redirect: (url, statusCode = 307) => {
+        res.redirect(url, statusCode)
+      },
       end: (data?: any) => {
         if (data !== undefined) {
           if ((res as any).send) {
@@ -240,6 +243,9 @@ export function remultApi(
       ;(req as any)['_tempOnClose'] = () => {}
 
       const response: GenericResponse & ResponseRequiredForSSE = {
+        redirect: (url, statusCode = 307) => {
+          ;(req as any).redirect(url, statusCode)
+        },
         end: () => {},
         json: () => {},
         send: () => {},

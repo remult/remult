@@ -31,6 +31,9 @@ export function remultApi(
     if (event) event.locals['_tempOnClose'] = () => {}
 
     const response: GenericResponse & ResponseRequiredForSSE = {
+      redirect: (url, statusCode = 307) => {
+        event?.locals.redirect(url, statusCode)
+      },
       end: () => {},
       json: () => {},
       send: () => {},

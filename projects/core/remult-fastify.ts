@@ -115,9 +115,9 @@ class FastifyRouteImplementation extends RouteImplementation<FastifyRequest> {
       //   const cookieOptions = { ...options, maxAge: 0 }
       //   res.header('Set-Cookie', serialize(name, '', cookieOptions))
       // },
-      // redirect: (url, statusCode = 307) => {
-      //   res.redirect(statusCode, url)
-      // },
+      redirect: (url, statusCode = 307) => {
+        res.redirect(statusCode, url)
+      },
       status(statusCode) {
         res.status(statusCode)
         return this

@@ -10,18 +10,18 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
   },
   "devDependencies": {
-    "@sveltejs/adapter-node": "^4.0.1",
-    "@sveltejs/kit": "^2.20.7",
-    "@sveltejs/vite-plugin-svelte": "^3.0.0",
-    "svelte": "^4.2.0",
-    "svelte-check": "^3.0.1",
-    "tslib": "^2.4.1",
-    "typescript": "^5.0.0",
-    "vite": "^5.4.19"
+    "@sveltejs/adapter-node": "^5.2.12",
+    "@sveltejs/kit": "^2.21.2",
+    "@sveltejs/vite-plugin-svelte": "^5.1.0",
+    "svelte": "^5.33.14",
+    "svelte-check": "^4.2.1",
+    "tslib": "^2.8.1",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
   },
   "type": "module",
   "dependencies": {
     "graphql-yoga": "^3.9.1",
-    "remult": "^0.25.5-exp.20"
+    "remult": "^3.0.5"
   }
 }

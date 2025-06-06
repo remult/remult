@@ -104,9 +104,9 @@ class HapiRouteImplementation extends RouteImplementation<Request> {
           //       .header('Set-Cookie', serialize(name, '', cookieOptions)),
           //   )
           // },
-          // redirect: (url, statusCode = 307) => {
-          //   resolve(h.response().redirect(url).code(statusCode))
-          // },
+          redirect: (url, statusCode = 307) => {
+            resolve(h.response().redirect(url).code(statusCode))
+          },
           status(statusCode) {
             status = statusCode
             return response

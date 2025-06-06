@@ -43,9 +43,9 @@ export function remultApi(
       //   const cookieOptions = { ...options, maxAge: 0 }
       //   event.node.res.setHeader('Set-Cookie', serialize(name, '', cookieOptions))
       // },
-      // redirect: (url, statusCode = 307) => {
-      //   event.node.res.writeHead(statusCode, { Location: url })
-      // },
+      redirect: (url, statusCode = 307) => {
+        event.node.res.writeHead(statusCode, { Location: url })
+      },
       end: () => {},
       send: (html, headers) => {
         if (headers?.['Content-Type']) {

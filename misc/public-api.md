@@ -3590,6 +3590,21 @@ export interface GenericRequestInfo {
 export interface GenericResponse {
   json(data: any): void
   send(html: string, headers?: Record<string, string>): void
+  redirect(
+    url: string,
+    /** The [HTTP status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages). Must be in the range 300-308. */
+    status?:
+      | 300
+      | 301
+      | 302
+      | 303
+      | 304
+      | 305
+      | 306
+      | 307
+      | 308
+      | ({} & number),
+  ): void
   status(statusCode: number): GenericResponse
   end(): void
 }
@@ -3869,6 +3884,21 @@ export interface GenericRequestInfo {
 export interface GenericResponse {
   json(data: any): void
   send(html: string, headers?: Record<string, string>): void
+  redirect(
+    url: string,
+    /** The [HTTP status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages). Must be in the range 300-308. */
+    status?:
+      | 300
+      | 301
+      | 302
+      | 303
+      | 304
+      | 305
+      | 306
+      | 307
+      | 308
+      | ({} & number),
+  ): void
   status(statusCode: number): GenericResponse
   end(): void
 }

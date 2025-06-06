@@ -38,7 +38,7 @@ export function remultApi(
       end: () => {},
       json: () => {},
       send: () => {},
-      // redirect: () => {},
+      redirect: () => {},
       // setCookie: (name, value, options = {}) => {
       //   event.cookies.set(name, value, { ...DEFAULT_COOKIE_OPTIONS, ...options})
       // },
