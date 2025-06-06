@@ -13,6 +13,12 @@ import type {
   RemultServerOptions,
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
+import {
+  mergeOptions,
+  parse,
+  serialize,
+  type SerializeOptions,
+} from './src/remult-cookie.js'
 
 export function remultNext(
   options: RemultServerOptions<NextApiRequest>,
@@ -28,16 +34,20 @@ export function remultNext(
 
     const response: GenericResponse & ResponseRequiredForSSE = {
       setCookie: (name, value, options = {}) => {
-        // res.setHeader('Set-Cookie', serialize(name, value, options))
+        ;(res as any).setHeader(
+          'Set-Cookie',
+          serialize(name, value, mergeOptions(options)),
+        )
       },
       getCookie: (name, options) => {
-        // const cookieHeader = req.headers.cookie
-        // return cookieHeader ? parse(cookieHeader, options)[name] : undefined
-        return undefined
+        const cookieHeader = req.headers.cookie
+        return cookieHeader ? parse(cookieHeader, options)[name] : undefined
       },
       deleteCookie: (name, options = {}) => {
-        // const cookieOptions = { ...options, maxAge: 0 }
-        // res.setHeader('Set-Cookie', serialize(name, '', cookieOptions))
+        ;(res as any).setHeader(
+          'Set-Cookie',
+          serialize(name, '', mergeOptions({ ...options, maxAge: 0 })),
+        )
       },
       redirect: (url, statusCode = 307) => {
         res.redirect(statusCode, url)
