@@ -1,7 +1,7 @@
 {
   "name": "remult-mono-repo",
   "description": "See projects/core for the remult core package.json. This package.json is used for remult/core development, test projects and experimental work. See ",
-  "version": "3.0.4",
+  "version": "3.0.5",
   "scripts": {
     "format": "prettier \"./projects/core/**\" --write",
     "test": "vitest --ui --coverage",
@@ -113,7 +113,7 @@
     "typescript": "^5.5.3",
     "uuid": "^8.3.2",
     "vitest": "3.2.2",
-    "webdriverio": "^8.15.10"
+    "webdriverio": "^9.15.0"
   },
   "browser": {
     "jsonwebtoken": false,

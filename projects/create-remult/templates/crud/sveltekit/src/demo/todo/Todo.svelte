@@ -10,22 +10,38 @@
     hideCompleted = !hideCompleted;
   }
 
+  // For demo purposes. By default we are in liveQuery mode.
+  const liveQuery = true;
+
   $effect(() => {
-    repo(Task)
-      .find({
-        where: { completed: hideCompleted ? false : undefined },
-        orderBy: { createdAt: "desc" },
-      })
-      .then((_tasks) => {
-        tasks = _tasks;
-      });
+    if (!liveQuery) {
+      repo(Task)
+        .find({
+          where: { completed: hideCompleted ? false : undefined },
+          orderBy: { createdAt: "desc" },
+        })
+        .then((_tasks) => {
+          tasks = _tasks;
+        });
+    } else {
+      return repo(Task)
+        .liveQuery({
+          where: { completed: hideCompleted ? false : undefined },
+          orderBy: { createdAt: "desc" },
+        })
+        .subscribe((info) => {
+          tasks = info.items;
+        });
+    }
   });
 
   let newTaskTitle = $state("");
   const addTask = async (event: Event) => {
     event.preventDefault();
     const newTask = await repo(Task).insert({ title: newTaskTitle });
-    tasks = [...tasks, newTask];
+    if (!liveQuery) {
+      tasks = [newTask, ...tasks];
+    }
     newTaskTitle = "";
   };
 
@@ -35,7 +51,9 @@
 
   const deleteTask = async (task: Task) => {
     await repo(Task).delete(task);
-    tasks = tasks.filter((c) => c.id !== task.id);
+    if (!liveQuery) {
+      tasks = tasks.filter((c) => c.id !== task.id);
+    }
   };
 </script>
 

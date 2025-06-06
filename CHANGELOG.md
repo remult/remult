@@ -1,5 +1,11 @@
 All notable changes to this project will be documented in this file.
 
+## [3.0.5] 2025-6-6
+
+- Fixed a performance issue added in 3.0.0
+- https://github.com/remult/remult/pull/719 Export initAsyncHooks for use of withRemult in non API projects
+  Big thanks to @LazyShpee for his first contribution
+
 ## [3.0.4] 2025-5-26
 
 - Fixed issue where cases when multiple `$ne` or `$nin` were used with rest data provider and the value 0 - the 0 value would sometime not be sent to the server

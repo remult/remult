@@ -30,6 +30,7 @@
     ".": "./index.js",
     "./remult-express": "./remult-express.js",
     "./remult-next": "./remult-next.js",
+    "./async-hooks": "./async-hooks.js",
     "./server": "./server/index.js",
     "./server/core": "./server/core.js",
     "./remult-fastify": "./remult-fastify.js",
