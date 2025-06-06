@@ -621,20 +621,38 @@ export function allServerTests(
     )
 
     it(
-      'should setCookie getCookie deleteCookie',
+      'should deleteCookie',
       withRemultForTest(async () => {
         let result = await axios.get(remult.apiClient.url + '/deleteCookie')
         expect(result.data).includes('deleted')
-        result = await axios.get(remult.apiClient.url + '/getCookie')
+      }),
+    )
+
+    it(
+      'should getCookie',
+      withRemultForTest(async () => {
+        let result = await axios.get(remult.apiClient.url + '/getCookie')
         expect(result.data).includes('get: undefined')
-        result = await axios.get(remult.apiClient.url + '/setCookie')
+      }),
+    )
+
+    it(
+      'should setCookie',
+      withRemultForTest(async () => {
+        let result = await axios.get(remult.apiClient.url + '/setCookie')
         expect(result.headers['set-cookie']).toMatchInlineSnapshot(`
             [
               "the_cookie_name=Hello; Path=/; HttpOnly; Secure; SameSite=Lax",
             ]
           `)
         expect(result.data).includes('set: Hello')
-        result = await axios.get(remult.apiClient.url + '/getCookie', {
+      }),
+    )
+
+    it(
+      'should getCookie with cookie header',
+      withRemultForTest(async () => {
+        let result = await axios.get(remult.apiClient.url + '/getCookie', {
           headers: {
             Cookie: 'the_cookie_name=Hello',
           },

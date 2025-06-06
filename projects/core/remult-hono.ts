@@ -8,7 +8,6 @@ import {
   type GenericRequestHandler,
   type GenericResponse,
   type SpecificRoute,
-  type RemultServer,
 } from './server/index.js'
 import {
   RouteImplementation,
@@ -16,6 +15,7 @@ import {
 } from './server/remult-api-server.js'
 import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 import { mergeOptions, parse, serialize } from './src/remult-cookie.js'
+import { getCookie, setCookie, deleteCookie } from 'hono/cookie'
 
 class HonoRouteImplementation extends RouteImplementation<
   Context<Env, '', BlankInput>
@@ -75,6 +75,15 @@ class HonoRouteImplementation extends RouteImplementation<
   private createHonoHandler(
     handler: GenericRequestHandler<Context<Env, '', BlankInput>>,
   ) {
+    function toHonoOptions(options: any): any {
+      const honoOptions: any = { ...options }
+      // Convert sameSite to the format Hono expects
+      if (typeof honoOptions.sameSite === 'boolean') {
+        honoOptions.sameSite = honoOptions.sameSite ? 'strict' : 'lax'
+      }
+      return honoOptions
+    }
+
     return (c: Context<Env, '', BlankInput>) => {
       return new Promise<void | Response>((resolve, reject) => {
         try {
@@ -82,26 +91,13 @@ class HonoRouteImplementation extends RouteImplementation<
           let sse: SSEStreamingApi
           const gRes: GenericResponse & ResponseRequiredForSSE = {
             setCookie: (name, value, options = {}) => {
-              resolve(
-                c.header(
-                  'Set-Cookie',
-                  serialize(name, value, mergeOptions(options)),
-                ),
-              )
+              setCookie(c, name, value, toHonoOptions(mergeOptions(options)))
             },
             getCookie: (name, options) => {
-              const cookieHeader = c.req.header('cookie')
-              return cookieHeader
-                ? parse(cookieHeader, options)[name]
-                : undefined
+              return getCookie(c, name)
             },
             deleteCookie: (name, options = {}) => {
-              resolve(
-                c.header(
-                  'Set-Cookie',
-                  serialize(name, '', mergeOptions({ ...options, maxAge: 0 })),
-                ),
-              )
+              deleteCookie(c, name, toHonoOptions(mergeOptions(options)))
             },
             redirect: (url, statusCode = 307) => {
               resolve(c.redirect(url as any, statusCode as any))
