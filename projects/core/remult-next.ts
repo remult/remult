@@ -21,9 +21,145 @@ export function remultNext(
     buildGenericRequestInfo: (req) => req,
     getRequestBody: async (req) => req.body,
   })
+
+  const handler = async (req: NextApiRequest, res: GenericResponse) => {
+    let sseResponse: boolean = false
+    ;(req as any)['_tempOnClose'] = () => {}
+
+    const response: GenericResponse & ResponseRequiredForSSE = {
+      end: (data?: any) => {
+        if (data !== undefined) {
+          if ((res as any).send) {
+            ;(res as any).send(data)
+          } else {
+            if ((res as any).write) {
+              ;(res as any).write(data)
+            }
+            res.end()
+          }
+        } else {
+          res.end()
+        }
+      },
+      json: (data: any) => {
+        if ((res as any).json) {
+          ;(res as any).json(data)
+        } else {
+          if ((res as any).setHeader) {
+            ;(res as any).setHeader('Content-Type', 'application/json')
+          }
+          if ((res as any).write) {
+            ;(res as any).write(JSON.stringify(data))
+          }
+          res.end()
+        }
+      },
+      send: (data: any) => {
+        if ((res as any).send) {
+          ;(res as any).send(data)
+        } else {
+          if ((res as any).write) {
+            ;(res as any).write(data)
+          }
+          res.end()
+        }
+      },
+      status: (statusCode: number) => {
+        if ((res as any).status) {
+          ;(res as any).status(statusCode)
+        } else {
+          ;(res as any).statusCode = statusCode
+        }
+        return response
+      },
+      write: (data: any) => {
+        if ((res as any).write) {
+          ;(res as any).write(data)
+        }
+      },
+      writeHead: (status: number, headers?: any) => {
+        if ((res as any).writeHead) {
+          ;(res as any).writeHead(status, headers)
+        } else {
+          ;(res as any).statusCode = status
+          if (headers && (res as any).setHeader) {
+            for (const [key, value] of Object.entries(headers)) {
+              ;(res as any).setHeader(key, value as string)
+            }
+          }
+        }
+        if (status === 200 && headers) {
+          const contentType = headers['Content-Type']
+          if (contentType === 'text/event-stream') {
+            sseResponse = true
+            response.write = (data) => {
+              if ((res as any).write) {
+                ;(res as any).write(data)
+              }
+            }
+          }
+        }
+      },
+    }
+
+    // Handle the 'on' method separately for the request object
+    ;(req as any).on = (event: string, listener: any) => {
+      if (event === 'close') {
+        ;(req as any)['_tempOnClose'] = listener
+      }
+    }
+
+    const responseFromRemultHandler = await result.handle(req, response)
+
+    if (sseResponse) {
+      // SSE response is already handled by writeHead
+      return
+    }
+
+    if (responseFromRemultHandler) {
+      if (responseFromRemultHandler.html) {
+        if ((res as any).setHeader) {
+          ;(res as any).setHeader('Content-Type', 'text/html')
+        }
+        if ((res as any).status) {
+          ;(res as any).status(responseFromRemultHandler.statusCode || 200)
+        } else {
+          ;(res as any).statusCode = responseFromRemultHandler.statusCode || 200
+        }
+        if ((res as any).write) {
+          ;(res as any).write(responseFromRemultHandler.html)
+        }
+        res.end()
+        return
+      }
+
+      if ((res as any).status) {
+        ;(res as any).status(responseFromRemultHandler.statusCode || 200)
+      } else {
+        ;(res as any).statusCode = responseFromRemultHandler.statusCode || 200
+      }
+      if ((res as any).setHeader) {
+        ;(res as any).setHeader('Content-Type', 'application/json')
+      }
+      if ((res as any).write) {
+        ;(res as any).write(JSON.stringify(responseFromRemultHandler.data))
+      }
+      res.end()
+      return
+    }
+
+    if (!responseFromRemultHandler) {
+      if ((res as any).status) {
+        ;(res as any).status(404)
+      } else {
+        ;(res as any).statusCode = 404
+      }
+      res.end()
+    }
+  }
+
   return Object.assign(
-    (req: NextApiRequest, res: GenericResponse) =>
-      result.handle(req, res).then(() => {}),
+    handler,
     result,
     {
       getRemult: (req: NextApiRequest) => result.getRemult(req),
