@@ -2,6 +2,7 @@ import { remultNext } from 'remult/remult-next'
 import { Task } from '../../shared/Task'
 import { Module } from 'remult/server'
 
+// TODO JYC: to remove and use only the non dist ? (failing for next!)
 const someRoutes = new Module({
   key: 'some-routes',
   rawRoutes: ({ add, rootPath }) => {

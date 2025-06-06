@@ -1,3 +1,4 @@
+// JYC TODO: to remove and use only the non dist ? (failing for nuxt!)
 import { Module } from 'remult/server'
 
 export const someRoutes = new Module({

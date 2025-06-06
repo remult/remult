@@ -1,4 +1,3 @@
-// import { Module } from 'remult/server'
 import { Module } from '../../../../core/server'
 
 export const someRoutes = new Module({
