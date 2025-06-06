@@ -193,6 +193,10 @@ const sidebar = tutorials.reduce(
                 link: '/docs/installation/server/hono',
               },
               {
+                text: 'Elysia',
+                link: '/docs/installation/server/elysia',
+              },
+              {
                 text: 'Hapi',
                 link: '/docs/installation/server/hapi',
               },
@@ -435,8 +439,8 @@ export default defineConfig({
     },
     build: {
       rollupOptions: {
-        external: ['node:url']
-      }
+        external: ['node:url'],
+      },
     },
     plugins: [
       {
@@ -467,7 +471,7 @@ export default defineConfig({
                   const indexContent = fs.readFileSync(indexPath, 'utf-8')
                   const indexFrontmatter = parseFrontmatter(indexContent)
                   dirTitle = indexFrontmatter?.title || ''
-                } catch (e) { }
+                } catch (e) {}
                 const newTitles = dirTitle
                   ? [...parentTitles, dirTitle]
                   : parentTitles
@@ -583,12 +587,12 @@ export default defineConfig({
             format(
               docsContent.filter(({ link }) => !linkToSkip.includes(link)),
             ) +
-            interactiveFiles
-              .filter((c) => c.contentRaw)
-              .map((c) => {
-                return `# Interactive Tutorial - ${c.title}\n\n${c.contentRaw}\n\n`
-              })
-              .join('\n'),
+              interactiveFiles
+                .filter((c) => c.contentRaw)
+                .map((c) => {
+                  return `# Interactive Tutorial - ${c.title}\n\n${c.contentRaw}\n\n`
+                })
+                .join('\n'),
           )
 
           fs.writeFileSync(
@@ -645,7 +649,7 @@ Boost your TypeScript stack with SSOT entities and say goodbye to boilerplate co
   themeConfig: {
     logo: {
       dark: '/logo-white.svg',
-      light: '/logo-dark.svg'
+      light: '/logo-dark.svg',
     },
     editLink: {
       pattern: 'https://github.com/remult/remult/edit/main/docs/:path',

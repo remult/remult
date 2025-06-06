@@ -150,6 +150,7 @@ onUnmounted(() => {
       <Icon tech="express" link="/docs/installation/server/express" />
       <Icon tech="fastify" link="/docs/installation/server/fastify" />
       <Icon tech="hono" link="/docs/installation/server/hono" />
+      <Icon tech="elysia" link="/docs/installation/server/elysia" />
       <Icon tech="hapi" link="/docs/installation/server/hapi" />
       <Icon tech="koa" link="/docs/installation/server/koa" />
       <Icon tech="nest" link="/docs/installation/server/nest" />
@@ -418,11 +419,11 @@ body.dark .rotating-text {
   .shake {
     animation: none;
   }
-  
+
   .fade-in {
     transition: none;
   }
-  
+
   .fade-in-visible {
     opacity: 1;
     transform: none;
