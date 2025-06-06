@@ -361,7 +361,7 @@ const sidebar = tutorials.reduce(
             link: '/docs/ref_generatemigrations',
           },
           { text: 'migrate', link: '/docs/ref_migrate' },
-
+          { text: 'Async Hooks', link: '/docs/ref_initasynchooks' },
           { text: 'REST API Spec', link: '/docs/rest-api' },
           {
             text: 'Active Record & Mutable',
