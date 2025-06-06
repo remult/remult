@@ -7,11 +7,7 @@ import type {
   RemultServer,
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
-import {
-  DEFAULT_COOKIE_OPTIONS,
-  parse,
-  serialize,
-} from './src/remult-cookie.js'
+import { mergeOptions, parse, serialize } from './src/remult-cookie.js'
 import { toResponse } from './server/toResponse.js'
 
 export function remultApi(
@@ -40,22 +36,14 @@ export function remultApi(
       send: () => {},
       redirect: () => {},
       setCookie: (name, value, options = {}) => {
-        event.cookies.set(name, value, {
-          ...DEFAULT_COOKIE_OPTIONS,
-          ...options,
-        })
+        event.cookies.set(name, value, mergeOptions(options))
       },
       getCookie: (name, options) => {
         const cookieHeader = event.request.headers.get('cookie')
         return cookieHeader ? parse(cookieHeader, options)[name] : undefined
       },
       deleteCookie: (name, options = {}) => {
-        const cookieOptions = {
-          ...DEFAULT_COOKIE_OPTIONS,
-          ...options,
-          maxAge: 0,
-        }
-        event.cookies.delete(name, cookieOptions)
+        event.cookies.delete(name, mergeOptions({ ...options, maxAge: 0 }))
       },
       status: () => {
         return response

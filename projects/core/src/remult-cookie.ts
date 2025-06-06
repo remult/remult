@@ -3,7 +3,7 @@ import { parse as parseCookie, serialize as serializeCookie } from 'cookie'
 export type { ParseOptions, SerializeOptions }
 
 // Default cookie options
-export const DEFAULT_COOKIE_OPTIONS = {
+const DEFAULT_COOKIE_OPTIONS = {
   path: '/',
   httpOnly: true,
   secure: true,
@@ -21,4 +21,8 @@ export function serialize(
 ) {
   const cookieOptions = { ...DEFAULT_COOKIE_OPTIONS, ...options }
   return serializeCookie(name, value, cookieOptions)
+}
+
+export const mergeOptions = (options: SerializeOptions) => {
+  return { ...DEFAULT_COOKIE_OPTIONS, ...options }
 }

@@ -15,7 +15,7 @@ import {
   type ServerCoreOptions,
 } from './server/remult-api-server.js'
 import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
-import { parse, serialize } from './src/remult-cookie.js'
+import { mergeOptions, parse, serialize } from './src/remult-cookie.js'
 
 class HonoRouteImplementation extends RouteImplementation<
   Context<Env, '', BlankInput>
@@ -82,7 +82,12 @@ class HonoRouteImplementation extends RouteImplementation<
           let sse: SSEStreamingApi
           const gRes: GenericResponse & ResponseRequiredForSSE = {
             setCookie: (name, value, options = {}) => {
-              resolve(c.header('Set-Cookie', serialize(name, value, options)))
+              resolve(
+                c.header(
+                  'Set-Cookie',
+                  serialize(name, value, mergeOptions(options)),
+                ),
+              )
             },
             getCookie: (name, options) => {
               const cookieHeader = c.req.header('cookie')
@@ -91,9 +96,11 @@ class HonoRouteImplementation extends RouteImplementation<
                 : undefined
             },
             deleteCookie: (name, options = {}) => {
-              const cookieOptions = { ...options, maxAge: 0 }
               resolve(
-                c.header('Set-Cookie', serialize(name, '', cookieOptions)),
+                c.header(
+                  'Set-Cookie',
+                  serialize(name, '', mergeOptions({ ...options, maxAge: 0 })),
+                ),
               )
             },
             redirect: (url, statusCode = 307) => {
