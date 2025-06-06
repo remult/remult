@@ -3541,6 +3541,12 @@ export type RemultNextServer = RemultServerCore<NextApiRequest> &
   }
 ```
 
+## ./async-hooks.js
+
+```ts
+export declare function initAsyncHooks(): void
+```
+
 ## ./server/index.js
 
 ```ts

@@ -253,7 +253,7 @@ describe.sequential("test-write-react stuff", async () => {
   const nextAppDir = path.join(sourceDir, "app");
   const basicArgs: WriteFilesArgs = {
     admin: false,
-    copyDir: (_: string, _1: string) => {},
+    copyDir: (_: string, _1: string) => { },
     crud: true,
     db: DATABASES.json,
     framework: react,
@@ -307,7 +307,6 @@ describe.sequential("test-write-react stuff", async () => {
                     Github
                   </a>
                 </div>
-                <div className="tile__subtitle"> Technology Stack Info:</div>
                 <div className="intro__stack">
                   <div className="intro__stack-item">
                     <span>Framework</span>
@@ -386,7 +385,6 @@ describe.sequential("test-write-react stuff", async () => {
                     Github
                   </a>
                 </div>
-                <div className="tile__subtitle"> Technology Stack Info:</div>
                 <div className="intro__stack">
                   <div className="intro__stack-item">
                     <span>Framework</span>
@@ -493,12 +491,12 @@ if (false)
                 ) {
                   test.sequential(
                     "test " +
-                      fw.name +
-                      " db " +
-                      database +
-                      " server " +
-                      server +
-                      " with auth",
+                    fw.name +
+                    " db " +
+                    database +
+                    " server " +
+                    server +
+                    " with auth",
                     async () => {
                       const dir = await testItBuildsAndRuns({
                         template: fw.name,

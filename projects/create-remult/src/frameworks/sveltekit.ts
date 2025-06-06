@@ -59,16 +59,15 @@ export const svelteKit: Framework = {
         Github
       </a>
     </div>
-    <div class="tile__subtitle">Technology Stack Info:</div>
     <div class="intro__stack">
       ${info.components
-        .map(
-          (c) => `<div class="intro__stack-item">
+          .map(
+            (c) => `<div class="intro__stack-item">
         <span>${c.type}</span>
         ${c.display}
       </div>`,
-        )
-        .join("\n      ")}
+          )
+          .join("\n      ")}
     </div>
   </Tile>
   ${info.li.map((l) => `${l()}`).join("\n  ")}
