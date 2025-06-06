@@ -25,6 +25,7 @@ import Stackblitz from './icons/stackblitz.vue'
 import Codesandbox from './icons/codesandbox.vue'
 import Github from './icons/github.vue'
 import Hono from './icons/hono.vue'
+import Elysia from './icons/elysia.vue'
 import Hapi from './icons/hapi.vue'
 import Koa from './icons/koa.vue'
 import Nest from './icons/nest.vue'
@@ -60,6 +61,7 @@ const props = defineProps<{
     | 'codesandbox'
     | 'github'
     | 'hono'
+    | 'elysia'
     | 'hapi'
     | 'koa'
     | 'nest'
@@ -125,6 +127,8 @@ const getIcon = (tech: string) => {
       return Github
     case 'hono':
       return Hono
+    case 'elysia':
+      return Elysia
     case 'hapi':
       return Hapi
     case 'koa':
