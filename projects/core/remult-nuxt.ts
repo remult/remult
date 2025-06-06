@@ -1,6 +1,6 @@
 import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 import type { H3Event } from 'h3'
-import { getRequestURL, readBody, sendRedirect, setResponseStatus } from 'h3'
+import { getRequestURL, readBody, setCookie } from 'h3'
 import type {
   GenericResponse,
   RemultServerCore,
@@ -8,7 +8,11 @@ import type {
   RemultServer,
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
-import { parse, serialize } from './src/remult-cookie.js'
+import {
+  mergeOptions,
+  parse,
+  type SerializeOptions,
+} from './src/remult-cookie.js'
 import { toResponse } from './server/toResponse.js'
 
 export function remultApi(
@@ -28,22 +32,32 @@ export function remultApi(
     getRequestBody: async (event) => await readBody(event),
   })
 
+  function toOptions(options: SerializeOptions) {
+    const fwOptions: any = { ...options }
+    // Convert sameSite to the format Hono expects
+    // if (typeof fwOptions.sameSite === 'boolean') {
+    //   fwOptions.sameSite = fwOptions.sameSite ? 'strict' : 'lax'
+    // }
+    return fwOptions
+  }
+
   const handler = async (event: H3Event) => {
     let sseResponse: Response | undefined = undefined
 
     const response: GenericResponse & ResponseRequiredForSSE = {
       setCookie: (name, value, options = {}) => {
-        event.node.res.setHeader('Set-Cookie', serialize(name, value, options))
+        setCookie(event, name, value, toOptions(mergeOptions(options)))
       },
       getCookie: (name, options) => {
         const cookieHeader = event.node.req.headers.cookie
         return cookieHeader ? parse(cookieHeader, options)[name] : undefined
       },
       deleteCookie: (name, options = {}) => {
-        const cookieOptions = { ...options, maxAge: 0 }
-        event.node.res.setHeader(
-          'Set-Cookie',
-          serialize(name, '', cookieOptions),
+        setCookie(
+          event,
+          name,
+          '',
+          toOptions(mergeOptions({ ...options, maxAge: 0 })),
         )
       },
       redirect: () => {},
