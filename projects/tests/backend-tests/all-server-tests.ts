@@ -620,17 +620,28 @@ export function allServerTests(
       }),
     )
 
-    // it(
-    //   'should setCookie',
-    //   withRemultForTest(async () => {
-    //     const result = await axios.get(remult.apiClient.url + '/setCookie')
-    //     expect(result.headers['set-cookie']).toMatchInlineSnapshot(`
-    //         [
-    //           "the_cookie_name=Hello; Path=/; HttpOnly; Secure; SameSite=Lax",
-    //         ]
-    //       `)
-    //   }),
-    // )
+    it(
+      'should setCookie getCookie deleteCookie',
+      withRemultForTest(async () => {
+        let result = await axios.get(remult.apiClient.url + '/deleteCookie')
+        expect(result.data).includes('deleted')
+        result = await axios.get(remult.apiClient.url + '/getCookie')
+        expect(result.data).includes('get: undefined')
+        result = await axios.get(remult.apiClient.url + '/setCookie')
+        expect(result.headers['set-cookie']).toMatchInlineSnapshot(`
+            [
+              "the_cookie_name=Hello; Path=/; HttpOnly; Secure; SameSite=Lax",
+            ]
+          `)
+        expect(result.data).includes('set: Hello')
+        result = await axios.get(remult.apiClient.url + '/getCookie', {
+          headers: {
+            Cookie: 'the_cookie_name=Hello',
+          },
+        })
+        expect(result.data).includes('get: Hello')
+      }),
+    )
   })
 
   async function create3Tasks() {

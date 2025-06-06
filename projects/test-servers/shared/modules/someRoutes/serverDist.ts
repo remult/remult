@@ -26,18 +26,19 @@ export const someRoutes = new Module({
     })
 
     add('/setCookie').get((req, res) => {
-      res.setCookie(COOKIE_NAME, 'Hello')
-      res.send(`<h1>setCookie</h1> ${cookieNav}`)
+      const val = 'Hello'
+      res.setCookie(COOKIE_NAME, val)
+      res.send(`<h1>setCookie</h1><p>set: ${val}</p> ${cookieNav}`)
     })
 
     add('/getCookie').get((req, res) => {
       const val = res.getCookie(COOKIE_NAME)
-      res.send(`<h1>getCookie</h1><p>${val}</p> ${cookieNav}`)
+      res.send(`<h1>getCookie</h1><p>get: ${val}</p> ${cookieNav}`)
     })
 
     add('/deleteCookie').get((req, res) => {
       res.deleteCookie(COOKIE_NAME)
-      res.send(`<h1>deleteCookie</h1> ${cookieNav}`)
+      res.send(`<h1>deleteCookie</h1><p>deleted</p> ${cookieNav}`)
     })
 
     add('/styled*').staticFolder('./src/server/styled', {
