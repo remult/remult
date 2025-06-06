@@ -54,8 +54,12 @@
       <p>An error occurred. Please try again later.</p>
     {/if}
   {:else if remult.authenticated()}
+    {@const roles = remult.user?.roles ?? []}
     <p>
       You are authenticated as <strong>{remult.user?.name}</strong>
+      <br />
+      <i>Roles:</i>
+      {roles.length > 0 ? roles.join(", ") : "-"}
     </p>
     <div class="button-row">
       <a class="button" href="/auth/signout">Sign Out</a>
