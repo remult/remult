@@ -44,6 +44,7 @@ import { isOfType } from '../src/isOfType.js'
 import { initDataProviderOrJson } from './initDataProviderOrJson.js'
 import fs from 'fs'
 import { join, extname } from 'path'
+import type { ParseOptions, SerializeOptions } from '../src/remult-cookie.js'
 
 export interface RemultServerOptions<RequestType> {
   /**Entities to use for the api */
@@ -344,14 +345,13 @@ export interface GenericResponse {
   //   get(): string | undefined
   //   delete(): void
   // }
-  // setCookie(name: string, value: string, opts?: SerializeOptions): void
-  // getCookie(name: string, opts?: ParseOptions): string | undefined
-  // deleteCookie(name: string, opts?: SerializeOptions): void
+  setCookie(name: string, value: string, opts?: SerializeOptions): void
+  getCookie(name: string, opts?: ParseOptions): string | undefined
+  deleteCookie(name: string, opts?: SerializeOptions): void
   status(statusCode: number): GenericResponse //exists for express and next and not in opine(In opine it's setStatus)
   end(): void
   // setHeaders(headers: Record<string, string>): void
 }
-
 /* @internal*/
 
 export class RemultServerImplementation<RequestType>

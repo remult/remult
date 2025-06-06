@@ -32,17 +32,20 @@ export function remultApi(
     let sseResponse: Response | undefined = undefined
 
     const response: GenericResponse & ResponseRequiredForSSE = {
-      // setCookie: (name, value, options = {}) => {
-      //   event.node.res.setHeader('Set-Cookie', serialize(name, value, options))
-      // },
-      // getCookie: (name, options) => {
-      //   const cookieHeader = event.node.req.headers.cookie
-      //   return cookieHeader ? parse(cookieHeader, options)[name] : undefined
-      // },
-      // deleteCookie: (name, options = {}) => {
-      //   const cookieOptions = { ...options, maxAge: 0 }
-      //   event.node.res.setHeader('Set-Cookie', serialize(name, '', cookieOptions))
-      // },
+      setCookie: (name, value, options = {}) => {
+        event.node.res.setHeader('Set-Cookie', serialize(name, value, options))
+      },
+      getCookie: (name, options) => {
+        const cookieHeader = event.node.req.headers.cookie
+        return cookieHeader ? parse(cookieHeader, options)[name] : undefined
+      },
+      deleteCookie: (name, options = {}) => {
+        const cookieOptions = { ...options, maxAge: 0 }
+        event.node.res.setHeader(
+          'Set-Cookie',
+          serialize(name, '', cookieOptions),
+        )
+      },
       redirect: (url, statusCode = 307) => {
         event.node.res.writeHead(statusCode, { Location: url })
       },

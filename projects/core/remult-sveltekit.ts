@@ -39,17 +39,24 @@ export function remultApi(
       json: () => {},
       send: () => {},
       redirect: () => {},
-      // setCookie: (name, value, options = {}) => {
-      //   event.cookies.set(name, value, { ...DEFAULT_COOKIE_OPTIONS, ...options})
-      // },
-      // getCookie: (name, options) => {
-      //   const cookieHeader = event.request.headers.get('cookie')
-      //   return cookieHeader ? parse(cookieHeader, options)[name] : undefined
-      // },
-      // deleteCookie: (name, options = {}) => {
-      //   const cookieOptions = { ...DEFAULT_COOKIE_OPTIONS, ...options, maxAge: 0 }
-      //   event.cookies.delete(name, cookieOptions)
-      // },
+      setCookie: (name, value, options = {}) => {
+        event.cookies.set(name, value, {
+          ...DEFAULT_COOKIE_OPTIONS,
+          ...options,
+        })
+      },
+      getCookie: (name, options) => {
+        const cookieHeader = event.request.headers.get('cookie')
+        return cookieHeader ? parse(cookieHeader, options)[name] : undefined
+      },
+      deleteCookie: (name, options = {}) => {
+        const cookieOptions = {
+          ...DEFAULT_COOKIE_OPTIONS,
+          ...options,
+          maxAge: 0,
+        }
+        event.cookies.delete(name, cookieOptions)
+      },
       status: () => {
         return response
       },

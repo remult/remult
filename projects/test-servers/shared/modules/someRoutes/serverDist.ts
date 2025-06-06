@@ -25,20 +25,20 @@ export const someRoutes = new Module({
       )
     })
 
-    // add('/setCookie').get((req, res) => {
-    //   res.setCookie(COOKIE_NAME, 'Hello')
-    //   res.send(`<h1>setCookie</h1> ${cookieNav}`)
-    // })
+    add('/setCookie').get((req, res) => {
+      res.setCookie(COOKIE_NAME, 'Hello')
+      res.send(`<h1>setCookie</h1> ${cookieNav}`)
+    })
 
-    // add('/getCookie').get((req, res) => {
-    //   const val = res.getCookie(COOKIE_NAME)
-    //   res.send(`<h1>getCookie</h1><p>${val}</p> ${cookieNav}`)
-    // })
+    add('/getCookie').get((req, res) => {
+      const val = res.getCookie(COOKIE_NAME)
+      res.send(`<h1>getCookie</h1><p>${val}</p> ${cookieNav}`)
+    })
 
-    // add('/deleteCookie').get((req, res) => {
-    //   res.deleteCookie(COOKIE_NAME)
-    //   res.send(`<h1>deleteCookie</h1> ${cookieNav}`)
-    // })
+    add('/deleteCookie').get((req, res) => {
+      res.deleteCookie(COOKIE_NAME)
+      res.send(`<h1>deleteCookie</h1> ${cookieNav}`)
+    })
 
     add('/styled*').staticFolder('./src/server/styled', {
       // packageName: 'jyc-pck',

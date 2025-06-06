@@ -22,13 +22,25 @@ export function remultNext(
     getRequestBody: async (req) => req.body,
   })
 
-  const handler = async (req: NextApiRequest, res: GenericResponse) => {
+  const handler: NextApiHandler = async (req: NextApiRequest, res) => {
     let sseResponse: boolean = false
     ;(req as any)['_tempOnClose'] = () => {}
 
     const response: GenericResponse & ResponseRequiredForSSE = {
+      setCookie: (name, value, options = {}) => {
+        // res.setHeader('Set-Cookie', serialize(name, value, options))
+      },
+      getCookie: (name, options) => {
+        // const cookieHeader = req.headers.cookie
+        // return cookieHeader ? parse(cookieHeader, options)[name] : undefined
+        return undefined
+      },
+      deleteCookie: (name, options = {}) => {
+        // const cookieOptions = { ...options, maxAge: 0 }
+        // res.setHeader('Set-Cookie', serialize(name, '', cookieOptions))
+      },
       redirect: (url, statusCode = 307) => {
-        res.redirect(url, statusCode)
+        res.redirect(statusCode, url)
       },
       end: (data?: any) => {
         if (data !== undefined) {
@@ -243,6 +255,18 @@ export function remultApi(
       ;(req as any)['_tempOnClose'] = () => {}
 
       const response: GenericResponse & ResponseRequiredForSSE = {
+        setCookie: (name, value, options = {}) => {
+          // res.setHeader('Set-Cookie', serialize(name, value, options))
+        },
+        getCookie: (name, options) => {
+          // const cookieHeader = req.headers.cookie
+          // return cookieHeader ? parse(cookieHeader, options)[name] : undefined
+          return undefined
+        },
+        deleteCookie: (name, options = {}) => {
+          // const cookieOptions = { ...options, maxAge: 0 }
+          // res.setHeader('Set-Cookie', serialize(name, '', cookieOptions))
+        },
         redirect: (url, statusCode = 307) => {
           ;(req as any).redirect(url, statusCode)
         },

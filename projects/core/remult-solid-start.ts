@@ -31,6 +31,15 @@ export function remultApi(
     if (event) event.locals['_tempOnClose'] = () => {}
 
     const response: GenericResponse & ResponseRequiredForSSE = {
+      setCookie: (name, value, options = {}) => {
+        event?.locals.setCookie(name, value, options)
+      },
+      getCookie: (name, options) => {
+        return event?.locals.getCookie(name, options)
+      },
+      deleteCookie: (name, options = {}) => {
+        event?.locals.deleteCookie(name, options)
+      },
       redirect: (url, statusCode = 307) => {
         event?.locals.redirect(url, statusCode)
       },

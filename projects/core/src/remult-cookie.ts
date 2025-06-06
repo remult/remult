@@ -1,5 +1,6 @@
 import type { ParseOptions, SerializeOptions } from 'cookie'
 import { parse as parseCookie, serialize as serializeCookie } from 'cookie'
+export type { ParseOptions, SerializeOptions }
 
 // Default cookie options
 export const DEFAULT_COOKIE_OPTIONS = {
@@ -8,8 +9,6 @@ export const DEFAULT_COOKIE_OPTIONS = {
   secure: true,
   sameSite: 'lax' as const,
 }
-
-export type { ParseOptions, SerializeOptions }
 
 export function parse(cookieHeader: string, options: ParseOptions = {}) {
   return parseCookie(cookieHeader, options)

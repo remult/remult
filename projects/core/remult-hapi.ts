@@ -85,25 +85,25 @@ class HapiRouteImplementation extends RouteImplementation<Request> {
         let stream: PassThrough
 
         const response: GenericResponse & ResponseRequiredForSSE = {
-          // setCookie: (name, value, options = {}) => {
-          //   resolve(
-          //     h
-          //       .response()
-          //       .header('Set-Cookie', serialize(name, value, options)),
-          //   )
-          // },
-          // getCookie: (name, options) => {
-          //   const cookieHeader = request.headers.cookie
-          //   return cookieHeader ? parse(cookieHeader, options)[name] : undefined
-          // },
-          // deleteCookie: (name, options = {}) => {
-          //   const cookieOptions = { ...options, maxAge: 0 }
-          //   resolve(
-          //     h
-          //       .response()
-          //       .header('Set-Cookie', serialize(name, '', cookieOptions)),
-          //   )
-          // },
+          setCookie: (name, value, options = {}) => {
+            resolve(
+              h
+                .response()
+                .header('Set-Cookie', serialize(name, value, options)),
+            )
+          },
+          getCookie: (name, options) => {
+            const cookieHeader = request.headers.cookie
+            return cookieHeader ? parse(cookieHeader, options)[name] : undefined
+          },
+          deleteCookie: (name, options = {}) => {
+            const cookieOptions = { ...options, maxAge: 0 }
+            resolve(
+              h
+                .response()
+                .header('Set-Cookie', serialize(name, '', cookieOptions)),
+            )
+          },
           redirect: (url, statusCode = 307) => {
             resolve(h.response().redirect(url).code(statusCode))
           },

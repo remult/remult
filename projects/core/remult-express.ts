@@ -81,17 +81,17 @@ class ExpressRouteImplementation extends RouteImplementation<express.Request> {
     res: express.Response,
   ): GenericResponse & ResponseRequiredForSSE {
     return {
-      // setCookie: (name, value, options = {}) => {
-      //   res.header('Set-Cookie', serialize(name, value, options))
-      // },
-      // getCookie: (name, options) => {
-      //   const cookieHeader = req.headers.cookie
-      //   return cookieHeader ? parse(cookieHeader, options)[name] : undefined
-      // },
-      // deleteCookie: (name, options = {}) => {
-      //   const cookieOptions = { ...options, maxAge: 0 }
-      //   res.header('Set-Cookie', serialize(name, '', cookieOptions))
-      // },
+      setCookie: (name, value, options = {}) => {
+        res.header('Set-Cookie', serialize(name, value, options))
+      },
+      getCookie: (name, options) => {
+        const cookieHeader = req.headers.cookie
+        return cookieHeader ? parse(cookieHeader, options)[name] : undefined
+      },
+      deleteCookie: (name, options = {}) => {
+        const cookieOptions = { ...options, maxAge: 0 }
+        res.header('Set-Cookie', serialize(name, '', cookieOptions))
+      },
       redirect: (url, statusCode = 307) => {
         res.redirect(statusCode, url)
       },

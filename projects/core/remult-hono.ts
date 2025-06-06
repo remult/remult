@@ -81,17 +81,21 @@ class HonoRouteImplementation extends RouteImplementation<
           let result: any
           let sse: SSEStreamingApi
           const gRes: GenericResponse & ResponseRequiredForSSE = {
-            // setCookie: (name, value, options = {}) => {
-            //   resolve(c.header('Set-Cookie', serialize(name, value, options)))
-            // },
-            // getCookie: (name, options) => {
-            //   const cookieHeader = c.req.header('cookie')
-            //   return cookieHeader ? parse(cookieHeader, options)[name] : undefined
-            // },
-            // deleteCookie: (name, options = {}) => {
-            //   const cookieOptions = { ...options, maxAge: 0 }
-            //   resolve(c.header('Set-Cookie', serialize(name, '', cookieOptions)))
-            // },
+            setCookie: (name, value, options = {}) => {
+              resolve(c.header('Set-Cookie', serialize(name, value, options)))
+            },
+            getCookie: (name, options) => {
+              const cookieHeader = c.req.header('cookie')
+              return cookieHeader
+                ? parse(cookieHeader, options)[name]
+                : undefined
+            },
+            deleteCookie: (name, options = {}) => {
+              const cookieOptions = { ...options, maxAge: 0 }
+              resolve(
+                c.header('Set-Cookie', serialize(name, '', cookieOptions)),
+              )
+            },
             redirect: (url, statusCode = 307) => {
               resolve(c.redirect(url as any, statusCode as any))
             },
