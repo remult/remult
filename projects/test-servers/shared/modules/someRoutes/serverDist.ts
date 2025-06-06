@@ -51,7 +51,7 @@ export const someRoutes = new Module({
       res.send(`<h1>deleteCookie</h1><p>deleted</p> ${cookieNav}`)
     })
 
-    add('/styled*').staticFolder('./src/server/styled', {
+    add('/styled*').staticFolder('../shared/modules/someRoutes/styled', {
       // packageName: 'jyc-pck',
       editFile(filePath, content) {
         if (filePath.endsWith('index.html')) {

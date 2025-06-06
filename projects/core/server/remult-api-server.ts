@@ -1591,6 +1591,8 @@ export class RouteImplementation<RequestType> {
           editFile?: (filePath: string, content: string) => string
         },
       ) => {
+        console.log(`folderPath`, folderPath)
+
         const defaultContentTypes: Record<string, string> = {
           js: 'text/javascript',
           css: 'text/css',

@@ -605,6 +605,47 @@ export function allServerTests(
     )
 
     it(
+      'should get html styled (staticFolder)',
+      withRemultForTest(async () => {
+        let result = await axios.get(remult.apiClient.url + '/styled')
+        expect(result.data).toMatchInlineSnapshot(`
+          "<html>
+            <link rel="stylesheet" href="./styled/style.css" />
+            <script src="./styled/demo.js"></script>
+            <body>
+              <b>Styled Replaced!</b>
+            </body>
+          </html>
+          "
+        `)
+        result = await axios.get(remult.apiClient.url + '/styled/style.css')
+        expect(result.data).toMatchInlineSnapshot(`
+          "html {
+            background-color: gray;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-family: Arial, Helvetica, sans-serif;
+          }
+          "
+        `)
+        result = await axios.get(remult.apiClient.url + '/styled/demo.js')
+        expect(result.data).toMatchInlineSnapshot(`"console.log('demo.js')"`)
+        result = await axios.get(remult.apiClient.url + '/styled/style.css')
+        expect(result.data).toMatchInlineSnapshot(`
+          "html {
+            background-color: gray;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-family: Arial, Helvetica, sans-serif;
+          }
+          "
+        `)
+      }),
+    )
+
+    it(
       'should redirect',
       withRemultForTest(async () => {
         try {

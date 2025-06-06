@@ -1,3 +1,4 @@
+import path from 'path'
 import { Module } from '../../../../core/server/index.js'
 // JYC TODO: remove `projects/test-servers/shared/modules/someRoutes/serverDist.ts`
 // JYC TODO: remove someRoutes in `projects/test-servers/next-server/src/pages/api/[...remult].ts`
@@ -52,7 +53,13 @@ export const someRoutes = new Module({
       res.send(`<h1>deleteCookie</h1><p>deleted</p> ${cookieNav}`)
     })
 
-    add('/styled*').staticFolder('./src/server/styled', {
+    const rootRepo = process.cwd().split('projects/test-servers')
+    const pathStatic = path.join(
+      rootRepo[0],
+      'projects/test-servers/shared/modules/someRoutes/styled',
+    )
+
+    add('/styled*').staticFolder(pathStatic, {
       // packageName: 'jyc-pck',
       editFile(filePath, content) {
         if (filePath.endsWith('index.html')) {
