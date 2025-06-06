@@ -4,6 +4,7 @@ import type {
   Server,
   ResponseToolkit,
   ReqRefDefaults,
+  ServerStateCookieOptions,
 } from '@hapi/hapi'
 import {
   createRemultServer,
@@ -20,7 +21,11 @@ import {
 } from './server/remult-api-server.js'
 import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 import { PassThrough } from 'stream'
-import { parse, serialize } from './src/remult-cookie.js'
+import {
+  mergeOptions,
+  parse,
+  type SerializeOptions,
+} from './src/remult-cookie.js'
 
 class HapiRouteImplementation extends RouteImplementation<Request> {
   constructor(
@@ -79,6 +84,15 @@ class HapiRouteImplementation extends RouteImplementation<Request> {
   }
 
   private createHapiHandler(handler: GenericRequestHandler<Request>) {
+    function toOptions(options: SerializeOptions) {
+      const fwOptions: ServerStateCookieOptions = {
+        isSameSite: 'Lax',
+        ...options,
+      }
+
+      return fwOptions
+    }
+
     return (request: Request<ReqRefDefaults>, h: ResponseToolkit) => {
       return new Promise((resolve, reject) => {
         let status = 200
@@ -86,23 +100,14 @@ class HapiRouteImplementation extends RouteImplementation<Request> {
 
         const response: GenericResponse & ResponseRequiredForSSE = {
           setCookie: (name, value, options = {}) => {
-            resolve(
-              h
-                .response()
-                .header('Set-Cookie', serialize(name, value, options)),
-            )
+            h.state(name, value, toOptions(mergeOptions(options)))
           },
           getCookie: (name, options) => {
             const cookieHeader = request.headers.cookie
             return cookieHeader ? parse(cookieHeader, options)[name] : undefined
           },
           deleteCookie: (name, options = {}) => {
-            const cookieOptions = { ...options, maxAge: 0 }
-            resolve(
-              h
-                .response()
-                .header('Set-Cookie', serialize(name, '', cookieOptions)),
-            )
+            h.unstate(name, toOptions(mergeOptions(options)))
           },
           redirect: (url, statusCode = 307) => {
             resolve(h.response().redirect(url).code(statusCode))

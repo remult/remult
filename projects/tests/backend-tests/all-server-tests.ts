@@ -640,11 +640,22 @@ export function allServerTests(
       'should setCookie',
       withRemultForTest(async () => {
         let result = await axios.get(remult.apiClient.url + '/setCookie')
-        expect(result.headers['set-cookie']).toMatchInlineSnapshot(`
+        const data = result.headers['set-cookie']
+
+        if (data?.length === 1) {
+          // Split the result and we want all this parts (no matter the order)
+          expect(data[0].split(' ').sort()).toMatchInlineSnapshot(`
             [
-              "the_cookie_name=Hello; Path=/; HttpOnly; Secure; SameSite=Lax",
+              "HttpOnly;",
+              "Path=/",
+              "SameSite=Lax;",
+              "Secure;",
+              "the_cookie_name=Hello;",
             ]
           `)
+        } else {
+          expect(data).toHaveLength(1)
+        }
         expect(result.data).includes('set: Hello')
       }),
     )

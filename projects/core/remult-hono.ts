@@ -14,7 +14,7 @@ import {
   type ServerCoreOptions,
 } from './server/remult-api-server.js'
 import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
-import { mergeOptions, parse, serialize } from './src/remult-cookie.js'
+import { mergeOptions, type SerializeOptions } from './src/remult-cookie.js'
 import { getCookie, setCookie, deleteCookie } from 'hono/cookie'
 
 class HonoRouteImplementation extends RouteImplementation<
@@ -75,13 +75,13 @@ class HonoRouteImplementation extends RouteImplementation<
   private createHonoHandler(
     handler: GenericRequestHandler<Context<Env, '', BlankInput>>,
   ) {
-    function toHonoOptions(options: any): any {
-      const honoOptions: any = { ...options }
+    function toOptions(options: SerializeOptions) {
+      const fwOptions: any = { ...options }
       // Convert sameSite to the format Hono expects
-      if (typeof honoOptions.sameSite === 'boolean') {
-        honoOptions.sameSite = honoOptions.sameSite ? 'strict' : 'lax'
+      if (typeof fwOptions.sameSite === 'boolean') {
+        fwOptions.sameSite = fwOptions.sameSite ? 'strict' : 'lax'
       }
-      return honoOptions
+      return fwOptions
     }
 
     return (c: Context<Env, '', BlankInput>) => {
@@ -91,13 +91,13 @@ class HonoRouteImplementation extends RouteImplementation<
           let sse: SSEStreamingApi
           const gRes: GenericResponse & ResponseRequiredForSSE = {
             setCookie: (name, value, options = {}) => {
-              setCookie(c, name, value, toHonoOptions(mergeOptions(options)))
+              setCookie(c, name, value, toOptions(mergeOptions(options)))
             },
             getCookie: (name, options) => {
               return getCookie(c, name)
             },
             deleteCookie: (name, options = {}) => {
-              deleteCookie(c, name, toHonoOptions(mergeOptions(options)))
+              deleteCookie(c, name, toOptions(mergeOptions(options)))
             },
             redirect: (url, statusCode = 307) => {
               resolve(c.redirect(url as any, statusCode as any))
