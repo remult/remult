@@ -80,7 +80,7 @@ export function remultApi(
     return toResponse({
       sseResponse,
       remultHandlerResponse,
-      requestUrl: event?.request.url,
+      requestUrl: event!.request.url,
     })
   }
 

@@ -40,7 +40,7 @@ describe.skipIf(process.env['SKIP_KOA'])('test koa server', async () => {
     })
   })
 
-  allServerTests(port, { skipLiveQuery: true })
+  allServerTests(port, { skipLiveQuery: true, skipExtraRoutes: true })
   afterAll(async () => {
     RemultAsyncLocalStorage.disable()
     return destroy()

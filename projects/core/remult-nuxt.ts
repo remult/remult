@@ -1,6 +1,6 @@
 import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 import type { H3Event } from 'h3'
-import { readBody, setResponseStatus } from 'h3'
+import { getRequestURL, readBody, sendRedirect, setResponseStatus } from 'h3'
 import type {
   GenericResponse,
   RemultServerCore,
@@ -46,9 +46,7 @@ export function remultApi(
           serialize(name, '', cookieOptions),
         )
       },
-      redirect: (url, statusCode = 307) => {
-        event.node.res.writeHead(statusCode, { Location: url })
-      },
+      redirect: () => {},
       end: () => {},
       send: (html, headers) => {
         if (headers?.['Content-Type']) {
@@ -83,7 +81,7 @@ export function remultApi(
     return toResponse({
       // sseResponse,
       remultHandlerResponse,
-      requestUrl: event.web?.request?.url.toString(),
+      requestUrl: getRequestURL(event).toString(),
     })
   }
 

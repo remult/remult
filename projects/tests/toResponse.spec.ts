@@ -3,13 +3,14 @@ import { describe, it, expect } from 'vitest'
 
 describe('remultHandlerToResponse', () => {
   it('should return a response', () => {
-    const response = toResponse({})
+    const response = toResponse({ requestUrl: 'http://localhost:3007' })
     expect(response).toBeDefined()
   })
 
   it('should return sse part', async () => {
     const response = toResponse({
       sseResponse: new Response('sse response'),
+      requestUrl: 'http://localhost:3007',
     })
     expect(await response.text()).toMatchInlineSnapshot(`"sse response"`)
   })
@@ -19,6 +20,7 @@ describe('remultHandlerToResponse', () => {
       remultHandlerResponse: {
         statusCode: 404,
       },
+      requestUrl: 'http://localhost:3007',
     })
     expect(response.status).toBe(404)
   })
@@ -28,6 +30,7 @@ describe('remultHandlerToResponse', () => {
       remultHandlerResponse: {
         statusCode: 407,
       },
+      requestUrl: 'http://localhost:3007',
     })
     expect(response.status).toBe(407)
   })
@@ -38,6 +41,7 @@ describe('remultHandlerToResponse', () => {
         html: 'html response',
         statusCode: 200,
       },
+      requestUrl: 'http://localhost:3007',
     })
     expect(await response.text()).toBe('html response')
     expect(response.headers.get('Content-Type')).toBe('text/html')
@@ -50,6 +54,7 @@ describe('remultHandlerToResponse', () => {
         data,
         statusCode: 200,
       },
+      requestUrl: 'http://localhost:3007',
     })
     expect(await response.json()).toMatchObject(data)
     expect(response.headers.get('Content-Type')).toBe('application/json')
@@ -61,6 +66,7 @@ describe('remultHandlerToResponse', () => {
         redirectUrl: 'https://www.google.com/',
         statusCode: 302,
       },
+      requestUrl: 'http://localhost:3007',
     })
     expect(response.status).toBe(302)
     expect(response.headers.get('Location')).toBe('https://www.google.com/')

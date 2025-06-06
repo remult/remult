@@ -3,7 +3,7 @@ import type { ServerHandleResponse } from './remult-api-server.js'
 export const toResponse = (o: {
   sseResponse?: Response
   remultHandlerResponse?: ServerHandleResponse
-  requestUrl?: string
+  requestUrl: string
 }) => {
   const { sseResponse, remultHandlerResponse, requestUrl } = o
   if (sseResponse !== undefined) {
@@ -22,11 +22,22 @@ export const toResponse = (o: {
         },
       })
 
-    if (remultHandlerResponse.redirectUrl)
+    if (remultHandlerResponse.redirectUrl) {
+      console.log(
+        `remultHandlerResponse.redirectUrl`,
+        remultHandlerResponse.redirectUrl,
+      )
+      console.log(`requestUrl`, requestUrl)
+      console.log(
+        `remultHandlerResponse.statusCode`,
+        remultHandlerResponse.statusCode,
+      )
+
       return Response.redirect(
         new URL(remultHandlerResponse.redirectUrl, requestUrl),
         remultHandlerResponse.statusCode,
       )
+    }
 
     return new Response(JSON.stringify(remultHandlerResponse.data), {
       status: remultHandlerResponse.statusCode,

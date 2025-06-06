@@ -132,33 +132,25 @@ export function remultNext(
     }
 
     if (responseFromRemultHandler) {
+      if (responseFromRemultHandler.redirectUrl) {
+        res.redirect(
+          responseFromRemultHandler.statusCode || 307,
+          responseFromRemultHandler.redirectUrl,
+        )
+        return
+      }
+
       if (responseFromRemultHandler.html) {
-        if ((res as any).setHeader) {
-          ;(res as any).setHeader('Content-Type', 'text/html')
-        }
-        if ((res as any).status) {
-          ;(res as any).status(responseFromRemultHandler.statusCode || 200)
-        } else {
-          ;(res as any).statusCode = responseFromRemultHandler.statusCode || 200
-        }
-        if ((res as any).write) {
-          ;(res as any).write(responseFromRemultHandler.html)
-        }
+        res.setHeader('Content-Type', 'text/html')
+        res.status(responseFromRemultHandler.statusCode || 200)
+        res.write(responseFromRemultHandler.html)
         res.end()
         return
       }
 
-      if ((res as any).status) {
-        ;(res as any).status(responseFromRemultHandler.statusCode || 200)
-      } else {
-        ;(res as any).statusCode = responseFromRemultHandler.statusCode || 200
-      }
-      if ((res as any).setHeader) {
-        ;(res as any).setHeader('Content-Type', 'application/json')
-      }
-      if ((res as any).write) {
-        ;(res as any).write(JSON.stringify(responseFromRemultHandler.data))
-      }
+      res.status(responseFromRemultHandler.statusCode || 200)
+      res.setHeader('Content-Type', 'application/json')
+      res.write(JSON.stringify(responseFromRemultHandler.data))
       res.end()
       return
     }
@@ -308,6 +300,14 @@ export function remultApi(
         return sseResponse
       }
       if (responseFromRemultHandler) {
+        if (responseFromRemultHandler.redirectUrl) {
+          response.redirect(
+            responseFromRemultHandler.redirectUrl,
+            responseFromRemultHandler.statusCode || 307,
+          )
+          return
+        }
+
         if (responseFromRemultHandler.html)
           return new Response(responseFromRemultHandler.html, {
             status: responseFromRemultHandler.statusCode,

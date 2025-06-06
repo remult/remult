@@ -604,21 +604,21 @@ export function allServerTests(
       }),
     )
 
-    // it(
-    //   'should redirect',
-    //   withRemultForTest(async () => {
-    //     try {
-    //       await axios.get(remult.apiClient.url + '/redirect', {
-    //         maxRedirects: 0, // Prevent following redirects completely
-    //       })
-    //       expect('should never').toBe('be here')
-    //     } catch (error: any) {
-    //       // Axios throws on redirects when maxRedirects is 0
-    //       expect(error.response.status).toBe(307)
-    //       expect(error.response.headers.location).toContain('/api/html')
-    //     }
-    //   }),
-    // )
+    it(
+      'should redirect',
+      withRemultForTest(async () => {
+        try {
+          await axios.get(remult.apiClient.url + '/redirect', {
+            maxRedirects: 0, // Prevent following redirects completely
+          })
+          expect('should never').toBe('be here')
+        } catch (error: any) {
+          // Axios throws on redirects when maxRedirects is 0
+          expect(error.response.status).toBe(307)
+          expect(error.response.headers.location).toContain('/api/html')
+        }
+      }),
+    )
 
     // it(
     //   'should setCookie',
