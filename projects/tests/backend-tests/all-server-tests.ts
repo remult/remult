@@ -20,12 +20,6 @@ export function testAsExpressMW(
   additionalTests?: (
     withRemultForTest: (what: () => Promise<void>) => () => Promise<void>,
   ) => void,
-  skips?: {
-    skipAsyncHooks?: boolean
-    skipLiveQuery?: boolean
-    // TODO JYC TO REMOVE
-    skipExtraRoutes?: boolean
-  },
 ) {
   let destroy: () => Promise<void>
 
@@ -39,7 +33,7 @@ export function testAsExpressMW(
       }
     })
   })
-  allServerTests(port, skips, additionalTests)
+  allServerTests(port, {}, additionalTests)
   afterAll(async () => {
     RemultAsyncLocalStorage.disable()
     return destroy()
