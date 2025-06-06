@@ -86,7 +86,12 @@ class HapiRouteImplementation extends RouteImplementation<Request> {
   private createHapiHandler(handler: GenericRequestHandler<Request>) {
     function toOptions(options: SerializeOptions) {
       const fwOptions: ServerStateCookieOptions = {
-        isSameSite: 'Lax',
+        isSameSite:
+          options.sameSite === 'strict'
+            ? 'Strict'
+            : options.sameSite === 'none'
+            ? 'None'
+            : 'Lax',
         ...options,
       }
 

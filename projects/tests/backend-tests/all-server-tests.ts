@@ -657,6 +657,26 @@ export function allServerTests(
     )
 
     it(
+      'should setCookie strict',
+      withRemultForTest(async () => {
+        let result = await axios.get(remult.apiClient.url + '/setCookieStrict')
+        const data = result.headers['set-cookie']
+
+        expect(data).toHaveLength(1)
+        if (data && data.length === 1) {
+          // Split the result and we want all this parts (no matter the order)
+          const p = data[0].split(' ').sort()
+          expect(p[0]).toContain('HttpOnly')
+          expect(p[1]).toContain('Path=/')
+          expect(p[2]).toContain('SameSite=Strict')
+          expect(p[3]).toContain('Secure')
+          expect(p[4]).toContain('the_cookie_name=Hello')
+        }
+        expect(result.data).includes('set: Hello')
+      }),
+    )
+
+    it(
       'should getCookie with cookie header',
       withRemultForTest(async () => {
         let result = await axios.get(remult.apiClient.url + '/getCookie', {
@@ -665,6 +685,20 @@ export function allServerTests(
           },
         })
         expect(result.data).includes('get: Hello')
+      }),
+    )
+  })
+
+  describe('server crash', {}, () => {
+    it(
+      'should crash',
+      withRemultForTest(async () => {
+        try {
+          await axios.get(remult.apiClient.url + '/crash-test')
+          expect('should never').toBe('be here')
+        } catch (error: any) {
+          expect(error.response.status).toBe(500)
+        }
       }),
     )
   })

@@ -77,10 +77,6 @@ class HonoRouteImplementation extends RouteImplementation<
   ) {
     function toOptions(options: SerializeOptions) {
       const fwOptions: any = { ...options }
-      // Convert sameSite to the format Hono expects
-      if (typeof fwOptions.sameSite === 'boolean') {
-        fwOptions.sameSite = fwOptions.sameSite ? 'strict' : 'lax'
-      }
       return fwOptions
     }
 
@@ -114,9 +110,6 @@ class HonoRouteImplementation extends RouteImplementation<
               else resolve(c.body(null))
             },
             send: (data: string, headers) => {
-              if (headers?.['Content-Type']) {
-                c.header('Content-Type', headers['Content-Type'])
-              }
               resolve(c.html(data))
             },
             // setHeaders: (headers) => {

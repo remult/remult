@@ -11,6 +11,10 @@ export const someRoutes = new Module({
       res.json({ Soooooo: 'Cool! A new new-route!' })
     })
 
+    add('/crash-test').get((req, res) => {
+      throw new Error('Server crash test')
+    })
+
     add('/html').get((req, res) => {
       res.send('<h1>Hello World</h1>')
     })
@@ -28,6 +32,12 @@ export const someRoutes = new Module({
     add('/setCookie').get((req, res) => {
       const val = 'Hello'
       res.setCookie(COOKIE_NAME, val)
+      res.send(`<h1>setCookie</h1><p>set: ${val}</p> ${cookieNav}`)
+    })
+
+    add('/setCookieStrict').get((req, res) => {
+      const val = 'Hello'
+      res.setCookie(COOKIE_NAME, val, { sameSite: 'strict' })
       res.send(`<h1>setCookie</h1><p>set: ${val}</p> ${cookieNav}`)
     })
 
