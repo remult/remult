@@ -23,16 +23,6 @@ export const toResponse = (o: {
       })
 
     if (remultHandlerResponse.redirectUrl) {
-      console.log(
-        `remultHandlerResponse.redirectUrl`,
-        remultHandlerResponse.redirectUrl,
-      )
-      console.log(`requestUrl`, requestUrl)
-      console.log(
-        `remultHandlerResponse.statusCode`,
-        remultHandlerResponse.statusCode,
-      )
-
       return Response.redirect(
         new URL(remultHandlerResponse.redirectUrl, requestUrl),
         remultHandlerResponse.statusCode,

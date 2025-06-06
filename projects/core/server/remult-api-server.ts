@@ -1728,18 +1728,16 @@ export class RouteImplementation<RequestType> {
           if (this.statusCode < 300 || this.statusCode >= 400) {
             this.statusCode = status ?? 307
           }
-          // if (gRes !== undefined) gRes.redirect(redirectUrl, this.statusCode)
           res({ statusCode: this.statusCode, redirectUrl })
         }
         setCookie(name: string, value: string, options: any): void {
-          // if (gRes !== undefined) gRes.setCookie(name, value, options)
+          if (gRes !== undefined) gRes.setCookie(name, value, options)
         }
         getCookie(name: string): string | undefined {
-          // if (gRes !== undefined) return gRes.getCookie(name)
-          return undefined
+          if (gRes !== undefined) return gRes.getCookie(name)
         }
         deleteCookie(name: string, options: any): void {
-          // if (gRes !== undefined) gRes.deleteCookie(name, options)
+          if (gRes !== undefined) gRes.deleteCookie(name, options)
         }
         status(statusCode: number): GenericResponse {
           if (gRes !== undefined) gRes.status(statusCode)
