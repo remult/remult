@@ -3549,7 +3549,7 @@ export declare function initAsyncHooks(): void
 
 ## ./server/index.js
 
-```ts
+````ts
 export declare function createRemultServer<RequestType>(
   options: RemultServerOptions<RequestType>,
   serverCoreOptions?: ServerCoreOptions<RequestType>,
@@ -3595,10 +3595,30 @@ export interface GenericRequestInfo {
 }
 export interface GenericResponse {
   json(data: any): void
-  send(html: string): void
+  send(html: string, headers?: Record<string, string>): void
+  redirect(
+    url: string,
+    /** The [HTTP status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages). Must be in the range 300-308. */
+    status?:
+      | 300
+      | 301
+      | 302
+      | 303
+      | 304
+      | 305
+      | 306
+      | 307
+      | 308
+      | ({} & number),
+  ): void
+  setCookie(name: string, value: string, opts?: SerializeOptions): void
+  getCookie(name: string, opts?: ParseOptions): string | undefined
+  deleteCookie(name: string, opts?: SerializeOptions): void
   status(statusCode: number): GenericResponse
   end(): void
 }
+//[ ] SerializeOptions from TBD is not exported
+//[ ] ParseOptions from TBD is not exported
 export type GenericRouter<RequestType> = {
   route(path: string): SpecificRoute<RequestType>
 }
@@ -3617,6 +3637,29 @@ export declare class JsonEntityFileStorage implements JsonEntityStorage {
 export declare class JsonFileDataProvider extends JsonDataProvider {
   constructor(folderPath: string)
 }
+export declare class Module<RequestType> {
+  key: string
+  priority?: number
+  entities?: ClassType<unknown>[]
+  controllers?: ClassType<unknown>[]
+  initApi?: RemultServerOptions<RequestType>["initApi"]
+  initRequest?: RemultServerOptions<RequestType>["initRequest"]
+  rawRoutes?: RawRoutes<RequestType>
+  modules?: Module<RequestType>[]
+  constructor(options: ModuleInput<RequestType>)
+}
+//[ ] ClassType from TBD is not exported
+export interface ModuleInput<RequestType> {
+  key: string
+  /** @default 0 */
+  priority?: number
+  entities?: ClassType<unknown>[]
+  controllers?: ClassType<unknown>[]
+  initApi?: RemultServerOptions<RequestType>["initApi"]
+  initRequest?: RemultServerOptions<RequestType>["initRequest"]
+  rawRoutes?: RawRoutes<RequestType>
+  modules?: Module<RequestType>[]
+}
 export interface queuedJobInfo {
   info: queuedJobInfoResponse
   userId: string
@@ -3629,6 +3672,13 @@ export interface QueueStorage {
   createJob(url: string, userId?: string): Promise<string>
   getJobInfo(queuedJobId: string): Promise<queuedJobInfo>
 }
+export interface RawRoutes<RequestType> {
+  (args: {
+    add: (relativePath: `/${string}`) => SpecificRoute<RequestType>
+    rootPath: string
+  }): void
+}
+//[ ] TemplateLiteralType from TBD is not exported
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
   withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): void
@@ -3741,8 +3791,20 @@ export interface RemultServerOptions<RequestType> {
     responseBody: any
     sendError: (httpStatusCode: number, body: any) => void
   }) => Promise<void> | undefined
+  /**
+   * Adding some extra routes. It will automatically add the `rootPath` _(default: `/api`)_ to the route.
+   * ```
+   * rawRoutes({ add }) {
+   *   add('/new-route').get((req, res) => {
+   *     return res.json({ Soooooo: 'Cool!' })
+   *   })
+   * }
+   * ```
+   * This will add the route `/api/new-route` to the api.
+   */
+  rawRoutes?: RawRoutes<RequestType>
+  modules?: Module<RequestType>[]
 }
-//[ ] ClassType from TBD is not exported
 //[ ] UserInfo from TBD is not exported
 //[ ] SubscriptionServer from TBD is not exported
 //[ ] Allowed from TBD is not exported
@@ -3753,6 +3815,20 @@ export type SpecificRoute<RequestType> = {
   post(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
   delete(
     handler: GenericRequestHandler<RequestType>,
+  ): SpecificRoute<RequestType>
+  /**
+   * Serves static files from a folder
+   * @param folderPath The path to the folder containing static files
+   * @param options Configuration options for serving static files
+   */
+  staticFolder(
+    folderPath: string,
+    options?: {
+      packageName?: string
+      editFile?: (filePath: string, content: string) => string
+      /** List of file extensions and their corresponding content types */
+      contentTypes?: Record<string, string>
+    },
   ): SpecificRoute<RequestType>
 }
 export declare class SseSubscriptionServer implements SubscriptionServer {
@@ -3768,11 +3844,11 @@ export declare function TestApiDataProvider(
   options?: Pick<RemultServerOptions<unknown>, "ensureSchema" | "dataProvider">,
 ): RestDataProvider
 //[ ] RestDataProvider from TBD is not exported
-```
+````
 
 ## ./server/core.js
 
-```ts
+````ts
 export declare function createRemultServerCore<RequestType>(
   options: RemultServerOptions<RequestType>,
   serverCoreOptions: ServerCoreOptions<RequestType>,
@@ -3818,10 +3894,30 @@ export interface GenericRequestInfo {
 }
 export interface GenericResponse {
   json(data: any): void
-  send(html: string): void
+  send(html: string, headers?: Record<string, string>): void
+  redirect(
+    url: string,
+    /** The [HTTP status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages). Must be in the range 300-308. */
+    status?:
+      | 300
+      | 301
+      | 302
+      | 303
+      | 304
+      | 305
+      | 306
+      | 307
+      | 308
+      | ({} & number),
+  ): void
+  setCookie(name: string, value: string, opts?: SerializeOptions): void
+  getCookie(name: string, opts?: ParseOptions): string | undefined
+  deleteCookie(name: string, opts?: SerializeOptions): void
   status(statusCode: number): GenericResponse
   end(): void
 }
+//[ ] SerializeOptions from TBD is not exported
+//[ ] ParseOptions from TBD is not exported
 export type GenericRouter<RequestType> = {
   route(path: string): SpecificRoute<RequestType>
 }
@@ -3954,6 +4050,19 @@ export interface RemultServerOptions<RequestType> {
     responseBody: any
     sendError: (httpStatusCode: number, body: any) => void
   }) => Promise<void> | undefined
+  /**
+   * Adding some extra routes. It will automatically add the `rootPath` _(default: `/api`)_ to the route.
+   * ```
+   * rawRoutes({ add }) {
+   *   add('/new-route').get((req, res) => {
+   *     return res.json({ Soooooo: 'Cool!' })
+   *   })
+   * }
+   * ```
+   * This will add the route `/api/new-route` to the api.
+   */
+  rawRoutes?: RawRoutes<RequestType>
+  modules?: Module<RequestType>[]
 }
 //[ ] ClassType from TBD is not exported
 //[ ] UserInfo from TBD is not exported
@@ -3963,12 +4072,28 @@ export interface RemultServerOptions<RequestType> {
 //[ ] LiveQueryStorage from TBD is not exported
 //[ ] Allowed from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
+//[ ] RawRoutes from TBD is not exported
+//[ ] Module from TBD is not exported
 export type SpecificRoute<RequestType> = {
   get(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
   put(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
   post(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
   delete(
     handler: GenericRequestHandler<RequestType>,
+  ): SpecificRoute<RequestType>
+  /**
+   * Serves static files from a folder
+   * @param folderPath The path to the folder containing static files
+   * @param options Configuration options for serving static files
+   */
+  staticFolder(
+    folderPath: string,
+    options?: {
+      packageName?: string
+      editFile?: (filePath: string, content: string) => string
+      /** List of file extensions and their corresponding content types */
+      contentTypes?: Record<string, string>
+    },
   ): SpecificRoute<RequestType>
 }
 export declare class SseSubscriptionServer implements SubscriptionServer {
@@ -3980,7 +4105,7 @@ export declare class SseSubscriptionServer implements SubscriptionServer {
   )
   publishMessage<T>(channel: string, message: any): Promise<void>
 }
-```
+````
 
 ## ./remult-fastify.js
 
@@ -4632,6 +4757,10 @@ export const remultNuxt: typeof remultApi
 export type RemultNuxtServer = RemultServerCore<H3Event> &
   ((event: H3Event) => Promise<any>) & {
     withRemult: RemultServer<H3Event>["withRemultAsync"]
+    GET: (event: H3Event) => Promise<any>
+    PUT: (event: H3Event) => Promise<any>
+    POST: (event: H3Event) => Promise<any>
+    DELETE: (event: H3Event) => Promise<any>
   }
 //[ ] RemultServerCore from ./server/index.js is not exported
 //[ ] RemultServer from ./server/index.js is not exported

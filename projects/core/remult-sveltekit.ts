@@ -7,34 +7,51 @@ import type {
   RemultServer,
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
+import { mergeOptions, parse, serialize } from './src/remult-cookie.js'
+import { toResponse } from './server/toResponse.js'
 
 export function remultApi(
   options: RemultServerOptions<RequestEvent>,
 ): RemultSveltekitServer {
-  let result = createRemultServer<RequestEvent>(options, {
+  const result = createRemultServer<RequestEvent>(options, {
     buildGenericRequestInfo: (event) => ({
       url: event.request.url,
       method: event.request.method,
       on: (e: 'close', do1: VoidFunction) => {
         if (e === 'close') {
-          ; (event.locals as any)['_tempOnClose'] = do1
+          ;(event.locals as any)['_tempOnClose'] = do1
         }
       },
     }),
     getRequestBody: (event) => event.request.json(),
   })
+
   const serverHandler: RequestHandler = async (event) => {
     let sseResponse: Response | undefined = undefined
-      ; (event.locals as any)['_tempOnClose'] = () => { }
+    ;(event.locals as any)['_tempOnClose'] = () => {}
 
     const response: GenericResponse & ResponseRequiredForSSE = {
-      end: () => { },
-      json: () => { },
-      send: () => { },
+      end: () => {},
+      json: () => {},
+      send: () => {},
+      redirect: () => {},
+      setCookie: (name, value, options = {}) => {
+        event.cookies.set(name, value, mergeOptions(options))
+      },
+      getCookie: (name, options) => {
+        const cookieHeader = event.request.headers.get('cookie')
+        return cookieHeader ? parse(cookieHeader, options)[name] : undefined
+      },
+      deleteCookie: (name, options = {}) => {
+        event.cookies.delete(name, mergeOptions({ ...options, maxAge: 0 }))
+      },
       status: () => {
         return response
       },
-      write: () => { },
+      // setHeaders: (headers) => {
+      //   event.setHeaders(headers)
+      // },
+      write: () => {},
       writeHead: (status, headers) => {
         if (status === 200 && headers) {
           const contentType = headers['Content-Type']
@@ -51,8 +68,8 @@ export function remultApi(
                 }
               },
               cancel: () => {
-                response.write = () => { }
-                  ; (event.locals as any)['_tempOnClose']()
+                response.write = () => {}
+                ;(event.locals as any)['_tempOnClose']()
               },
             })
             sseResponse = new Response(stream, { headers })
@@ -62,32 +79,17 @@ export function remultApi(
     }
 
     const responseFromRemultHandler = await result.handle(event, response)
-    if (sseResponse !== undefined) {
-      return sseResponse
-    }
-    if (responseFromRemultHandler !== undefined) {
-      if (responseFromRemultHandler.html)
-        return new Response(responseFromRemultHandler.html, {
-          status: responseFromRemultHandler.statusCode,
-          headers: {
-            'Content-Type': 'text/html',
-          },
-        })
-      const res = new Response(JSON.stringify(responseFromRemultHandler.data), {
-        status: responseFromRemultHandler.statusCode,
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      })
-      return res
-    }
-    return new Response('Not Found', {
-      status: 404,
+    return toResponse({
+      sseResponse,
+      remultHandlerResponse: responseFromRemultHandler,
+      requestUrl: event.url.toString(),
     })
   }
+
   const handler: Handle = async ({ event, resolve }) => {
     return result.withRemultAsync(event, async () => await resolve(event))
   }
+
   return Object.assign(handler, {
     getRemult: (req: RequestEvent) => result.getRemult(req),
     openApiDoc: (options: { title: string }) => result.openApiDoc(options),

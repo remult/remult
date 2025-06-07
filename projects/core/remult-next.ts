@@ -13,6 +13,12 @@ import type {
   RemultServerOptions,
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
+import {
+  mergeOptions,
+  parse,
+  serialize,
+  type SerializeOptions,
+} from './src/remult-cookie.js'
 
 export function remultNext(
   options: RemultServerOptions<NextApiRequest>,
@@ -21,9 +27,156 @@ export function remultNext(
     buildGenericRequestInfo: (req) => req,
     getRequestBody: async (req) => req.body,
   })
+
+  const handler: NextApiHandler = async (req: NextApiRequest, res) => {
+    let sseResponse: boolean = false
+    ;(req as any)['_tempOnClose'] = () => {}
+
+    const response: GenericResponse & ResponseRequiredForSSE = {
+      setCookie: (name, value, options = {}) => {
+        ;(res as any).setHeader(
+          'Set-Cookie',
+          serialize(name, value, mergeOptions(options)),
+        )
+      },
+      getCookie: (name, options) => {
+        const cookieHeader = req.headers.cookie
+        return cookieHeader ? parse(cookieHeader, options)[name] : undefined
+      },
+      deleteCookie: (name, options = {}) => {
+        ;(res as any).setHeader(
+          'Set-Cookie',
+          serialize(name, '', mergeOptions({ ...options, maxAge: 0 })),
+        )
+      },
+      redirect: (url, statusCode = 307) => {
+        res.redirect(statusCode, url)
+      },
+      end: (data?: any) => {
+        if (data !== undefined) {
+          if ((res as any).send) {
+            ;(res as any).send(data)
+          } else {
+            if ((res as any).write) {
+              ;(res as any).write(data)
+            }
+            res.end()
+          }
+        } else {
+          res.end()
+        }
+      },
+      json: (data: any) => {
+        if ((res as any).json) {
+          ;(res as any).json(data)
+        } else {
+          if ((res as any).setHeader) {
+            ;(res as any).setHeader('Content-Type', 'application/json')
+          }
+          if ((res as any).write) {
+            ;(res as any).write(JSON.stringify(data))
+          }
+          res.end()
+        }
+      },
+      send: (data: any) => {
+        if ((res as any).send) {
+          ;(res as any).send(data)
+        } else {
+          if ((res as any).write) {
+            ;(res as any).write(data)
+          }
+          res.end()
+        }
+      },
+      status: (statusCode: number) => {
+        if ((res as any).status) {
+          ;(res as any).status(statusCode)
+        } else {
+          ;(res as any).statusCode = statusCode
+        }
+        return response
+      },
+      write: (data: any) => {
+        if ((res as any).write) {
+          ;(res as any).write(data)
+        }
+      },
+      writeHead: (status: number, headers?: any) => {
+        if ((res as any).writeHead) {
+          ;(res as any).writeHead(status, headers)
+        } else {
+          ;(res as any).statusCode = status
+          if (headers && (res as any).setHeader) {
+            for (const [key, value] of Object.entries(headers)) {
+              ;(res as any).setHeader(key, value as string)
+            }
+          }
+        }
+        if (status === 200 && headers) {
+          const contentType = headers['Content-Type']
+          if (contentType === 'text/event-stream') {
+            sseResponse = true
+            response.write = (data) => {
+              if ((res as any).write) {
+                ;(res as any).write(data)
+              }
+            }
+          }
+        }
+      },
+    }
+
+    // Handle the 'on' method separately for the request object
+    ;(req as any).on = (event: string, listener: any) => {
+      if (event === 'close') {
+        ;(req as any)['_tempOnClose'] = listener
+      }
+    }
+
+    const responseFromRemultHandler = await result.handle(req, response)
+
+    if (sseResponse) {
+      // SSE response is already handled by writeHead
+      return
+    }
+
+    if (responseFromRemultHandler) {
+      if (responseFromRemultHandler.redirectUrl) {
+        res.redirect(
+          responseFromRemultHandler.statusCode || 307,
+          responseFromRemultHandler.redirectUrl,
+        )
+        return
+      }
+
+      if (responseFromRemultHandler.html) {
+        res.setHeader('Content-Type', 'text/html')
+        res.status(responseFromRemultHandler.statusCode || 200)
+        res.write(responseFromRemultHandler.html)
+        res.end()
+        return
+      }
+
+      res.status(responseFromRemultHandler.statusCode || 200)
+      res.setHeader('Content-Type', 'application/json')
+      res.write(JSON.stringify(responseFromRemultHandler.data))
+      res.end()
+      return
+    }
+
+    if (!responseFromRemultHandler) {
+      if ((res as any).status) {
+        ;(res as any).status(404)
+      } else {
+        ;(res as any).statusCode = 404
+      }
+      res.end()
+    }
+  }
+
   return Object.assign(
-    (req: NextApiRequest, res: GenericResponse) =>
-      result.handle(req, res).then(() => { }),
+    handler,
     result,
     {
       getRemult: (req: NextApiRequest) => result.getRemult(req),
@@ -93,7 +246,7 @@ export function remultApi(
 
       on: (e: 'close', do1: VoidFunction) => {
         if (e === 'close') {
-          ; (req as any)['_tempOnClose'] = do1
+          ;(req as any)['_tempOnClose'] = do1
         }
       },
     }),
@@ -101,16 +254,31 @@ export function remultApi(
   const handler = async (req: Request) => {
     {
       let sseResponse: Response | undefined = undefined
-        ; (req as any)['_tempOnClose'] = () => { }
+      ;(req as any)['_tempOnClose'] = () => {}
 
       const response: GenericResponse & ResponseRequiredForSSE = {
-        end: () => { },
-        json: () => { },
-        send: () => { },
+        setCookie: (name, value, options = {}) => {
+          // res.setHeader('Set-Cookie', serialize(name, value, options))
+        },
+        getCookie: (name, options) => {
+          // const cookieHeader = req.headers.cookie
+          // return cookieHeader ? parse(cookieHeader, options)[name] : undefined
+          return undefined
+        },
+        deleteCookie: (name, options = {}) => {
+          // const cookieOptions = { ...options, maxAge: 0 }
+          // res.setHeader('Set-Cookie', serialize(name, '', cookieOptions))
+        },
+        redirect: (url, statusCode = 307) => {
+          ;(req as any).redirect(url, statusCode)
+        },
+        end: () => {},
+        json: () => {},
+        send: () => {},
         status: () => {
           return response
         },
-        write: () => { },
+        write: () => {},
         writeHead: (status, headers) => {
           if (status === 200 && headers) {
             const contentType = headers['Content-Type']
@@ -127,8 +295,8 @@ export function remultApi(
                   }
                 },
                 cancel: () => {
-                  response.write = () => { }
-                    ; (req as any)['_tempOnClose']()
+                  response.write = () => {}
+                  ;(req as any)['_tempOnClose']()
                 },
               })
               sseResponse = new Response(stream, { headers })
@@ -142,6 +310,14 @@ export function remultApi(
         return sseResponse
       }
       if (responseFromRemultHandler) {
+        if (responseFromRemultHandler.redirectUrl) {
+          response.redirect(
+            responseFromRemultHandler.redirectUrl,
+            responseFromRemultHandler.statusCode || 307,
+          )
+          return
+        }
+
         if (responseFromRemultHandler.html)
           return new Response(responseFromRemultHandler.html, {
             status: responseFromRemultHandler.statusCode,

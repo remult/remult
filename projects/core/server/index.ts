@@ -2,6 +2,7 @@ import type {
   RemultServer,
   RemultServerOptions,
   ServerCoreOptions,
+  ServerHandleResponse,
 } from './remult-api-server.js'
 import {
   createRemultServerCore,
@@ -16,7 +17,7 @@ export {
   JsonFileDataProvider,
 } from './JsonEntityFileStorage.js'
 export { TestApiDataProvider } from './test-api-data-provider.js'
-export {
+export type {
   GenericRequestHandler,
   GenericRequestInfo,
   GenericResponse,
@@ -28,7 +29,11 @@ export {
   RemultServerOptions,
   SpecificRoute,
   queuedJobInfo,
+  ModuleInput,
+  RawRoutes,
 } from './remult-api-server.js'
+export { Module } from './remult-api-server.js'
+
 export function createRemultServer<RequestType>(
   options: RemultServerOptions<RequestType>,
   serverCoreOptions?: ServerCoreOptions<RequestType>,

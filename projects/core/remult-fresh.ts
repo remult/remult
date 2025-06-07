@@ -1,4 +1,4 @@
-import { } from './server/core.js'
+import {} from './server/core.js'
 import type {
   RemultServerCore,
   RemultServerOptions,
@@ -43,7 +43,7 @@ export interface FreshContext {
   next: () => Promise<any>
 }
 export interface FreshResponse {
-  new(body?: any | undefined, init?: ResponseInit): any
+  new (body?: any | undefined, init?: ResponseInit): any
   json(data: unknown, init?: ResponseInit): any
 }
 
