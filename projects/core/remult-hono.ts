@@ -66,7 +66,25 @@ class HonoRouteImplementation extends RouteImplementation<
         registerMethod('put', handler),
       delete: (handler: GenericRequestHandler<Context<Env, '', BlankInput>>) =>
         registerMethod('delete', handler),
-      staticFolder: parentRoute.staticFolder,
+      staticFolder: (
+        folderPath: string,
+        options?: {
+          packageName?: string
+          contentTypes?: Record<string, string>
+          editFile?: (filePath: string, content: string) => string
+        },
+      ) => {
+        parentRoute.staticFolder(folderPath, options)
+
+        if (methodMap) {
+          const handler = methodMap.get('get')
+          if (handler) {
+            this.app.get(path, this.createHonoHandler(handler))
+          }
+        }
+
+        return route
+      },
     } as SpecificRoute<Context<Env, '', BlankInput>>
 
     return route
