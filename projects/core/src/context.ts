@@ -140,15 +140,14 @@ export class Remult {
 
     let r = dpCache.get(entity)
     if (!r) {
-      const info = createOldEntity(entity, this)
       r = new RepositoryImplementation(
         entity,
         this,
         dataProvider,
-        info,
+        createOldEntity(entity, this),
       ) as Repository<any>
 
-      if (info.options.disableRepoCache === true) dpCache.set(entity, r)
+      if (r.metadata.options.disableRepoCache !== true) dpCache.set(entity, r)
 
       verifyFieldRelationInfo(r, this, dataProvider)
     }
