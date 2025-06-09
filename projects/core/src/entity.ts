@@ -246,6 +246,55 @@ export interface EntityOptions<entityType = unknown> {
   dataProvider?: (
     defaultDataProvider: DataProvider,
   ) => DataProvider | Promise<DataProvider> | undefined | null
+
+  /**
+   * Prevents entity from being cached
+   * @example
+   * import { Entity, Fields, remult, repo, withRemult } from "remult";
+   *
+   * @Entity("positions", {
+   *   // Disable repo caching for Position
+   *   disableRepoCache: true,
+   * })
+   * class Position {
+   *   @Fields.uuid()
+   *   id!: string;
+   *
+   *   @Fields.number()
+   *   x!: number;
+   *
+   *   @Fields.number()
+   *   y!: number;
+   *
+   *   @Fields.number({
+   *     async sqlExpression() {
+   *       // Assuming you've declared queryVector in RemultContext
+   *       const { x, y } = remult.context.queryVector || { x: 0, y: 0 };
+   *       // This is obviously not safe, sanitize your user inputs to avoid sql injections
+   *       return `SQRT(POWER(x - ${x}, 2) + POWER(y - ${y}, 2))`;
+   *     },
+   *   })
+   *   distance?: number;
+   * }
+   *
+   * await withRemult(
+   *   async () => {
+   *     // Thanks to `disableRepoCache: true`, sqlExpression from Position.distance will always be re-evaluated within the same remult async context
+   *     remult.context.queryVector = { x: 20, y: 30 };
+   *     const fromPoint = await repo(Position).find({
+   *       orderBy: { distance: "asc" },
+   *     });
+   *
+   *     remult.context.queryVector = { x: 0, y: 0 };
+   *     const fromOrigin = await repo(Position).find({
+   *       orderBy: { distance: "asc" },
+   *     });
+   *
+   *     console.log(fromPoint, fromOrigin);
+   *   }
+   * );
+   */
+  disableRepoCache?: boolean
 }
 
 /**
