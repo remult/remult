@@ -1477,6 +1477,10 @@ export class Contact {
 
 # Entities - Relations
 
+---
+outline: [2, 3]
+---
+
 # Relations Between Entities
 
 ::: tip **Interactive Learning Available! 🚀**
@@ -2318,6 +2322,7 @@ Utilizing an intermediate table for managing many-to-many relationships in Remul
 ---
 
 In this guide, we've explored the essential concepts of managing entity relations within the Remult library. From one-to-one to many-to-many relationships, we've covered the declaration, customization, and querying of these relations. By understanding the nuances of entity relations, users can harness the full potential of Remult to build robust TypeScript applications with ease.
+
 
 
 # Relations - Filtering and Relations
@@ -4231,6 +4236,7 @@ Your Nuxt app with Remult is now set up and ready to go. You can now move on to 
 	<Icon tech="express" sizeIco=100 link="/docs/installation/server/express" />
 	<Icon tech="fastify" sizeIco=100 link="/docs/installation/server/fastify" />
 	<Icon tech="hono" sizeIco=100 link="/docs/installation/server/hono" />
+	<Icon tech="elysia" sizeIco=100 link="/docs/installation/server/elysia" />
 	<Icon tech="hapi" sizeIco=100 link="/docs/installation/server/hapi" />
 	<Icon tech="koa" sizeIco=100 link="/docs/installation/server/koa" />
 	<Icon tech="nest" sizeIco=100 link="/docs/installation/server/nest" />
@@ -4264,7 +4270,7 @@ Remult is integrated into your backend as an `Express middleware`.
 
    import { remultApi } from 'remult/remult-express'
 
-   export const api = remultApi()
+   export const api = remultApi({})
    ```
 
 2. **Register the Middleware**
@@ -4361,7 +4367,7 @@ Remult is integrated into your backend as Fastify middleware.
 
    import { remultApi } from 'remult/remult-fastify'
 
-   export const api = remultApi()
+   export const api = remultApi({})
    ```
 
 2. **Register the Middleware**
@@ -4459,7 +4465,7 @@ Remult is integrated into your backend using the `remultApi` adapter for Hono.
    ```ts [src/server/api.ts]
    import { remultApi } from 'remult/remult-hono'
 
-   export const api = remultApi()
+   export const api = remultApi({})
    ```
 
    :::
@@ -4470,8 +4476,7 @@ Remult is integrated into your backend using the `remultApi` adapter for Hono.
 
 ::: code-group
 
-```ts{4,9} [src/server/index.ts]
-
+```ts{3,8} [src/server/index.ts]
 import { Hono } from 'hono'
 import { serve } from '@hono/node-server'
 import { api } from './api.js'
@@ -4549,31 +4554,35 @@ npm run dev-node
 
 # Server - Elysia
 
-# Hono
+# Elysia
 
 ### Install Required Packages
 
-To set up your Hono server with Remult, install the necessary packages:
+To set up your Elysia server with Remult, install the necessary packages:
 
 ```sh
-npm install hono @hono/node-server remult
+npm install elysia @elysiajs/node remult
 npm install --save-dev tsx
 ```
 
 ### Bootstrap Remult in the Backend
 
-Remult is integrated into your backend using the `remultApi` adapter for Hono.
+Remult is integrated into your backend using the `remultApi` adapter for Hono
+
+:::info
+Yes, the Elysia shares the same adapter as Hono!
+:::
 
 1. **Create the API File**
 
-   Create a new `api.ts` file in the `src/server/` folder with the following code to set up the Remult middleware for Hono:
+   Create a new `api.ts` file in the `src/server/` folder with the following code to set up the Remult middleware:
 
    ::: code-group
 
    ```ts [src/server/api.ts]
    import { remultApi } from 'remult/remult-hono'
 
-   export const api = remultApi()
+   export const api = remultApi({})
    ```
 
    :::
@@ -4584,32 +4593,31 @@ Remult is integrated into your backend using the `remultApi` adapter for Hono.
 
 ::: code-group
 
-```ts{4,9} [src/server/index.ts]
+```ts{3,7} [src/server/index.ts]
+import { Elysia } from "elysia";
+import { node } from "@elysiajs/node";
+import { api } from "./api.js";
 
-import { Hono } from 'hono'
-import { serve } from '@hono/node-server'
-import { api } from './api.js'
+const elysiaApp = new Elysia({ adapter: node() })
+  .get("/", () => "Elysia meets Remult!")
+  .mount("", api.fetch);
 
-const app = new Hono()
-app.get("/", (c) => c.text("Hono meets Remult!"));
+elysiaApp.listen(3000, () =>
+  console.log("Server running on http://localhost:3000")
+);
 
-app.route('', api)
-
-serve(app, (info) => {
-  console.log(`Listening on http://localhost:${info.port}`);
-});
 ```
 
 :::
 ::: warning ESM Configuration
-When using ECMAScript modules (`esm`) in Hono, ensure you include the `.js` suffix when importing files, as shown in the `import { api } from './api.js'` statement.
+When using ECMAScript modules (`esm`) in Elysia, ensure you include the `.js` suffix when importing files, as shown in the `import { api } from './api.js'` statement.
 
 Also, make sure that `"type": "module"` is set in your `package.json`.
 :::
 
 #### Create the Server's TypeScript Configuration
 
-In the root folder, create a TypeScript configuration file named `tsconfig.server.json` for the Hono server:
+In the root folder, create a TypeScript configuration file named `tsconfig.server.json` for the Elysia server:
 
 ::: code-group
 
@@ -4633,7 +4641,7 @@ This configuration enables TypeScript decorators, ensures compatibility with ECM
 
 #### Create an `npm` Script to Start the API Server
 
-Add a new script in your `package.json` to start the Hono server in development mode:
+Add a new script in your `package.json` to start the Elysia server in development mode:
 
 ::: code-group
 
@@ -4649,7 +4657,7 @@ Add a new script in your `package.json` to start the Hono server in development 
 - `--env-file=.env`: Ensures environment variables are loaded from the `.env` file.
 - `--tsconfig tsconfig.server.json`: Specifies the TypeScript configuration file for the server.
 
-#### Start the Hono Server
+#### Start the Elysia Server
 
 Open a new terminal and run the following command to start the development server:
 
@@ -4657,7 +4665,7 @@ Open a new terminal and run the following command to start the development serve
 npm run dev-node
 ```
 
-`tsx` will watch for file changes, automatically restarting the Hono server whenever updates are made.
+`tsx` will watch for file changes, automatically restarting the Elysia server whenever updates are made.
 
 
 
@@ -4687,7 +4695,7 @@ Remult is integrated into your backend as a Hapi plugin.
 
    import { remultApi } from 'remult/remult-hapi'
 
-   export const api = remultApi()
+   export const api = remultApi({})
    ```
 
 2. **Register the Middleware**
@@ -4888,7 +4896,7 @@ import { remultApi } from 'remult/remult-express'
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
 
-  app.use(remultApi()) // Integrate Remult as middleware
+  app.use(remultApi({})) // Integrate Remult as middleware
 
   await app.listen(3002) // Start server on port 3002
 }
@@ -6728,6 +6736,14 @@ Accessing the underlying database directly in Remult provides the flexibility to
 
 # Escape Hatches - Using in Non-Remult Routes
 
+---
+keywords:
+  [
+    Error: remult object was requested outside of a valid context,
+    try running it within initApi or a remult request cycle,
+  ]
+---
+
 # Using Remult in Non-Remult Routes
 
 When using the CRUD api or [BackendMethods](./backendMethods.md), `remult` is automatically available. Still, there are many use cases where you may want to user remult in your own routes or other code without using `BackendMethods` but would still want to take advantage of `Remult` as an ORM and use it to check for user validity, etc...
@@ -6978,6 +6994,7 @@ import { remultApi } from 'remult/remult-hapi'
 :::
 
 
+
 # Escape Hatches - Avoiding Decorators
 
 # Working without decorators
@@ -7060,6 +7077,18 @@ This is the same backend method that is detailed in the [Backend methods of the 
 
 
 # Escape Hatches - Extensibility
+
+---
+tags:
+  - options
+  - bespoke options
+  - customizing options
+  - type augmentation
+  - module augmentation
+  - UserInfo
+  - RemultContext
+  - context
+---
 
 # Extensibility
 
@@ -7212,6 +7241,7 @@ or in an entity's saving event:
 By leveraging module augmentation, you can tailor Remult to your specific needs, adding custom options and extending interfaces to suit your application's requirements.
 
 
+
 # Integrations - Open API
 
 # Adding Swagger and openApi
@@ -7235,7 +7265,7 @@ To add swagger to a `remult` application follow these steps:
    import { remultApi } from 'remult/remult-express';
 
    const app = express();
-   let api = remultApi();
+   let api = remultApi({});
 
    app.use(api);
    const openApiDocument = api.openApiDoc({ title: "remult-react-todo" });
@@ -9328,6 +9358,14 @@ export const api = remultApi({
 
 # API Reference - EntityFilter
 
+---
+tags:
+  - Where
+  - Filter
+  - Entity Where
+  - Entity Filter
+---
+
 # EntityFilter
 
 Used to filter the desired result set
@@ -9466,6 +9504,7 @@ where: {
   }
 }
 ```
+
 
 
 # API Reference - EntityMetadata
@@ -10774,7 +10813,13 @@ Arguments:
 
 
 
-# Introducing Remult: The Backend to Frontend Framework You Always Wanted
+# Remult Blog - Introducing Remult
+
+---
+title: "Introducing Remult: The Backend to Frontend Framework You Always Wanted"
+sidebar: false
+editLink: false
+---
 
 > March 14, 2023 | Noam Honig
 
@@ -10849,6 +10894,7 @@ So we open sourced the framework, to enable other lazy developers like us to be 
 Check out [Remult](https://remult.dev), and if you like it, give it a star.  Let us know what you’d like to see next, and also feel free to contribute to the project.
 
 In our next post, we’ll do a roundup of tools in the ecosystem looking to solve similar challenges though different approaches, and unpack where Remult fits in, and what it’s optimized for.
+
 
 
 # SvelteKit - Tutorial - Go further / Extra
