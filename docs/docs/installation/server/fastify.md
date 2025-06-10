@@ -22,7 +22,7 @@ Remult is integrated into your backend as Fastify middleware.
 
    import { remultApi } from 'remult/remult-fastify'
 
-   export const api = remultApi()
+   export const api = remultApi({})
    ```
 
 2. **Register the Middleware**
