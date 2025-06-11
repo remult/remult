@@ -269,11 +269,11 @@ export interface ServerHandleResponse {
 }
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
-  withRemult(req: RequestType, res: TypicalResponse, next: VoidFunction): void
+  withRemult(req: RequestType, tr: TypicalResponse, next: VoidFunction): void
   registerRouter(r: GenericRouter<RequestType>): void
   handle(
     req: RequestType,
-    gRes?: TypicalResponse,
+    gTr?: TypicalResponse,
   ): Promise<ServerHandleResponse | undefined>
   withRemultAsync<T>(
     request: RequestType | undefined,
@@ -509,9 +509,9 @@ export class RemultServerImplementation<RequestType>
 
   handle(
     req: RequestType,
-    gRes?: TypicalResponse,
+    gTr?: TypicalResponse,
   ): Promise<ServerHandleResponse | undefined> {
-    return this.getRouteImpl().handle(req, gRes)
+    return this.getRouteImpl().handle(req, gTr)
   }
   registeredRouter = false
   registerRouter(r: GenericRouter<RequestType>) {
@@ -813,12 +813,12 @@ export class RemultServerImplementation<RequestType>
       myReq: DataApiRequest,
       myRes: DataApiResponse,
       genReq: GenericRequestInfo,
-      origRes: TypicalResponse,
+      origTr: TypicalResponse,
       origReq: RequestType,
     ) => Promise<void>,
     doNotReuseInitRequest?: boolean,
   ) {
-    return async (req: RequestType, origRes: TypicalResponse) => {
+    return async (req: RequestType, origTr: TypicalResponse) => {
       const genReq = req ? this.coreOptions.buildGenericRequestInfo(req) : {}
       if (req) {
         if (!genReq.query) {
@@ -828,7 +828,7 @@ export class RemultServerImplementation<RequestType>
       }
       let myReq = new RequestBridgeToDataApiRequest(genReq)
       let myRes = new ResponseBridgeToDataApiResponse(
-        origRes,
+        origTr,
         req,
         genReq,
         this.options.error,
@@ -843,14 +843,14 @@ export class RemultServerImplementation<RequestType>
             myReq,
             myRes,
             genReq,
-            origRes,
+            origTr,
             req,
           )
         else
           await this.runWithRemult(async (remult) => {
             if (req) {
               ;(remult.context as any).request = req
-              ;(remult.context as any).res = origRes
+              ;(remult.context as any).res = origTr
               remultStatic.asyncContext.setInInitRequest(true)
               try {
                 let user
@@ -877,14 +877,14 @@ export class RemultServerImplementation<RequestType>
                   }
                 }
 
-                await what(remult, myReq, myRes, genReq, origRes, req)
+                await what(remult, myReq, myRes, genReq, origTr, req)
               } finally {
                 remultStatic.asyncContext.setInInitRequest(false)
               }
             }
           })
       } catch (err: any) {
-        if (origRes) myRes.error(err, undefined)
+        if (origTr) myRes.error(err, undefined)
         else throw err
       }
     }

@@ -102,7 +102,7 @@ class HonoRouteImplementation extends RouteImplementation<
         try {
           let result: any
           let sse: SSEStreamingApi
-          const gRes: TypicalResponse = {
+          const trToUse: TypicalResponse = {
             cookie: (name: string) => {
               return {
                 set: (value: string, options = {}) => {
@@ -125,7 +125,7 @@ class HonoRouteImplementation extends RouteImplementation<
               },
               status: (status: number) => {
                 result = c.status(status as any)
-                return gRes.res
+                return trToUse.res
               },
               end: () => {
                 if (sse) sse.close()
@@ -158,7 +158,7 @@ class HonoRouteImplementation extends RouteImplementation<
             },
           }
 
-          handler(c as any, gRes, () => {})
+          handler(c as any, trToUse, () => {})
         } catch (err) {
           reject(err)
         }

@@ -125,7 +125,7 @@ class HapiRouteImplementation extends RouteImplementation<Request> {
         let status = 200
         let stream: PassThrough
 
-        const response: TypicalResponse = {
+        const trToUse: TypicalResponse = {
           cookie: (name) => {
             return {
               set: (value, options = {}) => {
@@ -148,7 +148,7 @@ class HapiRouteImplementation extends RouteImplementation<Request> {
             },
             status(statusCode) {
               status = statusCode
-              return response.res
+              return trToUse.res
             },
             end() {
               resolve(h.response().code(status))
@@ -199,7 +199,7 @@ class HapiRouteImplementation extends RouteImplementation<Request> {
         })
 
         try {
-          handler(request as any, response, () => {})
+          handler(request as any, trToUse, () => {})
         } catch (err) {
           reject(err)
         }

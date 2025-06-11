@@ -29,14 +29,14 @@ export function remultApi(
     let sseResponse: Response | undefined = undefined
     ;(event.locals as any)['_tempOnClose'] = () => {}
 
-    const res: TypicalResponse = {
+    const trToUse: TypicalResponse = {
       res: {
         end: () => {},
         json: () => {},
         send: () => {},
         redirect: () => {},
         status: () => {
-          return res.res
+          return trToUse.res
         },
       },
       cookie: (name) => {
@@ -63,18 +63,18 @@ export function remultApi(
             const contentType = headers['Content-Type']
             if (contentType === 'text/event-stream') {
               const messages: string[] = []
-              res.sse.write = (x) => messages.push(x)
+              trToUse.sse.write = (x) => messages.push(x)
               const stream = new ReadableStream({
                 start: (controller) => {
                   for (const message of messages) {
                     controller.enqueue(message)
                   }
-                  res.sse.write = (data) => {
+                  trToUse.sse.write = (data) => {
                     controller.enqueue(data)
                   }
                 },
                 cancel: () => {
-                  res.sse.write = () => {}
+                  trToUse.sse.write = () => {}
                   ;(event.locals as any)['_tempOnClose']()
                 },
               })
@@ -85,7 +85,7 @@ export function remultApi(
       },
     }
 
-    const responseFromRemultHandler = await result.handle(event, res)
+    const responseFromRemultHandler = await result.handle(event, trToUse)
     return toResponse({
       sseResponse,
       remultHandlerResponse: responseFromRemultHandler,

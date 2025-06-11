@@ -23,7 +23,7 @@ export function remultNext(
     let sseResponse: boolean = false
     ;(req as any)['_tempOnClose'] = () => {}
 
-    const response: TypicalResponse = {
+    const trToUse: TypicalResponse = {
       cookie: (name) => {
         return {
           set: (value, options = {}) => {
@@ -91,7 +91,7 @@ export function remultNext(
           } else {
             ;(res as any).statusCode = statusCode
           }
-          return response.res
+          return trToUse.res
         },
       },
       sse: {
@@ -115,7 +115,7 @@ export function remultNext(
             const contentType = headers['Content-Type']
             if (contentType === 'text/event-stream') {
               sseResponse = true
-              response.sse.write = (data) => {
+              trToUse.sse.write = (data) => {
                 if ((res as any).write) {
                   ;(res as any).write(data)
                 }
@@ -133,7 +133,7 @@ export function remultNext(
       }
     }
 
-    const responseFromRemultHandler = await result.handle(req, response)
+    const responseFromRemultHandler = await result.handle(req, trToUse)
 
     if (sseResponse) {
       // SSE response is already handled by writeHead
@@ -255,11 +255,11 @@ export function remultApi(
       let sseResponse: Response | undefined = undefined
       ;(req as any)['_tempOnClose'] = () => {}
 
-      const res: TypicalResponse = {
+      const trToUse: TypicalResponse = {
         cookie: (name) => {
           return {
             set: (value, options = {}) => {
-              ;(res as any).setHeader(
+              ;(trToUse as any).setHeader(
                 'Set-Cookie',
                 serialize(name, value, mergeOptions(options)),
               )
@@ -271,7 +271,7 @@ export function remultApi(
                 : undefined
             },
             delete: (options = {}) => {
-              ;(res as any).setHeader(
+              ;(trToUse as any).setHeader(
                 'Set-Cookie',
                 serialize(name, '', mergeOptions({ ...options, maxAge: 0 })),
               )
@@ -286,7 +286,7 @@ export function remultApi(
           json: () => {},
           send: () => {},
           status: () => {
-            return res.res
+            return trToUse.res
           },
         },
         sse: {
@@ -296,18 +296,18 @@ export function remultApi(
               const contentType = headers['Content-Type']
               if (contentType === 'text/event-stream') {
                 const messages: string[] = []
-                res.sse.write = (x) => messages.push(x)
+                trToUse.sse.write = (x) => messages.push(x)
                 const stream = new ReadableStream({
                   start: (controller) => {
                     for (const message of messages) {
                       controller.enqueue(encoder.encode(message))
                     }
-                    res.sse.write = (data) => {
+                    trToUse.sse.write = (data) => {
                       controller.enqueue(encoder.encode(data))
                     }
                   },
                   cancel: () => {
-                    res.sse.write = () => {}
+                    trToUse.sse.write = () => {}
                     ;(req as any)['_tempOnClose']()
                   },
                 })
@@ -318,13 +318,13 @@ export function remultApi(
         },
       }
 
-      const responseFromRemultHandler = await result.handle(req, res)
+      const responseFromRemultHandler = await result.handle(req, trToUse)
       if (sseResponse !== undefined) {
         return sseResponse
       }
       if (responseFromRemultHandler) {
         if (responseFromRemultHandler.redirectUrl) {
-          res.res.redirect(
+          trToUse.res.redirect(
             responseFromRemultHandler.redirectUrl,
             responseFromRemultHandler.statusCode || 307,
           )

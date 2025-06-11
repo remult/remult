@@ -43,7 +43,7 @@ export function remultApi(
   const handler = async (event: H3Event) => {
     let sseResponse: Response | undefined = undefined
 
-    const response: TypicalResponse = {
+    const trToUse: TypicalResponse = {
       cookie: (name) => {
         return {
           set: (value, options = {}) => {
@@ -73,7 +73,7 @@ export function remultApi(
         },
         json: () => {},
         status: () => {
-          return response.res
+          return trToUse.res
         },
       },
       // setHeaders: (headers) => {
@@ -98,7 +98,7 @@ export function remultApi(
     //   })
     // }
 
-    const remultHandlerResponse = await result.handle(event, response)
+    const remultHandlerResponse = await result.handle(event, trToUse)
     return toResponse({
       // sseResponse,
       remultHandlerResponse,

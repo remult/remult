@@ -3591,7 +3591,6 @@ export type GenericRequestHandler<RequestType> = (
   tr: TypicalResponse,
   next: VoidFunction,
 ) => void
-//[ ] TypicalResponse from TBD is not exported
 export interface GenericRequestInfo {
   url?: string
   method?: any
@@ -3681,11 +3680,11 @@ export interface RawRoutes<RequestType> {
 //[ ] TemplateLiteralType from TBD is not exported
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
-  withRemult(req: RequestType, res: TypicalResponse, next: VoidFunction): void
+  withRemult(req: RequestType, tr: TypicalResponse, next: VoidFunction): void
   registerRouter(r: GenericRouter<RequestType>): void
   handle(
     req: RequestType,
-    gRes?: TypicalResponse,
+    gTr?: TypicalResponse,
   ): Promise<ServerHandleResponse | undefined>
   withRemultAsync<T>(
     request: RequestType | undefined,
@@ -3844,6 +3843,18 @@ export declare function TestApiDataProvider(
   options?: Pick<RemultServerOptions<unknown>, "ensureSchema" | "dataProvider">,
 ): RestDataProvider
 //[ ] RestDataProvider from TBD is not exported
+export interface TypicalResponse {
+  res: GenericResponse
+  cookie(name: string): {
+    set(value: string, opts?: SerializeOptions): void
+    get(opts?: ParseOptions): string | undefined
+    delete(opts?: SerializeOptions): void
+  }
+  sse: ResponseRequiredForSSE
+}
+//[ ] SerializeOptions from TBD is not exported
+//[ ] ParseOptions from TBD is not exported
+//[ ] ResponseRequiredForSSE from TBD is not exported
 ````
 
 ## ./remult-fastify.js
