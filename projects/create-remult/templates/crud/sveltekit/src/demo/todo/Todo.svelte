@@ -40,7 +40,7 @@
     event.preventDefault();
     const newTask = await repo(Task).insert({ title: newTaskTitle });
     if (!liveQuery) {
-      tasks = [newTask, ...tasks];
+      tasks.unshift(newTask);
     }
     newTaskTitle = "";
   };
