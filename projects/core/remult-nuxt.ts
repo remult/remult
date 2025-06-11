@@ -1,19 +1,19 @@
-import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 import type { H3Event } from 'h3'
 import { getRequestURL, readBody, setCookie } from 'h3'
 import type {
   GenericResponse,
+  RemultServer,
   RemultServerCore,
   RemultServerOptions,
-  RemultServer,
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
+import { toResponse } from './server/toResponse.js'
 import {
   mergeOptions,
   parse,
   type SerializeOptions,
 } from './src/remult-cookie.js'
-import { toResponse } from './server/toResponse.js'
+import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 
 export function remultApi(
   options: RemultServerOptions<H3Event>,

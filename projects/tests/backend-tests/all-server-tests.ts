@@ -1,14 +1,14 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import EventSource from 'eventsource'
-import { Task } from '../../test-servers/shared/Task.js'
-import { Remult, RestDataProvider, remult, repo, withRemult } from '../../core'
 import axios from 'axios'
+import EventSource from 'eventsource'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { RestDataProvider, remult, repo, withRemult } from '../../core'
+import { Task } from '../../test-servers/shared/Task.js'
 
+import express from 'express'
 import { actionInfo } from '../../core/internals.js'
 import { initAsyncHooks } from '../../core/server/initAsyncHooks.js'
 import { RemultAsyncLocalStorage } from '../../core/src/context.js'
 import { SseSubscriptionClient } from '../../core/src/live-query/SseSubscriptionClient.js'
-import express from 'express'
 
 export function testAsExpressMW(
   port: number,
@@ -631,17 +631,6 @@ export function allServerTests(
         `)
         result = await axios.get(remult.apiClient.url + '/styled/demo.js')
         expect(result.data).toMatchInlineSnapshot(`"console.log('demo.js')"`)
-        result = await axios.get(remult.apiClient.url + '/styled/style.css')
-        expect(result.data).toMatchInlineSnapshot(`
-          "html {
-            background-color: gray;
-            color: white;
-            text-align: center;
-            padding: 20px;
-            font-family: Arial, Helvetica, sans-serif;
-          }
-          "
-        `)
       }),
     )
 

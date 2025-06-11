@@ -1,6 +1,7 @@
+import path from 'path'
 import { remultNext } from 'remult/remult-next'
-import { Task } from '../../shared/Task'
 import { Module } from 'remult/server'
+import { Task } from '../../shared/Task'
 
 // TODO JYC: to remove and use only the non dist ? (failing for next!)
 export const someRoutes = new Module({
@@ -53,18 +54,21 @@ export const someRoutes = new Module({
       res.send(`<h1>deleteCookie</h1><p>deleted</p> ${cookieNav}`)
     })
 
-    add('/styled*').staticFolder(
-      '../../../../shared/modules/someRoutes/styled',
-      {
-        // packageName: 'jyc-pck',
-        editFile(filePath, content) {
-          if (filePath.endsWith('index.html')) {
-            return content.replace('<b>Styled</b>', '<b>Styled Replaced!</b>')
-          }
-          return content
-        },
-      },
+    const rootRepo = process.cwd().split('projects/test-servers')
+    const pathStatic = path.join(
+      rootRepo[0],
+      'projects/test-servers/shared/modules/someRoutes/styled',
     )
+
+    add('/styled*').staticFolder(pathStatic, {
+      // packageName: 'jyc-pck',
+      editFile(filePath, content) {
+        if (filePath.endsWith('index.html')) {
+          return content.replace('<b>Styled</b>', '<b>Styled Replaced!</b>')
+        }
+        return content
+      },
+    })
   },
 })
 

@@ -23,12 +23,18 @@ import {
   InMemoryLiveQueryStorage,
   LiveQueryPublisher,
 } from '../src/live-query/SubscriptionServer.js'
-import { IdEntity } from '../src/remult3/IdEntity.js'
 import { Fields } from '../src/remult3/Fields.js'
+import { IdEntity } from '../src/remult3/IdEntity.js'
 
+import fs from 'fs'
+import { extname, join } from 'path'
+import { isOfType } from '../src/isOfType.js'
+import type { ParseOptions, SerializeOptions } from '../src/remult-cookie.js'
+import { remultStatic } from '../src/remult-static.js'
 import { Entity } from '../src/remult3/entity.js'
 import { getEntityKey } from '../src/remult3/getEntityRef.js'
 import type { EntityMetadata, Repository } from '../src/remult3/remult3.js'
+import { serverActionField } from '../src/server-action-info.js'
 import type {
   ActionInterface,
   ForbiddenError,
@@ -37,14 +43,8 @@ import type {
   queuedJobInfoResponse,
 } from '../src/server-action.js'
 import { Action, classBackendMethodsArray } from '../src/server-action.js'
-import { serverActionField } from '../src/server-action-info.js'
-import { remultStatic } from '../src/remult-static.js'
-import remultAdminHtml, { buildEntityInfo } from './remult-admin.js'
-import { isOfType } from '../src/isOfType.js'
 import { initDataProviderOrJson } from './initDataProviderOrJson.js'
-import fs from 'fs'
-import { join, extname } from 'path'
-import type { ParseOptions, SerializeOptions } from '../src/remult-cookie.js'
+import remultAdminHtml, { buildEntityInfo } from './remult-admin.js'
 
 export interface RemultServerOptions<RequestType> {
   /**Entities to use for the api */
@@ -1591,8 +1591,6 @@ export class RouteImplementation<RequestType> {
           editFile?: (filePath: string, content: string) => string
         },
       ) => {
-        console.log(`folderPath`, folderPath)
-
         const defaultContentTypes: Record<string, string> = {
           js: 'text/javascript',
           css: 'text/css',
@@ -1625,7 +1623,7 @@ export class RouteImplementation<RequestType> {
                 }
                 prefix = join(prefix, '..')
                 level++
-              } while (level < 3)
+              } while (level < 5)
 
               if (!found) {
                 console.error(`Package ${options.packageName} not found!`)
