@@ -3588,9 +3588,10 @@ export declare class DataProviderLiveQueryStorage
 //[ ] StoredQuery from TBD is not exported
 export type GenericRequestHandler<RequestType> = (
   req: RequestType,
-  res: GenericResponse,
+  tr: TypicalResponse,
   next: VoidFunction,
 ) => void
+//[ ] TypicalResponse from TBD is not exported
 export interface GenericRequestInfo {
   url?: string
   method?: any
@@ -3615,16 +3616,9 @@ export interface GenericResponse {
       | 308
       | ({} & number),
   ): void
-  cookie(name: string): {
-    set(value: string, opts?: SerializeOptions): void
-    get(opts?: ParseOptions): string | undefined
-    delete(opts?: SerializeOptions): void
-  }
   status(statusCode: number): GenericResponse
   end(): void
 }
-//[ ] SerializeOptions from TBD is not exported
-//[ ] ParseOptions from TBD is not exported
 export type GenericRouter<RequestType> = {
   route(path: string): SpecificRoute<RequestType>
 }
@@ -3687,11 +3681,11 @@ export interface RawRoutes<RequestType> {
 //[ ] TemplateLiteralType from TBD is not exported
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
-  withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): void
+  withRemult(req: RequestType, res: TypicalResponse, next: VoidFunction): void
   registerRouter(r: GenericRouter<RequestType>): void
   handle(
     req: RequestType,
-    gRes?: GenericResponse,
+    gRes?: TypicalResponse,
   ): Promise<ServerHandleResponse | undefined>
   withRemultAsync<T>(
     request: RequestType | undefined,

@@ -1,12 +1,11 @@
 import type { Handle, RequestEvent, RequestHandler } from '@sveltejs/kit'
-import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 import type {
-  GenericResponse,
   RemultServer,
   RemultServerCore,
   RemultServerOptions,
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
+import type { TypicalResponse } from './server/remult-api-server.js'
 import { toResponse } from './server/toResponse.js'
 import { mergeOptions, parse } from './src/remult-cookie.js'
 
@@ -30,11 +29,16 @@ export function remultApi(
     let sseResponse: Response | undefined = undefined
     ;(event.locals as any)['_tempOnClose'] = () => {}
 
-    const response: GenericResponse & ResponseRequiredForSSE = {
-      end: () => {},
-      json: () => {},
-      send: () => {},
-      redirect: () => {},
+    const res: TypicalResponse = {
+      res: {
+        end: () => {},
+        json: () => {},
+        send: () => {},
+        redirect: () => {},
+        status: () => {
+          return res.res
+        },
+      },
       cookie: (name) => {
         return {
           set: (value, options = {}) => {
@@ -49,40 +53,39 @@ export function remultApi(
           },
         }
       },
-      status: () => {
-        return response
-      },
       // setHeaders: (headers) => {
       //   event.setHeaders(headers)
       // },
-      write: () => {},
-      writeHead: (status, headers) => {
-        if (status === 200 && headers) {
-          const contentType = headers['Content-Type']
-          if (contentType === 'text/event-stream') {
-            const messages: string[] = []
-            response.write = (x) => messages.push(x)
-            const stream = new ReadableStream({
-              start: (controller) => {
-                for (const message of messages) {
-                  controller.enqueue(message)
-                }
-                response.write = (data) => {
-                  controller.enqueue(data)
-                }
-              },
-              cancel: () => {
-                response.write = () => {}
-                ;(event.locals as any)['_tempOnClose']()
-              },
-            })
-            sseResponse = new Response(stream, { headers })
+      sse: {
+        write: () => {},
+        writeHead: (status, headers) => {
+          if (status === 200 && headers) {
+            const contentType = headers['Content-Type']
+            if (contentType === 'text/event-stream') {
+              const messages: string[] = []
+              res.sse.write = (x) => messages.push(x)
+              const stream = new ReadableStream({
+                start: (controller) => {
+                  for (const message of messages) {
+                    controller.enqueue(message)
+                  }
+                  res.sse.write = (data) => {
+                    controller.enqueue(data)
+                  }
+                },
+                cancel: () => {
+                  res.sse.write = () => {}
+                  ;(event.locals as any)['_tempOnClose']()
+                },
+              })
+              sseResponse = new Response(stream, { headers })
+            }
           }
-        }
+        },
       },
     }
 
-    const responseFromRemultHandler = await result.handle(event, response)
+    const responseFromRemultHandler = await result.handle(event, res)
     return toResponse({
       sseResponse,
       remultHandlerResponse: responseFromRemultHandler,

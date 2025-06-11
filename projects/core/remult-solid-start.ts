@@ -1,13 +1,10 @@
-import type { APIEvent } from '@solidjs/start/server' // don't remove - augments requestEvent
 import { getRequestEvent, type RequestEvent } from 'solid-js/web'
-import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
-import type {
-  GenericResponse,
-  RemultServerCore,
-  RemultServerOptions,
-} from './server/index.js'
+import type { RemultServerCore, RemultServerOptions } from './server/index.js'
 import { createRemultServer } from './server/index.js'
+import type { TypicalResponse } from './server/remult-api-server.js'
 import { toResponse } from './server/toResponse.js'
+
+import type { APIEvent } from '@solidjs/start/server' // don't remove - augments requestEvent
 type localAPIEvent = APIEvent
 
 export function remultApi(
@@ -30,7 +27,18 @@ export function remultApi(
     let sseResponse: Response | undefined = undefined
     if (event) event.locals['_tempOnClose'] = () => {}
 
-    const response: GenericResponse & ResponseRequiredForSSE = {
+    const response: TypicalResponse = {
+      res: {
+        redirect: (url, statusCode = 307) => {
+          event?.locals.redirect(url, statusCode)
+        },
+        end: () => {},
+        json: () => {},
+        send: () => {},
+        status: () => {
+          return response.res
+        },
+      },
       cookie: (name) => {
         return {
           set: (value, options = {}) => {
@@ -44,39 +52,32 @@ export function remultApi(
           },
         }
       },
-      redirect: (url, statusCode = 307) => {
-        event?.locals.redirect(url, statusCode)
-      },
-      end: () => {},
-      json: () => {},
-      send: () => {},
-      status: () => {
-        return response
-      },
-      write: () => {},
-      writeHead: (status, headers) => {
-        if (status === 200 && headers) {
-          const contentType = headers['Content-Type']
-          if (contentType === 'text/event-stream') {
-            const messages: string[] = []
-            response.write = (x) => messages.push(x)
-            const stream = new ReadableStream({
-              start: (controller) => {
-                for (const message of messages) {
-                  controller.enqueue(message)
-                }
-                response.write = (data) => {
-                  controller.enqueue(data)
-                }
-              },
-              cancel: () => {
-                response.write = () => {}
-                event?.locals?.['_tempOnClose']?.()
-              },
-            })
-            sseResponse = new Response(stream, { headers })
+      sse: {
+        write: () => {},
+        writeHead: (status, headers) => {
+          if (status === 200 && headers) {
+            const contentType = headers['Content-Type']
+            if (contentType === 'text/event-stream') {
+              const messages: string[] = []
+              response.sse.write = (x) => messages.push(x)
+              const stream = new ReadableStream({
+                start: (controller) => {
+                  for (const message of messages) {
+                    controller.enqueue(message)
+                  }
+                  response.sse.write = (data) => {
+                    controller.enqueue(data)
+                  }
+                },
+                cancel: () => {
+                  response.sse.write = () => {}
+                  event?.locals?.['_tempOnClose']?.()
+                },
+              })
+              sseResponse = new Response(stream, { headers })
+            }
           }
-        }
+        },
       },
     }
 

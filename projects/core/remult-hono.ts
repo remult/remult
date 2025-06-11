@@ -5,17 +5,16 @@ import type { BlankInput } from 'hono/types'
 import {
   createRemultServer,
   type GenericRequestHandler,
-  type GenericResponse,
   type RemultServerCore,
   type RemultServerOptions,
   type SpecificRoute,
 } from './server/index.js'
+import type { TypicalResponse } from './server/remult-api-server.js'
 import {
   RouteImplementation,
   type ServerCoreOptions,
 } from './server/remult-api-server.js'
 import { mergeOptions, type SerializeOptions } from './src/remult-cookie.js'
-import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 
 class HonoRouteImplementation extends RouteImplementation<
   Context<Env, '', BlankInput>
@@ -103,10 +102,10 @@ class HonoRouteImplementation extends RouteImplementation<
         try {
           let result: any
           let sse: SSEStreamingApi
-          const gRes: GenericResponse & ResponseRequiredForSSE = {
-            cookie: (name) => {
+          const gRes: TypicalResponse = {
+            cookie: (name: string) => {
               return {
-                set: (value, options = {}) => {
+                set: (value: string, options = {}) => {
                   setCookie(c, name, value, toOptions(mergeOptions(options)))
                 },
                 get: (options = {}) => {
@@ -117,41 +116,45 @@ class HonoRouteImplementation extends RouteImplementation<
                 },
               }
             },
-            redirect: (url, statusCode = 307) => {
-              resolve(c.redirect(url as any, statusCode as any))
-            },
-            json: (data: any) => {
-              resolve(c.json(data))
-            },
-            status: (status: number) => {
-              result = c.status(status as any)
-              return gRes
-            },
-            end: () => {
-              if (sse) sse.close()
-              else resolve(c.body(null))
-            },
-            send: (data: string, headers) => {
-              resolve(c.html(data))
+            res: {
+              redirect: (url, statusCode = 307) => {
+                resolve(c.redirect(url as any, statusCode as any))
+              },
+              json: (data: any) => {
+                resolve(c.json(data))
+              },
+              status: (status: number) => {
+                result = c.status(status as any)
+                return gRes.res
+              },
+              end: () => {
+                if (sse) sse.close()
+                else resolve(c.body(null))
+              },
+              send: (data) => {
+                resolve(c.html(data))
+              },
             },
             // setHeaders: (headers) => {
             //   Object.entries(headers).forEach(([key, value]) => {
             //     c.header(key, value)
             //   })
             // },
-            write: (data: string) => {
-              sse.write(data)
-            },
-            writeHead: (status: number, headers: any) => {
-              resolve(
-                streamSSE(c, (s) => {
-                  sse = s
-                  return new Promise((res) => {
-                    ;(c as any)['_tempOnClose'] = (x: VoidFunction) =>
-                      sse.onAbort(() => x())
-                  })
-                }),
-              )
+            sse: {
+              write: (data: string) => {
+                sse.write(data)
+              },
+              writeHead: (status: number, headers: any) => {
+                resolve(
+                  streamSSE(c, (s) => {
+                    sse = s
+                    return new Promise((res) => {
+                      ;(c as any)['_tempOnClose'] = (x: VoidFunction) =>
+                        sse.onAbort(() => x())
+                    })
+                  }),
+                )
+              },
             },
           }
 

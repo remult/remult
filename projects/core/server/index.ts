@@ -30,6 +30,7 @@ export type {
   RemultServerCore,
   RemultServerOptions,
   SpecificRoute,
+  TypicalResponse,
 } from './remult-api-server.js'
 export { TestApiDataProvider } from './test-api-data-provider.js'
 

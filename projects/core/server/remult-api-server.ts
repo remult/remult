@@ -256,7 +256,7 @@ export function createRemultServerCore<RequestType>(
 
 export type GenericRequestHandler<RequestType> = (
   req: RequestType,
-  res: GenericResponse,
+  tr: TypicalResponse,
   next: VoidFunction,
 ) => void
 
@@ -269,11 +269,11 @@ export interface ServerHandleResponse {
 }
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
-  withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): void
+  withRemult(req: RequestType, res: TypicalResponse, next: VoidFunction): void
   registerRouter(r: GenericRouter<RequestType>): void
   handle(
     req: RequestType,
-    gRes?: GenericResponse,
+    gRes?: TypicalResponse,
   ): Promise<ServerHandleResponse | undefined>
   withRemultAsync<T>(
     request: RequestType | undefined,
@@ -318,6 +318,16 @@ export interface GenericRequestInfo {
   params?: any
 }
 
+export interface TypicalResponse {
+  res: GenericResponse
+  cookie(name: string): {
+    set(value: string, opts?: SerializeOptions): void
+    get(opts?: ParseOptions): string | undefined
+    delete(opts?: SerializeOptions): void
+  }
+  sse: ResponseRequiredForSSE
+}
+
 export interface GenericResponse {
   json(data: any): void
   send(html: string, headers?: Record<string, string>): void
@@ -336,11 +346,11 @@ export interface GenericResponse {
       | 308
       | ({} & number),
   ): void
-  cookie(name: string): {
-    set(value: string, opts?: SerializeOptions): void
-    get(opts?: ParseOptions): string | undefined
-    delete(opts?: SerializeOptions): void
-  }
+  // cookie(name: string): {
+  //   set(value: string, opts?: SerializeOptions): void
+  //   get(opts?: ParseOptions): string | undefined
+  //   delete(opts?: SerializeOptions): void
+  // }
   status(statusCode: number): GenericResponse //exists for express and next and not in opine(In opine it's setStatus)
   end(): void
   // setHeaders(headers: Record<string, string>): void
@@ -480,12 +490,12 @@ export class RemultServerImplementation<RequestType>
   subscriptionServer?: SubscriptionServer
   withRemult = async (
     req: RequestType,
-    res: GenericResponse,
+    tr: TypicalResponse,
     next: VoidFunction,
   ) => {
     await this.process(async () => {
       await next()
-    }, true)(req, res)
+    }, true)(req, tr)
   }
 
   routeImpl?: RouteImplementation<RequestType>
@@ -499,7 +509,7 @@ export class RemultServerImplementation<RequestType>
 
   handle(
     req: RequestType,
-    gRes?: GenericResponse,
+    gRes?: TypicalResponse,
   ): Promise<ServerHandleResponse | undefined> {
     return this.getRouteImpl().handle(req, gRes)
   }
@@ -598,7 +608,7 @@ export class RemultServerImplementation<RequestType>
                   disableLiveQuery =
                     this.options.admin.disableLiveQuery ?? disableLiveQuery
                 }
-                origResponse.send(
+                origResponse.res.send(
                   remultAdminHtml({
                     rootPath: this.options.rootPath ?? '/api',
                     head,
@@ -803,12 +813,12 @@ export class RemultServerImplementation<RequestType>
       myReq: DataApiRequest,
       myRes: DataApiResponse,
       genReq: GenericRequestInfo,
-      origRes: GenericResponse,
+      origRes: TypicalResponse,
       origReq: RequestType,
     ) => Promise<void>,
     doNotReuseInitRequest?: boolean,
   ) {
-    return async (req: RequestType, origRes: GenericResponse) => {
+    return async (req: RequestType, origRes: TypicalResponse) => {
       const genReq = req ? this.coreOptions.buildGenericRequestInfo(req) : {}
       if (req) {
         if (!genReq.query) {
@@ -1331,10 +1341,10 @@ class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
     this.error({ message }, undefined, 403)
   }
   setStatus(status: number) {
-    return this.r.status(status)
+    return this.r.res.status(status)
   }
   constructor(
-    private r: GenericResponse,
+    private r: TypicalResponse,
     private req: RequestType | undefined,
     private genReq: GenericRequestInfo,
     private handleError: RemultServerOptions<RequestType>['error'] | undefined,
@@ -1342,7 +1352,7 @@ class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
   progress(progress: number): void {}
 
   public success(data: any): void {
-    this.r.json(data)
+    this.r.res.json(data)
   }
 
   public created(data: any): void {
@@ -1594,7 +1604,7 @@ export class RouteImplementation<RequestType> {
 
         m.set(
           'get',
-          (req: RequestType, res: GenericResponse, next: VoidFunction) => {
+          (req: RequestType, tr: TypicalResponse, next: VoidFunction) => {
             const reqInfo = this.coreOptions.buildGenericRequestInfo(req)
             const currentHttpBasePath = path.replace('*', '')
 
@@ -1648,7 +1658,7 @@ export class RouteImplementation<RequestType> {
               const extension = extname(filePath).slice(1)
               const contentType = defaultContentTypes[extension] ?? 'text/plain'
 
-              res.send(content, {
+              tr.res.send(content, {
                 'content-type': contentType,
               })
               return
@@ -1657,7 +1667,7 @@ export class RouteImplementation<RequestType> {
                 error,
                 filePath,
               })
-              res.status(404).end()
+              tr.res.status(404).end()
             }
           },
         )
@@ -1680,49 +1690,66 @@ export class RouteImplementation<RequestType> {
 
   async handle(
     req: RequestType,
-    gRes?: GenericResponse,
+    tr?: TypicalResponse,
   ): Promise<ServerHandleResponse | undefined> {
     return new Promise<ServerHandleResponse | undefined>((res, rej) => {
-      const response = new (class
-        implements GenericResponse, ResponseRequiredForSSE
-      {
-        write(data: string): void {
-          ;(gRes as any as ResponseRequiredForSSE).write(data)
-        }
-        writeHead(statusCode: number, headers: any): void {
-          ;(gRes as any as ResponseRequiredForSSE).writeHead(
-            statusCode,
-            headers,
-          )
-          this.statusCode = statusCode
-          res({ statusCode })
-        }
-        flush() {
-          if (isOfType(gRes, 'flush')) {
-            gRes.flush()
-          }
-        }
+      const trToUse = new (class implements TypicalResponse {
         statusCode = 200
-        json(data: any) {
-          if (gRes !== undefined) gRes.json(data)
-          res({
-            statusCode: this.statusCode,
-            data,
-          })
+
+        res: GenericResponse = {
+          json(data: any) {
+            if (tr?.res !== undefined) tr?.res.json(data)
+            res({
+              statusCode: trToUse.statusCode,
+              data,
+            })
+          },
+          send(content: string, _headers: Record<string, string>) {
+            const headers = _headers ?? {
+              'Content-Type': 'text/html',
+            }
+            if (tr?.res !== undefined) tr?.res.send(content, headers)
+            res({ statusCode: trToUse.statusCode, html: content, headers })
+          },
+          redirect(redirectUrl: string, status?: number): void {
+            if (trToUse.statusCode < 300 || trToUse.statusCode >= 400) {
+              trToUse.statusCode = status ?? 307
+            }
+            res({ statusCode: trToUse.statusCode, redirectUrl })
+          },
+
+          status(statusCode: number): GenericResponse {
+            if (tr?.res !== undefined) tr?.res.status(statusCode)
+            trToUse.statusCode = statusCode
+            return this
+          },
+          end() {
+            if (tr?.res !== undefined) tr?.res.end()
+            res({
+              statusCode: trToUse.statusCode,
+            })
+          },
         }
-        send(content: string, _headers: Record<string, string>) {
-          const headers = _headers ?? {
-            'Content-Type': 'text/html',
-          }
-          if (gRes !== undefined) gRes.send(content, headers)
-          res({ statusCode: this.statusCode, html: content, headers })
+
+        sse: ResponseRequiredForSSE = {
+          write(data: string): void {
+            ;(tr?.sse as any as ResponseRequiredForSSE).write(data)
+          },
+          writeHead(statusCode: number, headers: any): void {
+            ;(tr?.sse as any as ResponseRequiredForSSE).writeHead(
+              statusCode,
+              headers,
+            )
+            trToUse.statusCode = statusCode
+            res({ statusCode })
+          },
+          flush() {
+            if (isOfType(tr?.sse, 'flush')) {
+              tr?.sse.flush()
+            }
+          },
         }
-        redirect(redirectUrl: string, status?: number): void {
-          if (this.statusCode < 300 || this.statusCode >= 400) {
-            this.statusCode = status ?? 307
-          }
-          res({ statusCode: this.statusCode, redirectUrl })
-        }
+
         cookie(name: string): {
           set(value: string, opts?: SerializeOptions): void
           get(opts?: ParseOptions): string | undefined
@@ -1730,39 +1757,30 @@ export class RouteImplementation<RequestType> {
         } {
           return {
             set: (value: string, opts?: SerializeOptions) => {
-              if (gRes !== undefined) gRes.cookie(name).set(value, opts)
+              if (tr?.cookie !== undefined) tr?.cookie(name).set(value, opts)
             },
             get: (opts?: ParseOptions) => {
-              if (gRes !== undefined) return gRes.cookie(name).get(opts)
+              if (tr?.cookie !== undefined) return tr?.cookie(name).get(opts)
             },
             delete: (opts?: SerializeOptions) => {
-              if (gRes !== undefined) gRes.cookie(name).delete(opts)
+              if (tr?.cookie !== undefined) tr?.cookie(name).delete(opts)
             },
           }
         }
-        status(statusCode: number): GenericResponse {
-          if (gRes !== undefined) gRes.status(statusCode)
-          this.statusCode = statusCode
-          return this
-        }
-        end() {
-          if (gRes !== undefined) gRes.end()
-          res({
-            statusCode: this.statusCode,
-          })
-        }
-        setHeaders(headers: Record<string, string>): void {
-          // if (gRes !== undefined) gRes.setHeaders(headers)
-        }
+        // setHeaders(headers: Record<string, string>): void {
+        //   // if (gRes !== undefined) gRes.setHeaders(headers)
+        // }
       })()
+
       try {
-        this.middleware(req, response, () => res(undefined))
+        this.middleware(req, trToUse, () => res(undefined))
       } catch (err) {
         rej(err)
       }
     })
   }
-  middleware(origReq: RequestType, res: GenericResponse, next: VoidFunction) {
+
+  middleware(origReq: RequestType, tr: TypicalResponse, next: VoidFunction) {
     const req = this.coreOptions.buildGenericRequestInfo(origReq)
 
     let theUrl: string = req.url?.toString() || ''
@@ -1801,7 +1819,7 @@ export class RouteImplementation<RequestType> {
     if (m) {
       let h = m.get(req.method.toLowerCase())
       if (h) {
-        h(origReq, res, next)
+        h(origReq, tr, next)
         return
       }
     }
@@ -1818,7 +1836,7 @@ export class RouteImplementation<RequestType> {
             ;(origReq as any)['_tempParams'] = req.params
           }
           req.params.id = decodeURIComponent(path.substring(idPosition + 1))
-          h(origReq, res, next)
+          h(origReq, tr, next)
           return
         }
       }

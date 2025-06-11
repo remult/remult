@@ -2,16 +2,15 @@ import * as express from 'express'
 import { createRemultServer } from './server/index.js'
 import type {
   GenericRequestHandler,
-  GenericResponse,
   RemultServer,
   RemultServerCore,
   RemultServerOptions,
   ServerCoreOptions,
   SpecificRoute,
+  TypicalResponse,
 } from './server/remult-api-server.js'
 import { RouteImplementation } from './server/remult-api-server.js'
 import { parse, serialize } from './src/remult-cookie.js'
-import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 
 class ExpressRouteImplementation extends RouteImplementation<express.Request> {
   constructor(
@@ -97,7 +96,7 @@ class ExpressRouteImplementation extends RouteImplementation<express.Request> {
   private createExpressResponse(
     req: express.Request,
     res: express.Response,
-  ): GenericResponse & ResponseRequiredForSSE {
+  ): TypicalResponse {
     return {
       cookie: (name) => {
         return {
@@ -116,35 +115,39 @@ class ExpressRouteImplementation extends RouteImplementation<express.Request> {
           },
         }
       },
-      redirect: (url, statusCode = 307) => {
-        res.redirect(statusCode, url)
+      res: {
+        redirect: (url, statusCode = 307) => {
+          res.redirect(statusCode, url)
+        },
+        status(statusCode) {
+          res.status(statusCode)
+          return this
+        },
+        end() {
+          res.end()
+        },
+        send(html, headers) {
+          if (headers?.['Content-Type']) {
+            res.type(headers['Content-Type'])
+          }
+          res.send(html)
+        },
+        json(data) {
+          res.json(data)
+        },
+        // setHeaders: (headers) => {
+        //   Object.entries(headers).forEach(([key, value]) => {
+        //     res.header(key, value)
+        //   })
+        // },
       },
-      status(statusCode) {
-        res.status(statusCode)
-        return this
-      },
-      end() {
-        res.end()
-      },
-      send(html, headers) {
-        if (headers?.['Content-Type']) {
-          res.type(headers['Content-Type'])
-        }
-        res.send(html)
-      },
-      json(data) {
-        res.json(data)
-      },
-      // setHeaders: (headers) => {
-      //   Object.entries(headers).forEach(([key, value]) => {
-      //     res.header(key, value)
-      //   })
-      // },
-      write(data: string) {
-        res.write(data)
-      },
-      writeHead(status: number, headers: any) {
-        res.writeHead(status, headers)
+      sse: {
+        write(data: string) {
+          res.write(data)
+        },
+        writeHead(status: number, headers: any) {
+          res.writeHead(status, headers)
+        },
       },
     }
   }

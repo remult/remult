@@ -9,47 +9,47 @@ export const someRoutes = new Module({
     const COOKIE_NAME = 'the_cookie_name'
     const cookieNav = `<hr /> <a href="/api/setCookie">setCookie</a> | <a href="/api/getCookie">getCookie</a> | <a href="/api/deleteCookie">deleteCookie</a>`
 
-    add('/new-route').get((req, res) => {
+    add('/new-route').get((req, { res }) => {
       res.json({ Soooooo: 'Cool! A new new-route!' })
     })
 
-    add('/crash-test').get((req, res) => {
+    add('/crash-test').get(() => {
       throw new Error('Server crash test')
     })
 
-    add('/html').get((req, res) => {
+    add('/html').get((req, { res }) => {
       res.send('<h1>Hello World</h1>')
     })
 
-    add('/redirect').get((req, res) => {
+    add('/redirect').get((req, { res }) => {
       res.redirect('/api/html')
     })
 
-    add('/redirect-ext').get((req, res) => {
+    add('/redirect-ext').get((req, { res }) => {
       res.redirect(
         'https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages',
       )
     })
 
-    add('/setCookie').get((req, res) => {
+    add('/setCookie').get((req, { res, cookie }) => {
       const val = 'Hello'
-      res.cookie(COOKIE_NAME).set(val)
+      cookie(COOKIE_NAME).set(val)
       res.send(`<h1>setCookie</h1><p>set: ${val}</p> ${cookieNav}`)
     })
 
-    add('/setCookieStrict').get((req, res) => {
+    add('/setCookieStrict').get((req, { res, cookie }) => {
       const val = 'Hello'
-      res.cookie(COOKIE_NAME).set(val, { sameSite: 'strict' })
+      cookie(COOKIE_NAME).set(val, { sameSite: 'strict' })
       res.send(`<h1>setCookie</h1><p>set: ${val}</p> ${cookieNav}`)
     })
 
-    add('/getCookie').get((req, res) => {
-      const val = res.cookie(COOKIE_NAME).get()
+    add('/getCookie').get((req, { res, cookie }) => {
+      const val = cookie(COOKIE_NAME).get()
       res.send(`<h1>getCookie</h1><p>get: ${val}</p> ${cookieNav}`)
     })
 
-    add('/deleteCookie').get((req, res) => {
-      res.cookie(COOKIE_NAME).delete()
+    add('/deleteCookie').get((req, { res, cookie }) => {
+      cookie(COOKIE_NAME).delete()
       res.send(`<h1>deleteCookie</h1><p>deleted</p> ${cookieNav}`)
     })
 

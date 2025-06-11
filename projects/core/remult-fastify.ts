@@ -4,16 +4,15 @@ import type {
   FastifyRequest,
   RouteHandlerMethod,
 } from 'fastify'
-import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 import { createRemultServer } from './server/index.js'
 import type {
   GenericRequestHandler,
-  GenericResponse,
   RemultServer,
   RemultServerCore,
   RemultServerOptions,
   ServerCoreOptions,
   SpecificRoute,
+  TypicalResponse,
 } from './server/remult-api-server.js'
 import { RouteImplementation } from './server/remult-api-server.js'
 import { parse, serialize } from './src/remult-cookie.js'
@@ -119,9 +118,7 @@ class FastifyRouteImplementation extends RouteImplementation<FastifyRequest> {
     }
   }
 
-  private createFastifyResponse(
-    res: any,
-  ): GenericResponse & ResponseRequiredForSSE {
+  private createFastifyResponse(res: any): TypicalResponse {
     return {
       cookie: (name) => {
         return {
@@ -140,32 +137,36 @@ class FastifyRouteImplementation extends RouteImplementation<FastifyRequest> {
           },
         }
       },
-      redirect: (url, statusCode = 307) => {
-        res.redirect(statusCode, url)
+      res: {
+        redirect: (url, statusCode = 307) => {
+          res.redirect(statusCode, url)
+        },
+        status(statusCode) {
+          res.status(statusCode)
+          return this
+        },
+        end() {
+          res.send()
+        },
+        send(html, headers) {
+          res.type(headers?.['Content-Type'] || 'text/html').send(html)
+        },
+        json(data) {
+          res.send(data)
+        },
+        // setHeaders: (headers) => {
+        //   Object.entries(headers).forEach(([key, value]) => {
+        //     res.header(key, value)
+        //   })
+        // },
       },
-      status(statusCode) {
-        res.status(statusCode)
-        return this
-      },
-      end() {
-        res.send()
-      },
-      send(html, headers) {
-        res.type(headers?.['Content-Type'] || 'text/html').send(html)
-      },
-      json(data) {
-        res.send(data)
-      },
-      // setHeaders: (headers) => {
-      //   Object.entries(headers).forEach(([key, value]) => {
-      //     res.header(key, value)
-      //   })
-      // },
-      write(data: string) {
-        res.raw.write(data)
-      },
-      writeHead(status: number, headers: any) {
-        res.raw.writeHead(status, headers)
+      sse: {
+        write(data: string) {
+          res.raw.write(data)
+        },
+        writeHead(status: number, headers: any) {
+          res.raw.writeHead(status, headers)
+        },
       },
     }
   }

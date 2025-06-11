@@ -10,12 +10,12 @@ import { PassThrough } from 'stream'
 import {
   createRemultServer,
   type GenericRequestHandler,
-  type GenericResponse,
   type RemultServer,
   type RemultServerCore,
   type RemultServerOptions,
   type SpecificRoute,
 } from './server/index.js'
+import type { TypicalResponse } from './server/remult-api-server.js'
 import {
   RouteImplementation,
   type ServerCoreOptions,
@@ -25,7 +25,6 @@ import {
   parse,
   type SerializeOptions,
 } from './src/remult-cookie.js'
-import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 
 class HapiRouteImplementation extends RouteImplementation<Request> {
   constructor(
@@ -126,7 +125,7 @@ class HapiRouteImplementation extends RouteImplementation<Request> {
         let status = 200
         let stream: PassThrough
 
-        const response: GenericResponse & ResponseRequiredForSSE = {
+        const response: TypicalResponse = {
           cookie: (name) => {
             return {
               set: (value, options = {}) => {
@@ -143,45 +142,49 @@ class HapiRouteImplementation extends RouteImplementation<Request> {
               },
             }
           },
-          redirect: (url, statusCode = 307) => {
-            resolve(h.response().redirect(url).code(statusCode))
+          res: {
+            redirect: (url, statusCode = 307) => {
+              resolve(h.response().redirect(url).code(statusCode))
+            },
+            status(statusCode) {
+              status = statusCode
+              return response.res
+            },
+            end() {
+              resolve(h.response().code(status))
+            },
+            send(html, headers) {
+              let hapiResponse = h.response(html).code(status)
+              if (headers?.['Content-Type']) {
+                hapiResponse = hapiResponse.type(headers['Content-Type'])
+              }
+              resolve(hapiResponse)
+            },
+            json(data) {
+              resolve(h.response(data === null ? 'null' : data).code(status))
+            },
+            // setHeaders: (headers) => {
+            //   let hapiResponse = h.response().code(status)
+            //   Object.entries(headers).forEach(([key, value]) => {
+            //     hapiResponse = hapiResponse.header(key, value)
+            //   })
+            //   resolve(hapiResponse)
+            // },
           },
-          status(statusCode) {
-            status = statusCode
-            return response
-          },
-          end() {
-            resolve(h.response().code(status))
-          },
-          send(html, headers) {
-            let hapiResponse = h.response(html).code(status)
-            if (headers?.['Content-Type']) {
-              hapiResponse = hapiResponse.type(headers['Content-Type'])
-            }
-            resolve(hapiResponse)
-          },
-          json(data) {
-            resolve(h.response(data === null ? 'null' : data).code(status))
-          },
-          // setHeaders: (headers) => {
-          //   let hapiResponse = h.response().code(status)
-          //   Object.entries(headers).forEach(([key, value]) => {
-          //     hapiResponse = hapiResponse.header(key, value)
-          //   })
-          //   resolve(hapiResponse)
-          // },
-          write(data) {
-            stream.write(data)
-          },
-          writeHead(statusCode, headers) {
-            stream = new PassThrough()
-            resolve(
-              h
-                .response(stream)
-                .code(statusCode)
-                .header('content-type', 'text/event-stream')
-                .header('content-encoding', 'identity'),
-            )
+          sse: {
+            write(data) {
+              stream.write(data)
+            },
+            writeHead(statusCode, headers) {
+              stream = new PassThrough()
+              resolve(
+                h
+                  .response(stream)
+                  .code(statusCode)
+                  .header('content-type', 'text/event-stream')
+                  .header('content-encoding', 'identity'),
+              )
+            },
           },
         }
 

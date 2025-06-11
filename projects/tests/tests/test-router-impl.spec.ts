@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import {
   type GenericRequestInfo,
   RouteImplementation,
@@ -20,12 +20,12 @@ describe('test router impl', async () => {
 
   it('test a', async () => {
     let result: any = {}
-    r.route('/a').get(async (req, res) => {
+    r.route('/a').get(async (req, { res }) => {
       result.getWorks = true
       res.json({ ok: true })
       res.end()
     })
-    r.route('/a/:id').get(async (req, res) => {
+    r.route('/a/:id').get(async (req, { res }) => {
       res.json(req.params)
     })
 
@@ -59,12 +59,12 @@ describe('test router impl', async () => {
   })
   it('test b', async () => {
     let result: any = {}
-    r.route('/aBc').get(async (req, res) => {
+    r.route('/aBc').get(async (req, { res }) => {
       result.getWorks = true
       res.json({ ok: true })
       res.end()
     })
-    r.route('/aBc/:id').get(async (req, res) => {
+    r.route('/aBc/:id').get(async (req, { res }) => {
       res.json(req.params)
     })
 
@@ -99,7 +99,7 @@ describe('test router impl', async () => {
   })
   it('test *', async () => {
     let result: any = {}
-    r.route('/a*').get(async (req, res) => {
+    r.route('/a*').get(async (req, { res }) => {
       result.getWorks = true
       res.json({ ok: true })
       res.end()
@@ -133,7 +133,7 @@ describe('test router impl', async () => {
     `)
   })
   it('test 404', async () => {
-    r.route('/a').get(async (req, res) => {
+    r.route('/a').get(async (req, { res }) => {
       res.status(404).end()
     })
     expect(await r.handle({ url: '/a', method: 'GET' })).toMatchInlineSnapshot(`
@@ -143,7 +143,7 @@ describe('test router impl', async () => {
     `)
   })
   it('test send html', async () => {
-    r.route('/a').get(async (req, res) => {
+    r.route('/a').get(async (req, { res }) => {
       res.send(`<h1>hello</h1>`)
     })
     expect(await r.handle({ url: '/a', method: 'GET' })).toMatchInlineSnapshot(`
@@ -157,7 +157,7 @@ describe('test router impl', async () => {
     `)
   })
   it('test send js', async () => {
-    r.route('/b').get(async (req, res) => {
+    r.route('/b').get(async (req, { res }) => {
       res.send(`console.log('hello')`, { 'Content-Type': 'text/javascript' })
     })
     expect(await r.handle({ url: '/b', method: 'GET' })).toMatchInlineSnapshot(`

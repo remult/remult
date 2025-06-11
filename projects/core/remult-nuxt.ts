@@ -1,19 +1,18 @@
 import type { H3Event } from 'h3'
 import { getRequestURL, readBody, setCookie } from 'h3'
 import type {
-  GenericResponse,
   RemultServer,
   RemultServerCore,
   RemultServerOptions,
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
+import type { TypicalResponse } from './server/remult-api-server.js'
 import { toResponse } from './server/toResponse.js'
 import {
   mergeOptions,
   parse,
   type SerializeOptions,
 } from './src/remult-cookie.js'
-import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 
 export function remultApi(
   options: RemultServerOptions<H3Event>,
@@ -44,7 +43,7 @@ export function remultApi(
   const handler = async (event: H3Event) => {
     let sseResponse: Response | undefined = undefined
 
-    const response: GenericResponse & ResponseRequiredForSSE = {
+    const response: TypicalResponse = {
       cookie: (name) => {
         return {
           set: (value, options = {}) => {
@@ -64,28 +63,32 @@ export function remultApi(
           },
         }
       },
-      redirect: () => {},
-      end: () => {},
-      send: (html, headers) => {
-        if (headers?.['Content-Type']) {
-          event.node.res.setHeader('Content-Type', headers['Content-Type'])
-        }
-      },
-      json: () => {},
-      status: () => {
-        return response
+      res: {
+        redirect: () => {},
+        end: () => {},
+        send: (html, headers) => {
+          if (headers?.['Content-Type']) {
+            event.node.res.setHeader('Content-Type', headers['Content-Type'])
+          }
+        },
+        json: () => {},
+        status: () => {
+          return response.res
+        },
       },
       // setHeaders: (headers) => {
       //   Object.entries(headers).forEach(([key, value]) => {
       //     event.node.res.setHeader(key, value)
       //   })
       // },
-      write: (data) => {
-        event.node.res.write(data)
-      },
-      writeHead: (status, headers) => {
-        event.node.res.writeHead(status, headers)
-        sseResponse = new Response(null, { headers })
+      sse: {
+        write: (data) => {
+          event.node.res.write(data)
+        },
+        writeHead: (status, headers) => {
+          event.node.res.writeHead(status, headers)
+          sseResponse = new Response(null, { headers })
+        },
       },
     }
     // TODO: bring back SSE here ?
