@@ -32,7 +32,6 @@
     "./remult-next": "./remult-next.js",
     "./async-hooks": "./async-hooks.js",
     "./server": "./server/index.js",
-    "./server/core": "./server/core.js",
     "./remult-fastify": "./remult-fastify.js",
     "./remult-hapi": "./remult-hapi.js",
     "./remult-hono": "./remult-hono.js",
