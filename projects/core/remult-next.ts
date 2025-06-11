@@ -13,12 +13,7 @@ import type {
   RemultServerOptions,
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
-import {
-  mergeOptions,
-  parse,
-  serialize,
-  type SerializeOptions,
-} from './src/remult-cookie.js'
+import { mergeOptions, parse, serialize } from './src/remult-cookie.js'
 
 export function remultNext(
   options: RemultServerOptions<NextApiRequest>,
@@ -33,21 +28,25 @@ export function remultNext(
     ;(req as any)['_tempOnClose'] = () => {}
 
     const response: GenericResponse & ResponseRequiredForSSE = {
-      setCookie: (name, value, options = {}) => {
-        ;(res as any).setHeader(
-          'Set-Cookie',
-          serialize(name, value, mergeOptions(options)),
-        )
-      },
-      getCookie: (name, options) => {
-        const cookieHeader = req.headers.cookie
-        return cookieHeader ? parse(cookieHeader, options)[name] : undefined
-      },
-      deleteCookie: (name, options = {}) => {
-        ;(res as any).setHeader(
-          'Set-Cookie',
-          serialize(name, '', mergeOptions({ ...options, maxAge: 0 })),
-        )
+      cookie: (name) => {
+        return {
+          set: (value, options = {}) => {
+            ;(res as any).setHeader(
+              'Set-Cookie',
+              serialize(name, value, mergeOptions(options)),
+            )
+          },
+          get: (options = {}) => {
+            const cookieHeader = req.headers.cookie
+            return cookieHeader ? parse(cookieHeader, options)[name] : undefined
+          },
+          delete: (options = {}) => {
+            ;(res as any).setHeader(
+              'Set-Cookie',
+              serialize(name, '', mergeOptions({ ...options, maxAge: 0 })),
+            )
+          },
+        }
       },
       redirect: (url, statusCode = 307) => {
         res.redirect(statusCode, url)
@@ -256,18 +255,28 @@ export function remultApi(
       let sseResponse: Response | undefined = undefined
       ;(req as any)['_tempOnClose'] = () => {}
 
-      const response: GenericResponse & ResponseRequiredForSSE = {
-        setCookie: (name, value, options = {}) => {
-          // res.setHeader('Set-Cookie', serialize(name, value, options))
-        },
-        getCookie: (name, options) => {
-          // const cookieHeader = req.headers.cookie
-          // return cookieHeader ? parse(cookieHeader, options)[name] : undefined
-          return undefined
-        },
-        deleteCookie: (name, options = {}) => {
-          // const cookieOptions = { ...options, maxAge: 0 }
-          // res.setHeader('Set-Cookie', serialize(name, '', cookieOptions))
+      const res: GenericResponse & ResponseRequiredForSSE = {
+        cookie: (name) => {
+          return {
+            set: (value, options = {}) => {
+              ;(res as any).setHeader(
+                'Set-Cookie',
+                serialize(name, value, mergeOptions(options)),
+              )
+            },
+            get: (options = {}) => {
+              const cookieHeader = (req as any).headers.cookie
+              return cookieHeader
+                ? parse(cookieHeader, options)[name]
+                : undefined
+            },
+            delete: (options = {}) => {
+              ;(res as any).setHeader(
+                'Set-Cookie',
+                serialize(name, '', mergeOptions({ ...options, maxAge: 0 })),
+              )
+            },
+          }
         },
         redirect: (url, statusCode = 307) => {
           ;(req as any).redirect(url, statusCode)
@@ -276,7 +285,7 @@ export function remultApi(
         json: () => {},
         send: () => {},
         status: () => {
-          return response
+          return res
         },
         write: () => {},
         writeHead: (status, headers) => {
@@ -284,18 +293,18 @@ export function remultApi(
             const contentType = headers['Content-Type']
             if (contentType === 'text/event-stream') {
               const messages: string[] = []
-              response.write = (x) => messages.push(x)
+              res.write = (x) => messages.push(x)
               const stream = new ReadableStream({
                 start: (controller) => {
                   for (const message of messages) {
                     controller.enqueue(encoder.encode(message))
                   }
-                  response.write = (data) => {
+                  res.write = (data) => {
                     controller.enqueue(encoder.encode(data))
                   }
                 },
                 cancel: () => {
-                  response.write = () => {}
+                  res.write = () => {}
                   ;(req as any)['_tempOnClose']()
                 },
               })
@@ -305,13 +314,13 @@ export function remultApi(
         },
       }
 
-      const responseFromRemultHandler = await result.handle(req, response)
+      const responseFromRemultHandler = await result.handle(req, res)
       if (sseResponse !== undefined) {
         return sseResponse
       }
       if (responseFromRemultHandler) {
         if (responseFromRemultHandler.redirectUrl) {
-          response.redirect(
+          res.redirect(
             responseFromRemultHandler.redirectUrl,
             responseFromRemultHandler.statusCode || 307,
           )

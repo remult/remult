@@ -33,23 +33,23 @@ export const someRoutes = new Module({
 
     add('/setCookie').get((req, res) => {
       const val = 'Hello'
-      res.setCookie(COOKIE_NAME, val)
+      res.cookie(COOKIE_NAME).set(val)
       res.send(`<h1>setCookie</h1><p>set: ${val}</p> ${cookieNav}`)
     })
 
     add('/setCookieStrict').get((req, res) => {
       const val = 'Hello'
-      res.setCookie(COOKIE_NAME, val, { sameSite: 'strict' })
+      res.cookie(COOKIE_NAME).set(val, { sameSite: 'strict' })
       res.send(`<h1>setCookie</h1><p>set: ${val}</p> ${cookieNav}`)
     })
 
     add('/getCookie').get((req, res) => {
-      const val = res.getCookie(COOKIE_NAME)
+      const val = res.cookie(COOKIE_NAME).get()
       res.send(`<h1>getCookie</h1><p>get: ${val}</p> ${cookieNav}`)
     })
 
     add('/deleteCookie').get((req, res) => {
-      res.deleteCookie(COOKIE_NAME)
+      res.cookie(COOKIE_NAME).delete()
       res.send(`<h1>deleteCookie</h1><p>deleted</p> ${cookieNav}`)
     })
 

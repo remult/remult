@@ -45,20 +45,24 @@ export function remultApi(
     let sseResponse: Response | undefined = undefined
 
     const response: GenericResponse & ResponseRequiredForSSE = {
-      setCookie: (name, value, options = {}) => {
-        setCookie(event, name, value, toOptions(mergeOptions(options)))
-      },
-      getCookie: (name, options) => {
-        const cookieHeader = event.node.req.headers.cookie
-        return cookieHeader ? parse(cookieHeader, options)[name] : undefined
-      },
-      deleteCookie: (name, options = {}) => {
-        setCookie(
-          event,
-          name,
-          '',
-          toOptions(mergeOptions({ ...options, maxAge: 0 })),
-        )
+      cookie: (name) => {
+        return {
+          set: (value, options = {}) => {
+            setCookie(event, name, value, toOptions(mergeOptions(options)))
+          },
+          get: (options = {}) => {
+            const cookieHeader = event.node.req.headers.cookie
+            return cookieHeader ? parse(cookieHeader, options)[name] : undefined
+          },
+          delete: (options = {}) => {
+            setCookie(
+              event,
+              name,
+              '',
+              toOptions(mergeOptions({ ...options, maxAge: 0 })),
+            )
+          },
+        }
       },
       redirect: () => {},
       end: () => {},

@@ -1,4 +1,3 @@
-import {} from './server/core.js'
 import type {
   RemultServerCore,
   RemultServerOptions,

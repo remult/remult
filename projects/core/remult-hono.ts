@@ -1,21 +1,21 @@
-import { type Context, type Env, Hono } from 'hono'
-import type { BlankInput } from 'hono/types'
+import { Hono, type Context, type Env } from 'hono'
+import { deleteCookie, getCookie, setCookie } from 'hono/cookie'
 import { streamSSE, type SSEStreamingApi } from 'hono/streaming'
+import type { BlankInput } from 'hono/types'
 import {
   createRemultServer,
-  type RemultServerOptions,
-  type RemultServerCore,
   type GenericRequestHandler,
   type GenericResponse,
+  type RemultServerCore,
+  type RemultServerOptions,
   type SpecificRoute,
 } from './server/index.js'
 import {
   RouteImplementation,
   type ServerCoreOptions,
 } from './server/remult-api-server.js'
-import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 import { mergeOptions, type SerializeOptions } from './src/remult-cookie.js'
-import { getCookie, setCookie, deleteCookie } from 'hono/cookie'
+import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 
 class HonoRouteImplementation extends RouteImplementation<
   Context<Env, '', BlankInput>
@@ -104,14 +104,18 @@ class HonoRouteImplementation extends RouteImplementation<
           let result: any
           let sse: SSEStreamingApi
           const gRes: GenericResponse & ResponseRequiredForSSE = {
-            setCookie: (name, value, options = {}) => {
-              setCookie(c, name, value, toOptions(mergeOptions(options)))
-            },
-            getCookie: (name, options) => {
-              return getCookie(c, name)
-            },
-            deleteCookie: (name, options = {}) => {
-              deleteCookie(c, name, toOptions(mergeOptions(options)))
+            cookie: (name) => {
+              return {
+                set: (value, options = {}) => {
+                  setCookie(c, name, value, toOptions(mergeOptions(options)))
+                },
+                get: (options = {}) => {
+                  return getCookie(c, name)
+                },
+                delete: (options = {}) => {
+                  deleteCookie(c, name, toOptions(mergeOptions(options)))
+                },
+              }
             },
             redirect: (url, statusCode = 307) => {
               resolve(c.redirect(url as any, statusCode as any))

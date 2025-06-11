@@ -2,13 +2,13 @@ import type { Handle, RequestEvent, RequestHandler } from '@sveltejs/kit'
 import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 import type {
   GenericResponse,
+  RemultServer,
   RemultServerCore,
   RemultServerOptions,
-  RemultServer,
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
-import { mergeOptions, parse, serialize } from './src/remult-cookie.js'
 import { toResponse } from './server/toResponse.js'
+import { mergeOptions, parse } from './src/remult-cookie.js'
 
 export function remultApi(
   options: RemultServerOptions<RequestEvent>,
@@ -35,15 +35,19 @@ export function remultApi(
       json: () => {},
       send: () => {},
       redirect: () => {},
-      setCookie: (name, value, options = {}) => {
-        event.cookies.set(name, value, mergeOptions(options))
-      },
-      getCookie: (name, options) => {
-        const cookieHeader = event.request.headers.get('cookie')
-        return cookieHeader ? parse(cookieHeader, options)[name] : undefined
-      },
-      deleteCookie: (name, options = {}) => {
-        event.cookies.delete(name, mergeOptions({ ...options, maxAge: 0 }))
+      cookie: (name) => {
+        return {
+          set: (value, options = {}) => {
+            event.cookies.set(name, value, mergeOptions(options))
+          },
+          get: (options = {}) => {
+            const cookieHeader = event.request.headers.get('cookie')
+            return cookieHeader ? parse(cookieHeader, options)[name] : undefined
+          },
+          delete: (options = {}) => {
+            event.cookies.delete(name, mergeOptions({ ...options, maxAge: 0 }))
+          },
+        }
       },
       status: () => {
         return response

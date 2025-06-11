@@ -123,16 +123,22 @@ class FastifyRouteImplementation extends RouteImplementation<FastifyRequest> {
     res: any,
   ): GenericResponse & ResponseRequiredForSSE {
     return {
-      setCookie: (name, value, options = {}) => {
-        res.header('Set-Cookie', serialize(name, value, options))
-      },
-      getCookie: (name, options) => {
-        const cookieHeader = res.request.headers.cookie
-        return cookieHeader ? parse(cookieHeader, options)[name] : undefined
-      },
-      deleteCookie: (name, options = {}) => {
-        const cookieOptions = { ...options, maxAge: 0 }
-        res.header('Set-Cookie', serialize(name, '', cookieOptions))
+      cookie: (name) => {
+        return {
+          set: (value, options = {}) => {
+            res.header('Set-Cookie', serialize(name, value, options))
+          },
+          get: (options = {}) => {
+            const cookieHeader = res.request.headers.cookie
+            return cookieHeader ? parse(cookieHeader, options)[name] : undefined
+          },
+          delete: (options = {}) => {
+            res.header(
+              'Set-Cookie',
+              serialize(name, '', { ...options, maxAge: 0 }),
+            )
+          },
+        }
       },
       redirect: (url, statusCode = 307) => {
         res.redirect(statusCode, url)

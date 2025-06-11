@@ -336,18 +336,11 @@ export interface GenericResponse {
       | 308
       | ({} & number),
   ): void
-  // TODO JYC What abou this API?
-  // cookie(
-  //   name: string,
-  //   opts?: SerializeOptions,
-  // ): {
-  //   set(value: string): void
-  //   get(): string | undefined
-  //   delete(): void
-  // }
-  setCookie(name: string, value: string, opts?: SerializeOptions): void
-  getCookie(name: string, opts?: ParseOptions): string | undefined
-  deleteCookie(name: string, opts?: SerializeOptions): void
+  cookie(name: string): {
+    set(value: string, opts?: SerializeOptions): void
+    get(opts?: ParseOptions): string | undefined
+    delete(opts?: SerializeOptions): void
+  }
   status(statusCode: number): GenericResponse //exists for express and next and not in opine(In opine it's setStatus)
   end(): void
   // setHeaders(headers: Record<string, string>): void
@@ -1730,14 +1723,22 @@ export class RouteImplementation<RequestType> {
           }
           res({ statusCode: this.statusCode, redirectUrl })
         }
-        setCookie(name: string, value: string, options: any): void {
-          if (gRes !== undefined) gRes.setCookie(name, value, options)
-        }
-        getCookie(name: string): string | undefined {
-          if (gRes !== undefined) return gRes.getCookie(name)
-        }
-        deleteCookie(name: string, options: any): void {
-          if (gRes !== undefined) gRes.deleteCookie(name, options)
+        cookie(name: string): {
+          set(value: string, opts?: SerializeOptions): void
+          get(opts?: ParseOptions): string | undefined
+          delete(opts?: SerializeOptions): void
+        } {
+          return {
+            set: (value: string, opts?: SerializeOptions) => {
+              if (gRes !== undefined) gRes.cookie(name).set(value, opts)
+            },
+            get: (opts?: ParseOptions) => {
+              if (gRes !== undefined) return gRes.cookie(name).get(opts)
+            },
+            delete: (opts?: SerializeOptions) => {
+              if (gRes !== undefined) gRes.cookie(name).delete(opts)
+            },
+          }
         }
         status(statusCode: number): GenericResponse {
           if (gRes !== undefined) gRes.status(statusCode)

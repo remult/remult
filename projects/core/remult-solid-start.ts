@@ -1,3 +1,4 @@
+import type { APIEvent } from '@solidjs/start/server' // don't remove - augments requestEvent
 import { getRequestEvent, type RequestEvent } from 'solid-js/web'
 import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 import type {
@@ -6,9 +7,8 @@ import type {
   RemultServerOptions,
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
-import type { APIEvent } from '@solidjs/start/server' // don't remove - augments requestEvent
-type localAPIEvent = APIEvent
 import { toResponse } from './server/toResponse.js'
+type localAPIEvent = APIEvent
 
 export function remultApi(
   options: RemultServerOptions<RequestEvent>,
@@ -31,14 +31,18 @@ export function remultApi(
     if (event) event.locals['_tempOnClose'] = () => {}
 
     const response: GenericResponse & ResponseRequiredForSSE = {
-      setCookie: (name, value, options = {}) => {
-        event?.locals.setCookie(name, value, options)
-      },
-      getCookie: (name, options) => {
-        return event?.locals.getCookie(name, options)
-      },
-      deleteCookie: (name, options = {}) => {
-        event?.locals.deleteCookie(name, options)
+      cookie: (name) => {
+        return {
+          set: (value, options = {}) => {
+            event?.locals.setCookie(name, value, options)
+          },
+          get: (options = {}) => {
+            return event?.locals.getCookie(name, options)
+          },
+          delete: (options = {}) => {
+            event?.locals.deleteCookie(name, options)
+          },
+        }
       },
       redirect: (url, statusCode = 307) => {
         event?.locals.redirect(url, statusCode)
