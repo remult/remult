@@ -1,17 +1,17 @@
 import * as express from 'express'
+import { createRemultServer } from './server/index.js'
 import type {
+  GenericRequestHandler,
+  GenericResponse,
   RemultServer,
   RemultServerCore,
   RemultServerOptions,
-  GenericRequestHandler,
-  GenericResponse,
-  SpecificRoute,
   ServerCoreOptions,
+  SpecificRoute,
 } from './server/remult-api-server.js'
 import { RouteImplementation } from './server/remult-api-server.js'
-import { createRemultServer } from './server/index.js'
+import { parse, serialize } from './src/remult-cookie.js'
 import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
-import { serialize, parse } from './src/remult-cookie.js'
 
 class ExpressRouteImplementation extends RouteImplementation<express.Request> {
   constructor(
@@ -57,7 +57,25 @@ class ExpressRouteImplementation extends RouteImplementation<express.Request> {
         registerMethod('post', handler),
       put: (handler: GenericRequestHandler<express.Request>) =>
         registerMethod('put', handler),
-      staticFolder: parentRoute.staticFolder,
+      staticFolder: (
+        folderPath: string,
+        options?: {
+          packageName?: string
+          contentTypes?: Record<string, string>
+          editFile?: (filePath: string, content: string) => string
+        },
+      ) => {
+        parentRoute.staticFolder(folderPath, options)
+
+        if (methodMap) {
+          const handler = methodMap.get('get')
+          if (handler) {
+            this.app.get(path, this.createExpressHandler(handler))
+          }
+        }
+
+        return route
+      },
     } as SpecificRoute<express.Request>
 
     return route
