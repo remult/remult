@@ -1,7 +1,7 @@
 import path from 'path'
 import { Module } from '../../../../core/server/index.js'
-// JYC TODO: remove `projects/test-servers/shared/modules/someRoutes/serverDist.ts`
-// JYC TODO: remove someRoutes in `projects/test-servers/next-server/src/pages/api/[...remult].ts`
+// TODO JYC: remove `projects/test-servers/shared/modules/someRoutes/serverDist.ts`
+// TODO JYC: remove someRoutes in `projects/test-servers/next-server/src/pages/api/[...remult].ts`
 
 export const someRoutes = new Module({
   key: 'some-routes',

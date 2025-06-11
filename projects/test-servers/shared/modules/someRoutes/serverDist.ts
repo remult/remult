@@ -1,4 +1,4 @@
-// JYC TODO: to remove and use only the non dist ? (failing for nuxt!)
+// TODO JYC: to remove and use only the non dist ? (failing for nuxt!)
 import path from 'path'
 import { Module } from 'remult/server'
 
