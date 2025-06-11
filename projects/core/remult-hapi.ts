@@ -53,7 +53,8 @@ class HapiRouteImplementation extends RouteImplementation<Request> {
     parentRoute: SpecificRoute<Request>,
     methodMap?: Map<string, GenericRequestHandler<Request>>,
   ): SpecificRoute<Request> {
-    const hapiPath = path.replace(/:id\b/g, '{id}')
+    const getHapiPath = (routePath: string) =>
+      routePath.replace(/:id\b/g, '{id}').replace(/\*$/, '/{param*}')
 
     const registerMethod = (
       method: 'get' | 'post' | 'put' | 'delete',
@@ -62,7 +63,7 @@ class HapiRouteImplementation extends RouteImplementation<Request> {
       methodMap?.set(method, handler)
       this.server.route({
         method: method.toUpperCase(),
-        path: hapiPath,
+        path: getHapiPath(path),
         handler: this.createHapiHandler(handler),
       })
       return route
@@ -92,7 +93,7 @@ class HapiRouteImplementation extends RouteImplementation<Request> {
           if (handler) {
             this.server.route({
               method: 'GET',
-              path: hapiPath,
+              path: getHapiPath(path),
               handler: this.createHapiHandler(handler),
             })
           }
