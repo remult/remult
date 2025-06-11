@@ -27,10 +27,10 @@ export type {
   ModuleInput,
   queuedJobInfo,
   QueueStorage,
-  RawRoutes,
   RemultServer,
   RemultServerCore,
   RemultServerOptions,
+  Routes,
   SpecificRoute,
   TypicalResponse,
 } from './remult-api-server.js'

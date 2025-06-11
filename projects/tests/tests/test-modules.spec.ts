@@ -27,7 +27,7 @@ describe('modules', () => {
           "initRequest": undefined,
           "key": "prio",
           "priority": -1000,
-          "rawRoutes": undefined,
+          "routes": undefined,
         },
         {
           "controllers": undefined,
@@ -36,7 +36,7 @@ describe('modules', () => {
           "initRequest": undefined,
           "key": "init",
           "priority": undefined,
-          "rawRoutes": undefined,
+          "routes": undefined,
         },
         {
           "key": "init-a",
@@ -51,7 +51,7 @@ describe('modules', () => {
           "initRequest": undefined,
           "key": "main",
           "priority": undefined,
-          "rawRoutes": undefined,
+          "routes": undefined,
         },
         {
           "controllers": undefined,
@@ -60,7 +60,7 @@ describe('modules', () => {
           "initRequest": undefined,
           "key": "the end",
           "priority": undefined,
-          "rawRoutes": undefined,
+          "routes": undefined,
         },
         {
           "key": "the end-d",
@@ -75,7 +75,7 @@ describe('modules', () => {
           "initRequest": undefined,
           "key": "main last",
           "priority": 100,
-          "rawRoutes": undefined,
+          "routes": undefined,
         },
       ]
     `)

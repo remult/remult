@@ -6,7 +6,7 @@ import { Task } from '../../shared/Task'
 // TODO JYC: to remove and use only the non dist ? (failing for next!)
 export const someRoutes = new Module({
   key: 'some-routes',
-  rawRoutes: ({ add, rootPath }) => {
+  routes: ({ add, rootPath }) => {
     const COOKIE_NAME = 'the_cookie_name'
     const cookieNav = `<hr /> <a href="/api/setCookie">setCookie</a> | <a href="/api/getCookie">getCookie</a> | <a href="/api/deleteCookie">deleteCookie</a>`
 

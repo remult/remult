@@ -3677,7 +3677,7 @@ export declare class Module<RequestType> {
   controllers?: ClassType<unknown>[]
   initApi?: RemultServerOptions<RequestType>["initApi"]
   initRequest?: RemultServerOptions<RequestType>["initRequest"]
-  rawRoutes?: RawRoutes<RequestType>
+  routes?: Routes
   modules?: Module<RequestType>[]
   constructor(options: ModuleInput<RequestType>)
 }
@@ -3690,7 +3690,7 @@ export interface ModuleInput<RequestType> {
   controllers?: ClassType<unknown>[]
   initApi?: RemultServerOptions<RequestType>["initApi"]
   initRequest?: RemultServerOptions<RequestType>["initRequest"]
-  rawRoutes?: RawRoutes<RequestType>
+  routes?: Routes
   modules?: Module<RequestType>[]
 }
 export interface queuedJobInfo {
@@ -3705,13 +3705,6 @@ export interface QueueStorage {
   createJob(url: string, userId?: string): Promise<string>
   getJobInfo(queuedJobId: string): Promise<queuedJobInfo>
 }
-export interface RawRoutes<RequestType> {
-  (args: {
-    add: (relativePath: `/${string}`) => SpecificRoute
-    rootPath: string
-  }): void
-}
-//[ ] TemplateLiteralType from TBD is not exported
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
   withRemult(req: RequestType, tr: TypicalResponse, next: VoidFunction): void
@@ -3825,23 +3818,38 @@ export interface RemultServerOptions<RequestType> {
     sendError: (httpStatusCode: number, body: any) => void
   }) => Promise<void> | undefined
   /**
-   * Adding some extra routes. It will automatically add the `rootPath` _(default: `/api`)_ to the route.
+   * Adding some extra routes to your api.
+   *
+   * Note: this is primarily meant for module developers.
+   * As a user you should first make use of [Entities](https://remult.dev/docs/ref_entity) and [Backend Methods](https://remult.dev/docs/backendMethods)
+   *
+   * It will automatically add the `rootPath` _(default: `/api`)_ to the route.
+   *
+   * @example
    * ```
-   * rawRoutes({ add }) {
+   * routes({ add }) {
    *   add('/new-route').get((req, res) => {
    *     return res.json({ Soooooo: 'Cool!' })
    *   })
    * }
    * ```
+   *
    * This will add the route `/api/new-route` to the api.
    */
-  rawRoutes?: RawRoutes<RequestType>
+  routes?: Routes
   modules?: Module<RequestType>[]
 }
 //[ ] UserInfo from TBD is not exported
 //[ ] SubscriptionServer from TBD is not exported
 //[ ] Allowed from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
+export interface Routes {
+  (args: {
+    add: (relativePath: `/${string}`) => SpecificRoute
+    rootPath: string
+  }): void
+}
+//[ ] TemplateLiteralType from TBD is not exported
 export type SpecificRoute = {
   get(handler: GenericRequestHandler): SpecificRoute
   put(handler: GenericRequestHandler): SpecificRoute
