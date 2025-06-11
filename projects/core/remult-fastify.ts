@@ -5,17 +5,17 @@ import type {
   RouteHandlerMethod,
 } from 'fastify'
 import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
+import { createRemultServer } from './server/index.js'
 import type {
   GenericRequestHandler,
   GenericResponse,
+  RemultServer,
   RemultServerCore,
   RemultServerOptions,
-  SpecificRoute,
-  RemultServer,
   ServerCoreOptions,
+  SpecificRoute,
 } from './server/remult-api-server.js'
 import { RouteImplementation } from './server/remult-api-server.js'
-import { createRemultServer } from './server/index.js'
 import { parse, serialize } from './src/remult-cookie.js'
 
 class FastifyRouteImplementation extends RouteImplementation<FastifyRequest> {
@@ -78,7 +78,26 @@ class FastifyRouteImplementation extends RouteImplementation<FastifyRequest> {
         registerMethod('post', handler),
       put: (handler: GenericRequestHandler<FastifyRequest>) =>
         registerMethod('put', handler),
-      staticFolder: parentRoute.staticFolder,
+      staticFolder: (
+        folderPath: string,
+        options?: {
+          packageName?: string
+          contentTypes?: Record<string, string>
+          editFile?: (filePath: string, content: string) => string
+        },
+      ) => {
+        parentRoute.staticFolder(folderPath, options)
+
+        if (methodMap) {
+          const handler = methodMap.get('get')
+          if (handler) {
+            const fastifyHandler = this.createFastifyHandler(handler)
+            this.instance.get(path, fastifyHandler)
+          }
+        }
+
+        return route
+      },
     } as SpecificRoute<FastifyRequest>
 
     return route

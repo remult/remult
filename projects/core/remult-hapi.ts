@@ -1,31 +1,31 @@
 import type {
-  Request,
   Plugin,
-  Server,
-  ResponseToolkit,
   ReqRefDefaults,
+  Request,
+  ResponseToolkit,
+  Server,
   ServerStateCookieOptions,
 } from '@hapi/hapi'
+import { PassThrough } from 'stream'
 import {
   createRemultServer,
-  type SpecificRoute,
-  type RemultServerCore,
-  type RemultServerOptions,
   type GenericRequestHandler,
   type GenericResponse,
   type RemultServer,
+  type RemultServerCore,
+  type RemultServerOptions,
+  type SpecificRoute,
 } from './server/index.js'
 import {
   RouteImplementation,
   type ServerCoreOptions,
 } from './server/remult-api-server.js'
-import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
-import { PassThrough } from 'stream'
 import {
   mergeOptions,
   parse,
   type SerializeOptions,
 } from './src/remult-cookie.js'
+import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 
 class HapiRouteImplementation extends RouteImplementation<Request> {
   constructor(
@@ -77,7 +77,29 @@ class HapiRouteImplementation extends RouteImplementation<Request> {
         registerMethod('post', handler),
       put: (handler: GenericRequestHandler<Request>) =>
         registerMethod('put', handler),
-      staticFolder: parentRoute.staticFolder,
+      staticFolder: (
+        folderPath: string,
+        options?: {
+          packageName?: string
+          contentTypes?: Record<string, string>
+          editFile?: (filePath: string, content: string) => string
+        },
+      ) => {
+        parentRoute.staticFolder(folderPath, options)
+
+        if (methodMap) {
+          const handler = methodMap.get('get')
+          if (handler) {
+            this.server.route({
+              method: 'GET',
+              path: hapiPath,
+              handler: this.createHapiHandler(handler),
+            })
+          }
+        }
+
+        return route
+      },
     } as SpecificRoute<Request>
 
     return route
