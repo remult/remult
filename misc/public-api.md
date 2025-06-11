@@ -3673,11 +3673,12 @@ export interface QueueStorage {
 }
 export interface RawRoutes<RequestType> {
   (args: {
-    add: (relativePath: `/${string}`) => SpecificRoute<RequestType>
+    add: (relativePath: `/${string}`) => PublicSpecificRoute
     rootPath: string
   }): void
 }
 //[ ] TemplateLiteralType from TBD is not exported
+//[ ] PublicSpecificRoute from TBD is not exported
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
   withRemult(req: RequestType, tr: TypicalResponse, next: VoidFunction): void

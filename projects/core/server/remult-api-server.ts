@@ -162,7 +162,7 @@ export interface RemultServerOptions<RequestType> {
 
 export interface RawRoutes<RequestType> {
   (args: {
-    add: (relativePath: `/${string}`) => SpecificRoute<RequestType>
+    add: (relativePath: `/${string}`) => PublicSpecificRoute
     rootPath: string
   }): void
 }
@@ -252,6 +252,36 @@ export function createRemultServerCore<RequestType>(
     serverCoreOptions,
   )
   return bridge
+}
+
+export type PublicGenericRequestHandler = (
+  stuffForRouter: { req: GenericRequestInfo } & TypicalResponse,
+  next: VoidFunction,
+) => void
+
+export type PublicSpecificRoute = {
+  get(handler: PublicGenericRequestHandler): PublicSpecificRoute
+  put(handler: PublicGenericRequestHandler): PublicSpecificRoute
+  post(handler: PublicGenericRequestHandler): PublicSpecificRoute
+  delete(handler: PublicGenericRequestHandler): PublicSpecificRoute
+  /**
+   * Serves static files from a folder
+   * @param folderPath The path to the folder containing static files
+   * @param options Configuration options for serving static files
+   */
+  staticFolder(
+    folderPath: string,
+    options?: {
+      packageName?: string
+      editFile?: (filePath: string, content: string) => string
+      /** List of file extensions and their corresponding content types */
+      contentTypes?: Record<string, string>
+    },
+  ): PublicSpecificRoute
+}
+
+export type PublicGenericRouter = {
+  (stuffForRouter: { req: GenericRequestInfo } & TypicalResponse): void
 }
 
 export type GenericRequestHandler<RequestType> = (
@@ -550,7 +580,41 @@ export class RemultServerImplementation<RequestType>
           })
         }
 
-        return routeImpl.createRouteHandlers(newRoute, m)
+        const internalRoute = routeImpl.createRouteHandlers(newRoute, m)
+
+        // Create public API adapter
+        const createPublicHandler = (
+          method: 'get' | 'post' | 'put' | 'delete',
+        ) => {
+          return (publicHandler: PublicGenericRequestHandler) => {
+            const internalHandler: GenericRequestHandler<RequestType> = (
+              req,
+              tr,
+              next,
+            ) => {
+              const genReq = this.coreOptions.buildGenericRequestInfo(req)
+              publicHandler(
+                { req: genReq, res: tr.res, cookie: tr.cookie, sse: tr.sse },
+                next,
+              )
+            }
+            internalRoute[method](internalHandler)
+            return publicRoute
+          }
+        }
+
+        const publicRoute: PublicSpecificRoute = {
+          get: createPublicHandler('get'),
+          post: createPublicHandler('post'),
+          put: createPublicHandler('put'),
+          delete: createPublicHandler('delete'),
+          staticFolder: (folderPath, options) => {
+            internalRoute.staticFolder(folderPath, options)
+            return publicRoute
+          },
+        }
+
+        return publicRoute
       }
 
       for (const module of this.modulesSorted) {

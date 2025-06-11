@@ -10,7 +10,7 @@ export const someRoutes = new Module({
     const COOKIE_NAME = 'the_cookie_name'
     const cookieNav = `<hr /> <a href="/api/setCookie">setCookie</a> | <a href="/api/getCookie">getCookie</a> | <a href="/api/deleteCookie">deleteCookie</a>`
 
-    add('/new-route').get((req, { res }) => {
+    add('/new-route').get(({ req, res }) => {
       res.json({ Soooooo: 'Cool! A new new-route!' })
     })
 
@@ -18,38 +18,38 @@ export const someRoutes = new Module({
       throw new Error('Server crash test')
     })
 
-    add('/html').get((req, { res }) => {
+    add('/html').get(({ res }) => {
       res.send('<h1>Hello World</h1>')
     })
 
-    add('/redirect').get((req, { res }) => {
+    add('/redirect').get(({ res }) => {
       res.redirect('/api/html')
     })
 
-    add('/redirect-ext').get((req, { res }) => {
+    add('/redirect-ext').get(({ res }) => {
       res.redirect(
         'https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages',
       )
     })
 
-    add('/setCookie').get((req, { cookie, res }) => {
+    add('/setCookie').get(({ cookie, res }) => {
       const val = 'Hello'
       cookie(COOKIE_NAME).set(val)
       res.send(`<h1>setCookie</h1><p>set: ${val}</p> ${cookieNav}`)
     })
 
-    add('/setCookieStrict').get((req, { res, cookie }) => {
+    add('/setCookieStrict').get(({ res, cookie }) => {
       const val = 'Hello'
       cookie(COOKIE_NAME).set(val, { sameSite: 'strict' })
       res.send(`<h1>setCookie</h1><p>set: ${val}</p> ${cookieNav}`)
     })
 
-    add('/getCookie').get((req, { res, cookie }) => {
+    add('/getCookie').get(({ res, cookie }) => {
       const val = cookie(COOKIE_NAME).get()
       res.send(`<h1>getCookie</h1><p>get: ${val}</p> ${cookieNav}`)
     })
 
-    add('/deleteCookie').get((req, { res, cookie }) => {
+    add('/deleteCookie').get(({ res, cookie }) => {
       cookie(COOKIE_NAME).delete()
       res.send(`<h1>deleteCookie</h1><p>deleted</p> ${cookieNav}`)
     })
