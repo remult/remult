@@ -162,7 +162,7 @@ export interface RemultServerOptions<RequestType> {
 
 export interface RawRoutes<RequestType> {
   (args: {
-    add: (relativePath: `/${string}`) => PublicSpecificRoute
+    add: (relativePath: `/${string}`) => SpecificRoute
     rootPath: string
   }): void
 }
@@ -254,16 +254,16 @@ export function createRemultServerCore<RequestType>(
   return bridge
 }
 
-export type PublicGenericRequestHandler = (
+export type GenericRequestHandler = (
   stuffForRouter: { req: GenericRequestInfo } & TypicalResponse,
   next: VoidFunction,
 ) => void
 
-export type PublicSpecificRoute = {
-  get(handler: PublicGenericRequestHandler): PublicSpecificRoute
-  put(handler: PublicGenericRequestHandler): PublicSpecificRoute
-  post(handler: PublicGenericRequestHandler): PublicSpecificRoute
-  delete(handler: PublicGenericRequestHandler): PublicSpecificRoute
+export type SpecificRoute = {
+  get(handler: GenericRequestHandler): SpecificRoute
+  put(handler: GenericRequestHandler): SpecificRoute
+  post(handler: GenericRequestHandler): SpecificRoute
+  delete(handler: GenericRequestHandler): SpecificRoute
   /**
    * Serves static files from a folder
    * @param folderPath The path to the folder containing static files
@@ -277,14 +277,14 @@ export type PublicSpecificRoute = {
       /** List of file extensions and their corresponding content types */
       contentTypes?: Record<string, string>
     },
-  ): PublicSpecificRoute
+  ): SpecificRoute
 }
 
 export type PublicGenericRouter = {
   (stuffForRouter: { req: GenericRequestInfo } & TypicalResponse): void
 }
 
-export type GenericRequestHandler<RequestType> = (
+export type InternalGenericRequestHandler<RequestType> = (
   req: RequestType,
   tr: TypicalResponse,
   next: VoidFunction,
@@ -300,7 +300,7 @@ export interface ServerHandleResponse {
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
   withRemult(req: RequestType, tr: TypicalResponse, next: VoidFunction): void
-  registerRouter(r: GenericRouter<RequestType>): void
+  registerRouter(r: InternalGenericRouter<RequestType>): void
   handle(
     req: RequestType,
     gTr?: TypicalResponse,
@@ -316,16 +316,22 @@ export interface RemultServerCore<RequestType> {
   openApiDoc(options: { title: string; version?: string }): any
 }
 
-export type GenericRouter<RequestType> = {
-  route(path: string): SpecificRoute<RequestType>
+export type InternalGenericRouter<RequestType> = {
+  route(path: string): InternalSpecificRoute<RequestType>
 }
-export type SpecificRoute<RequestType> = {
-  get(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
-  put(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
-  post(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
+export type InternalSpecificRoute<RequestType> = {
+  get(
+    handler: InternalGenericRequestHandler<RequestType>,
+  ): InternalSpecificRoute<RequestType>
+  put(
+    handler: InternalGenericRequestHandler<RequestType>,
+  ): InternalSpecificRoute<RequestType>
+  post(
+    handler: InternalGenericRequestHandler<RequestType>,
+  ): InternalSpecificRoute<RequestType>
   delete(
-    handler: GenericRequestHandler<RequestType>,
-  ): SpecificRoute<RequestType>
+    handler: InternalGenericRequestHandler<RequestType>,
+  ): InternalSpecificRoute<RequestType>
   /**
    * Serves static files from a folder
    * @param folderPath The path to the folder containing static files
@@ -339,7 +345,7 @@ export type SpecificRoute<RequestType> = {
       /** List of file extensions and their corresponding content types */
       contentTypes?: Record<string, string>
     },
-  ): SpecificRoute<RequestType>
+  ): InternalSpecificRoute<RequestType>
 }
 export interface GenericRequestInfo {
   url?: string //optional for next
@@ -544,7 +550,7 @@ export class RemultServerImplementation<RequestType>
     return this.getRouteImpl().handle(req, gTr)
   }
   registeredRouter = false
-  registerRouter(r: GenericRouter<RequestType>) {
+  registerRouter(r: InternalGenericRouter<RequestType>) {
     if (this.registeredRouter) throw 'Router already registered'
     this.registeredRouter = true
     {
@@ -568,7 +574,7 @@ export class RemultServerImplementation<RequestType>
         if (this.options.logApiEndPoints) {
           console.info('[remult] ' + newRoute + ' [!]')
         }
-        const m = new Map<string, GenericRequestHandler<RequestType>>()
+        const m = new Map<string, InternalGenericRequestHandler<RequestType>>()
 
         // Add the route to the map
         const r = newRoute.toLowerCase()
@@ -586,12 +592,10 @@ export class RemultServerImplementation<RequestType>
         const createPublicHandler = (
           method: 'get' | 'post' | 'put' | 'delete',
         ) => {
-          return (publicHandler: PublicGenericRequestHandler) => {
-            const internalHandler: GenericRequestHandler<RequestType> = (
-              req,
-              tr,
-              next,
-            ) => {
+          return (publicHandler: GenericRequestHandler) => {
+            const internalHandler: InternalGenericRequestHandler<
+              RequestType
+            > = (req, tr, next) => {
               const genReq = this.coreOptions.buildGenericRequestInfo(req)
               publicHandler(
                 { req: genReq, res: tr.res, cookie: tr.cookie, sse: tr.sse },
@@ -603,7 +607,7 @@ export class RemultServerImplementation<RequestType>
           }
         }
 
-        const publicRoute: PublicSpecificRoute = {
+        const publicRoute: SpecificRoute = {
           get: createPublicHandler('get'),
           post: createPublicHandler('post'),
           put: createPublicHandler('put'),
@@ -759,7 +763,7 @@ export class RemultServerImplementation<RequestType>
   private addEntity(
     e: ClassType<unknown>,
     key: string,
-    r: GenericRouter<RequestType>,
+    r: InternalGenericRouter<RequestType>,
   ) {
     if (key != undefined)
       this.add(
@@ -785,7 +789,7 @@ export class RemultServerImplementation<RequestType>
   add(
     key: string,
     dataApiFactory: (req: Remult) => DataApi,
-    r: GenericRouter<RequestType>,
+    r: InternalGenericRouter<RequestType>,
   ) {
     let myRoute = this.options.rootPath + '/' + key
     if (this.options.logApiEndPoints) console.info('[remult] ' + myRoute)
@@ -963,7 +967,7 @@ export class RemultServerImplementation<RequestType>
   }
   hasQueue = false
 
-  addAction(action: ActionInterface, r: GenericRouter<RequestType>) {
+  addAction(action: ActionInterface, r: InternalGenericRouter<RequestType>) {
     action.__register(
       (
         url: string,
@@ -1623,30 +1627,33 @@ export class EntityQueueStorage implements QueueStorage {
 }
 export class RouteImplementation<RequestType> {
   constructor(private coreOptions: ServerCoreOptions<RequestType>) {}
-  map = new Map<string, Map<string, GenericRequestHandler<RequestType>>>()
+  map = new Map<
+    string,
+    Map<string, InternalGenericRequestHandler<RequestType>>
+  >()
   starRoutes: {
     route: string
-    handler: Map<string, GenericRequestHandler<RequestType>>
+    handler: Map<string, InternalGenericRequestHandler<RequestType>>
   }[] = []
 
   createRouteHandlers(
     path: string,
-    m: Map<string, GenericRequestHandler<RequestType>>,
-  ): SpecificRoute<RequestType> {
+    m: Map<string, InternalGenericRequestHandler<RequestType>>,
+  ): InternalSpecificRoute<RequestType> {
     const route = {
-      get: (h: GenericRequestHandler<RequestType>) => {
+      get: (h: InternalGenericRequestHandler<RequestType>) => {
         m.set('get', h)
         return route
       },
-      put: (h: GenericRequestHandler<RequestType>) => {
+      put: (h: InternalGenericRequestHandler<RequestType>) => {
         m.set('put', h)
         return route
       },
-      post: (h: GenericRequestHandler<RequestType>) => {
+      post: (h: InternalGenericRequestHandler<RequestType>) => {
         m.set('post', h)
         return route
       },
-      delete: (h: GenericRequestHandler<RequestType>) => {
+      delete: (h: InternalGenericRequestHandler<RequestType>) => {
         m.set('delete', h)
         return route
       },
@@ -1741,9 +1748,9 @@ export class RouteImplementation<RequestType> {
     return route
   }
 
-  route(path: string): SpecificRoute<RequestType> {
+  route(path: string): InternalSpecificRoute<RequestType> {
     let r = path.toLowerCase()
-    let m = new Map<string, GenericRequestHandler<RequestType>>()
+    let m = new Map<string, InternalGenericRequestHandler<RequestType>>()
 
     this.map.set(r, m)
     if (path.endsWith('*'))

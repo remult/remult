@@ -1,12 +1,12 @@
 import * as express from 'express'
 import { createRemultServer } from './server/index.js'
 import type {
-  GenericRequestHandler,
+  InternalGenericRequestHandler,
+  InternalSpecificRoute,
   RemultServer,
   RemultServerCore,
   RemultServerOptions,
   ServerCoreOptions,
-  SpecificRoute,
   TypicalResponse,
 } from './server/remult-api-server.js'
 import { RouteImplementation } from './server/remult-api-server.js'
@@ -20,27 +20,27 @@ class ExpressRouteImplementation extends RouteImplementation<express.Request> {
     super(coreOptions)
   }
 
-  route(path: string): SpecificRoute<express.Request> {
+  route(path: string): InternalSpecificRoute<express.Request> {
     const parentRoute = super.route(path)
     return this.createExpressRoute(path, parentRoute)
   }
 
   createRouteHandlers(
     path: string,
-    m: Map<string, GenericRequestHandler<express.Request>>,
-  ): SpecificRoute<express.Request> {
+    m: Map<string, InternalGenericRequestHandler<express.Request>>,
+  ): InternalSpecificRoute<express.Request> {
     const parentRoute = super.createRouteHandlers(path, m)
     return this.createExpressRoute(path, parentRoute, m)
   }
 
   private createExpressRoute(
     path: string,
-    parentRoute: SpecificRoute<express.Request>,
-    methodMap?: Map<string, GenericRequestHandler<express.Request>>,
-  ): SpecificRoute<express.Request> {
+    parentRoute: InternalSpecificRoute<express.Request>,
+    methodMap?: Map<string, InternalGenericRequestHandler<express.Request>>,
+  ): InternalSpecificRoute<express.Request> {
     const registerMethod = (
       method: 'get' | 'post' | 'put' | 'delete',
-      handler: GenericRequestHandler<express.Request>,
+      handler: InternalGenericRequestHandler<express.Request>,
     ) => {
       methodMap?.set(method, handler)
       this.app[method](path, this.createExpressHandler(handler))
@@ -48,13 +48,13 @@ class ExpressRouteImplementation extends RouteImplementation<express.Request> {
     }
 
     const route = {
-      delete: (handler: GenericRequestHandler<express.Request>) =>
+      delete: (handler: InternalGenericRequestHandler<express.Request>) =>
         registerMethod('delete', handler),
-      get: (handler: GenericRequestHandler<express.Request>) =>
+      get: (handler: InternalGenericRequestHandler<express.Request>) =>
         registerMethod('get', handler),
-      post: (handler: GenericRequestHandler<express.Request>) =>
+      post: (handler: InternalGenericRequestHandler<express.Request>) =>
         registerMethod('post', handler),
-      put: (handler: GenericRequestHandler<express.Request>) =>
+      put: (handler: InternalGenericRequestHandler<express.Request>) =>
         registerMethod('put', handler),
       staticFolder: (
         folderPath: string,
@@ -75,13 +75,13 @@ class ExpressRouteImplementation extends RouteImplementation<express.Request> {
 
         return route
       },
-    } as SpecificRoute<express.Request>
+    } as InternalSpecificRoute<express.Request>
 
     return route
   }
 
   private createExpressHandler(
-    handler: GenericRequestHandler<express.Request>,
+    handler: InternalGenericRequestHandler<express.Request>,
   ) {
     return (
       req: express.Request,

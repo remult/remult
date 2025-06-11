@@ -9,11 +9,11 @@ import type {
 import { PassThrough } from 'stream'
 import {
   createRemultServer,
-  type GenericRequestHandler,
+  type InternalGenericRequestHandler,
+  type InternalSpecificRoute,
   type RemultServer,
   type RemultServerCore,
   type RemultServerOptions,
-  type SpecificRoute,
 } from './server/index.js'
 import type { TypicalResponse } from './server/remult-api-server.js'
 import {
@@ -34,30 +34,30 @@ class HapiRouteImplementation extends RouteImplementation<Request> {
     super(coreOptions)
   }
 
-  route(path: string): SpecificRoute<Request> {
+  route(path: string): InternalSpecificRoute<Request> {
     const parentRoute = super.route(path)
     return this.createHapiRoute(path, parentRoute)
   }
 
   createRouteHandlers(
     path: string,
-    m: Map<string, GenericRequestHandler<Request>>,
-  ): SpecificRoute<Request> {
+    m: Map<string, InternalGenericRequestHandler<Request>>,
+  ): InternalSpecificRoute<Request> {
     const parentRoute = super.createRouteHandlers(path, m)
     return this.createHapiRoute(path, parentRoute, m)
   }
 
   private createHapiRoute(
     path: string,
-    parentRoute: SpecificRoute<Request>,
-    methodMap?: Map<string, GenericRequestHandler<Request>>,
-  ): SpecificRoute<Request> {
+    parentRoute: InternalSpecificRoute<Request>,
+    methodMap?: Map<string, InternalGenericRequestHandler<Request>>,
+  ): InternalSpecificRoute<Request> {
     const getHapiPath = (routePath: string) =>
       routePath.replace(/:id\b/g, '{id}').replace(/\*$/, '/{param*}')
 
     const registerMethod = (
       method: 'get' | 'post' | 'put' | 'delete',
-      handler: GenericRequestHandler<Request>,
+      handler: InternalGenericRequestHandler<Request>,
     ) => {
       methodMap?.set(method, handler)
       this.server.route({
@@ -69,13 +69,13 @@ class HapiRouteImplementation extends RouteImplementation<Request> {
     }
 
     const route = {
-      delete: (handler: GenericRequestHandler<Request>) =>
+      delete: (handler: InternalGenericRequestHandler<Request>) =>
         registerMethod('delete', handler),
-      get: (handler: GenericRequestHandler<Request>) =>
+      get: (handler: InternalGenericRequestHandler<Request>) =>
         registerMethod('get', handler),
-      post: (handler: GenericRequestHandler<Request>) =>
+      post: (handler: InternalGenericRequestHandler<Request>) =>
         registerMethod('post', handler),
-      put: (handler: GenericRequestHandler<Request>) =>
+      put: (handler: InternalGenericRequestHandler<Request>) =>
         registerMethod('put', handler),
       staticFolder: (
         folderPath: string,
@@ -100,12 +100,12 @@ class HapiRouteImplementation extends RouteImplementation<Request> {
 
         return route
       },
-    } as SpecificRoute<Request>
+    } as InternalSpecificRoute<Request>
 
     return route
   }
 
-  private createHapiHandler(handler: GenericRequestHandler<Request>) {
+  private createHapiHandler(handler: InternalGenericRequestHandler<Request>) {
     function toOptions(options: SerializeOptions) {
       const fwOptions: ServerStateCookieOptions = {
         isSameSite:

@@ -3586,9 +3586,10 @@ export declare class DataProviderLiveQueryStorage
 //[ ] LiveQueryStorageEntity from TBD is not exported
 //[ ] DataProvider from TBD is not exported
 //[ ] StoredQuery from TBD is not exported
-export type GenericRequestHandler<RequestType> = (
-  req: RequestType,
-  tr: TypicalResponse,
+export type GenericRequestHandler = (
+  stuffForRouter: {
+    req: GenericRequestInfo
+  } & TypicalResponse,
   next: VoidFunction,
 ) => void
 export interface GenericRequestInfo {
@@ -3618,15 +3619,48 @@ export interface GenericResponse {
   status(statusCode: number): GenericResponse
   end(): void
 }
-export type GenericRouter<RequestType> = {
-  route(path: string): SpecificRoute<RequestType>
-}
 export interface InitRequestOptions {
   liveQueryStorage: LiveQueryStorage
   readonly remult: Remult
 }
 //[ ] LiveQueryStorage from TBD is not exported
 //[ ] Remult from TBD is not exported
+export type InternalGenericRequestHandler<RequestType> = (
+  req: RequestType,
+  tr: TypicalResponse,
+  next: VoidFunction,
+) => void
+export type InternalGenericRouter<RequestType> = {
+  route(path: string): InternalSpecificRoute<RequestType>
+}
+export type InternalSpecificRoute<RequestType> = {
+  get(
+    handler: InternalGenericRequestHandler<RequestType>,
+  ): InternalSpecificRoute<RequestType>
+  put(
+    handler: InternalGenericRequestHandler<RequestType>,
+  ): InternalSpecificRoute<RequestType>
+  post(
+    handler: InternalGenericRequestHandler<RequestType>,
+  ): InternalSpecificRoute<RequestType>
+  delete(
+    handler: InternalGenericRequestHandler<RequestType>,
+  ): InternalSpecificRoute<RequestType>
+  /**
+   * Serves static files from a folder
+   * @param folderPath The path to the folder containing static files
+   * @param options Configuration options for serving static files
+   */
+  staticFolder(
+    folderPath: string,
+    options?: {
+      packageName?: string
+      editFile?: (filePath: string, content: string) => string
+      /** List of file extensions and their corresponding content types */
+      contentTypes?: Record<string, string>
+    },
+  ): InternalSpecificRoute<RequestType>
+}
 export declare class JsonEntityFileStorage implements JsonEntityStorage {
   private folderPath
   getItem(entityDbName: string): string | null
@@ -3673,16 +3707,15 @@ export interface QueueStorage {
 }
 export interface RawRoutes<RequestType> {
   (args: {
-    add: (relativePath: `/${string}`) => PublicSpecificRoute
+    add: (relativePath: `/${string}`) => SpecificRoute
     rootPath: string
   }): void
 }
 //[ ] TemplateLiteralType from TBD is not exported
-//[ ] PublicSpecificRoute from TBD is not exported
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
   withRemult(req: RequestType, tr: TypicalResponse, next: VoidFunction): void
-  registerRouter(r: GenericRouter<RequestType>): void
+  registerRouter(r: InternalGenericRouter<RequestType>): void
   handle(
     req: RequestType,
     gTr?: TypicalResponse,
@@ -3809,13 +3842,11 @@ export interface RemultServerOptions<RequestType> {
 //[ ] SubscriptionServer from TBD is not exported
 //[ ] Allowed from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
-export type SpecificRoute<RequestType> = {
-  get(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
-  put(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
-  post(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
-  delete(
-    handler: GenericRequestHandler<RequestType>,
-  ): SpecificRoute<RequestType>
+export type SpecificRoute = {
+  get(handler: GenericRequestHandler): SpecificRoute
+  put(handler: GenericRequestHandler): SpecificRoute
+  post(handler: GenericRequestHandler): SpecificRoute
+  delete(handler: GenericRequestHandler): SpecificRoute
   /**
    * Serves static files from a folder
    * @param folderPath The path to the folder containing static files
@@ -3829,7 +3860,7 @@ export type SpecificRoute<RequestType> = {
       /** List of file extensions and their corresponding content types */
       contentTypes?: Record<string, string>
     },
-  ): SpecificRoute<RequestType>
+  ): SpecificRoute
 }
 export declare class SseSubscriptionServer implements SubscriptionServer {
   private canUserConnectToChannel?

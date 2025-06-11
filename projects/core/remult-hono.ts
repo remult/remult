@@ -4,10 +4,10 @@ import { streamSSE, type SSEStreamingApi } from 'hono/streaming'
 import type { BlankInput } from 'hono/types'
 import {
   createRemultServer,
-  type GenericRequestHandler,
+  type InternalGenericRequestHandler,
+  type InternalSpecificRoute,
   type RemultServerCore,
   type RemultServerOptions,
-  type SpecificRoute,
 } from './server/index.js'
 import type { TypicalResponse } from './server/remult-api-server.js'
 import {
@@ -26,30 +26,30 @@ class HonoRouteImplementation extends RouteImplementation<
     super(coreOptions)
   }
 
-  route(path: string): SpecificRoute<Context<Env, '', BlankInput>> {
+  route(path: string): InternalSpecificRoute<Context<Env, '', BlankInput>> {
     const parentRoute = super.route(path)
     return this.createHonoRoute(path, parentRoute)
   }
 
   createRouteHandlers(
     path: string,
-    m: Map<string, GenericRequestHandler<Context<Env, '', BlankInput>>>,
-  ): SpecificRoute<Context<Env, '', BlankInput>> {
+    m: Map<string, InternalGenericRequestHandler<Context<Env, '', BlankInput>>>,
+  ): InternalSpecificRoute<Context<Env, '', BlankInput>> {
     const parentRoute = super.createRouteHandlers(path, m)
     return this.createHonoRoute(path, parentRoute, m)
   }
 
   private createHonoRoute(
     path: string,
-    parentRoute: SpecificRoute<Context<Env, '', BlankInput>>,
+    parentRoute: InternalSpecificRoute<Context<Env, '', BlankInput>>,
     methodMap?: Map<
       string,
-      GenericRequestHandler<Context<Env, '', BlankInput>>
+      InternalGenericRequestHandler<Context<Env, '', BlankInput>>
     >,
-  ): SpecificRoute<Context<Env, '', BlankInput>> {
+  ): InternalSpecificRoute<Context<Env, '', BlankInput>> {
     const registerMethod = (
       method: 'get' | 'post' | 'put' | 'delete',
-      handler: GenericRequestHandler<Context<Env, '', BlankInput>>,
+      handler: InternalGenericRequestHandler<Context<Env, '', BlankInput>>,
     ) => {
       methodMap?.set(method, handler)
       this.app[method](path, this.createHonoHandler(handler))
@@ -57,14 +57,18 @@ class HonoRouteImplementation extends RouteImplementation<
     }
 
     const route = {
-      get: (handler: GenericRequestHandler<Context<Env, '', BlankInput>>) =>
-        registerMethod('get', handler),
-      post: (handler: GenericRequestHandler<Context<Env, '', BlankInput>>) =>
-        registerMethod('post', handler),
-      put: (handler: GenericRequestHandler<Context<Env, '', BlankInput>>) =>
-        registerMethod('put', handler),
-      delete: (handler: GenericRequestHandler<Context<Env, '', BlankInput>>) =>
-        registerMethod('delete', handler),
+      get: (
+        handler: InternalGenericRequestHandler<Context<Env, '', BlankInput>>,
+      ) => registerMethod('get', handler),
+      post: (
+        handler: InternalGenericRequestHandler<Context<Env, '', BlankInput>>,
+      ) => registerMethod('post', handler),
+      put: (
+        handler: InternalGenericRequestHandler<Context<Env, '', BlankInput>>,
+      ) => registerMethod('put', handler),
+      delete: (
+        handler: InternalGenericRequestHandler<Context<Env, '', BlankInput>>,
+      ) => registerMethod('delete', handler),
       staticFolder: (
         folderPath: string,
         options?: {
@@ -84,13 +88,13 @@ class HonoRouteImplementation extends RouteImplementation<
 
         return route
       },
-    } as SpecificRoute<Context<Env, '', BlankInput>>
+    } as InternalSpecificRoute<Context<Env, '', BlankInput>>
 
     return route
   }
 
   private createHonoHandler(
-    handler: GenericRequestHandler<Context<Env, '', BlankInput>>,
+    handler: InternalGenericRequestHandler<Context<Env, '', BlankInput>>,
   ) {
     function toOptions(options: SerializeOptions) {
       const fwOptions: any = { ...options }

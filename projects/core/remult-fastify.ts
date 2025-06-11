@@ -6,12 +6,12 @@ import type {
 } from 'fastify'
 import { createRemultServer } from './server/index.js'
 import type {
-  GenericRequestHandler,
+  InternalGenericRequestHandler,
+  InternalSpecificRoute,
   RemultServer,
   RemultServerCore,
   RemultServerOptions,
   ServerCoreOptions,
-  SpecificRoute,
   TypicalResponse,
 } from './server/remult-api-server.js'
 import { RouteImplementation } from './server/remult-api-server.js'
@@ -25,27 +25,27 @@ class FastifyRouteImplementation extends RouteImplementation<FastifyRequest> {
     super(coreOptions)
   }
 
-  route(path: string): SpecificRoute<FastifyRequest> {
+  route(path: string): InternalSpecificRoute<FastifyRequest> {
     const parentRoute = super.route(path)
     return this.createFastifyRoute(path, parentRoute)
   }
 
   createRouteHandlers(
     path: string,
-    m: Map<string, GenericRequestHandler<FastifyRequest>>,
-  ): SpecificRoute<FastifyRequest> {
+    m: Map<string, InternalGenericRequestHandler<FastifyRequest>>,
+  ): InternalSpecificRoute<FastifyRequest> {
     const parentRoute = super.createRouteHandlers(path, m)
     return this.createFastifyRoute(path, parentRoute, m)
   }
 
   private createFastifyRoute(
     path: string,
-    parentRoute: SpecificRoute<FastifyRequest>,
-    methodMap?: Map<string, GenericRequestHandler<FastifyRequest>>,
-  ): SpecificRoute<FastifyRequest> {
+    parentRoute: InternalSpecificRoute<FastifyRequest>,
+    methodMap?: Map<string, InternalGenericRequestHandler<FastifyRequest>>,
+  ): InternalSpecificRoute<FastifyRequest> {
     const registerMethod = (
       method: 'get' | 'post' | 'put' | 'delete',
-      handler: GenericRequestHandler<FastifyRequest>,
+      handler: InternalGenericRequestHandler<FastifyRequest>,
     ) => {
       methodMap?.set(method, handler)
       const fastifyHandler = this.createFastifyHandler(handler)
@@ -69,13 +69,13 @@ class FastifyRouteImplementation extends RouteImplementation<FastifyRequest> {
     }
 
     const route = {
-      delete: (handler: GenericRequestHandler<FastifyRequest>) =>
+      delete: (handler: InternalGenericRequestHandler<FastifyRequest>) =>
         registerMethod('delete', handler),
-      get: (handler: GenericRequestHandler<FastifyRequest>) =>
+      get: (handler: InternalGenericRequestHandler<FastifyRequest>) =>
         registerMethod('get', handler),
-      post: (handler: GenericRequestHandler<FastifyRequest>) =>
+      post: (handler: InternalGenericRequestHandler<FastifyRequest>) =>
         registerMethod('post', handler),
-      put: (handler: GenericRequestHandler<FastifyRequest>) =>
+      put: (handler: InternalGenericRequestHandler<FastifyRequest>) =>
         registerMethod('put', handler),
       staticFolder: (
         folderPath: string,
@@ -97,13 +97,13 @@ class FastifyRouteImplementation extends RouteImplementation<FastifyRequest> {
 
         return route
       },
-    } as SpecificRoute<FastifyRequest>
+    } as InternalSpecificRoute<FastifyRequest>
 
     return route
   }
 
   private createFastifyHandler(
-    handler: GenericRequestHandler<FastifyRequest>,
+    handler: InternalGenericRequestHandler<FastifyRequest>,
   ): RouteHandlerMethod {
     return (req, res) => {
       // Add close event listener to the request
