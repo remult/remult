@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import {
-  Module,
-  modulesFlatAndOrdered,
-} from '../../core/server/remult-api-server'
+import { Module } from '../../core/server/Module.js'
+import { modulesFlatAndOrdered } from '../../core/server/remult-api-server.js'
 
 describe('modules', () => {
   it('a few modules', () => {

@@ -3898,6 +3898,18 @@ export interface TypicalResponse {
 //[ ] ResponseRequiredForSSE from TBD is not exported
 ````
 
+## ./server/core.js
+
+```ts
+export declare function createRemultServerCore<RequestType>(
+  options: RemultServerOptions<RequestType>,
+  serverCoreOptions: ServerCoreOptions<RequestType>,
+): RemultServer<RequestType>
+//[ ] RemultServer from TBD is not exported
+//[ ] RemultServerOptions from TBD is not exported
+//[ ] ServerCoreOptions from TBD is not exported
+```
+
 ## ./remult-fastify.js
 
 ```ts

@@ -15,7 +15,9 @@ export {
   JsonEntityFileStorage,
   JsonFileDataProvider,
 } from './JsonEntityFileStorage.js'
-export { createRemultServerCore, Module } from './remult-api-server.js'
+export { Module } from './Module.js'
+export type { ModuleInput } from './Module.js'
+export { createRemultServerCore } from './remult-api-server.js'
 export type {
   GenericRequestHandler,
   GenericRequestInfo,
@@ -24,7 +26,6 @@ export type {
   InternalGenericRequestHandler,
   InternalGenericRouter,
   InternalSpecificRoute,
-  ModuleInput,
   queuedJobInfo,
   QueueStorage,
   RemultServer,

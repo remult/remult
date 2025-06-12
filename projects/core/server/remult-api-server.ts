@@ -43,6 +43,7 @@ import type {
   queuedJobInfoResponse,
 } from '../src/server-action.js'
 import { Action, classBackendMethodsArray } from '../src/server-action.js'
+import type { Module } from './Module.js'
 import { initDataProviderOrJson } from './initDataProviderOrJson.js'
 import remultAdminHtml, { buildEntityInfo } from './remult-admin.js'
 
@@ -173,40 +174,6 @@ export interface Routes {
     add: (relativePath: `/${string}`) => SpecificRoute
     rootPath: string
   }): void
-}
-
-export interface ModuleInput<RequestType> {
-  key: string
-  /** @default 0 */
-  priority?: number
-  entities?: ClassType<unknown>[]
-  controllers?: ClassType<unknown>[]
-  initApi?: RemultServerOptions<RequestType>['initApi']
-  initRequest?: RemultServerOptions<RequestType>['initRequest']
-  routes?: Routes
-  modules?: Module<RequestType>[]
-}
-
-export class Module<RequestType> {
-  key: string
-  priority?: number
-  entities?: ClassType<unknown>[]
-  controllers?: ClassType<unknown>[]
-  initApi?: RemultServerOptions<RequestType>['initApi']
-  initRequest?: RemultServerOptions<RequestType>['initRequest']
-  routes?: Routes
-  modules?: Module<RequestType>[]
-
-  constructor(options: ModuleInput<RequestType>) {
-    this.key = options.key
-    this.priority = options.priority
-    this.entities = options.entities
-    this.controllers = options.controllers
-    this.initRequest = options.initRequest
-    this.initApi = options.initApi
-    this.routes = options.routes
-    this.modules = options.modules
-  }
 }
 
 export interface InitRequestOptions {
