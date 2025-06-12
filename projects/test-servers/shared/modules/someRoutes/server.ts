@@ -10,6 +10,11 @@ export const someRoutes = new Module({
     const cookieNav = `<hr /> <a href="/api/setCookie">setCookie</a> | <a href="/api/getCookie">getCookie</a> | <a href="/api/deleteCookie">deleteCookie</a>`
 
     add('/new-route').get(({ req, res }) => {
+      console.log(`req.url`, req.url)
+      console.log(`req.method`, req.method)
+      console.log(`req.params`, req.params)
+      // console.log(`req.query`, req.query)
+
       res.json({ Soooooo: 'Cool! A new new-route!' })
     })
 
@@ -26,7 +31,8 @@ export const someRoutes = new Module({
     })
 
     add('/redirect-ext').get(({ res }) => {
-      res.redirect(
+      const { redirect } = res
+      redirect(
         'https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages',
       )
     })
@@ -51,6 +57,11 @@ export const someRoutes = new Module({
     add('/deleteCookie').get(({ res, cookie }) => {
       cookie(COOKIE_NAME).delete()
       res.send(`<h1>deleteCookie</h1><p>deleted</p> ${cookieNav}`)
+    })
+
+    add('/setHeader').get(({ res, setHeaders }) => {
+      setHeaders({ 'x-test-header': 'Hello' })
+      res.send(`<h1>setHeader</h1>`)
     })
 
     const rootRepo = process.cwd().split('projects/test-servers')

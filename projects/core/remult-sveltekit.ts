@@ -57,9 +57,9 @@ export function remultApi(
           },
         }
       },
-      // setHeaders: (headers) => {
-      //   event.setHeaders(headers)
-      // },
+      setHeaders: (headers) => {
+        event.setHeaders(headers)
+      },
       sse: {
         write: () => {},
         writeHead: (status, headers) => {

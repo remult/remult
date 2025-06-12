@@ -126,22 +126,6 @@ class HapiRouteImplementation extends RouteImplementation<Request> {
         let stream: PassThrough
 
         const trToUse: TypicalResponse = {
-          cookie: (name) => {
-            return {
-              set: (value, options = {}) => {
-                h.state(name, value, toOptions(mergeOptions(options)))
-              },
-              get: (options = {}) => {
-                const cookieHeader = request.headers.cookie
-                return cookieHeader
-                  ? parse(cookieHeader, options)[name]
-                  : undefined
-              },
-              delete: (options = {}) => {
-                h.unstate(name, toOptions(mergeOptions(options)))
-              },
-            }
-          },
           res: {
             redirect: (url, statusCode = 307) => {
               resolve(h.response().redirect(url).code(statusCode))
@@ -163,13 +147,6 @@ class HapiRouteImplementation extends RouteImplementation<Request> {
             json(data) {
               resolve(h.response(data === null ? 'null' : data).code(status))
             },
-            // setHeaders: (headers) => {
-            //   let hapiResponse = h.response().code(status)
-            //   Object.entries(headers).forEach(([key, value]) => {
-            //     hapiResponse = hapiResponse.header(key, value)
-            //   })
-            //   resolve(hapiResponse)
-            // },
           },
           sse: {
             write(data) {
@@ -185,6 +162,29 @@ class HapiRouteImplementation extends RouteImplementation<Request> {
                   .header('content-encoding', 'identity'),
               )
             },
+          },
+          cookie: (name) => {
+            return {
+              set: (value, options = {}) => {
+                h.state(name, value, toOptions(mergeOptions(options)))
+              },
+              get: (options = {}) => {
+                const cookieHeader = request.headers.cookie
+                return cookieHeader
+                  ? parse(cookieHeader, options)[name]
+                  : undefined
+              },
+              delete: (options = {}) => {
+                h.unstate(name, toOptions(mergeOptions(options)))
+              },
+            }
+          },
+          setHeaders: (headers) => {
+            let hapiResponse = h.response().code(status)
+            Object.entries(headers).forEach(([key, value]) => {
+              hapiResponse = hapiResponse.header(key, value)
+            })
+            resolve(hapiResponse)
           },
         }
 

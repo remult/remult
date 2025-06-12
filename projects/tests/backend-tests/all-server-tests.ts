@@ -593,7 +593,7 @@ export function allServerTests(
     )
 
     it(
-      'should get html',
+      'should get json',
       withRemultForTest(async () => {
         const result = await axios.get(remult.apiClient.url + '/new-route')
         expect(result.data).toMatchInlineSnapshot(`
@@ -715,6 +715,14 @@ export function allServerTests(
           },
         })
         expect(result.data).includes('get: Hello')
+      }),
+    )
+
+    it(
+      'should set headers',
+      withRemultForTest(async () => {
+        let result = await axios.get(remult.apiClient.url + '/setHeader')
+        expect(result.headers['x-test-header']).toBe('Hello')
       }),
     )
   })

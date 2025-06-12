@@ -54,6 +54,11 @@ export const someRoutes = new Module({
       res.send(`<h1>deleteCookie</h1><p>deleted</p> ${cookieNav}`)
     })
 
+    add('/setHeader').get(({ res, setHeaders }) => {
+      setHeaders({ 'x-test-header': 'Hello' })
+      res.send(`<h1>setHeader</h1>`)
+    })
+
     const rootRepo = process.cwd().split('projects/test-servers')
     const pathStatic = path.join(
       rootRepo[0],

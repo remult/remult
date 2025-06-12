@@ -369,6 +369,7 @@ export interface TypicalResponse {
     get(opts?: ParseOptions): string | undefined
     delete(opts?: SerializeOptions): void
   }
+  setHeaders(headers: Record<string, string>): void
   sse: ResponseRequiredForSSE
 }
 
@@ -390,14 +391,8 @@ export interface GenericResponse {
       | 308
       | ({} & number),
   ): void
-  // cookie(name: string): {
-  //   set(value: string, opts?: SerializeOptions): void
-  //   get(opts?: ParseOptions): string | undefined
-  //   delete(opts?: SerializeOptions): void
-  // }
   status(statusCode: number): GenericResponse //exists for express and next and not in opine(In opine it's setStatus)
   end(): void
-  // setHeaders(headers: Record<string, string>): void
 }
 /* @internal*/
 
@@ -606,7 +601,13 @@ export class RemultServerImplementation<RequestType>
             > = (req, tr, next) => {
               const genReq = this.coreOptions.buildGenericRequestInfo(req)
               publicHandler(
-                { req: genReq, res: tr.res, cookie: tr.cookie, sse: tr.sse },
+                {
+                  req: genReq,
+                  res: tr.res,
+                  sse: tr.sse,
+                  cookie: tr.cookie,
+                  setHeaders: tr.setHeaders,
+                },
                 next,
               )
             }
@@ -1846,9 +1847,9 @@ export class RouteImplementation<RequestType> {
             },
           }
         }
-        // setHeaders(headers: Record<string, string>): void {
-        //   // if (gRes !== undefined) gRes.setHeaders(headers)
-        // }
+        setHeaders(headers: Record<string, string>): void {
+          if (tr !== undefined) tr.setHeaders(headers)
+        }
       })()
 
       try {

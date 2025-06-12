@@ -3890,6 +3890,7 @@ export interface TypicalResponse {
     get(opts?: ParseOptions): string | undefined
     delete(opts?: SerializeOptions): void
   }
+  setHeaders(headers: Record<string, string>): void
   sse: ResponseRequiredForSSE
 }
 //[ ] SerializeOptions from TBD is not exported

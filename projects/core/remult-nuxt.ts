@@ -48,6 +48,28 @@ export function remultApi(
     let sseResponse: Response | undefined = undefined
 
     const trToUse: TypicalResponse = {
+      res: {
+        redirect: () => {},
+        end: () => {},
+        send: (html, headers) => {
+          if (headers?.['Content-Type']) {
+            event.node.res.setHeader('Content-Type', headers['Content-Type'])
+          }
+        },
+        json: () => {},
+        status: () => {
+          return trToUse.res
+        },
+      },
+      sse: {
+        write: (data) => {
+          event.node.res.write(data)
+        },
+        writeHead: (status, headers) => {
+          event.node.res.writeHead(status, headers)
+          sseResponse = new Response(null, { headers })
+        },
+      },
       cookie: (name) => {
         return {
           set: (value, options = {}) => {
@@ -67,32 +89,10 @@ export function remultApi(
           },
         }
       },
-      res: {
-        redirect: () => {},
-        end: () => {},
-        send: (html, headers) => {
-          if (headers?.['Content-Type']) {
-            event.node.res.setHeader('Content-Type', headers['Content-Type'])
-          }
-        },
-        json: () => {},
-        status: () => {
-          return trToUse.res
-        },
-      },
-      // setHeaders: (headers) => {
-      //   Object.entries(headers).forEach(([key, value]) => {
-      //     event.node.res.setHeader(key, value)
-      //   })
-      // },
-      sse: {
-        write: (data) => {
-          event.node.res.write(data)
-        },
-        writeHead: (status, headers) => {
-          event.node.res.writeHead(status, headers)
-          sseResponse = new Response(null, { headers })
-        },
+      setHeaders: (headers) => {
+        Object.entries(headers).forEach(([key, value]) => {
+          event.node.res.setHeader(key, value)
+        })
       },
     }
     // TODO: bring back SSE here ?

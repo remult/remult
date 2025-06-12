@@ -28,26 +28,6 @@ export function remultNext(
     ;(req as any)['_tempOnClose'] = () => {}
 
     const trToUse: TypicalResponse = {
-      cookie: (name) => {
-        return {
-          set: (value, options = {}) => {
-            ;(res as any).setHeader(
-              'Set-Cookie',
-              serialize(name, value, mergeOptions(options)),
-            )
-          },
-          get: (options = {}) => {
-            const cookieHeader = req.headers.cookie
-            return cookieHeader ? parse(cookieHeader, options)[name] : undefined
-          },
-          delete: (options = {}) => {
-            ;(res as any).setHeader(
-              'Set-Cookie',
-              serialize(name, '', mergeOptions({ ...options, maxAge: 0 })),
-            )
-          },
-        }
-      },
       res: {
         redirect: (url, statusCode = 307) => {
           res.redirect(statusCode, url)
@@ -127,6 +107,31 @@ export function remultNext(
             }
           }
         },
+      },
+      cookie: (name) => {
+        return {
+          set: (value, options = {}) => {
+            ;(res as any).setHeader(
+              'Set-Cookie',
+              serialize(name, value, mergeOptions(options)),
+            )
+          },
+          get: (options = {}) => {
+            const cookieHeader = req.headers.cookie
+            return cookieHeader ? parse(cookieHeader, options)[name] : undefined
+          },
+          delete: (options = {}) => {
+            ;(res as any).setHeader(
+              'Set-Cookie',
+              serialize(name, '', mergeOptions({ ...options, maxAge: 0 })),
+            )
+          },
+        }
+      },
+      setHeaders: (headers) => {
+        Object.entries(headers).forEach(([key, value]) => {
+          ;(res as any).setHeader(key, value)
+        })
       },
     }
 
@@ -262,28 +267,6 @@ export function remultApi(
       ;(req as any)['_tempOnClose'] = () => {}
 
       const trToUse: TypicalResponse = {
-        cookie: (name) => {
-          return {
-            set: (value, options = {}) => {
-              ;(trToUse as any).setHeader(
-                'Set-Cookie',
-                serialize(name, value, mergeOptions(options)),
-              )
-            },
-            get: (options = {}) => {
-              const cookieHeader = (req as any).headers.cookie
-              return cookieHeader
-                ? parse(cookieHeader, options)[name]
-                : undefined
-            },
-            delete: (options = {}) => {
-              ;(trToUse as any).setHeader(
-                'Set-Cookie',
-                serialize(name, '', mergeOptions({ ...options, maxAge: 0 })),
-              )
-            },
-          }
-        },
         res: {
           redirect: (url, statusCode = 307) => {
             ;(req as any).redirect(url, statusCode)
@@ -321,6 +304,33 @@ export function remultApi(
               }
             }
           },
+        },
+        cookie: (name) => {
+          return {
+            set: (value, options = {}) => {
+              ;(trToUse as any).setHeader(
+                'Set-Cookie',
+                serialize(name, value, mergeOptions(options)),
+              )
+            },
+            get: (options = {}) => {
+              const cookieHeader = (req as any).headers.cookie
+              return cookieHeader
+                ? parse(cookieHeader, options)[name]
+                : undefined
+            },
+            delete: (options = {}) => {
+              ;(trToUse as any).setHeader(
+                'Set-Cookie',
+                serialize(name, '', mergeOptions({ ...options, maxAge: 0 })),
+              )
+            },
+          }
+        },
+        setHeaders: (headers) => {
+          Object.entries(headers).forEach(([key, value]) => {
+            ;(trToUse as any).setHeader(key, value)
+          })
         },
       }
 

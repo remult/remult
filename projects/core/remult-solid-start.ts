@@ -43,19 +43,6 @@ export function remultApi(
           return trToUse.res
         },
       },
-      cookie: (name) => {
-        return {
-          set: (value, options = {}) => {
-            event?.locals.setCookie(name, value, options)
-          },
-          get: (options = {}) => {
-            return event?.locals.getCookie(name, options)
-          },
-          delete: (options = {}) => {
-            event?.locals.deleteCookie(name, options)
-          },
-        }
-      },
       sse: {
         write: () => {},
         writeHead: (status, headers) => {
@@ -82,6 +69,24 @@ export function remultApi(
             }
           }
         },
+      },
+      cookie: (name) => {
+        return {
+          set: (value, options = {}) => {
+            event?.locals.setCookie(name, value, options)
+          },
+          get: (options = {}) => {
+            return event?.locals.getCookie(name, options)
+          },
+          delete: (options = {}) => {
+            event?.locals.deleteCookie(name, options)
+          },
+        }
+      },
+      setHeaders: (headers) => {
+        Object.entries(headers).forEach(([key, value]) => {
+          event?.locals.setHeader(key, value)
+        })
       },
     }
 

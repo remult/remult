@@ -98,23 +98,6 @@ class ExpressRouteImplementation extends RouteImplementation<express.Request> {
     res: express.Response,
   ): TypicalResponse {
     return {
-      cookie: (name) => {
-        return {
-          set: (value, options = {}) => {
-            res.header('Set-Cookie', serialize(name, value, options))
-          },
-          get: (options = {}) => {
-            const cookieHeader = req.headers.cookie
-            return cookieHeader ? parse(cookieHeader, options)[name] : undefined
-          },
-          delete: (options = {}) => {
-            res.header(
-              'Set-Cookie',
-              serialize(name, '', { ...options, maxAge: 0 }),
-            )
-          },
-        }
-      },
       res: {
         redirect: (url, statusCode = 307) => {
           res.redirect(statusCode, url)
@@ -135,11 +118,6 @@ class ExpressRouteImplementation extends RouteImplementation<express.Request> {
         json(data) {
           res.json(data)
         },
-        // setHeaders: (headers) => {
-        //   Object.entries(headers).forEach(([key, value]) => {
-        //     res.header(key, value)
-        //   })
-        // },
       },
       sse: {
         write(data: string) {
@@ -148,6 +126,28 @@ class ExpressRouteImplementation extends RouteImplementation<express.Request> {
         writeHead(status: number, headers: any) {
           res.writeHead(status, headers)
         },
+      },
+      cookie: (name) => {
+        return {
+          set: (value, options = {}) => {
+            res.header('Set-Cookie', serialize(name, value, options))
+          },
+          get: (options = {}) => {
+            const cookieHeader = req.headers.cookie
+            return cookieHeader ? parse(cookieHeader, options)[name] : undefined
+          },
+          delete: (options = {}) => {
+            res.header(
+              'Set-Cookie',
+              serialize(name, '', { ...options, maxAge: 0 }),
+            )
+          },
+        }
+      },
+      setHeaders: (headers) => {
+        Object.entries(headers).forEach(([key, value]) => {
+          res.header(key, value)
+        })
       },
     }
   }

@@ -120,23 +120,6 @@ class FastifyRouteImplementation extends RouteImplementation<FastifyRequest> {
 
   private createFastifyResponse(res: any): TypicalResponse {
     return {
-      cookie: (name) => {
-        return {
-          set: (value, options = {}) => {
-            res.header('Set-Cookie', serialize(name, value, options))
-          },
-          get: (options = {}) => {
-            const cookieHeader = res.request.headers.cookie
-            return cookieHeader ? parse(cookieHeader, options)[name] : undefined
-          },
-          delete: (options = {}) => {
-            res.header(
-              'Set-Cookie',
-              serialize(name, '', { ...options, maxAge: 0 }),
-            )
-          },
-        }
-      },
       res: {
         redirect: (url, statusCode = 307) => {
           res.redirect(statusCode, url)
@@ -154,11 +137,6 @@ class FastifyRouteImplementation extends RouteImplementation<FastifyRequest> {
         json(data) {
           res.send(data)
         },
-        // setHeaders: (headers) => {
-        //   Object.entries(headers).forEach(([key, value]) => {
-        //     res.header(key, value)
-        //   })
-        // },
       },
       sse: {
         write(data: string) {
@@ -167,6 +145,28 @@ class FastifyRouteImplementation extends RouteImplementation<FastifyRequest> {
         writeHead(status: number, headers: any) {
           res.raw.writeHead(status, headers)
         },
+      },
+      cookie: (name) => {
+        return {
+          set: (value, options = {}) => {
+            res.header('Set-Cookie', serialize(name, value, options))
+          },
+          get: (options = {}) => {
+            const cookieHeader = res.request.headers.cookie
+            return cookieHeader ? parse(cookieHeader, options)[name] : undefined
+          },
+          delete: (options = {}) => {
+            res.header(
+              'Set-Cookie',
+              serialize(name, '', { ...options, maxAge: 0 }),
+            )
+          },
+        }
+      },
+      setHeaders: (headers) => {
+        Object.entries(headers).forEach(([key, value]) => {
+          res.header(key, value)
+        })
       },
     }
   }

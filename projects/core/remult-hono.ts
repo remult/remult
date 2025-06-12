@@ -107,19 +107,6 @@ class HonoRouteImplementation extends RouteImplementation<
           let result: any
           let sse: SSEStreamingApi
           const trToUse: TypicalResponse = {
-            cookie: (name: string) => {
-              return {
-                set: (value: string, options = {}) => {
-                  setCookie(c, name, value, toOptions(mergeOptions(options)))
-                },
-                get: (options = {}) => {
-                  return getCookie(c, name)
-                },
-                delete: (options = {}) => {
-                  deleteCookie(c, name, toOptions(mergeOptions(options)))
-                },
-              }
-            },
             res: {
               redirect: (url, statusCode = 307) => {
                 resolve(c.redirect(url as any, statusCode as any))
@@ -139,11 +126,7 @@ class HonoRouteImplementation extends RouteImplementation<
                 resolve(c.html(data))
               },
             },
-            // setHeaders: (headers) => {
-            //   Object.entries(headers).forEach(([key, value]) => {
-            //     c.header(key, value)
-            //   })
-            // },
+
             sse: {
               write: (data: string) => {
                 sse.write(data)
@@ -159,6 +142,24 @@ class HonoRouteImplementation extends RouteImplementation<
                   }),
                 )
               },
+            },
+            cookie: (name: string) => {
+              return {
+                set: (value: string, options = {}) => {
+                  setCookie(c, name, value, toOptions(mergeOptions(options)))
+                },
+                get: (options = {}) => {
+                  return getCookie(c, name)
+                },
+                delete: (options = {}) => {
+                  deleteCookie(c, name, toOptions(mergeOptions(options)))
+                },
+              }
+            },
+            setHeaders: (headers) => {
+              Object.entries(headers).forEach(([key, value]) => {
+                c.header(key, value)
+              })
             },
           }
 
