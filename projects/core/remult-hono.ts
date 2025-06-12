@@ -1,22 +1,193 @@
-import { type Context, type Env, Hono } from 'hono'
-import type { BlankInput } from 'hono/types'
+import { Hono, type Context, type Env } from 'hono'
+import { deleteCookie, getCookie, setCookie } from 'hono/cookie'
 import { streamSSE, type SSEStreamingApi } from 'hono/streaming'
+import type { BlankInput } from 'hono/types'
 import {
   createRemultServer,
-  type RemultServerOptions,
+  type InternalGenericRequestHandler,
+  type InternalSpecificRoute,
   type RemultServerCore,
-  type GenericRouter,
-  type SpecificRoute,
-  type GenericRequestHandler,
-  type GenericResponse,
+  type RemultServerOptions,
 } from './server/index.js'
-import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
+import {
+  RouteImplementation,
+  type ServerCoreOptions,
+} from './server/remult-api-server.js'
+import {
+  getBaseTypicalRouteInfo,
+  type TypicalRouteInfo,
+} from './server/route-helpers.js'
+import { mergeOptions, type SerializeOptions } from './src/remult-cookie.js'
+
+class HonoRouteImplementation extends RouteImplementation<
+  Context<Env, '', BlankInput>
+> {
+  constructor(
+    private app: Hono,
+    coreOptions: ServerCoreOptions<Context<Env, '', BlankInput>>,
+  ) {
+    super(coreOptions)
+  }
+
+  route(path: string): InternalSpecificRoute<Context<Env, '', BlankInput>> {
+    const parentRoute = super.route(path)
+    return this.createHonoRoute(path, parentRoute)
+  }
+
+  createRouteHandlers(
+    path: string,
+    m: Map<string, InternalGenericRequestHandler<Context<Env, '', BlankInput>>>,
+  ): InternalSpecificRoute<Context<Env, '', BlankInput>> {
+    const parentRoute = super.createRouteHandlers(path, m)
+    return this.createHonoRoute(path, parentRoute, m)
+  }
+
+  private createHonoRoute(
+    path: string,
+    parentRoute: InternalSpecificRoute<Context<Env, '', BlankInput>>,
+    methodMap?: Map<
+      string,
+      InternalGenericRequestHandler<Context<Env, '', BlankInput>>
+    >,
+  ): InternalSpecificRoute<Context<Env, '', BlankInput>> {
+    const registerMethod = (
+      method: 'get' | 'post' | 'put' | 'delete',
+      handler: InternalGenericRequestHandler<Context<Env, '', BlankInput>>,
+    ) => {
+      methodMap?.set(method, handler)
+      this.app[method](path, this.createHonoHandler(handler))
+      return route
+    }
+
+    const route = {
+      get: (
+        handler: InternalGenericRequestHandler<Context<Env, '', BlankInput>>,
+      ) => registerMethod('get', handler),
+      post: (
+        handler: InternalGenericRequestHandler<Context<Env, '', BlankInput>>,
+      ) => registerMethod('post', handler),
+      put: (
+        handler: InternalGenericRequestHandler<Context<Env, '', BlankInput>>,
+      ) => registerMethod('put', handler),
+      delete: (
+        handler: InternalGenericRequestHandler<Context<Env, '', BlankInput>>,
+      ) => registerMethod('delete', handler),
+      staticFolder: (
+        folderPath: string,
+        options?: {
+          packageName?: string
+          contentTypes?: Record<string, string>
+          editFile?: (filePath: string, content: string) => string
+        },
+      ) => {
+        parentRoute.staticFolder(folderPath, options)
+
+        if (methodMap) {
+          const handler = methodMap.get('get')
+          if (handler) {
+            this.app.get(path, this.createHonoHandler(handler))
+          }
+        }
+
+        return route
+      },
+    } as InternalSpecificRoute<Context<Env, '', BlankInput>>
+
+    return route
+  }
+
+  private createHonoHandler(
+    handler: InternalGenericRequestHandler<Context<Env, '', BlankInput>>,
+  ) {
+    function toOptions(options: SerializeOptions) {
+      const fwOptions: any = { ...options }
+      return fwOptions
+    }
+
+    return (c: Context<Env, '', BlankInput>) => {
+      return new Promise<void | Response>((resolve, reject) => {
+        try {
+          let result: any
+          let sse: SSEStreamingApi
+
+          const bTri = getBaseTypicalRouteInfo({
+            url: c.req.url,
+            headers: c.req.header(),
+          })
+
+          const triToUse: TypicalRouteInfo = {
+            req: bTri.req,
+            res: {
+              redirect: (url, statusCode = 307) => {
+                resolve(c.redirect(url as any, statusCode as any))
+              },
+              json: (data: any) => {
+                resolve(c.json(data))
+              },
+              status: (status: number) => {
+                result = c.status(status as any)
+                return triToUse.res
+              },
+              end: () => {
+                if (sse) sse.close()
+                else resolve(c.body(null))
+              },
+              send: (data) => {
+                resolve(c.html(data))
+              },
+            },
+
+            sse: {
+              write: (data: string) => {
+                sse.write(data)
+              },
+              writeHead: (status: number, headers: any) => {
+                resolve(
+                  streamSSE(c, (s) => {
+                    sse = s
+                    return new Promise((res) => {
+                      ;(c as any)['_tempOnClose'] = (x: VoidFunction) =>
+                        sse.onAbort(() => x())
+                    })
+                  }),
+                )
+              },
+            },
+            cookie: (name: string) => {
+              return {
+                set: (value: string, options = {}) => {
+                  setCookie(c, name, value, toOptions(mergeOptions(options)))
+                },
+                get: (options = {}) => {
+                  return getCookie(c, name)
+                },
+                delete: (options = {}) => {
+                  deleteCookie(c, name, toOptions(mergeOptions(options)))
+                },
+              }
+            },
+            setHeaders: (headers) => {
+              Object.entries(headers).forEach(([key, value]) => {
+                c.header(key, value)
+              })
+            },
+          }
+
+          handler(c as any, triToUse, () => {})
+        } catch (err) {
+          reject(err)
+        }
+      })
+    }
+  }
+}
+
 export function remultApi(
   options: RemultServerOptions<Context<Env, '', BlankInput>>,
 ): RemultHonoServer {
-  let app = new Hono()
-  const api = createRemultServer(options, {
-    buildGenericRequestInfo: (c) => {
+  const app = new Hono()
+  const coreOptions: ServerCoreOptions<Context<Env, '', BlankInput>> = {
+    buildGenericRequestInfo: (c: Context<Env, '', BlankInput>) => {
       return {
         method: c.req.method,
         params: c.req.param(),
@@ -29,93 +200,25 @@ export function remultApi(
         }),
         url: c.req.url,
         on: (e: 'close', do1: VoidFunction) => {
-          ; (c as any)['_tempOnClose'](() => do1())
-          //   c.req.on('close', do1)
+          ;(c as any)['_tempOnClose'](() => do1())
         },
       }
     },
-    getRequestBody: async (c) => {
+    getRequestBody: async (c: Context<Env, '', BlankInput>) => {
       return c.req.json()
     },
-  })
-
-  let honoRouter: GenericRouter<Context<Env, '', BlankInput>> = {
-    route(path) {
-      let r = {
-        get(handler) {
-          app.get(path, honoHandler(handler))
-          return r
-        },
-        post(handler) {
-          app.post(path, honoHandler(handler))
-          return r
-        },
-        put(handler) {
-          app.put(path, honoHandler(handler))
-          return r
-        },
-        delete(handler) {
-          app.delete(path, honoHandler(handler))
-          return r
-        },
-      } as SpecificRoute<Context<Env, '', BlankInput>>
-      return r
-
-      function honoHandler(
-        handler: GenericRequestHandler<Context<Env, '', BlankInput>>,
-      ) {
-        return (c: Context<Env, '', BlankInput>) => {
-          return new Promise<void | Response>((res, rej) => {
-            try {
-              let result: any
-              let sse: SSEStreamingApi
-              const gRes: GenericResponse & ResponseRequiredForSSE = {
-                json: (data: any) => {
-                  res(c.json(data))
-                },
-                status: (status: number) => {
-                  result = c.status(status as any)
-                  return gRes
-                },
-                end: () => {
-                  if (sse) sse.close()
-                  else res(c.body(null))
-                },
-                send: (data: string) => {
-                  res(c.html(data))
-                },
-                write: (data: string) => {
-                  sse.write(data)
-                },
-                writeHead: (status: number, headers: any) => {
-                  res(
-                    streamSSE(c, (s) => {
-                      sse = s
-                      return new Promise((res) => {
-                        ; (c as any)['_tempOnClose'] = (x: VoidFunction) =>
-                          sse.onAbort(() => x())
-                      })
-                    }),
-                  )
-                },
-              }
-
-              handler(c as any, gRes, () => { })
-            } catch (err) {
-              rej(err)
-            }
-          })
-        }
-      }
-    },
   }
-  api.registerRouter(honoRouter)
+  const api = createRemultServer(options, coreOptions)
+  const router = new HonoRouteImplementation(app, coreOptions)
+
+  api.registerRouter(router)
   return Object.assign(app, {
     getRemult: (c) => api.getRemult(c),
     openApiDoc: (options) => api.openApiDoc(options),
     withRemult: async (c, what) => api.withRemultAsync(c, what),
   } as Pick<RemultHonoServer, 'getRemult' | 'openApiDoc' | 'withRemult'>)
 }
+
 export type RemultHonoServer = Hono &
   RemultServerCore<Context<Env, '', BlankInput>> & {
     withRemult: <T>(

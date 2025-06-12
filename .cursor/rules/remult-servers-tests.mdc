@@ -1,0 +1,18 @@
+---
+description: Helps for remult servers tests cli
+globs: 
+alwaysApply: false
+---
+When you want to do servers tests you have to be on the root of the repo.
+
+And to do all servers test, you should do:
+```
+npm run build && npm run test-servers:setup-all && npm run build-tests && npm run test:ci
+```
+
+Check out the root `package.json` to see the commands.
+because, when you focus on one server, you can optimise the main command.
+For example, you don't need to run test-servers:setup-all, but you can use the dedicated one.
+If there is no dedicated one, you can just skip the setup & build... You can directly run tests.
+
+Also, you can run specific tests with `npm run test fastify` to do only fastify tests.

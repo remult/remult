@@ -1,17 +1,17 @@
 import { getRequestEvent, type RequestEvent } from 'solid-js/web'
-import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
-import type {
-  GenericResponse,
-  RemultServerCore,
-  RemultServerOptions,
-} from './server/index.js'
+import type { RemultServerCore, RemultServerOptions } from './server/index.js'
 import { createRemultServer } from './server/index.js'
+import type { ServerCoreOptions } from './server/remult-api-server.js'
+import type { TypicalRouteInfo } from './server/route-helpers.js'
+import { toResponse } from './server/toResponse.js'
+
 import type { APIEvent } from '@solidjs/start/server' // don't remove - augments requestEvent
+type localAPIEvent = APIEvent
 
 export function remultApi(
   options: RemultServerOptions<RequestEvent>,
 ): RemultSolidStartServer {
-  let result = createRemultServer<RequestEvent>(options, {
+  const coreOptions: ServerCoreOptions<RequestEvent> = {
     buildGenericRequestInfo: (event) => ({
       url: event.request.url,
       method: event.request.method,
@@ -22,65 +22,77 @@ export function remultApi(
       },
     }),
     getRequestBody: (event) => event.request.json(),
-  })
+  }
+  let result = createRemultServer<RequestEvent>(options, coreOptions)
   const serverHandler = async () => {
     const event = await getRequestEvent()
     let sseResponse: Response | undefined = undefined
-    if (event) event.locals['_tempOnClose'] = () => { }
+    if (event) event.locals['_tempOnClose'] = () => {}
 
-    const response: GenericResponse & ResponseRequiredForSSE = {
-      end: () => { },
-      json: () => { },
-      send: () => { },
-      status: () => {
-        return response
+    const triToUse: TypicalRouteInfo = {
+      res: {
+        redirect: (url, statusCode = 307) => {
+          event?.locals.redirect(url, statusCode)
+        },
+        end: () => {},
+        json: () => {},
+        send: () => {},
+        status: () => {
+          return triToUse.res
+        },
       },
-      write: () => { },
-      writeHead: (status, headers) => {
-        if (status === 200 && headers) {
-          const contentType = headers['Content-Type']
-          if (contentType === 'text/event-stream') {
-            const messages: string[] = []
-            response.write = (x) => messages.push(x)
-            const stream = new ReadableStream({
-              start: (controller) => {
-                for (const message of messages) {
-                  controller.enqueue(message)
-                }
-                response.write = (data) => {
-                  controller.enqueue(data)
-                }
-              },
-              cancel: () => {
-                response.write = () => { }
-                event?.locals?.['_tempOnClose']?.()
-              },
-            })
-            sseResponse = new Response(stream, { headers })
+      sse: {
+        write: () => {},
+        writeHead: (status, headers) => {
+          if (status === 200 && headers) {
+            const contentType = headers['Content-Type']
+            if (contentType === 'text/event-stream') {
+              const messages: string[] = []
+              triToUse.sse.write = (x) => messages.push(x)
+              const stream = new ReadableStream({
+                start: (controller) => {
+                  for (const message of messages) {
+                    controller.enqueue(message)
+                  }
+                  triToUse.sse.write = (data) => {
+                    controller.enqueue(data)
+                  }
+                },
+                cancel: () => {
+                  triToUse.sse.write = () => {}
+                  event?.locals?.['_tempOnClose']?.()
+                },
+              })
+              sseResponse = new Response(stream, { headers })
+            }
           }
+        },
+      },
+      cookie: (name) => {
+        return {
+          set: (value, options = {}) => {
+            event?.locals.setCookie(name, value, options)
+          },
+          get: (options = {}) => {
+            return event?.locals.getCookie(name, options)
+          },
+          delete: (options = {}) => {
+            event?.locals.deleteCookie(name, options)
+          },
         }
       },
+      setHeaders: (headers) => {
+        Object.entries(headers).forEach(([key, value]) => {
+          event?.locals.setHeader(key, value)
+        })
+      },
     }
 
-    const responseFromRemultHandler = await result.handle(event!, response)
-    if (sseResponse !== undefined) {
-      return sseResponse
-    }
-    if (responseFromRemultHandler) {
-      if (responseFromRemultHandler.html)
-        return new Response(responseFromRemultHandler.html, {
-          status: responseFromRemultHandler.statusCode,
-          headers: {
-            'Content-Type': 'text/html',
-          },
-        })
-      const res = new Response(JSON.stringify(responseFromRemultHandler.data), {
-        status: responseFromRemultHandler.statusCode,
-      })
-      return res
-    }
-    return new Response('Not Found', {
-      status: 404,
+    const remultHandlerResponse = await result.handle(event!, triToUse)
+    return toResponse({
+      sseResponse,
+      remultHandlerResponse,
+      requestUrl: event!.request.url,
     })
   }
 

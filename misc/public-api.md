@@ -3549,12 +3549,16 @@ export declare function initAsyncHooks(): void
 
 ## ./server/index.js
 
-```ts
+````ts
 export declare function createRemultServer<RequestType>(
   options: RemultServerOptions<RequestType>,
   serverCoreOptions?: ServerCoreOptions<RequestType>,
 ): RemultServer<RequestType>
 //[ ] ServerCoreOptions from ./remult-api-server.js is not exported
+export declare function createRemultServerCore<RequestType>(
+  options: RemultServerOptions<RequestType>,
+  serverCoreOptions: ServerCoreOptions<RequestType>,
+): RemultServer<RequestType>
 export declare class DataProviderLiveQueryStorage
   implements LiveQueryStorage, Storage
 {
@@ -3582,9 +3586,8 @@ export declare class DataProviderLiveQueryStorage
 //[ ] LiveQueryStorageEntity from TBD is not exported
 //[ ] DataProvider from TBD is not exported
 //[ ] StoredQuery from TBD is not exported
-export type GenericRequestHandler<RequestType> = (
-  req: RequestType,
-  res: GenericResponse,
+export type GenericRequestHandler = (
+  stuffForRouter: TypicalRouteInfo,
   next: VoidFunction,
 ) => void
 export interface GenericRequestInfo {
@@ -3595,12 +3598,24 @@ export interface GenericRequestInfo {
 }
 export interface GenericResponse {
   json(data: any): void
-  send(html: string): void
+  send(html: string, headers?: Record<string, string>): void
+  redirect(
+    url: string,
+    /** The [HTTP status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages). Must be in the range 300-308. */
+    status?:
+      | 300
+      | 301
+      | 302
+      | 303
+      | 304
+      | 305
+      | 306
+      | 307
+      | 308
+      | ({} & number),
+  ): void
   status(statusCode: number): GenericResponse
   end(): void
-}
-export type GenericRouter<RequestType> = {
-  route(path: string): SpecificRoute<RequestType>
 }
 export interface InitRequestOptions {
   liveQueryStorage: LiveQueryStorage
@@ -3608,6 +3623,42 @@ export interface InitRequestOptions {
 }
 //[ ] LiveQueryStorage from TBD is not exported
 //[ ] Remult from TBD is not exported
+export type InternalGenericRequestHandler<RequestType> = (
+  req: RequestType,
+  tri: TypicalRouteInfo,
+  next: VoidFunction,
+) => void
+export type InternalGenericRouter<RequestType> = {
+  route(path: string): InternalSpecificRoute<RequestType>
+}
+export type InternalSpecificRoute<RequestType> = {
+  get(
+    handler: InternalGenericRequestHandler<RequestType>,
+  ): InternalSpecificRoute<RequestType>
+  put(
+    handler: InternalGenericRequestHandler<RequestType>,
+  ): InternalSpecificRoute<RequestType>
+  post(
+    handler: InternalGenericRequestHandler<RequestType>,
+  ): InternalSpecificRoute<RequestType>
+  delete(
+    handler: InternalGenericRequestHandler<RequestType>,
+  ): InternalSpecificRoute<RequestType>
+  /**
+   * Serves static files from a folder
+   * @param folderPath The path to the folder containing static files
+   * @param options Configuration options for serving static files
+   */
+  staticFolder(
+    folderPath: string,
+    options?: {
+      packageName?: string
+      editFile?: (filePath: string, content: string) => string
+      /** List of file extensions and their corresponding content types */
+      contentTypes?: Record<string, string>
+    },
+  ): InternalSpecificRoute<RequestType>
+}
 export declare class JsonEntityFileStorage implements JsonEntityStorage {
   private folderPath
   getItem(entityDbName: string): string | null
@@ -3616,6 +3667,29 @@ export declare class JsonEntityFileStorage implements JsonEntityStorage {
 }
 export declare class JsonFileDataProvider extends JsonDataProvider {
   constructor(folderPath: string)
+}
+export declare class Module<RequestType> {
+  key: string
+  priority?: number
+  entities?: ClassType<unknown>[]
+  controllers?: ClassType<unknown>[]
+  initApi?: RemultServerOptions<RequestType>["initApi"]
+  initRequest?: RemultServerOptions<RequestType>["initRequest"]
+  routes?: Routes
+  modules?: Module<RequestType>[]
+  constructor(options: ModuleInput<RequestType>)
+}
+//[ ] ClassType from TBD is not exported
+export interface ModuleInput<RequestType> {
+  key: string
+  /** @default 0 */
+  priority?: number
+  entities?: ClassType<unknown>[]
+  controllers?: ClassType<unknown>[]
+  initApi?: RemultServerOptions<RequestType>["initApi"]
+  initRequest?: RemultServerOptions<RequestType>["initRequest"]
+  routes?: Routes
+  modules?: Module<RequestType>[]
 }
 export interface queuedJobInfo {
   info: queuedJobInfoResponse
@@ -3631,11 +3705,11 @@ export interface QueueStorage {
 }
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
-  withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): void
-  registerRouter(r: GenericRouter<RequestType>): void
+  withRemult(req: RequestType, tri: TypicalRouteInfo, next: VoidFunction): void
+  registerRouter(r: InternalGenericRouter<RequestType>): void
   handle(
     req: RequestType,
-    gRes?: GenericResponse,
+    gTri?: TypicalRouteInfo,
   ): Promise<ServerHandleResponse | undefined>
   withRemultAsync<T>(
     request: RequestType | undefined,
@@ -3741,19 +3815,58 @@ export interface RemultServerOptions<RequestType> {
     responseBody: any
     sendError: (httpStatusCode: number, body: any) => void
   }) => Promise<void> | undefined
+  /**
+   * Adding some extra routes to your api.
+   *
+   * Note: this is primarily meant for module developers.
+   * As a user you should first make use of [Entities](https://remult.dev/docs/ref_entity) and [Backend Methods](https://remult.dev/docs/backendMethods)
+   *
+   * It will automatically add the `rootPath` _(default: `/api`)_ to the route.
+   *
+   * @example
+   * ```
+   * routes({ add }) {
+   *   add('/new-route').get((req, res) => {
+   *     return res.json({ Soooooo: 'Cool!' })
+   *   })
+   * }
+   * ```
+   *
+   * This will add the route `/api/new-route` to the api.
+   */
+  routes?: Routes
+  modules?: Module<RequestType>[]
 }
-//[ ] ClassType from TBD is not exported
 //[ ] UserInfo from TBD is not exported
 //[ ] SubscriptionServer from TBD is not exported
 //[ ] Allowed from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
-export type SpecificRoute<RequestType> = {
-  get(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
-  put(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
-  post(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
-  delete(
-    handler: GenericRequestHandler<RequestType>,
-  ): SpecificRoute<RequestType>
+export interface Routes {
+  (args: {
+    add: (relativePath: `/${string}`) => SpecificRoute
+    rootPath: string
+  }): void
+}
+//[ ] TemplateLiteralType from TBD is not exported
+export type SpecificRoute = {
+  get(handler: GenericRequestHandler): SpecificRoute
+  put(handler: GenericRequestHandler): SpecificRoute
+  post(handler: GenericRequestHandler): SpecificRoute
+  delete(handler: GenericRequestHandler): SpecificRoute
+  /**
+   * Serves static files from a folder
+   * @param folderPath The path to the folder containing static files
+   * @param options Configuration options for serving static files
+   */
+  staticFolder(
+    folderPath: string,
+    options?: {
+      packageName?: string
+      editFile?: (filePath: string, content: string) => string
+      /** List of file extensions and their corresponding content types */
+      contentTypes?: Record<string, string>
+    },
+  ): SpecificRoute
 }
 export declare class SseSubscriptionServer implements SubscriptionServer {
   private canUserConnectToChannel?
@@ -3768,7 +3881,22 @@ export declare function TestApiDataProvider(
   options?: Pick<RemultServerOptions<unknown>, "ensureSchema" | "dataProvider">,
 ): RestDataProvider
 //[ ] RestDataProvider from TBD is not exported
-```
+export interface TypicalRouteInfo {
+  req?: GenericRequest
+  res: GenericResponse
+  cookie(name: string): {
+    set(value: string, opts?: SerializeOptions): void
+    get(opts?: ParseOptions): string | undefined
+    delete(opts?: SerializeOptions): void
+  }
+  setHeaders(headers: Record<string, string>): void
+  sse: ResponseRequiredForSSE
+}
+//[ ] GenericRequest from TBD is not exported
+//[ ] SerializeOptions from TBD is not exported
+//[ ] ParseOptions from TBD is not exported
+//[ ] ResponseRequiredForSSE from TBD is not exported
+````
 
 ## ./server/core.js
 
@@ -3777,209 +3905,9 @@ export declare function createRemultServerCore<RequestType>(
   options: RemultServerOptions<RequestType>,
   serverCoreOptions: ServerCoreOptions<RequestType>,
 ): RemultServer<RequestType>
+//[ ] RemultServer from TBD is not exported
+//[ ] RemultServerOptions from TBD is not exported
 //[ ] ServerCoreOptions from TBD is not exported
-export declare class DataProviderLiveQueryStorage
-  implements LiveQueryStorage, Storage
-{
-  repo: Promise<Repository<LiveQueryStorageEntity>>
-  dataProvider: Promise<DataProvider>
-  constructor(
-    dataProvider:
-      | DataProvider
-      | Promise<DataProvider>
-      | (() => Promise<DataProvider | undefined>),
-  )
-  ensureSchema(): Promise<void>
-  add({ id, entityKey, data }: StoredQuery): Promise<void>
-  remove(queryId: string): Promise<void>
-  forEach(
-    entityKey: string,
-    callback: (args: {
-      query: StoredQuery
-      setData(data: any): Promise<void>
-    }) => Promise<void>,
-  ): Promise<void>
-  keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<string[]>
-}
-//[ ] Repository from TBD is not exported
-//[ ] LiveQueryStorageEntity from TBD is not exported
-//[ ] DataProvider from TBD is not exported
-//[ ] StoredQuery from TBD is not exported
-export type GenericRequestHandler<RequestType> = (
-  req: RequestType,
-  res: GenericResponse,
-  next: VoidFunction,
-) => void
-export interface GenericRequestInfo {
-  url?: string
-  method?: any
-  query?: any
-  params?: any
-}
-export interface GenericResponse {
-  json(data: any): void
-  send(html: string): void
-  status(statusCode: number): GenericResponse
-  end(): void
-}
-export type GenericRouter<RequestType> = {
-  route(path: string): SpecificRoute<RequestType>
-}
-export declare class JsonEntityFileStorage implements JsonEntityStorage {
-  private folderPath
-  getItem(entityDbName: string): string | null
-  setItem(entityDbName: string, json: string): void
-  constructor(folderPath: string)
-}
-export declare class JsonFileDataProvider extends JsonDataProvider {
-  constructor(folderPath: string)
-}
-export interface queuedJobInfo {
-  info: queuedJobInfoResponse
-  userId: string
-  setErrorResult(error: any): void
-  setResult(result: any): void
-  setProgress(progress: number): void
-}
-//[ ] queuedJobInfoResponse from TBD is not exported
-export interface QueueStorage {
-  createJob(url: string, userId?: string): Promise<string>
-  getJobInfo(queuedJobId: string): Promise<queuedJobInfo>
-}
-export interface RemultServer<RequestType>
-  extends RemultServerCore<RequestType> {
-  withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): void
-  registerRouter(r: GenericRouter<RequestType>): void
-  handle(
-    req: RequestType,
-    gRes?: GenericResponse,
-  ): Promise<ServerHandleResponse | undefined>
-  withRemultAsync<T>(
-    request: RequestType | undefined,
-    what: () => Promise<T>,
-  ): Promise<T>
-}
-//[ ] ServerHandleResponse from TBD is not exported
-export interface RemultServerOptions<RequestType> {
-  /**Entities to use for the api */
-  entities?: ClassType<any>[]
-  /**Controller to use for the api */
-  controllers?: ClassType<any>[]
-  /** Will be called to get the current user based on the current request */
-  getUser?: (request: RequestType) => Promise<UserInfo | undefined>
-  /** Will be called for each request and can be used for configuration */
-  initRequest?: (
-    request: RequestType,
-    options: InitRequestOptions,
-  ) => Promise<void>
-  /** Will be called once the server is loaded and the data provider is ready */
-  initApi?: (remult: Remult) => void | Promise<void>
-  /** Data Provider to use for the api.
-   *
-   * @see [Connecting to a Database](https://remult.dev/docs/databases.html).
-   */
-  dataProvider?:
-    | DataProvider
-    | Promise<DataProvider>
-    | (() => Promise<DataProvider | undefined>)
-  /** Will create tables and columns in supporting databases. default: true
-   *
-   * @description
-   * when set to true, it'll create entities that do not exist, and add columns that are missing.
-   */
-  ensureSchema?: boolean
-  /** The path to use for the api, default:/api
-   *
-   * @description
-   * If you want to use a different api path adjust this field
-   */
-  rootPath?: string
-  /** The default limit to use for find requests that did not specify a limit */
-  defaultGetLimit?: number
-  /** When set to true (default) it'll console log each api endpoint that is created */
-  logApiEndPoints?: boolean
-  /** A subscription server to use for live query and message channels */
-  subscriptionServer?: SubscriptionServer
-  /** A storage to use to store live queries, relevant mostly for serverless scenarios or larger scales */
-  liveQueryStorage?: LiveQueryStorage
-  /** Used to store the context relevant info for re running a live query */
-  contextSerializer?: {
-    serialize(remult: Remult): Promise<any>
-    deserialize(json: any, options: InitRequestOptions): Promise<void>
-  }
-  /** When set to true, will display an admin ui in the `/api/admin` url.
-   * Can also be set to an arrow function for fine grained control
-   * @example
-   * admin: true
-   * @example
-   * admin: () => remult.isAllowed('admin')
-   * @see [allowed](http://remult.dev/docs/allowed.html)
-   */
-  admin?:
-    | Allowed
-    | {
-        allow: Allowed
-        customHtmlHead?: (remult: Remult) => string
-        requireAuthToken?: boolean
-        disableLiveQuery?: boolean
-      }
-  /** Storage to use for backend methods that use queue */
-  queueStorage?: QueueStorage
-  /**
-   * This method is called whenever there is an error in the API lifecycle.
-   *
-   * @param info - Information about the error.
-   * @param info.req - The request object.
-   * @param info.entity - (Optional) The entity metadata associated with the error, if applicable.
-   * @param info.exception - (Optional) The exception object or error that occurred.
-   * @param info.httpStatusCode - The HTTP status code.
-   * @param info.responseBody - The body of the response.
-   * @param info.sendError - A method to send a custom error response. Call this method with the desired HTTP status code and response body.
-   *
-   * @returns A promise that resolves when the error handling is complete.
-   * @example
-   * export const api = remultApi({
-   *   error: async (e) => {
-   *     if (e.httpStatusCode == 400) {
-   *       e.sendError(500, { message: "An error occurred" })
-   *     }
-   *   }
-   * })
-   */
-  error?: (info: {
-    req?: RequestType
-    entity?: EntityMetadata
-    exception?: any
-    httpStatusCode: number
-    responseBody: any
-    sendError: (httpStatusCode: number, body: any) => void
-  }) => Promise<void> | undefined
-}
-//[ ] ClassType from TBD is not exported
-//[ ] UserInfo from TBD is not exported
-//[ ] InitRequestOptions from TBD is not exported
-//[ ] Remult from TBD is not exported
-//[ ] SubscriptionServer from TBD is not exported
-//[ ] LiveQueryStorage from TBD is not exported
-//[ ] Allowed from TBD is not exported
-//[ ] EntityMetadata from TBD is not exported
-export type SpecificRoute<RequestType> = {
-  get(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
-  put(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
-  post(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
-  delete(
-    handler: GenericRequestHandler<RequestType>,
-  ): SpecificRoute<RequestType>
-}
-export declare class SseSubscriptionServer implements SubscriptionServer {
-  private canUserConnectToChannel?
-  constructor(
-    canUserConnectToChannel?:
-      | ((channel: string, remult: Remult) => boolean)
-      | undefined,
-  )
-  publishMessage<T>(channel: string, message: any): Promise<void>
-}
 ```
 
 ## ./remult-fastify.js
@@ -4632,6 +4560,10 @@ export const remultNuxt: typeof remultApi
 export type RemultNuxtServer = RemultServerCore<H3Event> &
   ((event: H3Event) => Promise<any>) & {
     withRemult: RemultServer<H3Event>["withRemultAsync"]
+    GET: (event: H3Event) => Promise<any>
+    PUT: (event: H3Event) => Promise<any>
+    POST: (event: H3Event) => Promise<any>
+    DELETE: (event: H3Event) => Promise<any>
   }
 //[ ] RemultServerCore from ./server/index.js is not exported
 //[ ] RemultServer from ./server/index.js is not exported

@@ -1,16 +1,20 @@
-import { remultNext } from 'remult/remult-next'
-import { Module } from 'remult/server'
-// import { someRoutes } from '../../../../shared/modules/someRoutes/server.js'
-import path from 'node:path'
-import { Task } from '../../shared/Task'
+import path from 'path'
+import { Module } from '../../../../core/server/Module.js'
 
-const someRoutes = new Module({
+/**
+ * in next-server, we need to copy the same module... here is the link!
+ *
+ * Here is the [file to edit](../../../next-server/src/pages/api/[...remult].ts)
+ *
+ * I would love to have only THIS module to test, all server are working except next-server...!
+ */
+export const someRoutes = new Module({
   key: 'some-routes',
   routes: ({ add, rootPath }) => {
     const COOKIE_NAME = 'the_cookie_name'
     const cookieNav = `<hr /> <a href="/api/setCookie">setCookie</a> | <a href="/api/getCookie">getCookie</a> | <a href="/api/deleteCookie">deleteCookie</a>`
 
-    add('/new-route').get(({ req, res }) => {
+    add('/new-route').get(({ res }) => {
       res.json({ Soooooo: 'Cool! A new new-route!' })
     })
 
@@ -27,12 +31,13 @@ const someRoutes = new Module({
     })
 
     add('/redirect-ext').get(({ res }) => {
-      res.redirect(
+      const { redirect } = res
+      redirect(
         'https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages',
       )
     })
 
-    add('/setCookie').get(({ cookie, res }) => {
+    add('/setCookie').get(({ res, cookie }) => {
       const val = 'Hello'
       cookie(COOKIE_NAME).set(val)
       res.send(`<h1>setCookie</h1><p>set: ${val}</p> ${cookieNav}`)
@@ -80,11 +85,3 @@ const someRoutes = new Module({
     })
   },
 })
-
-const api = remultNext({
-  entities: [Task],
-  admin: true,
-  modules: [someRoutes],
-})
-
-export default api
