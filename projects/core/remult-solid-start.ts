@@ -1,7 +1,10 @@
 import { getRequestEvent, type RequestEvent } from 'solid-js/web'
 import type { RemultServerCore, RemultServerOptions } from './server/index.js'
 import { createRemultServer } from './server/index.js'
-import type { TypicalResponse } from './server/remult-api-server.js'
+import type {
+  ServerCoreOptions,
+  TypicalResponse,
+} from './server/remult-api-server.js'
 import { toResponse } from './server/toResponse.js'
 
 import type { APIEvent } from '@solidjs/start/server' // don't remove - augments requestEvent
@@ -10,7 +13,7 @@ type localAPIEvent = APIEvent
 export function remultApi(
   options: RemultServerOptions<RequestEvent>,
 ): RemultSolidStartServer {
-  let result = createRemultServer<RequestEvent>(options, {
+  const coreOptions: ServerCoreOptions<RequestEvent> = {
     buildGenericRequestInfo: (event) => ({
       url: event.request.url,
       method: event.request.method,
@@ -21,7 +24,8 @@ export function remultApi(
       },
     }),
     getRequestBody: (event) => event.request.json(),
-  })
+  }
+  let result = createRemultServer<RequestEvent>(options, coreOptions)
   const serverHandler = async () => {
     const event = await getRequestEvent()
     let sseResponse: Response | undefined = undefined

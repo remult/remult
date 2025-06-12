@@ -5,14 +5,17 @@ import type {
   RemultServerOptions,
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
-import type { TypicalResponse } from './server/remult-api-server.js'
+import type {
+  ServerCoreOptions,
+  TypicalResponse,
+} from './server/remult-api-server.js'
 import { toResponse } from './server/toResponse.js'
 import { mergeOptions, parse } from './src/remult-cookie.js'
 
 export function remultApi(
   options: RemultServerOptions<RequestEvent>,
 ): RemultSveltekitServer {
-  const result = createRemultServer<RequestEvent>(options, {
+  const coreOptions: ServerCoreOptions<RequestEvent> = {
     buildGenericRequestInfo: (event) => ({
       url: event.request.url,
       method: event.request.method,
@@ -23,7 +26,8 @@ export function remultApi(
       },
     }),
     getRequestBody: (event) => event.request.json(),
-  })
+  }
+  const result = createRemultServer<RequestEvent>(options, coreOptions)
 
   const serverHandler: RequestHandler = async (event) => {
     let sseResponse: Response | undefined = undefined

@@ -6,7 +6,10 @@ import type {
   RemultServerOptions,
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
-import type { TypicalResponse } from './server/remult-api-server.js'
+import type {
+  ServerCoreOptions,
+  TypicalResponse,
+} from './server/remult-api-server.js'
 import { toResponse } from './server/toResponse.js'
 import {
   mergeOptions,
@@ -17,7 +20,7 @@ import {
 export function remultApi(
   options: RemultServerOptions<H3Event>,
 ): RemultNuxtServer {
-  const result = createRemultServer<H3Event>(options, {
+  const coreOptions: ServerCoreOptions<H3Event> = {
     buildGenericRequestInfo: (event) => {
       return {
         method: event.node.req.method,
@@ -29,7 +32,8 @@ export function remultApi(
       }
     },
     getRequestBody: async (event) => await readBody(event),
-  })
+  }
+  const result = createRemultServer<H3Event>(options, coreOptions)
 
   function toOptions(options: SerializeOptions) {
     const fwOptions: any = { ...options }

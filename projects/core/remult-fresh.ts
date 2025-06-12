@@ -1,6 +1,7 @@
 import type {
   RemultServerCore,
   RemultServerOptions,
+  ServerCoreOptions,
 } from './server/remult-api-server.js'
 import { createRemultServerCore } from './server/remult-api-server.js'
 
@@ -8,10 +9,11 @@ export function remultApi(
   options: RemultServerOptions<FreshRequest>,
   response: FreshResponse,
 ): RemultFresh {
-  const server = createRemultServerCore<FreshRequest>(options, {
+  const coreOptions: ServerCoreOptions<FreshRequest> = {
     buildGenericRequestInfo: (r) => r,
     getRequestBody: (req) => req.json(),
-  })
+  }
+  const server = createRemultServerCore<FreshRequest>(options, coreOptions)
   return {
     getRemult: (r) => server.getRemult(r),
     openApiDoc: (x) => server.openApiDoc(x),

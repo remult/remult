@@ -175,7 +175,7 @@ export function remultApi(
   options: RemultServerOptions<Context<Env, '', BlankInput>>,
 ): RemultHonoServer {
   const app = new Hono()
-  const api = createRemultServer(options, {
+  const coreOptions: ServerCoreOptions<Context<Env, '', BlankInput>> = {
     buildGenericRequestInfo: (c: Context<Env, '', BlankInput>) => {
       return {
         method: c.req.method,
@@ -196,30 +196,9 @@ export function remultApi(
     getRequestBody: async (c: Context<Env, '', BlankInput>) => {
       return c.req.json()
     },
-  })
-
-  const router = new HonoRouteImplementation(app, {
-    buildGenericRequestInfo: (c: Context<Env, '', BlankInput>) => {
-      return {
-        method: c.req.method,
-        params: c.req.param(),
-        query: new Proxy(c.req, {
-          get: (target, prop) => {
-            const r = c.req.queries(prop as string)
-            if (r?.length == 1) return r[0]
-            return r
-          },
-        }),
-        url: c.req.url,
-        on: (e: 'close', do1: VoidFunction) => {
-          ;(c as any)['_tempOnClose'](() => do1())
-        },
-      }
-    },
-    getRequestBody: async (c: Context<Env, '', BlankInput>) => {
-      return c.req.json()
-    },
-  })
+  }
+  const api = createRemultServer(options, coreOptions)
+  const router = new HonoRouteImplementation(app, coreOptions)
 
   api.registerRouter(router)
   return Object.assign(app, {

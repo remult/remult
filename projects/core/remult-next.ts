@@ -8,16 +8,20 @@ import type {
 import type { ParsedUrlQuery } from 'querystring'
 import type { RemultServerCore, RemultServerOptions } from './server/index.js'
 import { createRemultServer } from './server/index.js'
-import type { TypicalResponse } from './server/remult-api-server.js'
+import type {
+  ServerCoreOptions,
+  TypicalResponse,
+} from './server/remult-api-server.js'
 import { mergeOptions, parse, serialize } from './src/remult-cookie.js'
 
 export function remultNext(
   options: RemultServerOptions<NextApiRequest>,
 ): RemultNextServer {
-  let result = createRemultServer(options, {
+  const coreOptions: ServerCoreOptions<NextApiRequest> = {
     buildGenericRequestInfo: (req) => req,
     getRequestBody: async (req) => req.body,
-  })
+  }
+  let result = createRemultServer(options, coreOptions)
 
   const handler: NextApiHandler = async (req: NextApiRequest, res) => {
     let sseResponse: boolean = false
@@ -237,8 +241,7 @@ const encoder = new TextEncoder()
 export function remultApi(
   options?: RemultServerOptions<Request>,
 ): RemultNextAppServer {
-  let result = createRemultServer<Request>(options!, {
-    getRequestBody: (req) => req.json(),
+  const coreOptions: ServerCoreOptions<Request> = {
     buildGenericRequestInfo: (req) => ({
       url: req?.url,
       method: req?.method,
@@ -249,7 +252,10 @@ export function remultApi(
         }
       },
     }),
-  })
+    getRequestBody: (req) => req.json(),
+  }
+  let result = createRemultServer<Request>(options!, coreOptions)
+
   const handler = async (req: Request) => {
     {
       let sseResponse: Response | undefined = undefined

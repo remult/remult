@@ -175,19 +175,17 @@ class FastifyRouteImplementation extends RouteImplementation<FastifyRequest> {
 export function remultApi(
   options: RemultServerOptions<FastifyRequest>,
 ): RemultFastifyServer {
-  const api = createRemultServer(options, {
+  const coreOptions: ServerCoreOptions<FastifyRequest> = {
     buildGenericRequestInfo: (req) => req,
     getRequestBody: async (req) => req.body,
-  })
+  }
+
+  const api = createRemultServer(options, coreOptions)
 
   const pluginFunction: FastifyPluginCallback = async (
     instance: FastifyInstance,
   ) => {
-    const router = new FastifyRouteImplementation(instance, {
-      buildGenericRequestInfo: (req) => req,
-      getRequestBody: async (req) => req.body,
-    })
-
+    const router = new FastifyRouteImplementation(instance, coreOptions)
     api.registerRouter(router)
   }
 

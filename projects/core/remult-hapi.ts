@@ -211,7 +211,7 @@ class HapiRouteImplementation extends RouteImplementation<Request> {
 export function remultApi(
   options: RemultServerOptions<Request>,
 ): RemultHapiServer {
-  const api = createRemultServer(options, {
+  const coreOptions: ServerCoreOptions<Request> = {
     buildGenericRequestInfo: (req: Request) => ({
       method: req.method,
       params: req.params,
@@ -222,24 +222,13 @@ export function remultApi(
       },
     }),
     getRequestBody: async (req: Request) => req.payload,
-  })
+  }
+  const api = createRemultServer(options, coreOptions)
 
   const routesPlugin: Plugin<undefined> = {
     name: 'remultPlugin',
     register: async (server: Server) => {
-      const router = new HapiRouteImplementation(server, {
-        buildGenericRequestInfo: (req: Request) => ({
-          method: req.method,
-          params: req.params,
-          query: req.query,
-          url: req.url.pathname,
-          on: (e: 'close', do1: VoidFunction) => {
-            req.raw.req.on('close', do1)
-          },
-        }),
-        getRequestBody: async (req: Request) => req.payload,
-      })
-
+      const router = new HapiRouteImplementation(server, coreOptions)
       api.registerRouter(router)
     },
   }
