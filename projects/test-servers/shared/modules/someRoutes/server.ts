@@ -9,12 +9,7 @@ export const someRoutes = new Module({
     const COOKIE_NAME = 'the_cookie_name'
     const cookieNav = `<hr /> <a href="/api/setCookie">setCookie</a> | <a href="/api/getCookie">getCookie</a> | <a href="/api/deleteCookie">deleteCookie</a>`
 
-    add('/new-route').get(({ req, res }) => {
-      console.log(`req.url`, req.url)
-      console.log(`req.method`, req.method)
-      console.log(`req.params`, req.params)
-      // console.log(`req.query`, req.query)
-
+    add('/new-route').get(({ res }) => {
       res.json({ Soooooo: 'Cool! A new new-route!' })
     })
 
