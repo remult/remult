@@ -170,29 +170,61 @@ describe('test router impl', async () => {
       }
     `)
   })
-  // it('test redirect', async () => {
-  //   r.route('/r').get(async (req, res) => {
-  //     res.redirect('/a')
-  //   })
-  //   expect(await r.handle({ url: '/r', method: 'GET' })).toMatchInlineSnapshot(`
-  //     {
-  //       "redirectUrl": "/a",
-  //       "statusCode": 307,
-  //     }
-  //   `)
-  //   expect(await r.handle({ url: '/a', method: 'GET' })).toMatchInlineSnapshot(
-  //     `undefined`,
-  //   )
-  // })
-  // it('test redirect with code', async () => {
-  //   r.route('/r').get(async (req, res) => {
-  //     res.status(302).redirect('/a')
-  //   })
-  //   expect(await r.handle({ url: '/r', method: 'GET' })).toMatchInlineSnapshot(`
-  //     {
-  //       "redirectUrl": "/a",
-  //       "statusCode": 302,
-  //     }
-  //   `)
-  // })
+  it('test redirect', async () => {
+    r.route('/r').get(async (req, { res }) => {
+      res.redirect('/a')
+    })
+    expect(await r.handle({ url: '/r', method: 'GET' })).toMatchInlineSnapshot(`
+      {
+        "redirectUrl": "/a",
+        "statusCode": 307,
+      }
+    `)
+    expect(await r.handle({ url: '/a', method: 'GET' })).toMatchInlineSnapshot(
+      `undefined`,
+    )
+  })
+  it('test redirect with code', async () => {
+    r.route('/r').get(async (req, { res }) => {
+      res.redirect('/a', 302)
+    })
+    expect(await r.handle({ url: '/r', method: 'GET' })).toMatchInlineSnapshot(`
+      {
+        "redirectUrl": "/a",
+        "statusCode": 302,
+      }
+    `)
+  })
+  it('test redirect with code (second style)', async () => {
+    r.route('/r').get(async (req, { res }) => {
+      res.status(303).redirect('/a')
+    })
+    expect(await r.handle({ url: '/r', method: 'GET' })).toMatchInlineSnapshot(`
+      {
+        "redirectUrl": "/a",
+        "statusCode": 303,
+      }
+    `)
+  })
+  it('staticFolder not found', async () => {
+    r.route('/jyc-pck*').staticFolder(
+      'projects/test-servers/shared/modules/someRoutes/styled',
+      {
+        packageName: 'jyc-pck',
+      },
+    )
+    expect(
+      (await r.handle({ url: '/jyc-pck/index.html', method: 'GET' }))
+        ?.statusCode,
+    ).toBe(404)
+  })
+  it('staticFolder found', async () => {
+    r.route('/cookies*').staticFolder('.', {
+      packageName: 'cookies',
+    })
+    expect(
+      (await r.handle({ url: '/cookies/README.md', method: 'GET' }))
+        ?.statusCode,
+    ).toBe(200)
+  })
 })
