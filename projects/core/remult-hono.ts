@@ -9,7 +9,7 @@ import {
   type RemultServerCore,
   type RemultServerOptions,
 } from './server/index.js'
-import type { TypicalResponse } from './server/remult-api-server.js'
+import type { TypicalRouteInfo } from './server/remult-api-server.js'
 import {
   RouteImplementation,
   type ServerCoreOptions,
@@ -106,7 +106,7 @@ class HonoRouteImplementation extends RouteImplementation<
         try {
           let result: any
           let sse: SSEStreamingApi
-          const trToUse: TypicalResponse = {
+          const triToUse: TypicalRouteInfo = {
             res: {
               redirect: (url, statusCode = 307) => {
                 resolve(c.redirect(url as any, statusCode as any))
@@ -116,7 +116,7 @@ class HonoRouteImplementation extends RouteImplementation<
               },
               status: (status: number) => {
                 result = c.status(status as any)
-                return trToUse.res
+                return triToUse.res
               },
               end: () => {
                 if (sse) sse.close()
@@ -163,7 +163,7 @@ class HonoRouteImplementation extends RouteImplementation<
             },
           }
 
-          handler(c as any, trToUse, () => {})
+          handler(c as any, triToUse, () => {})
         } catch (err) {
           reject(err)
         }

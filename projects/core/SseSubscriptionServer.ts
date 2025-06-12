@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid'
 import type { GenericRequestInfo, GenericResponse } from './server/index.js'
-import { TypicalResponse } from './server/remult-api-server.js'
+import { TypicalRouteInfo } from './server/remult-api-server.js'
 import type { Remult } from './src/context.js'
 import type { DataApiResponse } from './src/data-api.js'
 import { ConnectionNotFoundError } from './src/live-query/SseSubscriptionClient.js'
@@ -60,7 +60,7 @@ export class SseSubscriptionServer implements SubscriptionServer {
   debugMessageFileSaver = (id: string, channel: string, message: any) => {}
 
   //@internal
-  openHttpServerStream(req: GenericRequestInfo, tr: TypicalResponse) {
+  openHttpServerStream(req: GenericRequestInfo, tr: TypicalRouteInfo) {
     tr.sse.writeHead(200, {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',

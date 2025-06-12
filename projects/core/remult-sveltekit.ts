@@ -7,7 +7,7 @@ import type {
 import { createRemultServer } from './server/index.js'
 import type {
   ServerCoreOptions,
-  TypicalResponse,
+  TypicalRouteInfo,
 } from './server/remult-api-server.js'
 import { toResponse } from './server/toResponse.js'
 import { mergeOptions, parse } from './src/remult-cookie.js'
@@ -33,14 +33,14 @@ export function remultApi(
     let sseResponse: Response | undefined = undefined
     ;(event.locals as any)['_tempOnClose'] = () => {}
 
-    const trToUse: TypicalResponse = {
+    const triToUse: TypicalRouteInfo = {
       res: {
         end: () => {},
         json: () => {},
         send: () => {},
         redirect: () => {},
         status: () => {
-          return trToUse.res
+          return triToUse.res
         },
       },
       cookie: (name) => {
@@ -67,18 +67,18 @@ export function remultApi(
             const contentType = headers['Content-Type']
             if (contentType === 'text/event-stream') {
               const messages: string[] = []
-              trToUse.sse.write = (x) => messages.push(x)
+              triToUse.sse.write = (x) => messages.push(x)
               const stream = new ReadableStream({
                 start: (controller) => {
                   for (const message of messages) {
                     controller.enqueue(message)
                   }
-                  trToUse.sse.write = (data) => {
+                  triToUse.sse.write = (data) => {
                     controller.enqueue(data)
                   }
                 },
                 cancel: () => {
-                  trToUse.sse.write = () => {}
+                  triToUse.sse.write = () => {}
                   ;(event.locals as any)['_tempOnClose']()
                 },
               })
@@ -89,7 +89,7 @@ export function remultApi(
       },
     }
 
-    const responseFromRemultHandler = await result.handle(event, trToUse)
+    const responseFromRemultHandler = await result.handle(event, triToUse)
     return toResponse({
       sseResponse,
       remultHandlerResponse: responseFromRemultHandler,

@@ -7,7 +7,7 @@ import type {
   RemultServerCore,
   RemultServerOptions,
   ServerCoreOptions,
-  TypicalResponse,
+  TypicalRouteInfo,
 } from './server/remult-api-server.js'
 import { RouteImplementation } from './server/remult-api-server.js'
 import { parse, serialize } from './src/remult-cookie.js'
@@ -96,7 +96,7 @@ class ExpressRouteImplementation extends RouteImplementation<express.Request> {
   private createExpressResponse(
     req: express.Request,
     res: express.Response,
-  ): TypicalResponse {
+  ): TypicalRouteInfo {
     return {
       res: {
         redirect: (url, statusCode = 307) => {

@@ -12,7 +12,7 @@ import type {
   RemultServerCore,
   RemultServerOptions,
   ServerCoreOptions,
-  TypicalResponse,
+  TypicalRouteInfo,
 } from './server/remult-api-server.js'
 import { RouteImplementation } from './server/remult-api-server.js'
 import { parse, serialize } from './src/remult-cookie.js'
@@ -118,7 +118,7 @@ class FastifyRouteImplementation extends RouteImplementation<FastifyRequest> {
     }
   }
 
-  private createFastifyResponse(res: any): TypicalResponse {
+  private createFastifyResponse(res: any): TypicalRouteInfo {
     return {
       res: {
         redirect: (url, statusCode = 307) => {

@@ -15,7 +15,7 @@ import {
   type RemultServerCore,
   type RemultServerOptions,
 } from './server/index.js'
-import type { TypicalResponse } from './server/remult-api-server.js'
+import type { TypicalRouteInfo } from './server/remult-api-server.js'
 import {
   RouteImplementation,
   type ServerCoreOptions,
@@ -125,14 +125,14 @@ class HapiRouteImplementation extends RouteImplementation<Request> {
         let status = 200
         let stream: PassThrough
 
-        const trToUse: TypicalResponse = {
+        const triToUse: TypicalRouteInfo = {
           res: {
             redirect: (url, statusCode = 307) => {
               resolve(h.response().redirect(url).code(statusCode))
             },
             status(statusCode) {
               status = statusCode
-              return trToUse.res
+              return triToUse.res
             },
             end() {
               resolve(h.response().code(status))
@@ -199,7 +199,7 @@ class HapiRouteImplementation extends RouteImplementation<Request> {
         })
 
         try {
-          handler(request as any, trToUse, () => {})
+          handler(request as any, triToUse, () => {})
         } catch (err) {
           reject(err)
         }

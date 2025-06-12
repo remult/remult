@@ -10,7 +10,7 @@ import type { RemultServerCore, RemultServerOptions } from './server/index.js'
 import { createRemultServer } from './server/index.js'
 import type {
   ServerCoreOptions,
-  TypicalResponse,
+  TypicalRouteInfo,
 } from './server/remult-api-server.js'
 import { mergeOptions, parse, serialize } from './src/remult-cookie.js'
 
@@ -27,7 +27,7 @@ export function remultNext(
     let sseResponse: boolean = false
     ;(req as any)['_tempOnClose'] = () => {}
 
-    const trToUse: TypicalResponse = {
+    const triToUse: TypicalRouteInfo = {
       res: {
         redirect: (url, statusCode = 307) => {
           res.redirect(statusCode, url)
@@ -75,7 +75,7 @@ export function remultNext(
           } else {
             ;(res as any).statusCode = statusCode
           }
-          return trToUse.res
+          return triToUse.res
         },
       },
       sse: {
@@ -99,7 +99,7 @@ export function remultNext(
             const contentType = headers['Content-Type']
             if (contentType === 'text/event-stream') {
               sseResponse = true
-              trToUse.sse.write = (data) => {
+              triToUse.sse.write = (data) => {
                 if ((res as any).write) {
                   ;(res as any).write(data)
                 }
@@ -142,7 +142,7 @@ export function remultNext(
       }
     }
 
-    const responseFromRemultHandler = await result.handle(req, trToUse)
+    const responseFromRemultHandler = await result.handle(req, triToUse)
 
     if (sseResponse) {
       // SSE response is already handled by writeHead
@@ -266,7 +266,7 @@ export function remultApi(
       let sseResponse: Response | undefined = undefined
       ;(req as any)['_tempOnClose'] = () => {}
 
-      const trToUse: TypicalResponse = {
+      const triToUse: TypicalRouteInfo = {
         res: {
           redirect: (url, statusCode = 307) => {
             ;(req as any).redirect(url, statusCode)
@@ -275,7 +275,7 @@ export function remultApi(
           json: () => {},
           send: () => {},
           status: () => {
-            return trToUse.res
+            return triToUse.res
           },
         },
         sse: {
@@ -285,18 +285,18 @@ export function remultApi(
               const contentType = headers['Content-Type']
               if (contentType === 'text/event-stream') {
                 const messages: string[] = []
-                trToUse.sse.write = (x) => messages.push(x)
+                triToUse.sse.write = (x) => messages.push(x)
                 const stream = new ReadableStream({
                   start: (controller) => {
                     for (const message of messages) {
                       controller.enqueue(encoder.encode(message))
                     }
-                    trToUse.sse.write = (data) => {
+                    triToUse.sse.write = (data) => {
                       controller.enqueue(encoder.encode(data))
                     }
                   },
                   cancel: () => {
-                    trToUse.sse.write = () => {}
+                    triToUse.sse.write = () => {}
                     ;(req as any)['_tempOnClose']()
                   },
                 })
@@ -308,7 +308,7 @@ export function remultApi(
         cookie: (name) => {
           return {
             set: (value, options = {}) => {
-              ;(trToUse as any).setHeader(
+              ;(triToUse as any).setHeader(
                 'Set-Cookie',
                 serialize(name, value, mergeOptions(options)),
               )
@@ -320,7 +320,7 @@ export function remultApi(
                 : undefined
             },
             delete: (options = {}) => {
-              ;(trToUse as any).setHeader(
+              ;(triToUse as any).setHeader(
                 'Set-Cookie',
                 serialize(name, '', mergeOptions({ ...options, maxAge: 0 })),
               )
@@ -329,18 +329,18 @@ export function remultApi(
         },
         setHeaders: (headers) => {
           Object.entries(headers).forEach(([key, value]) => {
-            ;(trToUse as any).setHeader(key, value)
+            ;(triToUse as any).setHeader(key, value)
           })
         },
       }
 
-      const responseFromRemultHandler = await result.handle(req, trToUse)
+      const responseFromRemultHandler = await result.handle(req, triToUse)
       if (sseResponse !== undefined) {
         return sseResponse
       }
       if (responseFromRemultHandler) {
         if (responseFromRemultHandler.redirectUrl) {
-          trToUse.res.redirect(
+          triToUse.res.redirect(
             responseFromRemultHandler.redirectUrl,
             responseFromRemultHandler.statusCode || 307,
           )

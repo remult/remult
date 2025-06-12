@@ -8,7 +8,7 @@ import type {
 import { createRemultServer } from './server/index.js'
 import type {
   ServerCoreOptions,
-  TypicalResponse,
+  TypicalRouteInfo,
 } from './server/remult-api-server.js'
 import { toResponse } from './server/toResponse.js'
 import {
@@ -47,7 +47,7 @@ export function remultApi(
   const handler = async (event: H3Event) => {
     let sseResponse: Response | undefined = undefined
 
-    const trToUse: TypicalResponse = {
+    const triToUse: TypicalRouteInfo = {
       res: {
         redirect: () => {},
         end: () => {},
@@ -58,7 +58,7 @@ export function remultApi(
         },
         json: () => {},
         status: () => {
-          return trToUse.res
+          return triToUse.res
         },
       },
       sse: {
@@ -102,7 +102,7 @@ export function remultApi(
     //   })
     // }
 
-    const remultHandlerResponse = await result.handle(event, trToUse)
+    const remultHandlerResponse = await result.handle(event, triToUse)
     return toResponse({
       // sseResponse,
       remultHandlerResponse,

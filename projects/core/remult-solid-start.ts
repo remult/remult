@@ -3,7 +3,7 @@ import type { RemultServerCore, RemultServerOptions } from './server/index.js'
 import { createRemultServer } from './server/index.js'
 import type {
   ServerCoreOptions,
-  TypicalResponse,
+  TypicalRouteInfo,
 } from './server/remult-api-server.js'
 import { toResponse } from './server/toResponse.js'
 
@@ -31,7 +31,7 @@ export function remultApi(
     let sseResponse: Response | undefined = undefined
     if (event) event.locals['_tempOnClose'] = () => {}
 
-    const trToUse: TypicalResponse = {
+    const triToUse: TypicalRouteInfo = {
       res: {
         redirect: (url, statusCode = 307) => {
           event?.locals.redirect(url, statusCode)
@@ -40,7 +40,7 @@ export function remultApi(
         json: () => {},
         send: () => {},
         status: () => {
-          return trToUse.res
+          return triToUse.res
         },
       },
       sse: {
@@ -50,18 +50,18 @@ export function remultApi(
             const contentType = headers['Content-Type']
             if (contentType === 'text/event-stream') {
               const messages: string[] = []
-              trToUse.sse.write = (x) => messages.push(x)
+              triToUse.sse.write = (x) => messages.push(x)
               const stream = new ReadableStream({
                 start: (controller) => {
                   for (const message of messages) {
                     controller.enqueue(message)
                   }
-                  trToUse.sse.write = (data) => {
+                  triToUse.sse.write = (data) => {
                     controller.enqueue(data)
                   }
                 },
                 cancel: () => {
-                  trToUse.sse.write = () => {}
+                  triToUse.sse.write = () => {}
                   event?.locals?.['_tempOnClose']?.()
                 },
               })
@@ -90,7 +90,7 @@ export function remultApi(
       },
     }
 
-    const remultHandlerResponse = await result.handle(event!, trToUse)
+    const remultHandlerResponse = await result.handle(event!, triToUse)
     return toResponse({
       sseResponse,
       remultHandlerResponse,

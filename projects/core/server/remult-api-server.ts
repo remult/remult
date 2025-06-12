@@ -230,7 +230,7 @@ export function createRemultServerCore<RequestType>(
 }
 
 export type GenericRequestHandler = (
-  stuffForRouter: { req: GenericRequestInfo } & TypicalResponse,
+  stuffForRouter: { req: GenericRequestInfo } & TypicalRouteInfo,
   next: VoidFunction,
 ) => void
 
@@ -256,12 +256,12 @@ export type SpecificRoute = {
 }
 
 export type PublicGenericRouter = {
-  (stuffForRouter: { req: GenericRequestInfo } & TypicalResponse): void
+  (stuffForRouter: { req: GenericRequestInfo } & TypicalRouteInfo): void
 }
 
 export type InternalGenericRequestHandler<RequestType> = (
   req: RequestType,
-  tr: TypicalResponse,
+  tri: TypicalRouteInfo,
   next: VoidFunction,
 ) => void
 
@@ -274,11 +274,11 @@ export interface ServerHandleResponse {
 }
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
-  withRemult(req: RequestType, tr: TypicalResponse, next: VoidFunction): void
+  withRemult(req: RequestType, tri: TypicalRouteInfo, next: VoidFunction): void
   registerRouter(r: InternalGenericRouter<RequestType>): void
   handle(
     req: RequestType,
-    gTr?: TypicalResponse,
+    gTri?: TypicalRouteInfo,
   ): Promise<ServerHandleResponse | undefined>
   withRemultAsync<T>(
     request: RequestType | undefined,
@@ -329,7 +329,12 @@ export interface GenericRequestInfo {
   params?: any
 }
 
-export interface TypicalResponse {
+export interface GenericRequest {
+  url?: string
+}
+
+export interface TypicalRouteInfo {
+  req?: GenericRequest
   res: GenericResponse
   cookie(name: string): {
     set(value: string, opts?: SerializeOptions): void
@@ -496,12 +501,12 @@ export class RemultServerImplementation<RequestType>
   subscriptionServer?: SubscriptionServer
   withRemult = async (
     req: RequestType,
-    tr: TypicalResponse,
+    tri: TypicalRouteInfo,
     next: VoidFunction,
   ) => {
     await this.process(async () => {
       await next()
-    }, true)(req, tr)
+    }, true)(req, tri)
   }
 
   routeImpl?: RouteImplementation<RequestType>
@@ -515,9 +520,9 @@ export class RemultServerImplementation<RequestType>
 
   handle(
     req: RequestType,
-    gTr?: TypicalResponse,
+    gTri?: TypicalRouteInfo,
   ): Promise<ServerHandleResponse | undefined> {
-    return this.getRouteImpl().handle(req, gTr)
+    return this.getRouteImpl().handle(req, gTri)
   }
   registeredRouter = false
   registerRouter(r: InternalGenericRouter<RequestType>) {
@@ -857,12 +862,12 @@ export class RemultServerImplementation<RequestType>
       myReq: DataApiRequest,
       myRes: DataApiResponse,
       genReq: GenericRequestInfo,
-      origTr: TypicalResponse,
+      origTri: TypicalRouteInfo,
       origReq: RequestType,
     ) => Promise<void>,
     doNotReuseInitRequest?: boolean,
   ) {
-    return async (req: RequestType, origTr: TypicalResponse) => {
+    return async (req: RequestType, oTri: TypicalRouteInfo) => {
       const genReq = req ? this.coreOptions.buildGenericRequestInfo(req) : {}
       if (req) {
         if (!genReq.query) {
@@ -872,7 +877,7 @@ export class RemultServerImplementation<RequestType>
       }
       let myReq = new RequestBridgeToDataApiRequest(genReq)
       let myRes = new ResponseBridgeToDataApiResponse(
-        origTr,
+        oTri,
         req,
         genReq,
         this.options.error,
@@ -887,14 +892,14 @@ export class RemultServerImplementation<RequestType>
             myReq,
             myRes,
             genReq,
-            origTr,
+            oTri,
             req,
           )
         else
           await this.runWithRemult(async (remult) => {
             if (req) {
               ;(remult.context as any).request = req
-              ;(remult.context as any).res = origTr
+              ;(remult.context as any).res = oTri
               remultStatic.asyncContext.setInInitRequest(true)
               try {
                 let user
@@ -921,14 +926,14 @@ export class RemultServerImplementation<RequestType>
                   }
                 }
 
-                await what(remult, myReq, myRes, genReq, origTr, req)
+                await what(remult, myReq, myRes, genReq, oTri, req)
               } finally {
                 remultStatic.asyncContext.setInInitRequest(false)
               }
             }
           })
       } catch (err: any) {
-        if (origTr) myRes.error(err, undefined)
+        if (oTri) myRes.error(err, undefined)
         else throw err
       }
     }
@@ -1385,10 +1390,10 @@ class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
     this.error({ message }, undefined, 403)
   }
   setStatus(status: number) {
-    return this.r.res.status(status)
+    return this.tri.res.status(status)
   }
   constructor(
-    private r: TypicalResponse,
+    private tri: TypicalRouteInfo,
     private req: RequestType | undefined,
     private genReq: GenericRequestInfo,
     private handleError: RemultServerOptions<RequestType>['error'] | undefined,
@@ -1396,7 +1401,7 @@ class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
   progress(progress: number): void {}
 
   public success(data: any): void {
-    this.r.res.json(data)
+    this.tri.res.json(data)
   }
 
   public created(data: any): void {
@@ -1651,7 +1656,7 @@ export class RouteImplementation<RequestType> {
 
         m.set(
           'get',
-          (req: RequestType, tr: TypicalResponse, next: VoidFunction) => {
+          (req: RequestType, tri: TypicalRouteInfo, next: VoidFunction) => {
             const reqInfo = this.coreOptions.buildGenericRequestInfo(req)
             const currentHttpBasePath = path.replace('*', '')
 
@@ -1705,7 +1710,7 @@ export class RouteImplementation<RequestType> {
               const extension = extname(filePath).slice(1)
               const contentType = defaultContentTypes[extension] ?? 'text/plain'
 
-              tr.res.send(content, {
+              tri.res.send(content, {
                 'content-type': contentType,
               })
               return
@@ -1714,7 +1719,7 @@ export class RouteImplementation<RequestType> {
                 error,
                 filePath,
               })
-              tr.res.status(404).end()
+              tri.res.status(404).end()
             }
           },
         )
@@ -1737,17 +1742,21 @@ export class RouteImplementation<RequestType> {
 
   async handle(
     req: RequestType,
-    tr?: TypicalResponse,
+    tri?: TypicalRouteInfo,
   ): Promise<ServerHandleResponse | undefined> {
     return new Promise<ServerHandleResponse | undefined>((res, rej) => {
-      const trToUse = new (class implements TypicalResponse {
+      const triToUse = new (class implements TypicalRouteInfo {
         statusCode = 200
+
+        req: GenericRequest = {
+          url: tri?.req?.url,
+        }
 
         res: GenericResponse = {
           json(data: any) {
-            if (tr?.res !== undefined) tr?.res.json(data)
+            if (tri?.res !== undefined) tri?.res.json(data)
             res({
-              statusCode: trToUse.statusCode,
+              statusCode: triToUse.statusCode,
               data,
             })
           },
@@ -1755,44 +1764,44 @@ export class RouteImplementation<RequestType> {
             const headers = _headers ?? {
               'Content-Type': 'text/html',
             }
-            if (tr?.res !== undefined) tr?.res.send(content, headers)
-            res({ statusCode: trToUse.statusCode, html: content, headers })
+            if (tri?.res !== undefined) tri?.res.send(content, headers)
+            res({ statusCode: triToUse.statusCode, html: content, headers })
           },
           redirect(redirectUrl: string, status?: number): void {
-            if (trToUse.statusCode < 300 || trToUse.statusCode >= 400) {
-              trToUse.statusCode = status ?? 307
+            if (triToUse.statusCode < 300 || triToUse.statusCode >= 400) {
+              triToUse.statusCode = status ?? 307
             }
-            res({ statusCode: trToUse.statusCode, redirectUrl })
+            res({ statusCode: triToUse.statusCode, redirectUrl })
           },
 
           status(statusCode: number): GenericResponse {
-            if (tr?.res !== undefined) tr?.res.status(statusCode)
-            trToUse.statusCode = statusCode
+            if (tri?.res !== undefined) tri?.res.status(statusCode)
+            triToUse.statusCode = statusCode
             return this
           },
           end() {
-            if (tr?.res !== undefined) tr?.res.end()
+            if (tri?.res !== undefined) tri?.res.end()
             res({
-              statusCode: trToUse.statusCode,
+              statusCode: triToUse.statusCode,
             })
           },
         }
 
         sse: ResponseRequiredForSSE = {
           write(data: string): void {
-            ;(tr?.sse as any as ResponseRequiredForSSE).write(data)
+            ;(tri?.sse as any as ResponseRequiredForSSE).write(data)
           },
           writeHead(statusCode: number, headers: any): void {
-            ;(tr?.sse as any as ResponseRequiredForSSE).writeHead(
+            ;(tri?.sse as any as ResponseRequiredForSSE).writeHead(
               statusCode,
               headers,
             )
-            trToUse.statusCode = statusCode
+            triToUse.statusCode = statusCode
             res({ statusCode })
           },
           flush() {
-            if (isOfType(tr?.sse, 'flush')) {
-              tr?.sse.flush()
+            if (isOfType(tri?.sse, 'flush')) {
+              tri?.sse.flush()
             }
           },
         }
@@ -1804,30 +1813,30 @@ export class RouteImplementation<RequestType> {
         } {
           return {
             set: (value: string, opts?: SerializeOptions) => {
-              if (tr?.cookie !== undefined) tr?.cookie(name).set(value, opts)
+              if (tri?.cookie !== undefined) tri?.cookie(name).set(value, opts)
             },
             get: (opts?: ParseOptions) => {
-              if (tr?.cookie !== undefined) return tr?.cookie(name).get(opts)
+              if (tri?.cookie !== undefined) return tri?.cookie(name).get(opts)
             },
             delete: (opts?: SerializeOptions) => {
-              if (tr?.cookie !== undefined) tr?.cookie(name).delete(opts)
+              if (tri?.cookie !== undefined) tri?.cookie(name).delete(opts)
             },
           }
         }
         setHeaders(headers: Record<string, string>): void {
-          if (tr !== undefined) tr.setHeaders(headers)
+          if (tri !== undefined) tri.setHeaders(headers)
         }
       })()
 
       try {
-        this.middleware(req, trToUse, () => res(undefined))
+        this.middleware(req, triToUse, () => res(undefined))
       } catch (err) {
         rej(err)
       }
     })
   }
 
-  middleware(origReq: RequestType, tr: TypicalResponse, next: VoidFunction) {
+  middleware(origReq: RequestType, tri: TypicalRouteInfo, next: VoidFunction) {
     const req = this.coreOptions.buildGenericRequestInfo(origReq)
 
     let theUrl: string = req.url?.toString() || ''
@@ -1866,7 +1875,7 @@ export class RouteImplementation<RequestType> {
     if (m) {
       let h = m.get(req.method.toLowerCase())
       if (h) {
-        h(origReq, tr, next)
+        h(origReq, tri, next)
         return
       }
     }
@@ -1883,7 +1892,7 @@ export class RouteImplementation<RequestType> {
             ;(origReq as any)['_tempParams'] = req.params
           }
           req.params.id = decodeURIComponent(path.substring(idPosition + 1))
-          h(origReq, tr, next)
+          h(origReq, tri, next)
           return
         }
       }

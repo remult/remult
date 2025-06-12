@@ -3589,7 +3589,7 @@ export declare class DataProviderLiveQueryStorage
 export type GenericRequestHandler = (
   stuffForRouter: {
     req: GenericRequestInfo
-  } & TypicalResponse,
+  } & TypicalRouteInfo,
   next: VoidFunction,
 ) => void
 export interface GenericRequestInfo {
@@ -3627,7 +3627,7 @@ export interface InitRequestOptions {
 //[ ] Remult from TBD is not exported
 export type InternalGenericRequestHandler<RequestType> = (
   req: RequestType,
-  tr: TypicalResponse,
+  tri: TypicalRouteInfo,
   next: VoidFunction,
 ) => void
 export type InternalGenericRouter<RequestType> = {
@@ -3707,11 +3707,11 @@ export interface QueueStorage {
 }
 export interface RemultServer<RequestType>
   extends RemultServerCore<RequestType> {
-  withRemult(req: RequestType, tr: TypicalResponse, next: VoidFunction): void
+  withRemult(req: RequestType, tri: TypicalRouteInfo, next: VoidFunction): void
   registerRouter(r: InternalGenericRouter<RequestType>): void
   handle(
     req: RequestType,
-    gTr?: TypicalResponse,
+    gTri?: TypicalRouteInfo,
   ): Promise<ServerHandleResponse | undefined>
   withRemultAsync<T>(
     request: RequestType | undefined,
@@ -3883,7 +3883,8 @@ export declare function TestApiDataProvider(
   options?: Pick<RemultServerOptions<unknown>, "ensureSchema" | "dataProvider">,
 ): RestDataProvider
 //[ ] RestDataProvider from TBD is not exported
-export interface TypicalResponse {
+export interface TypicalRouteInfo {
+  req?: GenericRequest
   res: GenericResponse
   cookie(name: string): {
     set(value: string, opts?: SerializeOptions): void
@@ -3893,6 +3894,7 @@ export interface TypicalResponse {
   setHeaders(headers: Record<string, string>): void
   sse: ResponseRequiredForSSE
 }
+//[ ] GenericRequest from TBD is not exported
 //[ ] SerializeOptions from TBD is not exported
 //[ ] ParseOptions from TBD is not exported
 //[ ] ResponseRequiredForSSE from TBD is not exported
