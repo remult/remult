@@ -1,10 +1,10 @@
-import path from 'path'
 import { remultNext } from 'remult/remult-next'
 import { Module } from 'remult/server'
+// import { someRoutes } from '../../../../shared/modules/someRoutes/server.js'
+import path from 'node:path'
 import { Task } from '../../shared/Task'
 
-// TODO JYC: to remove and use only the non dist ? (failing for next!)
-export const someRoutes = new Module({
+const someRoutes = new Module({
   key: 'some-routes',
   routes: ({ add, rootPath }) => {
     const COOKIE_NAME = 'the_cookie_name'
@@ -80,7 +80,7 @@ export const someRoutes = new Module({
 const api = remultNext({
   entities: [Task],
   admin: true,
-  modules: [someRoutes as any],
+  modules: [someRoutes],
 })
 
 export default api

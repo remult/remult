@@ -1,8 +1,13 @@
 import path from 'path'
 import { Module } from '../../../../core/server/Module.js'
 
-// TODO JYC: remove someRoutes in `projects/test-servers/next-server/src/pages/api/[...remult].ts`
-
+/**
+ * in next-server, we need to copy the same module... here is the link!
+ *
+ * Here is the [file to edit](../../../next-server/src/pages/api/[...remult].ts)
+ *
+ * I would love to have only THIS module to test, all server are working except next-server...!
+ */
 export const someRoutes = new Module({
   key: 'some-routes',
   routes: ({ add, rootPath }) => {
