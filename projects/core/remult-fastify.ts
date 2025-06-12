@@ -12,9 +12,12 @@ import type {
   RemultServerCore,
   RemultServerOptions,
   ServerCoreOptions,
-  TypicalRouteInfo,
 } from './server/remult-api-server.js'
 import { RouteImplementation } from './server/remult-api-server.js'
+import {
+  getBaseTypicalRouteInfo,
+  type TypicalRouteInfo,
+} from './server/route-helpers.js'
 import { parse, serialize } from './src/remult-cookie.js'
 
 class FastifyRouteImplementation extends RouteImplementation<FastifyRequest> {
@@ -119,7 +122,13 @@ class FastifyRouteImplementation extends RouteImplementation<FastifyRequest> {
   }
 
   private createFastifyResponse(res: any): TypicalRouteInfo {
+    const tri = getBaseTypicalRouteInfo({
+      url: res.request.url,
+      headers: res.request.headers,
+    })
+
     return {
+      req: tri.req,
       res: {
         redirect: (url, statusCode = 307) => {
           res.redirect(statusCode, url)

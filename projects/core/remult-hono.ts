@@ -9,11 +9,14 @@ import {
   type RemultServerCore,
   type RemultServerOptions,
 } from './server/index.js'
-import type { TypicalRouteInfo } from './server/remult-api-server.js'
 import {
   RouteImplementation,
   type ServerCoreOptions,
 } from './server/remult-api-server.js'
+import {
+  getBaseTypicalRouteInfo,
+  type TypicalRouteInfo,
+} from './server/route-helpers.js'
 import { mergeOptions, type SerializeOptions } from './src/remult-cookie.js'
 
 class HonoRouteImplementation extends RouteImplementation<
@@ -106,7 +109,14 @@ class HonoRouteImplementation extends RouteImplementation<
         try {
           let result: any
           let sse: SSEStreamingApi
+
+          const bTri = getBaseTypicalRouteInfo({
+            url: c.req.url,
+            headers: c.req.header(),
+          })
+
           const triToUse: TypicalRouteInfo = {
+            req: bTri.req,
             res: {
               redirect: (url, statusCode = 307) => {
                 resolve(c.redirect(url as any, statusCode as any))

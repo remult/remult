@@ -74,6 +74,10 @@ const someRoutes = new Module({
         return content
       },
     })
+
+    add('/post-headers').post(({ res, req }) => {
+      res.json({ reqHeaders: req?.headers['hello'] })
+    })
   },
 })
 

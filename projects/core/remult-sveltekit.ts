@@ -5,10 +5,8 @@ import type {
   RemultServerOptions,
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
-import type {
-  ServerCoreOptions,
-  TypicalRouteInfo,
-} from './server/remult-api-server.js'
+import type { ServerCoreOptions } from './server/remult-api-server.js'
+import { getBaseTypicalRouteInfo } from './server/route-helpers.js'
 import { toResponse } from './server/toResponse.js'
 import { mergeOptions, parse } from './src/remult-cookie.js'
 
@@ -33,63 +31,59 @@ export function remultApi(
     let sseResponse: Response | undefined = undefined
     ;(event.locals as any)['_tempOnClose'] = () => {}
 
-    const triToUse: TypicalRouteInfo = {
-      res: {
-        end: () => {},
-        json: () => {},
-        send: () => {},
-        redirect: () => {},
-        status: () => {
-          return triToUse.res
-        },
-      },
-      cookie: (name) => {
-        return {
-          set: (value, options = {}) => {
-            event.cookies.set(name, value, mergeOptions(options))
-          },
-          get: (options = {}) => {
-            const cookieHeader = event.request.headers.get('cookie')
-            return cookieHeader ? parse(cookieHeader, options)[name] : undefined
-          },
-          delete: (options = {}) => {
-            event.cookies.delete(name, mergeOptions({ ...options, maxAge: 0 }))
-          },
-        }
-      },
-      setHeaders: (headers) => {
-        event.setHeaders(headers)
-      },
-      sse: {
-        write: () => {},
-        writeHead: (status, headers) => {
-          if (status === 200 && headers) {
-            const contentType = headers['Content-Type']
-            if (contentType === 'text/event-stream') {
-              const messages: string[] = []
-              triToUse.sse.write = (x) => messages.push(x)
-              const stream = new ReadableStream({
-                start: (controller) => {
-                  for (const message of messages) {
-                    controller.enqueue(message)
-                  }
-                  triToUse.sse.write = (data) => {
-                    controller.enqueue(data)
-                  }
-                },
-                cancel: () => {
-                  triToUse.sse.write = () => {}
-                  ;(event.locals as any)['_tempOnClose']()
-                },
-              })
-              sseResponse = new Response(stream, { headers })
-            }
+    let tri = getBaseTypicalRouteInfo({
+      url: event.request.url,
+      headers: event.request.headers,
+    })
+
+    tri.sse = {
+      write: () => {},
+      writeHead: (status, headers) => {
+        if (status === 200 && headers) {
+          const contentType = headers['Content-Type']
+          if (contentType === 'text/event-stream') {
+            const messages: string[] = []
+            tri.sse.write = (x) => messages.push(x)
+            const stream = new ReadableStream({
+              start: (controller) => {
+                for (const message of messages) {
+                  controller.enqueue(message)
+                }
+                tri.sse.write = (data) => {
+                  controller.enqueue(data)
+                }
+              },
+              cancel: () => {
+                tri.sse.write = () => {}
+                ;(event.locals as any)['_tempOnClose']()
+              },
+            })
+            sseResponse = new Response(stream, { headers })
           }
-        },
+        }
       },
     }
 
-    const responseFromRemultHandler = await result.handle(event, triToUse)
+    tri.cookie = (name) => {
+      return {
+        set: (value, options = {}) => {
+          event.cookies.set(name, value, mergeOptions(options))
+        },
+        get: (options = {}) => {
+          const cookieHeader = event.request.headers.get('cookie')
+          return cookieHeader ? parse(cookieHeader, options)[name] : undefined
+        },
+        delete: (options = {}) => {
+          event.cookies.delete(name, mergeOptions({ ...options, maxAge: 0 }))
+        },
+      }
+    }
+
+    tri.setHeaders = (headers) => {
+      event.setHeaders(headers)
+    }
+
+    const responseFromRemultHandler = await result.handle(event, tri)
     return toResponse({
       sseResponse,
       remultHandlerResponse: responseFromRemultHandler,

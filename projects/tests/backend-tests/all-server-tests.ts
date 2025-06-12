@@ -725,6 +725,22 @@ export function allServerTests(
         expect(result.headers['x-test-header']).toBe('Hello')
       }),
     )
+
+    it(
+      'POST reading headers',
+      withRemultForTest(async () => {
+        let result = await axios.post(
+          remult.apiClient.url + '/post-headers',
+          {},
+          { headers: { hello: 'world' } },
+        )
+        expect(result.data).toMatchInlineSnapshot(`
+          {
+            "reqHeaders": "world",
+          }
+        `)
+      }),
+    )
   })
 
   describe('server crash', {}, () => {

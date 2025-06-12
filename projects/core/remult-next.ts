@@ -8,10 +8,11 @@ import type {
 import type { ParsedUrlQuery } from 'querystring'
 import type { RemultServerCore, RemultServerOptions } from './server/index.js'
 import { createRemultServer } from './server/index.js'
-import type {
-  ServerCoreOptions,
-  TypicalRouteInfo,
-} from './server/remult-api-server.js'
+import type { ServerCoreOptions } from './server/remult-api-server.js'
+import {
+  getBaseTypicalRouteInfo,
+  type TypicalRouteInfo,
+} from './server/route-helpers.js'
 import { mergeOptions, parse, serialize } from './src/remult-cookie.js'
 
 export function remultNext(
@@ -27,7 +28,13 @@ export function remultNext(
     let sseResponse: boolean = false
     ;(req as any)['_tempOnClose'] = () => {}
 
+    const tri = getBaseTypicalRouteInfo({
+      url: req.url,
+      headers: req.headers as Record<string, string>,
+    })
+
     const triToUse: TypicalRouteInfo = {
+      req: tri.req,
       res: {
         redirect: (url, statusCode = 307) => {
           res.redirect(statusCode, url)
@@ -266,7 +273,13 @@ export function remultApi(
       let sseResponse: Response | undefined = undefined
       ;(req as any)['_tempOnClose'] = () => {}
 
+      const tri = getBaseTypicalRouteInfo({
+        url: req.url,
+        headers: req.headers,
+      })
+
       const triToUse: TypicalRouteInfo = {
+        req: tri.req,
         res: {
           redirect: (url, statusCode = 307) => {
             ;(req as any).redirect(url, statusCode)

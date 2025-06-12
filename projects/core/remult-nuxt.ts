@@ -6,10 +6,11 @@ import type {
   RemultServerOptions,
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
-import type {
-  ServerCoreOptions,
-  TypicalRouteInfo,
-} from './server/remult-api-server.js'
+import type { ServerCoreOptions } from './server/remult-api-server.js'
+import {
+  getBaseTypicalRouteInfo,
+  type TypicalRouteInfo,
+} from './server/route-helpers.js'
 import { toResponse } from './server/toResponse.js'
 import {
   mergeOptions,
@@ -47,7 +48,13 @@ export function remultApi(
   const handler = async (event: H3Event) => {
     let sseResponse: Response | undefined = undefined
 
+    const tri = getBaseTypicalRouteInfo({
+      url: event.node.req.url,
+      headers: event.node.req.headers as Record<string, string>,
+    })
+
     const triToUse: TypicalRouteInfo = {
+      req: tri.req,
       res: {
         redirect: () => {},
         end: () => {},

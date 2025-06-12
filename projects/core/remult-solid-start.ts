@@ -1,10 +1,8 @@
 import { getRequestEvent, type RequestEvent } from 'solid-js/web'
 import type { RemultServerCore, RemultServerOptions } from './server/index.js'
 import { createRemultServer } from './server/index.js'
-import type {
-  ServerCoreOptions,
-  TypicalRouteInfo,
-} from './server/remult-api-server.js'
+import type { ServerCoreOptions } from './server/remult-api-server.js'
+import type { TypicalRouteInfo } from './server/route-helpers.js'
 import { toResponse } from './server/toResponse.js'
 
 import type { APIEvent } from '@solidjs/start/server' // don't remove - augments requestEvent

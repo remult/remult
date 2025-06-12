@@ -7,9 +7,12 @@ import type {
   RemultServerCore,
   RemultServerOptions,
   ServerCoreOptions,
-  TypicalRouteInfo,
 } from './server/remult-api-server.js'
 import { RouteImplementation } from './server/remult-api-server.js'
+import {
+  getBaseTypicalRouteInfo,
+  type TypicalRouteInfo,
+} from './server/route-helpers.js'
 import { parse, serialize } from './src/remult-cookie.js'
 
 class ExpressRouteImplementation extends RouteImplementation<express.Request> {
@@ -97,7 +100,13 @@ class ExpressRouteImplementation extends RouteImplementation<express.Request> {
     req: express.Request,
     res: express.Response,
   ): TypicalRouteInfo {
+    const tri = getBaseTypicalRouteInfo({
+      url: req.url,
+      headers: req.headers as Record<string, string>,
+    })
+
     return {
+      req: tri.req,
       res: {
         redirect: (url, statusCode = 307) => {
           res.redirect(statusCode, url)

@@ -19,7 +19,6 @@ export { Module } from './Module.js'
 export type { ModuleInput } from './Module.js'
 export { createRemultServerCore } from './remult-api-server.js'
 export type {
-  GenericRequestHandler,
   GenericRequestInfo,
   GenericResponse,
   InitRequestOptions,
@@ -33,8 +32,11 @@ export type {
   RemultServerOptions,
   Routes,
   SpecificRoute,
-  TypicalRouteInfo,
 } from './remult-api-server.js'
+export type {
+  GenericRequestHandler,
+  TypicalRouteInfo,
+} from './route-helpers.js'
 export { TestApiDataProvider } from './test-api-data-provider.js'
 
 export function createRemultServer<RequestType>(

@@ -3587,9 +3587,7 @@ export declare class DataProviderLiveQueryStorage
 //[ ] DataProvider from TBD is not exported
 //[ ] StoredQuery from TBD is not exported
 export type GenericRequestHandler = (
-  stuffForRouter: {
-    req: GenericRequestInfo
-  } & TypicalRouteInfo,
+  stuffForRouter: TypicalRouteInfo,
   next: VoidFunction,
 ) => void
 export interface GenericRequestInfo {

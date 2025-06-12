@@ -46,6 +46,12 @@ import { Action, classBackendMethodsArray } from '../src/server-action.js'
 import type { Module } from './Module.js'
 import { initDataProviderOrJson } from './initDataProviderOrJson.js'
 import remultAdminHtml, { buildEntityInfo } from './remult-admin.js'
+import {
+  getBaseTypicalRouteInfo,
+  type GenericRequest,
+  type GenericRequestHandler,
+  type TypicalRouteInfo,
+} from './route-helpers.js'
 
 export interface RemultServerOptions<RequestType> {
   /**Entities to use for the api */
@@ -229,11 +235,6 @@ export function createRemultServerCore<RequestType>(
   return bridge
 }
 
-export type GenericRequestHandler = (
-  stuffForRouter: { req: GenericRequestInfo } & TypicalRouteInfo,
-  next: VoidFunction,
-) => void
-
 export type SpecificRoute = {
   get(handler: GenericRequestHandler): SpecificRoute
   put(handler: GenericRequestHandler): SpecificRoute
@@ -253,10 +254,6 @@ export type SpecificRoute = {
       contentTypes?: Record<string, string>
     },
   ): SpecificRoute
-}
-
-export type PublicGenericRouter = {
-  (stuffForRouter: { req: GenericRequestInfo } & TypicalRouteInfo): void
 }
 
 export type InternalGenericRequestHandler<RequestType> = (
@@ -327,22 +324,6 @@ export interface GenericRequestInfo {
   method?: any
   query?: any
   params?: any
-}
-
-export interface GenericRequest {
-  url?: string
-}
-
-export interface TypicalRouteInfo {
-  req?: GenericRequest
-  res: GenericResponse
-  cookie(name: string): {
-    set(value: string, opts?: SerializeOptions): void
-    get(opts?: ParseOptions): string | undefined
-    delete(opts?: SerializeOptions): void
-  }
-  setHeaders(headers: Record<string, string>): void
-  sse: ResponseRequiredForSSE
 }
 
 export interface GenericResponse {
@@ -571,10 +552,10 @@ export class RemultServerImplementation<RequestType>
             const internalHandler: InternalGenericRequestHandler<
               RequestType
             > = (req, tr, next) => {
-              const genReq = this.coreOptions.buildGenericRequestInfo(req)
+              // const genReq = this.coreOptions.buildGenericRequestInfo(req)
               publicHandler(
                 {
-                  req: genReq,
+                  req: tr.req,
                   res: tr.res,
                   sse: tr.sse,
                   cookie: tr.cookie,
@@ -1745,12 +1726,11 @@ export class RouteImplementation<RequestType> {
     tri?: TypicalRouteInfo,
   ): Promise<ServerHandleResponse | undefined> {
     return new Promise<ServerHandleResponse | undefined>((res, rej) => {
+      const genReq = this.coreOptions.buildGenericRequestInfo(req)
       const triToUse = new (class implements TypicalRouteInfo {
         statusCode = 200
-
-        req: GenericRequest = {
-          url: tri?.req?.url,
-        }
+        req: GenericRequest =
+          tri?.req ?? getBaseTypicalRouteInfo({ url: genReq.url }).req!
 
         res: GenericResponse = {
           json(data: any) {
