@@ -13,8 +13,10 @@ import {
   getBaseTypicalRouteInfo,
   type TypicalRouteInfo,
 } from './server/route-helpers.js'
+import { toResponse } from './server/toResponse.js'
 import { mergeOptions, parse, serialize } from './src/remult-cookie.js'
 
+// Next.js API Route implementation
 export function remultNext(
   options: RemultServerOptions<NextApiRequest>,
 ): RemultNextServer {
@@ -41,11 +43,11 @@ export function remultNext(
         },
         end: (data?: any) => {
           if (data !== undefined) {
-            if ((res as any).send) {
-              ;(res as any).send(data)
+            if (res.send) {
+              res.send(data)
             } else {
-              if ((res as any).write) {
-                ;(res as any).write(data)
+              if (res.write) {
+                res.write(data)
               }
               res.end()
             }
@@ -53,52 +55,52 @@ export function remultNext(
             res.end()
           }
         },
-        json: (data: any) => {
-          if ((res as any).json) {
-            ;(res as any).json(data)
+        json: (data) => {
+          if (res.json) {
+            res.json(data)
           } else {
             if ((res as any).setHeader) {
-              ;(res as any).setHeader('Content-Type', 'application/json')
+              res.setHeader('Content-Type', 'application/json')
             }
-            if ((res as any).write) {
-              ;(res as any).write(JSON.stringify(data))
+            if (res.write) {
+              res.write(JSON.stringify(data))
             }
             res.end()
           }
         },
-        send: (data: any) => {
-          if ((res as any).send) {
-            ;(res as any).send(data)
+        send: (data) => {
+          if (res.send) {
+            res.send(data)
           } else {
-            if ((res as any).write) {
-              ;(res as any).write(data)
+            if (res.write) {
+              res.write(data)
             }
             res.end()
           }
         },
         status: (statusCode: number) => {
-          if ((res as any).status) {
-            ;(res as any).status(statusCode)
+          if (res.status) {
+            res.status(statusCode)
           } else {
-            ;(res as any).statusCode = statusCode
+            res.statusCode = statusCode
           }
           return triToUse.res
         },
       },
       sse: {
-        write: (data: any) => {
-          if ((res as any).write) {
-            ;(res as any).write(data)
+        write: (data) => {
+          if (res.write) {
+            res.write(data)
           }
         },
         writeHead: (status: number, headers?: any) => {
-          if ((res as any).writeHead) {
-            ;(res as any).writeHead(status, headers)
+          if (res.writeHead) {
+            res.writeHead(status, headers)
           } else {
-            ;(res as any).statusCode = status
-            if (headers && (res as any).setHeader) {
+            res.statusCode = status
+            if (headers && res.setHeader) {
               for (const [key, value] of Object.entries(headers)) {
-                ;(res as any).setHeader(key, value as string)
+                res.setHeader(key, value as string)
               }
             }
           }
@@ -107,8 +109,8 @@ export function remultNext(
             if (contentType === 'text/event-stream') {
               sseResponse = true
               triToUse.sse.write = (data) => {
-                if ((res as any).write) {
-                  ;(res as any).write(data)
+                if (res.write) {
+                  res.write(data)
                 }
               }
             }
@@ -118,7 +120,7 @@ export function remultNext(
       cookie: (name) => {
         return {
           set: (value, options = {}) => {
-            ;(res as any).setHeader(
+            res.setHeader(
               'Set-Cookie',
               serialize(name, value, mergeOptions(options)),
             )
@@ -128,7 +130,7 @@ export function remultNext(
             return cookieHeader ? parse(cookieHeader, options)[name] : undefined
           },
           delete: (options = {}) => {
-            ;(res as any).setHeader(
+            res.setHeader(
               'Set-Cookie',
               serialize(name, '', mergeOptions({ ...options, maxAge: 0 })),
             )
@@ -137,7 +139,7 @@ export function remultNext(
       },
       setHeaders: (headers) => {
         Object.entries(headers).forEach(([key, value]) => {
-          ;(res as any).setHeader(key, value)
+          res.setHeader(key, value)
         })
       },
     }
@@ -278,19 +280,13 @@ export function remultApi(
         headers: req.headers,
       })
 
+      tri.res.redirect = (url, statusCode = 307) => {
+        return (req as any).redirect(url, statusCode)
+      }
+
       const triToUse: TypicalRouteInfo = {
         req: tri.req,
-        res: {
-          redirect: (url, statusCode = 307) => {
-            ;(req as any).redirect(url, statusCode)
-          },
-          end: () => {},
-          json: () => {},
-          send: () => {},
-          status: () => {
-            return triToUse.res
-          },
-        },
+        res: tri.res,
         sse: {
           write: () => {},
           writeHead: (status, headers) => {
@@ -347,35 +343,13 @@ export function remultApi(
         },
       }
 
-      const responseFromRemultHandler = await result.handle(req, triToUse)
-      if (sseResponse !== undefined) {
-        return sseResponse
-      }
-      if (responseFromRemultHandler) {
-        if (responseFromRemultHandler.redirectUrl) {
-          triToUse.res.redirect(
-            responseFromRemultHandler.redirectUrl,
-            responseFromRemultHandler.statusCode || 307,
-          )
-          return
-        }
-
-        if (responseFromRemultHandler.html)
-          return new Response(responseFromRemultHandler.html, {
-            status: responseFromRemultHandler.statusCode,
-            headers: {
-              'Content-Type': 'text/html',
-            },
-          })
-        return new Response(JSON.stringify(responseFromRemultHandler.data), {
-          status: responseFromRemultHandler.statusCode,
-        })
-      }
-      if (!responseFromRemultHandler) {
-        return new Response('', {
-          status: 404,
-        })
-      }
+      const remultHandlerResponse = await result.handle(req, triToUse)
+      const response = toResponse({
+        sseResponse,
+        remultHandlerResponse,
+        requestUrl: req.url,
+      })
+      return response
     }
   }
   return {
