@@ -183,10 +183,10 @@ export function remultNext(
     }
 
     if (!responseFromRemultHandler) {
-      if ((res as any).status) {
-        ;(res as any).status(404)
+      if (res.status) {
+        res.status(404)
       } else {
-        ;(res as any).statusCode = 404
+        res.statusCode = 404
       }
       res.end()
     }

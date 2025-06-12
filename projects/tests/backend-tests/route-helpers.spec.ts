@@ -33,4 +33,37 @@ describe('route-helpers', () => {
       expect(tri.req?.headers['x-test-header']).toBe('Hello')
     })
   })
+
+  describe('cookie', () => {
+    it('should not return anything', () => {
+      const tri = getBaseTypicalRouteInfo({})
+      expect(tri.cookie('test').get()).toBeUndefined()
+    })
+
+    it('should have 3 keys', () => {
+      const tri = getBaseTypicalRouteInfo({})
+      expect(Object.keys(tri.cookie('test'))).toMatchInlineSnapshot(`
+        [
+          "set",
+          "get",
+          "delete",
+        ]
+      `)
+    })
+  })
+
+  describe('res loop with status', () => {
+    it('should not return anything', () => {
+      const tri = getBaseTypicalRouteInfo({})
+      expect(Object.keys(tri.res.status(200))).toMatchInlineSnapshot(`
+        [
+          "end",
+          "json",
+          "send",
+          "redirect",
+          "status",
+        ]
+      `)
+    })
+  })
 })
