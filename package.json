@@ -36,6 +36,7 @@
   },
   "private": true,
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250613.0",
     "@duckdb/node-api": "^1.2.2-alpha.18",
     "@fastify/express": "^2.0.1",
     "@fastify/middie": "^8.0.0",
@@ -119,5 +120,8 @@
     "argon2": false,
     "password-hash": false,
     "fs": false
+  },
+  "peerDependencies": {
+    "cloudflare": "^4.3.0"
   }
 }
