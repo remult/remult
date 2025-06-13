@@ -1,6 +1,6 @@
 /// <reference types="@cloudflare/workers-types" />
 
-import { type SqlCommand, SqlDatabase, type SqlResult } from "./index.js"
+import { type SqlCommand, SqlDatabase, type SqlImplementation, type SqlResult } from "./index.js"
 import { SqliteCoreDataProvider } from "./remult-sqlite-core.js"
 
 export function createD1DataProvider(d1: D1Database) {
@@ -21,6 +21,12 @@ export class D1DataProvider extends SqliteCoreDataProvider {
 				// so this is just a noop
 			}
 		)
+	}
+
+	async transaction(
+		action: (sql: SqlImplementation) => Promise<void>,
+	): Promise<void> {
+		throw new D1DataProviderError('As of June 2005, D1 doesn\'t support transactions')
 	}
 }
 
@@ -90,5 +96,12 @@ class D1SqlResult implements SqlResult {
 
 	getColumnKeyInResultForIndexInSelect(index: number): string {
 		return this.columns[index]
+	}
+}
+
+class D1DataProviderError extends Error {
+	constructor(msg: string) {
+		super(msg)
+		this.name = 'D1DataProviderError'
 	}
 }

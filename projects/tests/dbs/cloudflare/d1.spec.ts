@@ -52,7 +52,7 @@ describe('d1', () => {
     },
   }
 
-  allDbTests(props)
+  allDbTests(props, { excludeTransactions: true })
   SqlDbTests({ ...props })
 
   it('start works', async () => {
