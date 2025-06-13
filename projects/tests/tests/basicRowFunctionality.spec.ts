@@ -2524,6 +2524,8 @@ class mockResponse implements Response {
   statusText!: string
   type!: ResponseType
   url!: string
+  webSocket = null
+
   clone(): Response {
     throw new Error('Method not implemented.')
   }
@@ -2543,6 +2545,9 @@ class mockResponse implements Response {
     throw new Error('Method not implemented.')
   }
   text(): Promise<string> {
+    throw new Error('Method not implemented.')
+  }
+  bytes(): Promise<Uint8Array> {
     throw new Error('Method not implemented.')
   }
 }

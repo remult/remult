@@ -4448,6 +4448,7 @@ export declare class D1DataProvider extends SqliteCoreDataProvider {
    * const dataProvider = new SqlDatabase(new D1DataProvider(new D1BindingClient(d1)))
    */
   constructor(d1: D1Client)
+  transaction(action: (sql: SqlImplementation) => Promise<void>): Promise<void>
 }
 export type D1RowObject = Record<string, unknown>
 ```
