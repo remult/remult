@@ -10,6 +10,8 @@ import { allDbTests } from '../shared-tests/index.js'
 
 import { D1BindingClient, D1DataProvider } from '../../../core/remult-d1.js'
 import { getPlatformProxy } from "wrangler"
+import { fileURLToPath } from 'node:url'
+import path, { dirname } from 'node:path'
 
 describe('d1', () => {
   let closePlatformProxy: () => Promise<void>
@@ -18,8 +20,11 @@ describe('d1', () => {
   let remult: Remult
 
   beforeAll(async () => {
-    const { env, dispose } = await getPlatformProxy<Env>({})
+    const configPath = path.relative(".", path.join(dirname(fileURLToPath(import.meta.url)), "wrangler.jsonc"))
+    const { env, dispose } = await getPlatformProxy<Env>({ configPath })
     d1DataProvider = new D1DataProvider(new D1BindingClient(env.D1_TEST_DB))
+
+    console.log("D1_TEST_DB", env.D1_TEST_DB)
 
     closePlatformProxy = dispose
   })

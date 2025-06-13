@@ -5,6 +5,7 @@
   "scripts": {
     "format": "prettier \"./projects/core/**\" --write",
     "test": "vitest --ui --coverage",
+    "test1": "vitest run d1 --bail=1",
     "release": "rimraf dist && npm run build && npm run patch-versions",
     "build": "tsc -p projects/core/tsconfig.build.json && tsc -p projects/core/tsconfig.build.esm.json && tsx misc/build-packagejson-core.ts && copyfiles README.md dist/remult && copyfiles LICENSE dist/remult && tsx misc/extract-public-api.ts",
     "build-tests": "tsc -p tsconfig.tests.json && tsc -p projects/tests/strict/tsconfig.check.json",
