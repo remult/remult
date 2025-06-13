@@ -1,0 +1,15 @@
+/**
+ * For more details on how to configure Wrangler, refer to:
+ * https://developers.cloudflare.com/workers/wrangler/configuration/
+ */
+{
+  "name": "test-remult-d1",
+  "compatibility_date": "2025-04-29",
+  "d1_databases": [
+    {
+      "binding": "D1_TEST_DB",
+      "database_name": "test-remult-d1",
+      "database_id": "12345678-1234-1234-1234-0123456789ab"
+    }
+  ]
+}
