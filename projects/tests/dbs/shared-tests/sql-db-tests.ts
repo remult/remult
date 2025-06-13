@@ -279,8 +279,7 @@ export function SqlDbTests({
     const e = await dbNamesOf(repo, f.wrapIdentifier)
     const c = f.createCommand()
     const result = await c.execute(
-      `select ${e.myId}, ${e.name} from ${e.$entityName} where ${
-        e.myId
+      `select ${e.myId}, ${e.name} from ${e.$entityName} where ${e.myId
       } in (${c.param(1)},${c.param(2)})`,
     )
 
@@ -331,7 +330,7 @@ export function SqlDbTests({
       ]) {
         try {
           await db.execute('drop table  ' + db.wrapIdentifier!(iterator))
-        } catch {}
+        } catch { }
       }
     })
     it('test migrations', async () => {
@@ -340,8 +339,8 @@ export function SqlDbTests({
       let snapshot = emptySnapshot()
       let code = {
         addSql: (s: string) =>
-          (migrations[Object.keys(migrations).length] = async ({ sql }) =>
-            await sql(s)),
+        (migrations[Object.keys(migrations).length] = async ({ sql }) =>
+          await sql(s)),
         addComment: () => {
           throw Error('not implemented')
         },
@@ -360,7 +359,7 @@ export function SqlDbTests({
         entities: [Task],
         snapshot: snapshot,
         migrationBuilder,
-        reporter: () => {},
+        reporter: () => { },
       })
       expect(Object.keys(migrations).length).toBe(1)
       await migrate({
@@ -375,7 +374,7 @@ export function SqlDbTests({
         entities: [TaskEnhanced],
         snapshot: snapshot,
         migrationBuilder,
-        reporter: () => {},
+        reporter: () => { },
       })
       expect(Object.keys(migrations).length).toBe(3)
       await migrate({
@@ -495,7 +494,7 @@ export function SqlDbTests({
         const tableName = db.wrapIdentifier!('xyz1')
         try {
           await cast(getDb(), 'execute').execute(`drop table ${tableName}`)
-        } catch {}
+        } catch { }
         await expect(
           async () =>
             await migrate({
