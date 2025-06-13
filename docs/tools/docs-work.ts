@@ -234,6 +234,7 @@ try {
     'getEntityRef',
     'getFields',
     'SqlDatabase',
+    'initAsyncHooks',
 
     //    'PreprocessFilterEvent',
   ]) {

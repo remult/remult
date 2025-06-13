@@ -65,16 +65,15 @@ export default function ${framework === nextJs ? "Home" : "App"}() {
             Github
           </a>
         </div>
-        <div className="tile__subtitle"> Technology Stack Info:</div>
         <div className="intro__stack">
           ${components
-            .map(
-              (c) => `<div className="intro__stack-item">
+      .map(
+        (c) => `<div className="intro__stack-item">
             <span>${c.type}</span>
             ${c.display}
           </div>`,
-            )
-            .join("\n          ")}
+      )
+      .join("\n          ")}
         </div>
       </Tile>
       ${li.map((l) => `${l()}`).join("\n      ")}

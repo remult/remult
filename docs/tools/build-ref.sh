@@ -15,7 +15,7 @@ rm -rf src/shared-tests/*
 rm -f src/live-query/*.spec.ts
 
 # Generate TypeDoc JSON
-npx typedoc index.ts server/index.ts migrations/index.ts --json the.json
+npx typedoc index.ts server/index.ts migrations/index.ts async-hooks.ts --json the.json
 
 # Return to original directory and run build-ref-ts
 cd ../..

@@ -252,7 +252,7 @@ To take full advantage of it, add this snippet:
 
 ```html [src/routes/+layout.svelte]
 <script lang="ts">
-  import { Remult } from 'remult'
+  import { remult, Remult } from 'remult'
   import { createSubscriber } from 'svelte/reactivity'
 
   // To be done once in the application.
