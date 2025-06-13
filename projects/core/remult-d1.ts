@@ -26,7 +26,10 @@ export class D1DataProvider extends SqliteCoreDataProvider {
 	async transaction(
 		action: (sql: SqlImplementation) => Promise<void>,
 	): Promise<void> {
-		throw new D1DataProviderError('As of June 2005, D1 doesn\'t support transactions')
+		// As of June 2025, D1 doesn't support transactions
+		// Here we simply run the action without wrapping it in a transaction
+		// It means queries in action() will be run individually (this is the same decision prisma made)
+		await action(this)
 	}
 }
 
@@ -96,12 +99,5 @@ class D1SqlResult implements SqlResult {
 
 	getColumnKeyInResultForIndexInSelect(index: number): string {
 		return this.columns[index]
-	}
-}
-
-class D1DataProviderError extends Error {
-	constructor(msg: string) {
-		super(msg)
-		this.name = 'D1DataProviderError'
 	}
 }

@@ -23,9 +23,6 @@ describe('d1', () => {
     const configPath = path.relative(".", path.join(dirname(fileURLToPath(import.meta.url)), "wrangler.jsonc"))
     const { env, dispose } = await getPlatformProxy<Env>({ configPath })
     d1DataProvider = new D1DataProvider(new D1BindingClient(env.D1_TEST_DB))
-
-    console.log("D1_TEST_DB", env.D1_TEST_DB)
-
     closePlatformProxy = dispose
   })
 
@@ -52,8 +49,9 @@ describe('d1', () => {
     },
   }
 
+  // as of June2025, D1 does not support transactions
   allDbTests(props, { excludeTransactions: true })
-  SqlDbTests({ ...props })
+  SqlDbTests({ ...props, skipMigrations: true }) // migration tests use transactions with rollback. D1 doesn't support transactions
 
   it('start works', async () => {
     await db.execute('drop table if exists x')
