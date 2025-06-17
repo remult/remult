@@ -741,6 +741,21 @@ export function allServerTests(
         `)
       }),
     )
+
+    it(
+      'POST reading body',
+      withRemultForTest(async () => {
+        let result = await axios.post(remult.apiClient.url + '/post-body-add', {
+          count: 7,
+        })
+        expect(result.data).toMatchInlineSnapshot(`
+          {
+            "newCount": 8,
+            "oldValue": 7,
+          }
+        `)
+      }),
+    )
   })
 
   describe('server crash', {}, () => {

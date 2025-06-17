@@ -83,5 +83,13 @@ export const someRoutes = new Module({
     add('/post-headers').post(({ res, req }) => {
       res.json({ reqHeaders: req?.headers['hello'] })
     })
+
+    add('/post-body-add').post(({ res, req }) => {
+      const oldValue = (req?.json as { count: number } | undefined)?.count ?? 0
+      res.json({
+        newCount: oldValue + 1,
+        oldValue,
+      })
+    })
   },
 })

@@ -551,15 +551,18 @@ export class RemultServerImplementation<RequestType>
           return (publicHandler: GenericRequestHandler) => {
             const internalHandler: InternalGenericRequestHandler<
               RequestType
-            > = (req, tr, next) => {
+            > = (req, tri, next) => {
               // const genReq = this.coreOptions.buildGenericRequestInfo(req)
+              if (tri.req) {
+                tri.req.json = { something: 'here' }
+              }
               publicHandler(
                 {
-                  req: tr.req,
-                  res: tr.res,
-                  sse: tr.sse,
-                  cookie: tr.cookie,
-                  setHeaders: tr.setHeaders,
+                  req: tri.req,
+                  res: tri.res,
+                  sse: tri.sse,
+                  cookie: tri.cookie,
+                  setHeaders: tri.setHeaders,
                 },
                 next,
               )

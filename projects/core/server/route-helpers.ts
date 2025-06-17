@@ -5,6 +5,7 @@ import type { GenericResponse } from './remult-api-server.js'
 export interface GenericRequest {
   url?: URL
   headers: Record<string, string>
+  json?: Object
 }
 
 export interface TypicalRouteInfo {
