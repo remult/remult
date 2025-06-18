@@ -3597,6 +3597,7 @@ export interface GenericRequestInfo {
 export interface GenericResponse {
   json(data: any): void
   send(html: string): void
+  /** default status is 307 */
   redirect(
     url: string,
     /** The [HTTP status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages). Must be in the range 300-308. */
@@ -3916,6 +3917,7 @@ export interface GenericRequestInfo {
 export interface GenericResponse {
   json(data: any): void
   send(html: string): void
+  /** default status is 307 */
   redirect(
     url: string,
     /** The [HTTP status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages). Must be in the range 300-308. */
