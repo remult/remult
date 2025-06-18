@@ -41,18 +41,27 @@ export function remultApi(
         writeHead(status: number, headers: any) {
           res.raw.writeHead(status, headers)
         },
+        redirect(url, status: number) {
+          res.redirect(status ?? 307, url)
+        },
       }
       Object.assign(req, {
         on(event: 'close', listener: () => {}) {
           req.raw.on(event, listener)
         },
       })
-      handler(req, myRes, () => { })
+      handler(req, myRes, () => {})
     }
     return response
   }
   const api = createRemultServer(options, {
-    buildGenericRequestInfo: (req) => req,
+    buildGenericRequestInfo: (req) => {
+      return {
+        ...req,
+        url: req.originalUrl,
+        headers: req.headers as Record<string, string>,
+      }
+    },
     getRequestBody: async (req) => req.body,
   })
   const pluginFunction: FastifyPluginCallback = async (

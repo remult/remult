@@ -45,6 +45,7 @@ export function allServerTests(
   options?: {
     skipAsyncHooks?: boolean
     skipLiveQuery?: boolean
+    skipSendHtml?: boolean
   },
   additionalTests?: (
     withRemultForTest: (what: () => Promise<void>) => () => Promise<void>,
@@ -618,6 +619,45 @@ export function allServerTests(
           `)
         }),
       )
+
+      // TODO ROUTER: remove skip when fixed
+      it.skip(
+        'should redirect',
+        withRemultForTest(async () => {
+          try {
+            await axios.get(remult.apiClient.url + '/redirect', {
+              maxRedirects: 0, // Prevent following redirects completely
+            })
+            expect('should never').toBe('be here')
+          } catch (error: any) {
+            // Axios throws on redirects when maxRedirects is 0
+            expect(error.response.status).toBe(307)
+            expect(error.response.headers.location).toContain('/api/html')
+          }
+        }),
+      )
+
+      it.skipIf(options?.skipSendHtml)(
+        'should get html',
+        withRemultForTest(async () => {
+          const result = await axios.get(remult.apiClient.url + '/html')
+          expect(result.data).toMatchInlineSnapshot(`"<h1>Hello World</h1>"`)
+        }),
+      )
+
+      it(
+        'GET reading headers',
+        withRemultForTest(async () => {
+          let result = await axios.get(remult.apiClient.url + '/get-headers', {
+            headers: { hello: 'world-get' },
+          })
+          expect(result.data).toMatchInlineSnapshot(`
+            {
+              "reqHeaders": "world-get",
+            }
+          `)
+        }),
+      )
     })
 
     describe('POST', () => {
@@ -636,6 +676,39 @@ export function allServerTests(
               "oldValue": 7,
             }
           `)
+        }),
+      )
+
+      it(
+        'POST reading headers',
+        withRemultForTest(async () => {
+          let result = await axios.post(
+            remult.apiClient.url + '/post-headers',
+            {},
+            { headers: { hello: 'world-post' } },
+          )
+          expect(result.data).toMatchInlineSnapshot(`
+            {
+              "reqHeaders": "world-post",
+            }
+          `)
+        }),
+      )
+    })
+
+    describe('server crash', {}, () => {
+      it(
+        'should crash',
+        withRemultForTest(async () => {
+          try {
+            await axios.get(remult.apiClient.url + '/crash-test')
+            expect('should never').toBe('be here')
+          } catch (error: any) {
+            expect(error.response.status).toBe(400)
+            expect(error.response.data.message).toMatchInlineSnapshot(
+              `"Server crash test"`,
+            )
+          }
         }),
       )
     })

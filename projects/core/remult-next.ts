@@ -18,12 +18,16 @@ export function remultNext(
   options: RemultServerOptions<NextApiRequest>,
 ): RemultNextServer {
   let result = createRemultServer(options, {
-    buildGenericRequestInfo: (req) => req,
-    getRequestBody: async (req) => req.body,
+    // TODO ROUTE: Why do we need to write it like this ?
+    buildGenericRequestInfo: (req) => req as any,
+    // buildGenericRequestInfo: (req) => {
+    //   return { ...req, headers: req.headers as Record<string, string> }
+    // },
+    getRequestBody: async (req) => await req.body,
   })
   return Object.assign(
     (req: NextApiRequest, res: GenericResponse) =>
-      result.handle(req, res).then(() => { }),
+      result.handle(req, res).then(() => {}),
     result,
     {
       getRemult: (req: NextApiRequest) => result.getRemult(req),
@@ -86,31 +90,38 @@ export function remultApi(
   options?: RemultServerOptions<Request>,
 ): RemultNextAppServer {
   let result = createRemultServer<Request>(options!, {
-    getRequestBody: (req) => req.json(),
-    buildGenericRequestInfo: (req) => ({
-      url: req?.url,
-      method: req?.method,
+    getRequestBody: async (req) => await req.json(),
+    buildGenericRequestInfo: (req) => {
+      let headers: Record<string, string> = {}
+      req.headers.forEach((value, key) => {
+        headers[key] = value
+      })
+      return {
+        url: req?.url,
+        method: req?.method,
 
-      on: (e: 'close', do1: VoidFunction) => {
-        if (e === 'close') {
-          ; (req as any)['_tempOnClose'] = do1
-        }
-      },
-    }),
+        on: (e: 'close', do1: VoidFunction) => {
+          if (e === 'close') {
+            ;(req as any)['_tempOnClose'] = do1
+          }
+        },
+        headers,
+      }
+    },
   })
   const handler = async (req: Request) => {
     {
       let sseResponse: Response | undefined = undefined
-        ; (req as any)['_tempOnClose'] = () => { }
+      ;(req as any)['_tempOnClose'] = () => {}
 
       const response: GenericResponse & ResponseRequiredForSSE = {
-        end: () => { },
-        json: () => { },
-        send: () => { },
+        end: () => {},
+        json: () => {},
+        send: () => {},
         status: () => {
           return response
         },
-        write: () => { },
+        write: () => {},
         writeHead: (status, headers) => {
           if (status === 200 && headers) {
             const contentType = headers['Content-Type']
@@ -127,14 +138,15 @@ export function remultApi(
                   }
                 },
                 cancel: () => {
-                  response.write = () => { }
-                    ; (req as any)['_tempOnClose']()
+                  response.write = () => {}
+                  ;(req as any)['_tempOnClose']()
                 },
               })
               sseResponse = new Response(stream, { headers })
             }
           }
         },
+        redirect() {},
       }
 
       const responseFromRemultHandler = await result.handle(req, response)

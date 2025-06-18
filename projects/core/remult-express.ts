@@ -29,7 +29,10 @@ export function remultApi(
     )
   }
   const server = createRemultServer<express.Request>(options, {
-    buildGenericRequestInfo: (req) => req,
+    buildGenericRequestInfo: (req) => ({
+      ...req,
+      headers: req.headers as Record<string, string>,
+    }),
     getRequestBody: async (req) => req.body,
   }) as RemultServerImplementation<express.Request>
   server.registerRouter(app)

@@ -44,6 +44,7 @@ import remultAdminHtml, { buildEntityInfo } from './remult-admin.js'
 import { isOfType } from '../src/isOfType.js'
 import { initDataProviderOrJson } from './initDataProviderOrJson.js'
 import { modulesFlatAndOrdered, type Module } from './module.js'
+import type { ParseOptions, SerializeOptions } from '../src/remult-cookie.js'
 
 export interface RemultServerOptions<RequestType> {
   /**Entities to use for the api */
@@ -197,13 +198,19 @@ export interface RouteInfoFn<RequestType> {
 interface GenericRequest {
   // TODO ROUTER: I would like this to not be optional!
   url?: URL
+  headers?: Record<string, string>
   body?: any
 }
 
 export interface GenericRouteInfo {
   req: GenericRequest
   res: GenericResponse
-  // // TODO FULL ROUTES... cookies...
+  cookie(name: string): {
+    set(value: string, opts?: SerializeOptions): void
+    get(opts?: ParseOptions): string | undefined
+    delete(opts?: SerializeOptions): void
+  }
+  setHeaders(headers: Record<string, string>): void
 }
 
 export interface InitRequestOptions {
@@ -305,11 +312,28 @@ export interface GenericRequestInfo {
   method?: any
   query?: any
   params?: any
+  headers?: Record<string, string>
 }
 
 export interface GenericResponse {
   json(data: any): void
   send(html: string): void
+  /** default status is 307 */
+  redirect(
+    url: string,
+    /** The [HTTP status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages). Must be in the range 300-308. */
+    status?:
+      | 300
+      | 301
+      | 302
+      | 303
+      | 304
+      | 305
+      | 306
+      | 307
+      | 308
+      | ({} & number),
+  ): void
   status(statusCode: number): GenericResponse //exists for express and next and not in opine(In opine it's setStatus)
   end(): void
 }
@@ -720,7 +744,18 @@ export class RemultServerImplementation<RequestType>
                         'http://localhost',
                       )
                     : undefined,
+                  headers: genReq.headers,
                 },
+                cookie(name) {
+                  return {
+                    set(value, opts) {},
+                    get(opts) {
+                      return undefined
+                    },
+                    delete(opts) {},
+                  }
+                },
+                setHeaders(headers) {},
               },
               origReq,
             )
@@ -761,8 +796,19 @@ export class RemultServerImplementation<RequestType>
                         'http://localhost',
                       )
                     : undefined,
+                  headers: genReq.headers,
                   body,
                 },
+                cookie(name) {
+                  return {
+                    set(value, opts) {},
+                    get(opts) {
+                      return undefined
+                    },
+                    delete(opts) {},
+                  }
+                },
+                setHeaders(headers) {},
               },
               origReq,
             )
@@ -1659,6 +1705,14 @@ export class RouteImplementation<RequestType> {
           res({
             statusCode: this.statusCode,
           })
+        }
+        redirect(url: string, statusCode?: number): void {
+          if (statusCode) {
+            this.statusCode = statusCode
+          } else if (this.statusCode < 300 || this.statusCode >= 400) {
+            this.statusCode = 307
+          }
+          if (gRes !== undefined) gRes.redirect(url, this.statusCode)
         }
       })()
       try {

@@ -3592,18 +3592,42 @@ export interface GenericRequestInfo {
   method?: any
   query?: any
   params?: any
+  headers?: Record<string, string>
 }
 export interface GenericResponse {
   json(data: any): void
   send(html: string): void
+  redirect(
+    url: string,
+    /** The [HTTP status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages). Must be in the range 300-308. */
+    status?:
+      | 300
+      | 301
+      | 302
+      | 303
+      | 304
+      | 305
+      | 306
+      | 307
+      | 308
+      | ({} & number),
+  ): void
   status(statusCode: number): GenericResponse
   end(): void
 }
 export interface GenericRouteInfo {
   req: GenericRequest
   res: GenericResponse
+  cookie(name: string): {
+    set(value: string, opts?: SerializeOptions): void
+    get(opts?: ParseOptions): string | undefined
+    delete(opts?: SerializeOptions): void
+  }
+  setHeaders(headers: Record<string, string>): void
 }
 //[ ] GenericRequest from TBD is not exported
+//[ ] SerializeOptions from TBD is not exported
+//[ ] ParseOptions from TBD is not exported
 export type GenericRouter<RequestType> = {
   route(path: string): SpecificRoute<RequestType>
 }
@@ -3887,10 +3911,26 @@ export interface GenericRequestInfo {
   method?: any
   query?: any
   params?: any
+  headers?: Record<string, string>
 }
 export interface GenericResponse {
   json(data: any): void
   send(html: string): void
+  redirect(
+    url: string,
+    /** The [HTTP status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages). Must be in the range 300-308. */
+    status?:
+      | 300
+      | 301
+      | 302
+      | 303
+      | 304
+      | 305
+      | 306
+      | 307
+      | 308
+      | ({} & number),
+  ): void
   status(statusCode: number): GenericResponse
   end(): void
 }

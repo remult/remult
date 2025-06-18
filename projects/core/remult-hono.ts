@@ -29,9 +29,10 @@ export function remultApi(
         }),
         url: c.req.url,
         on: (e: 'close', do1: VoidFunction) => {
-          ; (c as any)['_tempOnClose'](() => do1())
+          ;(c as any)['_tempOnClose'](() => do1())
           //   c.req.on('close', do1)
         },
+        headers: c.req.header(),
       }
     },
     getRequestBody: async (c) => {
@@ -65,13 +66,13 @@ export function remultApi(
         handler: GenericRequestHandler<Context<Env, '', BlankInput>>,
       ) {
         return (c: Context<Env, '', BlankInput>) => {
-          return new Promise<void | Response>((res, rej) => {
+          return new Promise<void | Response>((resolve, reject) => {
             try {
               let result: any
               let sse: SSEStreamingApi
               const gRes: GenericResponse & ResponseRequiredForSSE = {
                 json: (data: any) => {
-                  res(c.json(data))
+                  resolve(c.json(data))
                 },
                 status: (status: number) => {
                   result = c.status(status as any)
@@ -79,30 +80,33 @@ export function remultApi(
                 },
                 end: () => {
                   if (sse) sse.close()
-                  else res(c.body(null))
+                  else resolve(c.body(null))
                 },
                 send: (data: string) => {
-                  res(c.html(data))
+                  resolve(c.html(data))
                 },
                 write: (data: string) => {
                   sse.write(data)
                 },
                 writeHead: (status: number, headers: any) => {
-                  res(
+                  resolve(
                     streamSSE(c, (s) => {
                       sse = s
                       return new Promise((res) => {
-                        ; (c as any)['_tempOnClose'] = (x: VoidFunction) =>
+                        ;(c as any)['_tempOnClose'] = (x: VoidFunction) =>
                           sse.onAbort(() => x())
                       })
                     }),
                   )
                 },
+                redirect(url, status) {
+                  resolve(c.redirect(url, (status as any) ?? 307))
+                },
               }
 
-              handler(c as any, gRes, () => { })
+              handler(c as any, gRes, () => {})
             } catch (err) {
-              rej(err)
+              reject(err)
             }
           })
         }

@@ -12,30 +12,37 @@ export function remultApi(
   options: RemultServerOptions<RequestEvent>,
 ): RemultSolidStartServer {
   let result = createRemultServer<RequestEvent>(options, {
-    buildGenericRequestInfo: (event) => ({
-      url: event.request.url,
-      method: event.request.method,
-      on: (e: 'close', do1: VoidFunction) => {
-        if (e === 'close') {
-          event.locals['_tempOnClose'] = do1
-        }
-      },
-    }),
+    buildGenericRequestInfo: (event) => {
+      let headers: Record<string, string> = {}
+      event.request.headers.forEach((value, key) => {
+        headers[key] = value
+      })
+      return {
+        url: event.request.url,
+        method: event.request.method,
+        on: (e: 'close', do1: VoidFunction) => {
+          if (e === 'close') {
+            event.locals['_tempOnClose'] = do1
+          }
+        },
+        headers,
+      }
+    },
     getRequestBody: (event) => event.request.json(),
   })
   const serverHandler = async () => {
     const event = await getRequestEvent()
     let sseResponse: Response | undefined = undefined
-    if (event) event.locals['_tempOnClose'] = () => { }
+    if (event) event.locals['_tempOnClose'] = () => {}
 
     const response: GenericResponse & ResponseRequiredForSSE = {
-      end: () => { },
-      json: () => { },
-      send: () => { },
+      end: () => {},
+      json: () => {},
+      send: () => {},
       status: () => {
         return response
       },
-      write: () => { },
+      write: () => {},
       writeHead: (status, headers) => {
         if (status === 200 && headers) {
           const contentType = headers['Content-Type']
@@ -52,7 +59,7 @@ export function remultApi(
                 }
               },
               cancel: () => {
-                response.write = () => { }
+                response.write = () => {}
                 event?.locals?.['_tempOnClose']?.()
               },
             })
@@ -60,6 +67,7 @@ export function remultApi(
           }
         }
       },
+      redirect() {},
     }
 
     const responseFromRemultHandler = await result.handle(event!, response)
