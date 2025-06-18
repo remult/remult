@@ -20,5 +20,15 @@ export const someRoutes = new Module({
         res.json({ 'new-route-2': req.url?.searchParams.get('param') })
       },
     },
+
+    '/post-body-add': {
+      POST: async ({ res, req }) => {
+        const oldValue = (req.body as { count: number }).count
+        res.json({
+          newCount: oldValue + 1,
+          oldValue,
+        })
+      },
+    },
   },
 })

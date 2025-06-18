@@ -3791,7 +3791,8 @@ export interface RemultServerOptions<RequestType> {
     `/${string}`,
     | RouteInfoFn<RequestType>
     | {
-        GET: RouteInfoFn<RequestType>
+        GET?: RouteInfoFn<RequestType>
+        POST?: RouteInfoFn<RequestType>
       }
   >
   /**
@@ -4047,7 +4048,8 @@ export interface RemultServerOptions<RequestType> {
     `/${string}`,
     | RouteInfoFn<RequestType>
     | {
-        GET: RouteInfoFn<RequestType>
+        GET?: RouteInfoFn<RequestType>
+        POST?: RouteInfoFn<RequestType>
       }
   >
   /**

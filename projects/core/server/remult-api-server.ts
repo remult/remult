@@ -165,8 +165,8 @@ export interface RemultServerOptions<RequestType> {
     `/${string}`,
     | RouteInfoFn<RequestType>
     | {
-        GET: RouteInfoFn<RequestType>
-        // TODO FULL ROUTES...
+        GET?: RouteInfoFn<RequestType>
+        POST?: RouteInfoFn<RequestType>
       }
   >
 
@@ -197,6 +197,7 @@ export interface RouteInfoFn<RequestType> {
 interface GenericRequest {
   // TODO ROUTER: I would like this to not be optional!
   url?: URL
+  body?: any
 }
 
 export interface GenericRouteInfo {
@@ -624,19 +625,38 @@ export class RemultServerImplementation<RequestType>
         if (routes) {
           const objRoutes = Object.entries(routes)
           objRoutes.forEach(([subPathKey, handler]) => {
-            const handlerGET = isOfType<{
-              GET: any
-            }>(handler, 'GET')
-              ? handler.GET
-              : handler
+            const key = subPathKey.substring(1) // removing the first / (that is mandatory)
 
-            this.add({
-              key: subPathKey.substring(1), // removing the first / (that is mandatory)
-              dataApiFactory: undefined!,
-              r,
-              isExtraRoute: true,
-              handlerGET,
-            })
+            if (handler && 'GET' in handler) {
+              this.add({
+                key,
+                dataApiFactory: undefined!,
+                r,
+                isExtraRoute: true,
+                handlerGET: handler.GET,
+              })
+            }
+
+            if (handler && 'POST' in handler) {
+              this.add({
+                key,
+                dataApiFactory: undefined!,
+                r,
+                isExtraRoute: true,
+                handlerPOST: handler.POST,
+              })
+            }
+
+            // Fallback to GET if no other handler is defined
+            if (handler && !('GET' in handler || 'POST' in handler)) {
+              this.add({
+                key,
+                dataApiFactory: undefined!,
+                r,
+                isExtraRoute: true,
+                handlerGET: handler as RouteInfoFn<RequestType>,
+              })
+            }
           })
         }
       })
@@ -676,6 +696,7 @@ export class RemultServerImplementation<RequestType>
     r: GenericRouter<RequestType>
     isExtraRoute?: boolean
     handlerGET?: RouteInfoFn<RequestType>
+    handlerPOST?: RouteInfoFn<RequestType>
   }) {
     let myRoute = this.options.rootPath + '/' + options.key
     if (this.options.logApiEndPoints) {
@@ -703,11 +724,10 @@ export class RemultServerImplementation<RequestType>
               },
               origReq,
             )
-          } else {
-            return options
-              .dataApiFactory(c)
-              .httpGet(res, req, () => this.serializeContext(c))
           }
+          return options
+            .dataApiFactory(c)
+            .httpGet(res, req, () => this.serializeContext(c))
         }),
       )
       .put(
@@ -727,16 +747,31 @@ export class RemultServerImplementation<RequestType>
         ),
       )
       .post(
-        this.process(async (c, req, res, _, __, orig) =>
-          options
+        this.process(async (c, req, res, genReq, origRes, origReq) => {
+          const body = await this.coreOptions.getRequestBody(origReq)
+          if (options.handlerPOST) {
+            return options.handlerPOST(
+              {
+                res: origRes,
+                req: {
+                  url: genReq.url
+                    ? new URL(
+                        genReq.url,
+                        // TODO ROUTER: improve buildGenericRequestInfo implem to get this ?
+                        'http://localhost',
+                      )
+                    : undefined,
+                  body,
+                },
+              },
+              origReq,
+            )
+          }
+
+          return options
             .dataApiFactory(c)
-            .httpPost(
-              res,
-              req,
-              await this.coreOptions.getRequestBody(orig),
-              () => this.serializeContext(c),
-            ),
-        ),
+            .httpPost(res, req, body, () => this.serializeContext(c))
+        }),
       )
     options.r
       .route(myRoute + '/:id')
