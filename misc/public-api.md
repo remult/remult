@@ -3549,7 +3549,7 @@ export declare function initAsyncHooks(): void
 
 ## ./server/index.js
 
-```ts
+````ts
 export declare function createRemultServer<RequestType>(
   options: RemultServerOptions<RequestType>,
   serverCoreOptions?: ServerCoreOptions<RequestType>,
@@ -3599,6 +3599,11 @@ export interface GenericResponse {
   status(statusCode: number): GenericResponse
   end(): void
 }
+export interface GenericRouteInfo {
+  req: GenericRequest
+  res: GenericResponse
+}
+//[ ] GenericRequest from TBD is not exported
 export type GenericRouter<RequestType> = {
   route(path: string): SpecificRoute<RequestType>
 }
@@ -3624,6 +3629,7 @@ export declare class Module<RequestType> {
   controllers?: ClassType<unknown>[]
   initApi?: RemultServerOptions<RequestType>["initApi"]
   initRequest?: RemultServerOptions<RequestType>["initRequest"]
+  routes?: RemultServerOptions<RequestType>["routes"]
   modules?: Module<RequestType>[]
   constructor(options: ModuleInput<RequestType>)
 }
@@ -3636,6 +3642,7 @@ export interface ModuleInput<RequestType> {
   controllers?: ClassType<unknown>[]
   initApi?: RemultServerOptions<RequestType>["initApi"]
   initRequest?: RemultServerOptions<RequestType>["initRequest"]
+  routes?: RemultServerOptions<RequestType>["routes"]
   modules?: Module<RequestType>[]
 }
 export interface queuedJobInfo {
@@ -3763,6 +3770,31 @@ export interface RemultServerOptions<RequestType> {
     sendError: (httpStatusCode: number, body: any) => void
   }) => Promise<void> | undefined
   /**
+   * Adding some extra routes to your api.
+   *
+   * Note: this is primarily meant for module developers.
+   * As a user you should first make use of [Entities](https://remult.dev/docs/ref_entity) and [Backend Methods](https://remult.dev/docs/backendMethods)
+   *
+   * @example
+   * ```
+   * routes: {
+   *   '/new-route': async ({ res }) => {
+   *     res.json({ Soooooo: 'Cool! A new new-route!' })
+   *   },
+   * }
+   * ```
+   *
+   * This will add the route `/api/new-route` to the api.
+   */
+  routes?: Record<
+    /** It will automatically add the `rootPath` _(default: `/api`)_ to the route. */
+    `/${string}`,
+    | RouteInfoFn<RequestType>
+    | {
+        GET: RouteInfoFn<RequestType>
+      }
+  >
+  /**
    * Modules are here to group code by feature.
    *
    * @example
@@ -3785,6 +3817,7 @@ export interface RemultServerOptions<RequestType> {
 //[ ] SubscriptionServer from TBD is not exported
 //[ ] Allowed from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
+//[ ] RouteInfoFn from TBD is not exported
 export type SpecificRoute<RequestType> = {
   get(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
   put(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
@@ -3806,11 +3839,11 @@ export declare function TestApiDataProvider(
   options?: Pick<RemultServerOptions<unknown>, "ensureSchema" | "dataProvider">,
 ): RestDataProvider
 //[ ] RestDataProvider from TBD is not exported
-```
+````
 
 ## ./server/core.js
 
-```ts
+````ts
 export declare function createRemultServerCore<RequestType>(
   options: RemultServerOptions<RequestType>,
   serverCoreOptions: ServerCoreOptions<RequestType>,
@@ -3993,6 +4026,31 @@ export interface RemultServerOptions<RequestType> {
     sendError: (httpStatusCode: number, body: any) => void
   }) => Promise<void> | undefined
   /**
+   * Adding some extra routes to your api.
+   *
+   * Note: this is primarily meant for module developers.
+   * As a user you should first make use of [Entities](https://remult.dev/docs/ref_entity) and [Backend Methods](https://remult.dev/docs/backendMethods)
+   *
+   * @example
+   * ```
+   * routes: {
+   *   '/new-route': async ({ res }) => {
+   *     res.json({ Soooooo: 'Cool! A new new-route!' })
+   *   },
+   * }
+   * ```
+   *
+   * This will add the route `/api/new-route` to the api.
+   */
+  routes?: Record<
+    /** It will automatically add the `rootPath` _(default: `/api`)_ to the route. */
+    `/${string}`,
+    | RouteInfoFn<RequestType>
+    | {
+        GET: RouteInfoFn<RequestType>
+      }
+  >
+  /**
    * Modules are here to group code by feature.
    *
    * @example
@@ -4019,6 +4077,7 @@ export interface RemultServerOptions<RequestType> {
 //[ ] LiveQueryStorage from TBD is not exported
 //[ ] Allowed from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
+//[ ] RouteInfoFn from TBD is not exported
 //[ ] Module from TBD is not exported
 export type SpecificRoute<RequestType> = {
   get(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
@@ -4037,7 +4096,7 @@ export declare class SseSubscriptionServer implements SubscriptionServer {
   )
   publishMessage<T>(channel: string, message: any): Promise<void>
 }
-```
+````
 
 ## ./remult-fastify.js
 
