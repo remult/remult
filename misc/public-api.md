@@ -3617,6 +3617,27 @@ export declare class JsonEntityFileStorage implements JsonEntityStorage {
 export declare class JsonFileDataProvider extends JsonDataProvider {
   constructor(folderPath: string)
 }
+export declare class Module<RequestType> {
+  key: string
+  priority: number
+  entities?: ClassType<unknown>[]
+  controllers?: ClassType<unknown>[]
+  initApi?: RemultServerOptions<RequestType>["initApi"]
+  initRequest?: RemultServerOptions<RequestType>["initRequest"]
+  modules?: Module<RequestType>[]
+  constructor(options: ModuleInput<RequestType>)
+}
+//[ ] ClassType from TBD is not exported
+export interface ModuleInput<RequestType> {
+  key: string
+  /** @default 0 */
+  priority?: number
+  entities?: ClassType<unknown>[]
+  controllers?: ClassType<unknown>[]
+  initApi?: RemultServerOptions<RequestType>["initApi"]
+  initRequest?: RemultServerOptions<RequestType>["initRequest"]
+  modules?: Module<RequestType>[]
+}
 export interface queuedJobInfo {
   info: queuedJobInfoResponse
   userId: string
@@ -3741,8 +3762,25 @@ export interface RemultServerOptions<RequestType> {
     responseBody: any
     sendError: (httpStatusCode: number, body: any) => void
   }) => Promise<void> | undefined
+  /**
+   * Modules are here to group code by feature.
+   *
+   * @example
+   * import { Module } from 'remult/server'
+   *
+   * modules: [
+   *   new Module({
+   *     key: 'analytics',
+   *     entities: [AnalyticsEvent],
+   *     controllers: [AnalyticsController],
+   *     initApi: () => {
+   *       console.log('analytics module initialized')
+   *     },
+   *   }),
+   * ]
+   */
+  modules?: Module<RequestType>[]
 }
-//[ ] ClassType from TBD is not exported
 //[ ] UserInfo from TBD is not exported
 //[ ] SubscriptionServer from TBD is not exported
 //[ ] Allowed from TBD is not exported
@@ -3954,6 +3992,24 @@ export interface RemultServerOptions<RequestType> {
     responseBody: any
     sendError: (httpStatusCode: number, body: any) => void
   }) => Promise<void> | undefined
+  /**
+   * Modules are here to group code by feature.
+   *
+   * @example
+   * import { Module } from 'remult/server'
+   *
+   * modules: [
+   *   new Module({
+   *     key: 'analytics',
+   *     entities: [AnalyticsEvent],
+   *     controllers: [AnalyticsController],
+   *     initApi: () => {
+   *       console.log('analytics module initialized')
+   *     },
+   *   }),
+   * ]
+   */
+  modules?: Module<RequestType>[]
 }
 //[ ] ClassType from TBD is not exported
 //[ ] UserInfo from TBD is not exported
@@ -3963,6 +4019,7 @@ export interface RemultServerOptions<RequestType> {
 //[ ] LiveQueryStorage from TBD is not exported
 //[ ] Allowed from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
+//[ ] Module from TBD is not exported
 export type SpecificRoute<RequestType> = {
   get(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
   put(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
