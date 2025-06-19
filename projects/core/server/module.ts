@@ -9,6 +9,7 @@ export interface ModuleInput<RequestType> {
   controllers?: ClassType<unknown>[]
   initApi?: RemultServerOptions<RequestType>['initApi']
   initRequest?: RemultServerOptions<RequestType>['initRequest']
+  routes?: RemultServerOptions<RequestType>['routes']
   modules?: Module<RequestType>[]
 }
 
@@ -19,6 +20,7 @@ export class Module<RequestType> {
   controllers?: ClassType<unknown>[]
   initApi?: RemultServerOptions<RequestType>['initApi']
   initRequest?: RemultServerOptions<RequestType>['initRequest']
+  routes?: RemultServerOptions<RequestType>['routes']
   modules?: Module<RequestType>[]
 
   constructor(options: ModuleInput<RequestType>) {
@@ -28,6 +30,7 @@ export class Module<RequestType> {
     this.controllers = options.controllers
     this.initRequest = options.initRequest
     this.initApi = options.initApi
+    this.routes = options.routes
     this.modules = options.modules
   }
 }

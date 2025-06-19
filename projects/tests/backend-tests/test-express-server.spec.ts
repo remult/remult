@@ -1,7 +1,8 @@
 import express from 'express'
-import { type remultApiServer, remultApi } from '../../core/remult-express.js'
+import { remultApi } from '../../core/remult-express.js'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { Task, test_compound_id } from '../../test-servers/shared/Task.js'
+import { someRoutes } from '../../test-servers/shared/modules/someRoutes/server.js'
 import {
   InMemoryDataProvider,
   Remult,
@@ -29,7 +30,7 @@ describe('test express server', async () => {
       allow: true,
       customHtmlHead: (r) =>
         `<title>Test Admin (${r.user?.name ?? 'Anonymous'})</title>`,
-      disableLiveQuery: true
+      disableLiveQuery: true,
     },
     error: (e) => errorHandler?.(e),
     getUser: async () => {
@@ -40,6 +41,7 @@ describe('test express server', async () => {
         } satisfies ErrorInfo
       return undefined
     },
+    modules: [someRoutes],
   })
   const app = express.Router()
   app.use(api)
