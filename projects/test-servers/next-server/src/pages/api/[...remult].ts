@@ -14,6 +14,45 @@ const someRoutes = new Module({
         res.json({ 'new-route-2': req.url?.searchParams.get('param') })
       },
     },
+
+    '/crash-test': () => {
+      throw new Error('Server crash test')
+    },
+
+    '/html': ({ res }) => {
+      res.send('<h1>Hello World</h1>')
+    },
+
+    '/get-headers': ({ res, req }) => {
+      res.json({ reqHeaders: req.headers?.hello })
+    },
+
+    '/post-headers': {
+      POST: async ({ res, req }) => {
+        res.json({ reqHeaders: req.headers?.hello })
+      },
+    },
+
+    '/post-body-add': {
+      POST: async ({ res, req }) => {
+        const oldValue = (req.body as { count: number }).count
+        res.json({
+          newCount: oldValue + 1,
+          oldValue,
+        })
+      },
+    },
+
+    '/redirect': ({ res }) => {
+      res.redirect('/api/html')
+    },
+
+    '/redirect-ext': ({ res }) => {
+      const { redirect } = res
+      redirect(
+        'https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages',
+      )
+    },
   },
 })
 

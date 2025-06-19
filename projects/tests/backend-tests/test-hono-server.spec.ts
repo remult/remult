@@ -9,7 +9,7 @@ import { allServerTests } from './all-server-tests.js'
 import { remult } from '../../core/index.js'
 import { someRoutes } from '../../test-servers/shared/modules/someRoutes/server.js'
 
-describe('test holo server', async () => {
+describe('test hono server', async () => {
   let destroy: () => Promise<void>
   let port = 3012
 

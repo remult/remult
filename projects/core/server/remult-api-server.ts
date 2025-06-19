@@ -44,6 +44,7 @@ import remultAdminHtml, { buildEntityInfo } from './remult-admin.js'
 import { isOfType } from '../src/isOfType.js'
 import { initDataProviderOrJson } from './initDataProviderOrJson.js'
 import { modulesFlatAndOrdered, type Module } from './module.js'
+import type { ParseOptions, SerializeOptions } from '../src/remult-cookie.js'
 
 export interface RemultServerOptions<RequestType> {
   /**Entities to use for the api */
@@ -165,8 +166,8 @@ export interface RemultServerOptions<RequestType> {
     `/${string}`,
     | RouteInfoFn<RequestType>
     | {
-        GET: RouteInfoFn<RequestType>
-        // TODO FULL ROUTES...
+        GET?: RouteInfoFn<RequestType>
+        POST?: RouteInfoFn<RequestType>
       }
   >
 
@@ -197,12 +198,19 @@ export interface RouteInfoFn<RequestType> {
 interface GenericRequest {
   // TODO ROUTER: I would like this to not be optional!
   url?: URL
+  headers?: Record<string, string>
+  body?: any
 }
 
 export interface GenericRouteInfo {
   req: GenericRequest
   res: GenericResponse
-  // // TODO FULL ROUTES... cookies...
+  cookie(name: string): {
+    set(value: string, opts?: SerializeOptions): void
+    get(opts?: ParseOptions): string | undefined
+    delete(opts?: SerializeOptions): void
+  }
+  setHeaders(headers: Record<string, string>): void
 }
 
 export interface InitRequestOptions {
@@ -304,11 +312,28 @@ export interface GenericRequestInfo {
   method?: any
   query?: any
   params?: any
+  headers?: Record<string, string>
 }
 
 export interface GenericResponse {
   json(data: any): void
   send(html: string): void
+  /** default status is 307 */
+  redirect(
+    url: string,
+    /** The [HTTP status code](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#redirection_messages). Must be in the range 300-308. */
+    status?:
+      | 300
+      | 301
+      | 302
+      | 303
+      | 304
+      | 305
+      | 306
+      | 307
+      | 308
+      | ({} & number),
+  ): void
   status(statusCode: number): GenericResponse //exists for express and next and not in opine(In opine it's setStatus)
   end(): void
 }
@@ -624,19 +649,38 @@ export class RemultServerImplementation<RequestType>
         if (routes) {
           const objRoutes = Object.entries(routes)
           objRoutes.forEach(([subPathKey, handler]) => {
-            const handlerGET = isOfType<{
-              GET: any
-            }>(handler, 'GET')
-              ? handler.GET
-              : handler
+            const key = subPathKey.substring(1) // removing the first / (that is mandatory)
 
-            this.add({
-              key: subPathKey.substring(1), // removing the first / (that is mandatory)
-              dataApiFactory: undefined!,
-              r,
-              isExtraRoute: true,
-              handlerGET,
-            })
+            if (handler && 'GET' in handler) {
+              this.add({
+                key,
+                dataApiFactory: undefined!,
+                r,
+                isExtraRoute: true,
+                handlerGET: handler.GET,
+              })
+            }
+
+            if (handler && 'POST' in handler) {
+              this.add({
+                key,
+                dataApiFactory: undefined!,
+                r,
+                isExtraRoute: true,
+                handlerPOST: handler.POST,
+              })
+            }
+
+            // Fallback to GET if no other handler is defined
+            if (handler && !('GET' in handler || 'POST' in handler)) {
+              this.add({
+                key,
+                dataApiFactory: undefined!,
+                r,
+                isExtraRoute: true,
+                handlerGET: handler as RouteInfoFn<RequestType>,
+              })
+            }
           })
         }
       })
@@ -676,6 +720,7 @@ export class RemultServerImplementation<RequestType>
     r: GenericRouter<RequestType>
     isExtraRoute?: boolean
     handlerGET?: RouteInfoFn<RequestType>
+    handlerPOST?: RouteInfoFn<RequestType>
   }) {
     let myRoute = this.options.rootPath + '/' + options.key
     if (this.options.logApiEndPoints) {
@@ -699,15 +744,25 @@ export class RemultServerImplementation<RequestType>
                         'http://localhost',
                       )
                     : undefined,
+                  headers: genReq.headers,
                 },
+                cookie(name) {
+                  return {
+                    set(value, opts) {},
+                    get(opts) {
+                      return undefined
+                    },
+                    delete(opts) {},
+                  }
+                },
+                setHeaders(headers) {},
               },
               origReq,
             )
-          } else {
-            return options
-              .dataApiFactory(c)
-              .httpGet(res, req, () => this.serializeContext(c))
           }
+          return options
+            .dataApiFactory(c)
+            .httpGet(res, req, () => this.serializeContext(c))
         }),
       )
       .put(
@@ -727,16 +782,42 @@ export class RemultServerImplementation<RequestType>
         ),
       )
       .post(
-        this.process(async (c, req, res, _, __, orig) =>
-          options
+        this.process(async (c, req, res, genReq, origRes, origReq) => {
+          const body = await this.coreOptions.getRequestBody(origReq)
+          if (options.handlerPOST) {
+            return options.handlerPOST(
+              {
+                res: origRes,
+                req: {
+                  url: genReq.url
+                    ? new URL(
+                        genReq.url,
+                        // TODO ROUTER: improve buildGenericRequestInfo implem to get this ?
+                        'http://localhost',
+                      )
+                    : undefined,
+                  headers: genReq.headers,
+                  body,
+                },
+                cookie(name) {
+                  return {
+                    set(value, opts) {},
+                    get(opts) {
+                      return undefined
+                    },
+                    delete(opts) {},
+                  }
+                },
+                setHeaders(headers) {},
+              },
+              origReq,
+            )
+          }
+
+          return options
             .dataApiFactory(c)
-            .httpPost(
-              res,
-              req,
-              await this.coreOptions.getRequestBody(orig),
-              () => this.serializeContext(c),
-            ),
-        ),
+            .httpPost(res, req, body, () => this.serializeContext(c))
+        }),
       )
     options.r
       .route(myRoute + '/:id')
@@ -1624,6 +1705,14 @@ export class RouteImplementation<RequestType> {
           res({
             statusCode: this.statusCode,
           })
+        }
+        redirect(url: string, statusCode?: number): void {
+          if (statusCode) {
+            this.statusCode = statusCode
+          } else if (this.statusCode < 300 || this.statusCode >= 400) {
+            this.statusCode = 307
+          }
+          if (gRes !== undefined) gRes.redirect(url, this.statusCode)
         }
       })()
       try {

@@ -31,6 +31,7 @@ export function remultApi(
         on: (e: 'close', do1: VoidFunction) => {
           req.raw.req.on('close', do1)
         },
+        headers: req.headers,
       }
     },
     getRequestBody: async (req) => req.payload,
@@ -70,6 +71,14 @@ export function remultApi(
                     .response(stream)
                     .header('content-type', 'text/event-stream')
                     .header('content-encoding', 'identity'),
+                )
+              },
+              redirect(url, status: number) {
+                res(
+                  h
+                    .response()
+                    .redirect(url)
+                    .code(status ?? 307),
                 )
               },
             }
