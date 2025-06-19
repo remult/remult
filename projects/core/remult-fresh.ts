@@ -14,6 +14,8 @@ export function remultApi(
       return {
         ...r,
         headers: {},
+        // @ts-ignore
+        on: r.on,
       }
     },
     getRequestBody: (req) => req.json(),

@@ -32,6 +32,7 @@ export function remultApi(
     buildGenericRequestInfo: (req) => ({
       ...req,
       headers: req.headers as Record<string, string>,
+      on: req.on,
     }),
     getRequestBody: async (req) => req.body,
   }) as RemultServerImplementation<express.Request>

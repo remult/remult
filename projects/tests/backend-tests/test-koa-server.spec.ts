@@ -23,7 +23,7 @@ describe.skipIf(process.env['SKIP_KOA'])('test koa server', async () => {
       app.use(async (ctx, next) => {
         const r = await api.handle(ctx.request)
         if (r) {
-          ctx.response.body = r.data == null ? 'null' : r.data
+          ctx.response.body = r.data == null ? r.html ?? 'null' : r.data
           ctx.response.status = r.statusCode
         } else return await next()
       })
@@ -40,7 +40,7 @@ describe.skipIf(process.env['SKIP_KOA'])('test koa server', async () => {
     })
   })
 
-  allServerTests(port, { skipLiveQuery: true, skipSendHtml: true })
+  allServerTests(port, { skipLiveQuery: true })
   afterAll(async () => {
     RemultAsyncLocalStorage.disable()
     return destroy()

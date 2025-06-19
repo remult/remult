@@ -18,11 +18,13 @@ export function remultNext(
   options: RemultServerOptions<NextApiRequest>,
 ): RemultNextServer {
   let result = createRemultServer(options, {
-    // TODO ROUTE: Why do we need to write it like this ?
-    buildGenericRequestInfo: (req) => req as any,
-    // buildGenericRequestInfo: (req) => {
-    //   return { ...req, headers: req.headers as Record<string, string> }
-    // },
+    buildGenericRequestInfo: (req) => {
+      return {
+        ...req,
+        headers: req.headers as Record<string, string>,
+        on: req.on,
+      }
+    },
     getRequestBody: async (req) => await req.body,
   })
   return Object.assign(

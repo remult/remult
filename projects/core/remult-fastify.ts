@@ -60,6 +60,8 @@ export function remultApi(
         ...req,
         url: req.originalUrl,
         headers: req.headers as Record<string, string>,
+        // @ts-ignore
+        on: req.on,
       }
     },
     getRequestBody: async (req) => req.body,
