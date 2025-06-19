@@ -1,10 +1,12 @@
 <script lang="ts">
-  import { repo } from "remult";
+  import { EntityError, repo } from "remult";
   import { Task } from "./Task";
   import Tile from "../Tile.svelte";
 
   let tasks: Task[] = $state([]);
   let hideCompleted = $state(false);
+  let task = $state(repo(Task).create());
+  let errorMsg = $state("");
 
   function toggleHideCompleted() {
     hideCompleted = !hideCompleted;
@@ -35,14 +37,18 @@
     }
   });
 
-  let newTaskTitle = $state("");
-  const addTask = async (event: Event) => {
-    event.preventDefault();
-    const newTask = await repo(Task).insert({ title: newTaskTitle });
-    if (!liveQuery) {
-      tasks.unshift(newTask);
+  const addTask = async (e: Event) => {
+    e.preventDefault();
+    errorMsg = "";
+    try {
+      const newTask = await repo(Task).insert(task);
+      if (!liveQuery) {
+        tasks.unshift(newTask);
+      }
+      task = repo(Task).create();
+    } catch (error) {
+      errorMsg = error instanceof EntityError ? error.message : "Unknown error";
     }
-    newTaskTitle = "";
   };
 
   const setCompleted = async (task: Task, completed: boolean) => {
@@ -66,9 +72,14 @@
   status="Info"
 >
   <main>
+    {#if errorMsg}
+      <div class="message error">
+        <p>{errorMsg}</p>
+      </div>
+    {/if}
     <form onsubmit={addTask}>
       <input
-        bind:value={newTaskTitle}
+        bind:value={task.title}
         placeholder="What needs to be done?"
         type="text"
       />
