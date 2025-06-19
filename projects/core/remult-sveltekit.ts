@@ -38,12 +38,12 @@ export function remultApi(
     let sseResponse: Response | undefined = undefined
     ;(event.locals as any)['_tempOnClose'] = () => {}
 
-    const response: GenericResponse & ResponseRequiredForSSE = {
+    const res: GenericResponse & ResponseRequiredForSSE = {
       end: () => {},
       json: () => {},
       send: () => {},
       status: () => {
-        return response
+        return res
       },
       write: () => {},
       writeHead: (status, headers) => {
@@ -51,18 +51,18 @@ export function remultApi(
           const contentType = headers['Content-Type']
           if (contentType === 'text/event-stream') {
             const messages: string[] = []
-            response.write = (x) => messages.push(x)
+            res.write = (x) => messages.push(x)
             const stream = new ReadableStream({
               start: (controller) => {
                 for (const message of messages) {
                   controller.enqueue(message)
                 }
-                response.write = (data) => {
+                res.write = (data) => {
                   controller.enqueue(data)
                 }
               },
               cancel: () => {
-                response.write = () => {}
+                res.write = () => {}
                 ;(event.locals as any)['_tempOnClose']()
               },
             })
@@ -73,7 +73,7 @@ export function remultApi(
       redirect() {},
     }
 
-    const responseFromRemultHandler = await result.handle(event, response)
+    const responseFromRemultHandler = await result.handle(event, res)
     if (sseResponse !== undefined) {
       return sseResponse
     }
