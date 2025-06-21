@@ -72,6 +72,7 @@
     "axios": "^0.28.0",
     "better-sqlite3": "^9.1.1",
     "class-validator": "^0.14.0",
+    "cloudflare": "^4.4.1",
     "concurrently": "^7.2.2",
     "copyfiles": "^2.4.1",
     "dependency-cruiser": "^13.1.5",
@@ -121,8 +122,5 @@
     "argon2": false,
     "password-hash": false,
     "fs": false
-  },
-  "peerDependencies": {
-    "cloudflare": "^4.3.0"
   }
 }
