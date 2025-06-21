@@ -99,7 +99,7 @@ export function remultApi(
     getRemult: (req: RequestEvent) => result.getRemult(req),
     openApiDoc: (options: { title: string }) => result.openApiDoc(options),
     async withRemult<T>(what: () => Promise<T>): Promise<T> {
-      return result.withRemultAsync(getRequestEvent(), what)
+      return result.withRemultAsync(await getRequestEvent(), what)
     },
     GET: serverHandler,
     PUT: serverHandler,
