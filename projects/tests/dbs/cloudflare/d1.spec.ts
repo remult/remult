@@ -1,5 +1,3 @@
-/// <reference types="./worker-configuration.d.ts" />
-
 import { it, describe, expect, beforeEach, beforeAll, afterAll } from 'vitest'
 import { Remult, SqlDatabase } from '../../../core'
 
@@ -22,7 +20,7 @@ describe('d1', () => {
   beforeAll(async () => {
     const configPath = path.relative(".", path.join(dirname(fileURLToPath(import.meta.url)), "wrangler.jsonc"))
     const { env, dispose } = await getPlatformProxy<Env>({ configPath })
-    d1DataProvider = new D1DataProvider(new D1BindingClient(env.D1_TEST_DB))
+    d1DataProvider = new D1DataProvider(new D1BindingClient((env as { D1_TEST_DB: D1Database }).D1_TEST_DB))
     closePlatformProxy = dispose
   })
 
@@ -42,7 +40,7 @@ describe('d1', () => {
     createEntity: async (entity) => {
       const repo = remult.repo(entity)
       await db.execute(
-        'drop table if exists ' + db.wrapIdentifier(repo.metadata.dbName),
+        `drop table if exists ${db.wrapIdentifier(repo.metadata.dbName)}`,
       )
       await db.ensureSchema([repo.metadata])
       return repo
