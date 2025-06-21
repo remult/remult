@@ -17,10 +17,15 @@ describe('d1', () => {
   let db: SqlDatabase
   let remult: Remult
 
+  type Env = {
+    // declare Env so we don't have to include worker-configuration.d.ts
+    D1_TEST_DB: D1Database
+  }
+
   beforeAll(async () => {
     const configPath = path.relative(".", path.join(dirname(fileURLToPath(import.meta.url)), "wrangler.jsonc"))
     const { env, dispose } = await getPlatformProxy<Env>({ configPath })
-    d1DataProvider = new D1DataProvider(new D1BindingClient((env as { D1_TEST_DB: D1Database }).D1_TEST_DB))
+    d1DataProvider = new D1DataProvider(new D1BindingClient(env.D1_TEST_DB))
     closePlatformProxy = dispose
   })
 
