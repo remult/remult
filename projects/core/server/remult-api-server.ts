@@ -43,6 +43,7 @@ import { remultStatic } from '../src/remult-static.js'
 import remultAdminHtml, { buildEntityInfo } from './remult-admin.js'
 import { isOfType } from '../src/isOfType.js'
 import { initDataProviderOrJson } from './initDataProviderOrJson.js'
+import { modulesFlatAndOrdered, type Module } from './module.js'
 
 export interface RemultServerOptions<RequestType> {
   /**Entities to use for the api */
@@ -141,6 +142,25 @@ export interface RemultServerOptions<RequestType> {
     responseBody: any
     sendError: (httpStatusCode: number, body: any) => void
   }) => Promise<void> | undefined
+
+  /**
+   * Modules are here to group code by feature.
+   *
+   * @example
+   * import { Module } from 'remult/server'
+   *
+   * modules: [
+   *   new Module({
+   *     key: 'analytics',
+   *     entities: [AnalyticsEvent],
+   *     controllers: [AnalyticsController],
+   *     initApi: () => {
+   *       console.log('analytics module initialized')
+   *     },
+   *   }),
+   * ]
+   */
+  modules?: Module<RequestType>[]
 }
 
 export interface InitRequestOptions {
@@ -264,6 +284,9 @@ export class RemultServerImplementation<RequestType>
   implements RemultServer<RequestType>
 {
   liveQueryStorage: LiveQueryStorage = new InMemoryLiveQueryStorage()
+  modulesSorted: Module<RequestType>[] = []
+  entities: ClassType<any>[] = []
+  controllers: ClassType<any>[] = []
   constructor(
     public queue: inProcessQueueHandler,
     public options: RemultServerOptions<any>,
@@ -275,6 +298,19 @@ export class RemultServerImplementation<RequestType>
     if (options.subscriptionServer)
       this.subscriptionServer = options.subscriptionServer
     const entitiesMetaData: EntityMetadata[] = []
+    const modules = options.modules ?? []
+    modules.push({
+      key: 'default',
+      priority: 0,
+      entities: options.entities ?? [],
+      controllers: options.controllers ?? [],
+      initApi: options.initApi,
+      initRequest: options.initRequest,
+      modules: [],
+    })
+    this.modulesSorted = modulesFlatAndOrdered<RequestType>(modules)
+    this.entities = this.modulesSorted.flatMap((m) => m.entities ?? [])
+    this.controllers = this.modulesSorted.flatMap((m) => m.controllers ?? [])
 
     this.dataProvider = dataProvider.then(async (dp) => {
       await this.runWithRemult(
@@ -287,9 +323,9 @@ export class RemultServerImplementation<RequestType>
               started = true
               console.time('Schema ensured')
             }
-            if (options.entities)
+            if (this.entities)
               entitiesMetaData.push(
-                ...options.entities!.map((e) => remult.repo(e).metadata),
+                ...this.entities.map((e) => remult.repo(e).metadata),
               )
             if (dp.ensureSchema) {
               startConsoleLog()
@@ -306,7 +342,12 @@ export class RemultServerImplementation<RequestType>
             }
             if (started) console.timeEnd('Schema ensured')
           }
-          if (options.initApi) await options.initApi(remult)
+          for (let i = 0; i < this.modulesSorted.length; i++) {
+            const _initApi = this.modulesSorted[i].initApi
+            if (_initApi) {
+              await _initApi(remult)
+            }
+          }
         },
         { skipDataProvider: true },
       )
@@ -333,7 +374,7 @@ export class RemultServerImplementation<RequestType>
   getEntities(): EntityMetadata<any>[] {
     //TODO V2 - consider using entitiesMetaData - but it may require making it all awaitable
     var r = new Remult()
-    return this.options.entities!.map((x) => r.repo(x).metadata)
+    return this.entities.map((x) => r.repo(x).metadata)
   }
 
   runWithSerializedJsonContextData: PerformWithContext = async (
@@ -341,7 +382,7 @@ export class RemultServerImplementation<RequestType>
     entityKey,
     what,
   ) => {
-    for (const e of this.options.entities!) {
+    for (const e of this.entities) {
       let key = getEntityKey(e)
       if (key === entityKey) {
         await this.runWithRemult(async (remult) => {
@@ -401,7 +442,7 @@ export class RemultServerImplementation<RequestType>
     if (this.registeredRouter) throw 'Router already registered'
     this.registeredRouter = true
     {
-      for (const c of this.options.controllers!) {
+      for (const c of this.controllers!) {
         let z = (c as any)[classBackendMethodsArray]
         if (z)
           for (const a of z) {
@@ -450,7 +491,7 @@ export class RemultServerImplementation<RequestType>
                 res.success(
                   buildEntityInfo({
                     remult,
-                    entities: this.options.entities ?? [],
+                    entities: this.entities,
                   }),
                 )
               } else {
@@ -541,7 +582,7 @@ export class RemultServerImplementation<RequestType>
       )
     }
 
-    this.options.entities?.forEach((e) => {
+    this.entities.forEach((e) => {
       this.addEntity(e, getEntityKey(e), r)
     })
   }
@@ -725,17 +766,20 @@ export class RemultServerImplementation<RequestType>
                 }
                 if (user) remult.user = user
 
-                if (this.options.initRequest) {
-                  await this.options.initRequest(req, {
-                    remult,
-                    get liveQueryStorage() {
-                      return remult.liveQueryStorage!
-                    },
-                    set liveQueryStorage(value: LiveQueryStorage) {
-                      remult.liveQueryStorage = value
-                    },
-                    req: genReqPublic,
-                  })
+                for (let i = 0; i < this.modulesSorted.length; i++) {
+                  const _initRequest = this.modulesSorted[i].initRequest
+                  if (_initRequest) {
+                    await _initRequest(req, {
+                      remult,
+                      get liveQueryStorage() {
+                        return remult.liveQueryStorage!
+                      },
+                      set liveQueryStorage(value: LiveQueryStorage) {
+                        remult.liveQueryStorage = value
+                      },
+                      req: genReqPublic,
+                    })
+                  }
                 }
                 await what(remult, myReq, myRes, genReq, origRes, req)
               } finally {
