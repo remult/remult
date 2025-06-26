@@ -3592,7 +3592,9 @@ export interface GenericRequestInfo {
   method?: any
   query?: any
   params?: any
+  headers: Headers
 }
+//[ ] Headers from TBD is not exported
 export interface GenericResponse {
   json(data: any): void
   send(html: string): void
@@ -3605,6 +3607,10 @@ export type GenericRouter<RequestType> = {
 export interface InitRequestOptions {
   liveQueryStorage: LiveQueryStorage
   readonly remult: Remult
+  /** generic request. */
+  gReq: {
+    headers: GenericRequestInfo["headers"]
+  }
 }
 //[ ] LiveQueryStorage from TBD is not exported
 //[ ] Remult from TBD is not exported
@@ -3815,7 +3821,9 @@ export interface GenericRequestInfo {
   method?: any
   query?: any
   params?: any
+  headers: Headers
 }
+//[ ] Headers from TBD is not exported
 export interface GenericResponse {
   json(data: any): void
   send(html: string): void

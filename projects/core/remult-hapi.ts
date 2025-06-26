@@ -30,6 +30,7 @@ export function remultApi(
       on: (e: 'close', do1: VoidFunction) => {
         req.raw.req.on('close', do1)
       },
+      headers: new Headers(req.headers),
     }),
     getRequestBody: async (req) => req.payload,
   })
@@ -80,7 +81,7 @@ export function remultApi(
                   })
                 },
               })
-              handler(request as any, r, () => { })
+              handler(request as any, r, () => {})
             } catch (err) {
               rej(err)
             }

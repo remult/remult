@@ -20,22 +20,23 @@ export function remultApi(
           event.locals['_tempOnClose'] = do1
         }
       },
+      headers: new Headers(event.request.headers),
     }),
     getRequestBody: (event) => event.request.json(),
   })
   const serverHandler = async () => {
     const event = await getRequestEvent()
     let sseResponse: Response | undefined = undefined
-    if (event) event.locals['_tempOnClose'] = () => { }
+    if (event) event.locals['_tempOnClose'] = () => {}
 
     const response: GenericResponse & ResponseRequiredForSSE = {
-      end: () => { },
-      json: () => { },
-      send: () => { },
+      end: () => {},
+      json: () => {},
+      send: () => {},
       status: () => {
         return response
       },
-      write: () => { },
+      write: () => {},
       writeHead: (status, headers) => {
         if (status === 200 && headers) {
           const contentType = headers['Content-Type']
@@ -52,7 +53,7 @@ export function remultApi(
                 }
               },
               cancel: () => {
-                response.write = () => { }
+                response.write = () => {}
                 event?.locals?.['_tempOnClose']?.()
               },
             })

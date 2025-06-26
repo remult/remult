@@ -21,6 +21,7 @@ export function remultApi(
           event.node.req.on('close', () => {
             b()
           }),
+        headers: new Headers(event.node.req.headers as Record<string, string>),
       }
     },
     getRequestBody: async (event) => await readBody(event),
@@ -29,9 +30,9 @@ export function remultApi(
     let sse = false
 
     const response: GenericResponse & ResponseRequiredForSSE = {
-      end: () => { },
-      send: () => { },
-      json: () => { },
+      end: () => {},
+      send: () => {},
+      json: () => {},
       status: () => {
         return response
       },

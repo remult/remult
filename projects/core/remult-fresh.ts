@@ -1,4 +1,4 @@
-import { } from './server/core.js'
+import {} from './server/core.js'
 import type {
   RemultServerCore,
   RemultServerOptions,
@@ -10,7 +10,14 @@ export function remultApi(
   response: FreshResponse,
 ): RemultFresh {
   const server = createRemultServerCore<FreshRequest>(options, {
-    buildGenericRequestInfo: (r) => r,
+    buildGenericRequestInfo: (r) => {
+      return {
+        ...r,
+        headers: new Headers(),
+        // @ts-ignore
+        on: r.on,
+      }
+    },
     getRequestBody: (req) => req.json(),
   })
   return {
@@ -43,7 +50,7 @@ export interface FreshContext {
   next: () => Promise<any>
 }
 export interface FreshResponse {
-  new(body?: any | undefined, init?: ResponseInit): any
+  new (body?: any | undefined, init?: ResponseInit): any
   json(data: unknown, init?: ResponseInit): any
 }
 

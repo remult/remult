@@ -60,23 +60,27 @@ export function TestApiDataProvider(
           handleOnServer({
             url: url,
             method: 'GET',
+            headers: new Headers(),
           }),
         put: (url, body) =>
           handleOnServer({
             method: 'PUT',
             url: url,
             body: body,
+            headers: new Headers(),
           }),
         post: (url, body) =>
           handleOnServer({
             method: 'POST',
             url: url,
             body,
+            headers: new Headers(),
           }),
         delete: (url) =>
           handleOnServer({
             method: 'DELETE',
             url: url,
+            headers: new Headers(),
           }),
       },
     }),

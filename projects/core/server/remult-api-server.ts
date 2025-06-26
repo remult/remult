@@ -146,6 +146,11 @@ export interface RemultServerOptions<RequestType> {
 export interface InitRequestOptions {
   liveQueryStorage: LiveQueryStorage
   readonly remult: Remult
+  /** generic request. */
+  gReq: {
+    // let's add stuff one by one for now.
+    headers: GenericRequestInfo['headers']
+  }
 }
 
 export function createRemultServerCore<RequestType>(
@@ -242,6 +247,8 @@ export interface GenericRequestInfo {
   method?: any
   query?: any
   params?: any
+
+  headers: Headers
 }
 
 export interface GenericResponse {
@@ -349,6 +356,9 @@ export class RemultServerImplementation<RequestType>
                 },
                 set liveQueryStorage(value: LiveQueryStorage) {
                   remult.liveQueryStorage = value
+                },
+                gReq: {
+                  headers: new Headers(),
                 },
               },
             )
@@ -665,7 +675,9 @@ export class RemultServerImplementation<RequestType>
     doNotReuseInitRequest?: boolean,
   ) {
     return async (req: RequestType, origRes: GenericResponse) => {
-      const genReq = req ? this.coreOptions.buildGenericRequestInfo(req) : {}
+      const genReq = req
+        ? this.coreOptions.buildGenericRequestInfo(req)
+        : { headers: new Headers() }
       if (req) {
         if (!genReq.query) {
           genReq.query = (req as any)['_tempQuery']
@@ -715,6 +727,9 @@ export class RemultServerImplementation<RequestType>
                     },
                     set liveQueryStorage(value: LiveQueryStorage) {
                       remult.liveQueryStorage = value
+                    },
+                    gReq: {
+                      headers: new Headers(),
                     },
                   })
                 }
