@@ -23,7 +23,8 @@ describe('test router impl', async () => {
       res.json(req.params)
     })
 
-    expect(await r.handle({ url: '/a', method: 'GET' })).toMatchInlineSnapshot(`
+    expect(await r.handle({ url: '/a', method: 'GET', headers: new Headers() }))
+      .toMatchInlineSnapshot(`
       {
         "data": {
           "ok": true,
@@ -31,8 +32,9 @@ describe('test router impl', async () => {
         "statusCode": 200,
       }
     `)
-    expect(await r.handle({ url: '/a/123', method: 'GET' }))
-      .toMatchInlineSnapshot(`
+    expect(
+      await r.handle({ url: '/a/123', method: 'GET', headers: new Headers() }),
+    ).toMatchInlineSnapshot(`
         {
           "data": {
             "id": "123",
@@ -41,7 +43,11 @@ describe('test router impl', async () => {
         }
       `)
     expect(
-      await r.handle({ url: '/a/sdgbsdfgbfds%2Csdfgsdfgbs', method: 'GET' }),
+      await r.handle({
+        url: '/a/sdgbsdfgbfds%2Csdfgsdfgbs',
+        method: 'GET',
+        headers: new Headers(),
+      }),
     ).toMatchInlineSnapshot(`
       {
         "data": {
@@ -70,8 +76,9 @@ describe('test router impl', async () => {
       res.json(req.params)
     })
 
-    expect(await r.handle({ url: '/aBc', method: 'GET' }))
-      .toMatchInlineSnapshot(`
+    expect(
+      await r.handle({ url: '/aBc', method: 'GET', headers: new Headers() }),
+    ).toMatchInlineSnapshot(`
       {
         "data": {
           "ok": true,
@@ -79,8 +86,13 @@ describe('test router impl', async () => {
         "statusCode": 200,
       }
     `)
-    expect(await r.handle({ url: '/aBc/123', method: 'GET' }))
-      .toMatchInlineSnapshot(`
+    expect(
+      await r.handle({
+        url: '/aBc/123',
+        method: 'GET',
+        headers: new Headers(),
+      }),
+    ).toMatchInlineSnapshot(`
         {
           "data": {
             "id": "123",
@@ -89,7 +101,11 @@ describe('test router impl', async () => {
         }
       `)
     expect(
-      await r.handle({ url: '/aBc/sdgbsdfgbfds%2Csdfgsdfgbs', method: 'GET' }),
+      await r.handle({
+        url: '/aBc/sdgbsdfgbfds%2Csdfgsdfgbs',
+        method: 'GET',
+        headers: new Headers(),
+      }),
     ).toMatchInlineSnapshot(`
       {
         "data": {
@@ -115,7 +131,8 @@ describe('test router impl', async () => {
       res.end()
     })
 
-    expect(await r.handle({ url: '/a', method: 'GET' })).toMatchInlineSnapshot(`
+    expect(await r.handle({ url: '/a', method: 'GET', headers: new Headers() }))
+      .toMatchInlineSnapshot(`
       {
         "data": {
           "ok": true,
@@ -123,8 +140,9 @@ describe('test router impl', async () => {
         "statusCode": 200,
       }
     `)
-    expect(await r.handle({ url: '/a/', method: 'GET' }))
-      .toMatchInlineSnapshot(`
+    expect(
+      await r.handle({ url: '/a/', method: 'GET', headers: new Headers() }),
+    ).toMatchInlineSnapshot(`
     {
       "data": {
         "ok": true,
@@ -132,8 +150,13 @@ describe('test router impl', async () => {
       "statusCode": 200,
     }
   `)
-    expect(await r.handle({ url: '/a/tasks', method: 'GET' }))
-      .toMatchInlineSnapshot(`
+    expect(
+      await r.handle({
+        url: '/a/tasks',
+        method: 'GET',
+        headers: new Headers(),
+      }),
+    ).toMatchInlineSnapshot(`
       {
         "data": {
           "ok": true,

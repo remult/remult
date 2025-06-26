@@ -729,7 +729,7 @@ export class RemultServerImplementation<RequestType>
                       remult.liveQueryStorage = value
                     },
                     gReq: {
-                      headers: new Headers(),
+                      headers: genReq.headers,
                     },
                   })
                 }
