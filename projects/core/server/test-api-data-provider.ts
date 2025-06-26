@@ -10,7 +10,7 @@ import {
 import type { RemultServerOptions } from './index.js'
 import {
   createRemultServerCore,
-  type GenericRequestInternal,
+  type GenericRequestInfo,
   type RemultServerImplementation,
 } from './remult-api-server.js'
 import { remultStatic } from '../src/remult-static.js'
@@ -26,9 +26,7 @@ export function TestApiDataProvider(
     return new InMemoryDataProvider()
   })
 
-  const server = createRemultServerCore<
-    GenericRequestInternal & { body?: any }
-  >(
+  const server = createRemultServerCore<GenericRequestInfo & { body?: any }>(
     { ...options, dataProvider: dp },
     {
       getRequestBody: async (req) => req.body,
@@ -38,10 +36,10 @@ export function TestApiDataProvider(
       }),
       ignoreAsyncStorage: true,
     },
-  ) as RemultServerImplementation<GenericRequestInternal & { body?: any }>
+  ) as RemultServerImplementation<GenericRequestInfo & { body?: any }>
 
   const lock = new AsyncLock()
-  async function handleOnServer(req: GenericRequestInternal & { body?: any }) {
+  async function handleOnServer(req: GenericRequestInfo & { body?: any }) {
     return lock.runExclusive(async () => {
       return await MakeServerCallWithDifferentStaticRemult(async () => {
         if (newEntities.length > 0 && options?.ensureSchema != false) {

@@ -1,7 +1,7 @@
 export {
   type queuedJobInfo,
   type QueueStorage,
-  type GenericRequestInternal,
+  type GenericRequestInfo,
   type GenericRequestHandler,
   type GenericResponse,
   type GenericRouter,

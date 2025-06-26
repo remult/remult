@@ -31,7 +31,6 @@ export function remultApi(
           url: c.req.url,
           on: (e: 'close', do1: VoidFunction) => {
             ;(c as any)['_tempOnClose'](() => do1())
-            //   c.req.on('close', do1)
           },
         },
         public: { headers: new Headers(c.req.header()) },

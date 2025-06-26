@@ -52,17 +52,15 @@ export function remultApi(
     return response
   }
   const api = createRemultServer(options, {
-    buildGenericRequestInfo: (req) => {
-      return {
-        internal: {
-          ...req,
-          url: req.originalUrl,
-          // @ts-ignore
-          on: req.on,
-        },
-        public: { headers: new Headers(req.headers as any) },
-      }
-    },
+    buildGenericRequestInfo: (req) => ({
+      internal: {
+        ...req,
+        url: req.originalUrl,
+        // @ts-ignore
+        on: req.on,
+      },
+      public: { headers: new Headers(req.headers as any) },
+    }),
     getRequestBody: async (req) => req.body,
   })
   const pluginFunction: FastifyPluginCallback = async (

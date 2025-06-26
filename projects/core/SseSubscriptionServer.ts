@@ -1,5 +1,5 @@
 import { v4 as uuid } from 'uuid'
-import type { GenericRequestInternal, GenericResponse } from './server/index.js'
+import type { GenericRequestInfo, GenericResponse } from './server/index.js'
 import type { Remult } from './src/context.js'
 import type { DataApiResponse } from './src/data-api.js'
 import { ConnectionNotFoundError } from './src/live-query/SseSubscriptionClient.js'
@@ -60,7 +60,7 @@ export class SseSubscriptionServer implements SubscriptionServer {
 
   //@internal
   openHttpServerStream(
-    req: GenericRequestInternal,
+    req: GenericRequestInfo,
     res: GenericResponse & ResponseRequiredForSSE,
   ) {
     res.writeHead(200, {

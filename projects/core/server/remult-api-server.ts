@@ -264,7 +264,7 @@ export interface GenericRequest {
   headers: Headers
 }
 
-export interface GenericRequestInternal {
+export interface GenericRequestInfo {
   url?: string //optional for next
   method?: any
   query?: any
@@ -709,7 +709,7 @@ export class RemultServerImplementation<RequestType>
       remult: Remult,
       myReq: DataApiRequest,
       myRes: DataApiResponse,
-      genReq: GenericRequestInternal,
+      genReq: GenericRequestInfo,
       origRes: GenericResponse,
       origReq: RequestType,
     ) => Promise<void>,
@@ -720,7 +720,7 @@ export class RemultServerImplementation<RequestType>
         internal: genReq,
         public: genReqPublic,
       }: {
-        internal: GenericRequestInternal
+        internal: GenericRequestInfo
         public: GenericRequest
       } = req
         ? this.coreOptions.buildGenericRequestInfo(req)
@@ -1238,7 +1238,7 @@ class RequestBridgeToDataApiRequest implements DataApiRequest {
     return this.r?.query[key]
   }
 
-  constructor(private r: GenericRequestInternal | undefined) {}
+  constructor(private r: GenericRequestInfo | undefined) {}
 }
 class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
   forbidden(message = 'Forbidden'): void {
@@ -1250,7 +1250,7 @@ class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
   constructor(
     private r: GenericResponse,
     private req: RequestType | undefined,
-    private genReq: GenericRequestInternal,
+    private genReq: GenericRequestInfo,
     private handleError: RemultServerOptions<RequestType>['error'] | undefined,
   ) {}
   progress(progress: number): void {}
@@ -1647,7 +1647,7 @@ remultStatic.allEntities.splice(
 
 export interface ServerCoreOptions<RequestType> {
   buildGenericRequestInfo(req: RequestType): {
-    internal: GenericRequestInternal
+    internal: GenericRequestInfo
     public: GenericRequest
   }
   getRequestBody(req: RequestType): Promise<any>

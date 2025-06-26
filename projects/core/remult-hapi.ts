@@ -24,9 +24,7 @@ export function remultApi(
   const api = createRemultServer(options, {
     buildGenericRequestInfo: (req) => ({
       internal: {
-        method: req.method,
-        params: req.params,
-        query: req.query,
+        ...req,
         url: req.url.pathname,
         on: (e: 'close', do1: VoidFunction) => {
           req.raw.req.on('close', do1)

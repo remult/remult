@@ -18,15 +18,10 @@ export function remultNext(
   options: RemultServerOptions<NextApiRequest>,
 ): RemultNextServer {
   let result = createRemultServer(options, {
-    buildGenericRequestInfo: (req) => {
-      return {
-        internal: {
-          ...req,
-          on: req.on,
-        },
-        public: { headers: new Headers(req.headers as Record<string, string>) },
-      }
-    },
+    buildGenericRequestInfo: (req) => ({
+      internal: { ...req, on: req.on },
+      public: { headers: new Headers(req.headers as Record<string, string>) },
+    }),
     getRequestBody: async (req) => req.body,
   })
   return Object.assign(

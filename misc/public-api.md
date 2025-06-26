@@ -3587,7 +3587,7 @@ export type GenericRequestHandler<RequestType> = (
   res: GenericResponse,
   next: VoidFunction,
 ) => void
-export interface GenericRequestInternal {
+export interface GenericRequestInfo {
   url?: string
   method?: any
   query?: any
@@ -3851,7 +3851,7 @@ export type GenericRequestHandler<RequestType> = (
   res: GenericResponse,
   next: VoidFunction,
 ) => void
-export interface GenericRequestInternal {
+export interface GenericRequestInfo {
   url?: string
   method?: any
   query?: any

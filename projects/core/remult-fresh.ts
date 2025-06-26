@@ -10,16 +10,11 @@ export function remultApi(
   response: FreshResponse,
 ): RemultFresh {
   const server = createRemultServerCore<FreshRequest>(options, {
-    buildGenericRequestInfo: (r) => {
-      return {
-        internal: {
-          ...r,
-          // @ts-ignore
-          on: r.on,
-        },
-        public: { headers: (r as any).headers },
-      }
-    },
+    buildGenericRequestInfo: (r) => ({
+      // @ts-ignore
+      internal: { ...r, on: r.on },
+      public: { headers: (r as any).headers },
+    }),
     getRequestBody: (req) => req.json(),
   })
   return {

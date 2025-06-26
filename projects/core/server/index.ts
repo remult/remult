@@ -6,7 +6,7 @@ import type {
 } from './remult-api-server.js'
 import {
   createRemultServerCore,
-  type GenericRequestInternal,
+  type GenericRequestInfo,
 } from './remult-api-server.js'
 import { initAsyncHooks } from './initAsyncHooks.js'
 import { cast } from '../src/isOfType.js'
@@ -19,7 +19,7 @@ export {
 export { TestApiDataProvider } from './test-api-data-provider.js'
 export {
   GenericRequestHandler,
-  GenericRequestInternal,
+  GenericRequestInfo,
   GenericResponse,
   GenericRouter,
   InitRequestOptions,
@@ -41,7 +41,7 @@ export function createRemultServer<RequestType>(
     options,
     serverCoreOptions || {
       buildGenericRequestInfo: (req) => ({
-        internal: cast<GenericRequestInternal>(req, 'method'),
+        internal: cast<GenericRequestInfo>(req, 'method'),
         public: { headers: new Headers((req as any).headers) },
       }),
       getRequestBody: async (req) => (req as any).body,

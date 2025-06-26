@@ -13,23 +13,19 @@ export function remultApi(
   options: RemultServerOptions<H3Event>,
 ): RemultNuxtServer {
   const result = createRemultServer<H3Event>(options, {
-    buildGenericRequestInfo: (event) => {
-      return {
-        internal: {
-          method: event.node.req.method,
-          url: event.node.req.url,
-          on: (a: 'close', b: () => void) =>
-            event.node.req.on('close', () => {
-              b()
-            }),
-        },
-        public: {
-          headers: new Headers(
-            event.node.req.headers as Record<string, string>,
-          ),
-        },
-      }
-    },
+    buildGenericRequestInfo: (event) => ({
+      internal: {
+        method: event.node.req.method,
+        url: event.node.req.url,
+        on: (a: 'close', b: () => void) =>
+          event.node.req.on('close', () => {
+            b()
+          }),
+      },
+      public: {
+        headers: new Headers(event.node.req.headers as Record<string, string>),
+      },
+    }),
     getRequestBody: async (event) => await readBody(event),
   })
   const handler = async (event: H3Event) => {
