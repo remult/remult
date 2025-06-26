@@ -15,13 +15,19 @@ export function remultApi(
   const result = createRemultServer<H3Event>(options, {
     buildGenericRequestInfo: (event) => {
       return {
-        method: event.node.req.method,
-        url: event.node.req.url,
-        on: (a: 'close', b: () => void) =>
-          event.node.req.on('close', () => {
-            b()
-          }),
-        headers: new Headers(event.node.req.headers as Record<string, string>),
+        internal: {
+          method: event.node.req.method,
+          url: event.node.req.url,
+          on: (a: 'close', b: () => void) =>
+            event.node.req.on('close', () => {
+              b()
+            }),
+        },
+        public: {
+          headers: new Headers(
+            event.node.req.headers as Record<string, string>,
+          ),
+        },
       }
     },
     getRequestBody: async (event) => await readBody(event),

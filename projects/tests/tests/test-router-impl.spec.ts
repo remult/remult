@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import {
-  type GenericRequestInfo,
+  type GenericRequestInternal,
   RouteImplementation,
 } from '../../core/server/remult-api-server'
 describe('test router impl', async () => {
   it('test a', async () => {
-    const r = new RouteImplementation<GenericRequestInfo>({
+    const r = new RouteImplementation<GenericRequestInternal>({
       buildGenericRequestInfo: (req) => {
-        return req
+        return { internal: req, public: { headers: new Headers() } }
       },
       getRequestBody: (req) => {
         return undefined!
@@ -23,8 +23,7 @@ describe('test router impl', async () => {
       res.json(req.params)
     })
 
-    expect(await r.handle({ url: '/a', method: 'GET', headers: new Headers() }))
-      .toMatchInlineSnapshot(`
+    expect(await r.handle({ url: '/a', method: 'GET' })).toMatchInlineSnapshot(`
       {
         "data": {
           "ok": true,
@@ -32,9 +31,8 @@ describe('test router impl', async () => {
         "statusCode": 200,
       }
     `)
-    expect(
-      await r.handle({ url: '/a/123', method: 'GET', headers: new Headers() }),
-    ).toMatchInlineSnapshot(`
+    expect(await r.handle({ url: '/a/123', method: 'GET' }))
+      .toMatchInlineSnapshot(`
         {
           "data": {
             "id": "123",
@@ -46,7 +44,6 @@ describe('test router impl', async () => {
       await r.handle({
         url: '/a/sdgbsdfgbfds%2Csdfgsdfgbs',
         method: 'GET',
-        headers: new Headers(),
       }),
     ).toMatchInlineSnapshot(`
       {
@@ -58,9 +55,9 @@ describe('test router impl', async () => {
     `)
   })
   it('test b', async () => {
-    const r = new RouteImplementation<GenericRequestInfo>({
+    const r = new RouteImplementation<GenericRequestInternal>({
       buildGenericRequestInfo: (req) => {
-        return req
+        return { internal: req, public: { headers: new Headers() } }
       },
       getRequestBody: (req) => {
         return undefined!
@@ -76,9 +73,8 @@ describe('test router impl', async () => {
       res.json(req.params)
     })
 
-    expect(
-      await r.handle({ url: '/aBc', method: 'GET', headers: new Headers() }),
-    ).toMatchInlineSnapshot(`
+    expect(await r.handle({ url: '/aBc', method: 'GET' }))
+      .toMatchInlineSnapshot(`
       {
         "data": {
           "ok": true,
@@ -90,7 +86,6 @@ describe('test router impl', async () => {
       await r.handle({
         url: '/aBc/123',
         method: 'GET',
-        headers: new Headers(),
       }),
     ).toMatchInlineSnapshot(`
         {
@@ -104,7 +99,6 @@ describe('test router impl', async () => {
       await r.handle({
         url: '/aBc/sdgbsdfgbfds%2Csdfgsdfgbs',
         method: 'GET',
-        headers: new Headers(),
       }),
     ).toMatchInlineSnapshot(`
       {
@@ -116,9 +110,9 @@ describe('test router impl', async () => {
     `)
   })
   it('test *', async () => {
-    const r = new RouteImplementation<GenericRequestInfo>({
+    const r = new RouteImplementation<GenericRequestInternal>({
       buildGenericRequestInfo: (req) => {
-        return req
+        return { internal: req, public: { headers: new Headers() } }
       },
       getRequestBody: (req) => {
         return undefined!
@@ -131,8 +125,7 @@ describe('test router impl', async () => {
       res.end()
     })
 
-    expect(await r.handle({ url: '/a', method: 'GET', headers: new Headers() }))
-      .toMatchInlineSnapshot(`
+    expect(await r.handle({ url: '/a', method: 'GET' })).toMatchInlineSnapshot(`
       {
         "data": {
           "ok": true,
@@ -140,9 +133,8 @@ describe('test router impl', async () => {
         "statusCode": 200,
       }
     `)
-    expect(
-      await r.handle({ url: '/a/', method: 'GET', headers: new Headers() }),
-    ).toMatchInlineSnapshot(`
+    expect(await r.handle({ url: '/a/', method: 'GET' }))
+      .toMatchInlineSnapshot(`
     {
       "data": {
         "ok": true,
@@ -154,7 +146,6 @@ describe('test router impl', async () => {
       await r.handle({
         url: '/a/tasks',
         method: 'GET',
-        headers: new Headers(),
       }),
     ).toMatchInlineSnapshot(`
       {

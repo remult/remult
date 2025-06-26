@@ -30,9 +30,8 @@ export function remultApi(
   }
   const server = createRemultServer<express.Request>(options, {
     buildGenericRequestInfo: (req) => ({
-      ...req,
-      headers: new Headers(req.headers as Record<string, string>),
-      on: req.on,
+      internal: { ...req, on: req.on },
+      public: { headers: new Headers(req.headers as Record<string, string>) },
     }),
     getRequestBody: async (req) => req.body,
   }) as RemultServerImplementation<express.Request>

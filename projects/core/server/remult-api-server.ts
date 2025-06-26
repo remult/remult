@@ -146,11 +146,8 @@ export interface RemultServerOptions<RequestType> {
 export interface InitRequestOptions {
   liveQueryStorage: LiveQueryStorage
   readonly remult: Remult
-  /** generic request. */
-  gReq: {
-    // let's add stuff one by one for now.
-    headers: GenericRequestInfo['headers']
-  }
+  /** generic request, the same for all supported servers */
+  req: GenericRequest
 }
 
 export function createRemultServerCore<RequestType>(
@@ -242,13 +239,16 @@ export type SpecificRoute<RequestType> = {
     handler: GenericRequestHandler<RequestType>,
   ): SpecificRoute<RequestType>
 }
-export interface GenericRequestInfo {
+
+export interface GenericRequest {
+  headers: Headers
+}
+
+export interface GenericRequestInternal {
   url?: string //optional for next
   method?: any
   query?: any
   params?: any
-
-  headers: Headers
 }
 
 export interface GenericResponse {
@@ -357,7 +357,7 @@ export class RemultServerImplementation<RequestType>
                 set liveQueryStorage(value: LiveQueryStorage) {
                   remult.liveQueryStorage = value
                 },
-                gReq: {
+                req: {
                   headers: new Headers(),
                 },
               },
@@ -668,16 +668,22 @@ export class RemultServerImplementation<RequestType>
       remult: Remult,
       myReq: DataApiRequest,
       myRes: DataApiResponse,
-      genReq: GenericRequestInfo,
+      genReq: GenericRequestInternal,
       origRes: GenericResponse,
       origReq: RequestType,
     ) => Promise<void>,
     doNotReuseInitRequest?: boolean,
   ) {
     return async (req: RequestType, origRes: GenericResponse) => {
-      const genReq = req
+      const {
+        internal: genReq,
+        public: genReqPublic,
+      }: {
+        internal: GenericRequestInternal
+        public: GenericRequest
+      } = req
         ? this.coreOptions.buildGenericRequestInfo(req)
-        : { headers: new Headers() }
+        : { internal: {}, public: { headers: new Headers() } }
       if (req) {
         if (!genReq.query) {
           genReq.query = (req as any)['_tempQuery']
@@ -728,9 +734,7 @@ export class RemultServerImplementation<RequestType>
                     set liveQueryStorage(value: LiveQueryStorage) {
                       remult.liveQueryStorage = value
                     },
-                    gReq: {
-                      headers: genReq.headers,
-                    },
+                    req: genReqPublic,
                   })
                 }
                 await what(remult, myReq, myRes, genReq, origRes, req)
@@ -1190,7 +1194,7 @@ class RequestBridgeToDataApiRequest implements DataApiRequest {
     return this.r?.query[key]
   }
 
-  constructor(private r: GenericRequestInfo | undefined) {}
+  constructor(private r: GenericRequestInternal | undefined) {}
 }
 class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
   forbidden(message = 'Forbidden'): void {
@@ -1202,7 +1206,7 @@ class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
   constructor(
     private r: GenericResponse,
     private req: RequestType | undefined,
-    private genReq: GenericRequestInfo,
+    private genReq: GenericRequestInternal,
     private handleError: RemultServerOptions<RequestType>['error'] | undefined,
   ) {}
   progress(progress: number): void {}
@@ -1506,7 +1510,7 @@ export class RouteImplementation<RequestType> {
     })
   }
   middleware(origReq: RequestType, res: GenericResponse, next: VoidFunction) {
-    const req = this.coreOptions.buildGenericRequestInfo(origReq)
+    const { internal: req } = this.coreOptions.buildGenericRequestInfo(origReq)
 
     let theUrl: string = req.url?.toString() || ''
     if (theUrl.startsWith('/'))
@@ -1598,7 +1602,10 @@ remultStatic.allEntities.splice(
 )
 
 export interface ServerCoreOptions<RequestType> {
-  buildGenericRequestInfo(req: RequestType): GenericRequestInfo
+  buildGenericRequestInfo(req: RequestType): {
+    internal: GenericRequestInternal
+    public: GenericRequest
+  }
   getRequestBody(req: RequestType): Promise<any>
   ignoreAsyncStorage?: boolean
 }

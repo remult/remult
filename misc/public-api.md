@@ -3587,14 +3587,12 @@ export type GenericRequestHandler<RequestType> = (
   res: GenericResponse,
   next: VoidFunction,
 ) => void
-export interface GenericRequestInfo {
+export interface GenericRequestInternal {
   url?: string
   method?: any
   query?: any
   params?: any
-  headers: Headers
 }
-//[ ] Headers from TBD is not exported
 export interface GenericResponse {
   json(data: any): void
   send(html: string): void
@@ -3607,13 +3605,12 @@ export type GenericRouter<RequestType> = {
 export interface InitRequestOptions {
   liveQueryStorage: LiveQueryStorage
   readonly remult: Remult
-  /** generic request. */
-  gReq: {
-    headers: GenericRequestInfo["headers"]
-  }
+  /** generic request, the same for all supported servers */
+  req: GenericRequest
 }
 //[ ] LiveQueryStorage from TBD is not exported
 //[ ] Remult from TBD is not exported
+//[ ] GenericRequest from TBD is not exported
 export declare class JsonEntityFileStorage implements JsonEntityStorage {
   private folderPath
   getItem(entityDbName: string): string | null
@@ -3816,14 +3813,12 @@ export type GenericRequestHandler<RequestType> = (
   res: GenericResponse,
   next: VoidFunction,
 ) => void
-export interface GenericRequestInfo {
+export interface GenericRequestInternal {
   url?: string
   method?: any
   query?: any
   params?: any
-  headers: Headers
 }
-//[ ] Headers from TBD is not exported
 export interface GenericResponse {
   json(data: any): void
   send(html: string): void

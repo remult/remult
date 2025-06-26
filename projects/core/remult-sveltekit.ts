@@ -13,14 +13,16 @@ export function remultApi(
 ): RemultSveltekitServer {
   let result = createRemultServer<RequestEvent>(options, {
     buildGenericRequestInfo: (event) => ({
-      url: event.request.url,
-      method: event.request.method,
-      on: (e: 'close', do1: VoidFunction) => {
-        if (e === 'close') {
-          ;(event.locals as any)['_tempOnClose'] = do1
-        }
+      internal: {
+        url: event.request.url,
+        method: event.request.method,
+        on: (e: 'close', do1: VoidFunction) => {
+          if (e === 'close') {
+            ;(event.locals as any)['_tempOnClose'] = do1
+          }
+        },
       },
-      headers: event.request.headers,
+      public: { headers: event.request.headers },
     }),
     getRequestBody: (event) => event.request.json(),
   })

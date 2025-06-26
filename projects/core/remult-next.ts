@@ -20,9 +20,11 @@ export function remultNext(
   let result = createRemultServer(options, {
     buildGenericRequestInfo: (req) => {
       return {
-        ...req,
-        headers: new Headers(req.headers as Record<string, string>),
-        on: req.on,
+        internal: {
+          ...req,
+          on: req.on,
+        },
+        public: { headers: new Headers(req.headers as Record<string, string>) },
       }
     },
     getRequestBody: async (req) => req.body,
@@ -94,14 +96,16 @@ export function remultApi(
   let result = createRemultServer<Request>(options!, {
     getRequestBody: (req) => req.json(),
     buildGenericRequestInfo: (req) => ({
-      url: req?.url,
-      method: req?.method,
-      on: (e: 'close', do1: VoidFunction) => {
-        if (e === 'close') {
-          ;(req as any)['_tempOnClose'] = do1
-        }
+      internal: {
+        url: req?.url,
+        method: req?.method,
+        on: (e: 'close', do1: VoidFunction) => {
+          if (e === 'close') {
+            ;(req as any)['_tempOnClose'] = do1
+          }
+        },
       },
-      headers: req.headers,
+      public: { headers: req.headers },
     }),
   })
   const handler = async (req: Request) => {

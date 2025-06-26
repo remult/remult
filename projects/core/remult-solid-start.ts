@@ -13,14 +13,16 @@ export function remultApi(
 ): RemultSolidStartServer {
   let result = createRemultServer<RequestEvent>(options, {
     buildGenericRequestInfo: (event) => ({
-      url: event.request.url,
-      method: event.request.method,
-      on: (e: 'close', do1: VoidFunction) => {
-        if (e === 'close') {
-          event.locals['_tempOnClose'] = do1
-        }
+      internal: {
+        url: event.request.url,
+        method: event.request.method,
+        on: (e: 'close', do1: VoidFunction) => {
+          if (e === 'close') {
+            event.locals['_tempOnClose'] = do1
+          }
+        },
       },
-      headers: new Headers(event.request.headers),
+      public: { headers: new Headers(event.request.headers) },
     }),
     getRequestBody: (event) => event.request.json(),
   })

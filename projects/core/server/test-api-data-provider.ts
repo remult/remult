@@ -7,9 +7,10 @@ import {
   type EntityMetadata,
   type Remult,
 } from '../index.js'
-import type { RemultServerOptions, GenericRequestInfo } from './index.js'
+import type { RemultServerOptions } from './index.js'
 import {
   createRemultServerCore,
+  type GenericRequestInternal,
   type RemultServerImplementation,
 } from './remult-api-server.js'
 import { remultStatic } from '../src/remult-static.js'
@@ -25,17 +26,22 @@ export function TestApiDataProvider(
     return new InMemoryDataProvider()
   })
 
-  const server = createRemultServerCore<GenericRequestInfo & { body?: any }>(
+  const server = createRemultServerCore<
+    GenericRequestInternal & { body?: any }
+  >(
     { ...options, dataProvider: dp },
     {
       getRequestBody: async (req) => req.body,
-      buildGenericRequestInfo: (req) => req,
+      buildGenericRequestInfo: (req) => ({
+        internal: req,
+        public: { headers: new Headers() },
+      }),
       ignoreAsyncStorage: true,
     },
-  ) as RemultServerImplementation<GenericRequestInfo & { body?: any }>
+  ) as RemultServerImplementation<GenericRequestInternal & { body?: any }>
 
   const lock = new AsyncLock()
-  async function handleOnServer(req: GenericRequestInfo & { body?: any }) {
+  async function handleOnServer(req: GenericRequestInternal & { body?: any }) {
     return lock.runExclusive(async () => {
       return await MakeServerCallWithDifferentStaticRemult(async () => {
         if (newEntities.length > 0 && options?.ensureSchema != false) {
@@ -60,27 +66,23 @@ export function TestApiDataProvider(
           handleOnServer({
             url: url,
             method: 'GET',
-            headers: new Headers(),
           }),
         put: (url, body) =>
           handleOnServer({
             method: 'PUT',
             url: url,
             body: body,
-            headers: new Headers(),
           }),
         post: (url, body) =>
           handleOnServer({
             method: 'POST',
             url: url,
             body,
-            headers: new Headers(),
           }),
         delete: (url) =>
           handleOnServer({
             method: 'DELETE',
             url: url,
-            headers: new Headers(),
           }),
       },
     }),

@@ -18,21 +18,23 @@ export function remultApi(
   const api = createRemultServer(options, {
     buildGenericRequestInfo: (c) => {
       return {
-        method: c.req.method,
-        params: c.req.param(),
-        query: new Proxy(c.req, {
-          get: (target, prop) => {
-            const r = c.req.queries(prop as string)
-            if (r?.length == 1) return r[0]
-            return r
+        internal: {
+          method: c.req.method,
+          params: c.req.param(),
+          query: new Proxy(c.req, {
+            get: (target, prop) => {
+              const r = c.req.queries(prop as string)
+              if (r?.length == 1) return r[0]
+              return r
+            },
+          }),
+          url: c.req.url,
+          on: (e: 'close', do1: VoidFunction) => {
+            ;(c as any)['_tempOnClose'](() => do1())
+            //   c.req.on('close', do1)
           },
-        }),
-        url: c.req.url,
-        on: (e: 'close', do1: VoidFunction) => {
-          ;(c as any)['_tempOnClose'](() => do1())
-          //   c.req.on('close', do1)
         },
-        headers: new Headers(c.req.header()),
+        public: { headers: new Headers(c.req.header()) },
       }
     },
     getRequestBody: async (c) => {
