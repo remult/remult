@@ -4,6 +4,7 @@ import { Task } from '../../../shared/Task'
 import { TasksController } from '../../../shared/TasksController'
 import { remult } from 'remult'
 import { remultApi } from 'remult/remult-sveltekit'
+import { initRequestModule } from '../../../../../../test-servers/shared/modules/initRequest/server.js'
 
 export const _api = remultApi({
   entities: [Task],
@@ -17,6 +18,7 @@ export const _api = remultApi({
       event.cookies.set(name, value, { path: '.' })
     }
   },
+  modules: [initRequestModule as any],
 })
 
 declare module 'remult' {

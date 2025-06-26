@@ -15,6 +15,7 @@ import { allServerTests, testAsExpressMW } from './all-server-tests.js'
 import { initAsyncHooks } from '../../core/server/initAsyncHooks.js'
 import type { RemultServerOptions } from '../../core/server/index.js'
 import axios from 'axios'
+import { initRequestModule } from '../../test-servers/shared/modules/initRequest/server.js'
 
 describe('test express server', async () => {
   let throwExceptionOnGetUser = false
@@ -41,11 +42,7 @@ describe('test express server', async () => {
         } satisfies ErrorInfo
       return undefined
     },
-    async initRequest(_, { req }) {
-      if (req.headers.get('remult-test-crash') === 'yes') {
-        throw new Error('test crash')
-      }
-    },
+    modules: [initRequestModule],
   })
   const app = express.Router()
   app.use(api)
@@ -114,23 +111,6 @@ describe('test express server', async () => {
             "message": "not allowed",
           }
         `)
-      }),
-    )
-    it(
-      'should read generic request headers and crash',
-      withRemult(async () => {
-        try {
-          await axios.get(remult.apiClient.url + '/me', {
-            headers: { 'remult-test-crash': 'yes' },
-          })
-          expect('to never').toBe('be here')
-        } catch (error) {
-          if (error instanceof Error) {
-            expect(error.message).toMatchInlineSnapshot(
-              `"Request failed with status code 400"`,
-            )
-          }
-        }
       }),
     )
   })
