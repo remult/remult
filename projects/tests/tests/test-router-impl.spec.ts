@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
-  type GenericRequestInternal,
+  type GenericRequestInfo,
   RouteImplementation,
 } from '../../core/server/remult-api-server'
 describe('test router impl', async () => {
   it('test a', async () => {
-    const r = new RouteImplementation<GenericRequestInternal>({
+    const r = new RouteImplementation<GenericRequestInfo>({
       buildGenericRequestInfo: (req) => {
         return { internal: req, public: { headers: new Headers() } }
       },
@@ -55,7 +55,7 @@ describe('test router impl', async () => {
     `)
   })
   it('test b', async () => {
-    const r = new RouteImplementation<GenericRequestInternal>({
+    const r = new RouteImplementation<GenericRequestInfo>({
       buildGenericRequestInfo: (req) => {
         return { internal: req, public: { headers: new Headers() } }
       },
@@ -110,7 +110,7 @@ describe('test router impl', async () => {
     `)
   })
   it('test *', async () => {
-    const r = new RouteImplementation<GenericRequestInternal>({
+    const r = new RouteImplementation<GenericRequestInfo>({
       buildGenericRequestInfo: (req) => {
         return { internal: req, public: { headers: new Headers() } }
       },
