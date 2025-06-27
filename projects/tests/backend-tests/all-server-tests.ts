@@ -595,6 +595,24 @@ export function allServerTests(
           }
         }),
       )
+
+      it(
+        'should read generic request headers from ctx and crash',
+        withRemultForTest(async () => {
+          try {
+            await axios.get(remult.apiClient.url + '/me', {
+              headers: { 'remult-test-crash-ctx': 'yes-c' },
+            })
+            expect('to never').toBe('be here')
+          } catch (error) {
+            if (error instanceof Error) {
+              expect(error.message).toMatchInlineSnapshot(
+                `"Request failed with status code 400"`,
+              )
+            }
+          }
+        }),
+      )
     })
   })
 

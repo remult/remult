@@ -1,4 +1,5 @@
 import { Module } from '../../../../core/server/module.js'
+import { remult } from '../../../../core'
 
 /**
  * in next-server, we need to copy the same module...
@@ -12,6 +13,11 @@ export const initRequestModule = new Module({
   key: 'init-request-module',
   async initRequest(_, { req }) {
     if (req.headers.get('remult-test-crash') === 'yes') {
+      throw new Error('test crash')
+    }
+
+    // @ts-expect-error
+    if (remult.context.req.headers.get('remult-test-crash-ctx') === 'yes-c') {
       throw new Error('test crash')
     }
   },
