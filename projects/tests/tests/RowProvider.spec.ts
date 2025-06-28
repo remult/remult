@@ -742,6 +742,7 @@ class mockColumnDefs implements FieldMetadata {
   readonly isServerExpression = false
   readonly key = ''
   readonly label = ''
+  readonly caption = ''
   readonly inputType = ''
 
   readonly valueType: any
