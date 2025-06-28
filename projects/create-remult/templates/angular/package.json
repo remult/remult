@@ -38,5 +38,8 @@
     "karma-jasmine-html-reporter": "~2.1.0",
     "tsx": "^4.19.1",
     "typescript": "~5.5.2"
+  },
+  "resolutions": {
+    "css-select": "5.2.0"
   }
 }
