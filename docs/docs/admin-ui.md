@@ -54,7 +54,7 @@ Navigate to `/api/admin` to access the Admin UI. Here, you can perform CRUD oper
 
 - **Settings**: On top left, you have a menu _(remult logo)_ where you can find various settings for your admin ui.
   - You want to confirm a delete all the time?
-  - You want to display Captions or Keys?
+  - You want to display Labels or Keys?
   - Multiple options for automatic diagram layout (you want also do your own layout)
   - You don't use cookies? No problem, you can set your bearer token (it will only be in session)
 

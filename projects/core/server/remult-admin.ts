@@ -51,7 +51,7 @@ export interface AdminEntitiesOptions {
 }
 export interface AdminDisplayOptions {
   rootPath: string
-  head: string,
+  head: string
   requireAuthToken: boolean
   disableLiveQuery: boolean
 }
@@ -63,7 +63,11 @@ export default function remultAdminHtml(options: AdminDisplayOptions) {
     .replace(
       '<!--PLACE_HERE_BODY-->',
       `<script>
-  window.optionsFromServer = ${JSON.stringify({ rootPath, requireAuthToken, disableLiveQuery })}
+  window.optionsFromServer = ${JSON.stringify({
+    rootPath,
+    requireAuthToken,
+    disableLiveQuery,
+  })}
 </script>`,
     )
 }
@@ -93,11 +97,11 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
           const relRepo = options.remult.repo(info.toEntity)
           const where =
             typeof info.options.findOptions === 'object' &&
-              info.options.findOptions.where
+            info.options.findOptions.where
               ? Filter.entityFilterToJson(
-                relRepo.metadata,
-                info.options.findOptions.where,
-              )
+                  relRepo.metadata,
+                  info.options.findOptions.where,
+                )
               : undefined
           const idField = relRepo.metadata.idMetadata.field.key
           if (info.type === 'reference' || info.type === 'toOne') {
@@ -127,7 +131,7 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
                 where,
                 entityKey: relRepo.metadata.key,
                 key: x.key,
-                caption: x.caption,
+                caption: x.label,
               })
             }
             continue
@@ -138,19 +142,19 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
           readOnly: !x.apiUpdateAllowed(),
           values: getValueList(x),
           valFieldKey,
-          caption: x.caption,
+          caption: x.label,
           relationToOne: relation,
           inputType: x.inputType,
           type:
             x.inputType === InputTypes.json
               ? 'json'
               : x.valueType === Number
-                ? 'number'
-                : x.valueType === Boolean
-                  ? 'boolean'
-                  : x.valueType === Date
-                    ? 'date'
-                    : 'string',
+              ? 'number'
+              : x.valueType === Boolean
+              ? 'boolean'
+              : x.valueType === Date
+              ? 'date'
+              : 'string',
         })
       } catch (error) {
         console.error(
@@ -162,11 +166,11 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
 
     if (metadata.apiReadAllowed) {
       let superKey = metadata.key
-      let caption = metadata.caption
+      let caption = metadata.label
       const nbOfEntities = entities.filter((e) => e.key === metadata.key).length
       if (nbOfEntities > 0) {
         superKey = metadata.key + '_ext_' + nbOfEntities
-        caption = metadata.caption + '*'.repeat(nbOfEntities)
+        caption = metadata.label + '*'.repeat(nbOfEntities)
       }
 
       entities.push({

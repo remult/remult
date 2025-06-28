@@ -13,6 +13,11 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
    * <input placeholder={taskRepo.metadata.fields.title.caption}/>
    */
   caption?: string
+  /** A human readable name for the field. Can be used to achieve a consistent label for a field throughout the app
+   * @example
+   * <input placeholder={taskRepo.metadata.fields.title.label}/>
+   */
+  label?: string
   /** If it can store null in the database */
   allowNull?: boolean
   /** If a value is required. Short-cut to say `validate: Validators.required`.
@@ -159,6 +164,12 @@ export interface FieldMetadata<valueType = unknown, entityType = unknown> {
    * @see {@link FieldOptions#caption} for configuration details
    */
   readonly caption: string
+  /** A human readable label for the field. Can be used to achieve a consistent label for a field throughout the app
+   * @example
+   * <input placeholder={taskRepo.metadata.fields.title.label}/>
+   * @see {@link FieldOptions.label} for configuration details
+   */
+  readonly label: string
   /** The name of the column in the database that holds the data for this field. If no name is set, the key will be used instead.
    * @example
    *
@@ -384,4 +395,5 @@ export function valueOrExpressionToValue<valueType>(
 export interface ValueListItem {
   id?: any
   caption?: any
+  label?: any
 }

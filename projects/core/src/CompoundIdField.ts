@@ -55,6 +55,7 @@ export class CompoundIdField implements FieldMetadata<string> {
   dbReadOnly = false
   isServerExpression = false
   key = ''
+  label = ''
   caption = ''
   inputType = ''
   dbName = ''

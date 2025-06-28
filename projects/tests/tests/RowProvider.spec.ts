@@ -95,6 +95,7 @@ describe('Closed List  column', () => {
   it('test auto caption', () => {
     let val = ValueListInfo.get(valueList)
     expect(valueList.firstName.caption).toBe('First Name')
+    expect(valueList.firstName.label).toBe('First Name')
   })
   it('test with entity', async () => {
     let c = new Remult().repo(entityWithValueList, new InMemoryDataProvider())
@@ -158,6 +159,7 @@ class valueList {
   constructor(
     public id?: string,
     public caption?: string,
+    public label?: string,
   ) {}
 }
 
@@ -739,7 +741,7 @@ class mockColumnDefs implements FieldMetadata {
   readonly dbReadOnly = false
   readonly isServerExpression = false
   readonly key = ''
-  readonly caption = ''
+  readonly label = ''
   readonly inputType = ''
 
   readonly valueType: any

@@ -27,7 +27,7 @@ export class Task {
   id!: string
 
   @Fields.string({
-    caption: 'Title of the task',
+    label: 'Title of the task',
     validate: Validators.required
   })
   title = ''
@@ -65,7 +65,7 @@ export default function App() {
   return (
     <div>
       <form onSubmit={addTask}> 
-        <label>{repo(Task).metadata.fields.title.caption}</label>
+        <label>{repo(Task).metadata.fields.title.label}</label>
         <input
           value={newTaskTitle} 
           onChange={e => setNewTaskTitle(e.target.value)} 
@@ -113,7 +113,7 @@ export default function App() {
 </script>
 
 <form onsubmit={addTask}> 
-  <label>{repo(Task).metadata.fields.title.caption}</label>
+  <label>{repo(Task).metadata.fields.title.label}</label>
   <input bind:value={newTask.title} /> 
   <button disabled={!repo(Task).metadata.apiInsertAllowed()}>Add</button> // [!code ++]
 </form> 
@@ -153,7 +153,7 @@ export default function App() {
 
 <template>
   <form @submit.prevent="addTask()">
-    <label>{repo(Task).metadata.fields.title.caption}</label>
+    <label>{repo(Task).metadata.fields.title.label}</label>
     <input v-model="newTask.title" />
     <button v-if="taskRepo.metadata.apiDeleteAllowed(task)">Add</button> // [!code ++]
   </form>
@@ -183,7 +183,7 @@ import { Task } from './entities'
 export class TodoComponent implements OnInit {
   tasks: Task[] = []
   newTask = repo(Task).create()
-  titleCaption = repo(Task).metadata.fields.title.caption
+  titleLabel = repo(Task).metadata.fields.title.label
   error?: string
   canInsert = repo(Task).metadata.apiInsertAllowed() // [!code ++]
 
@@ -210,7 +210,7 @@ export class TodoComponent implements OnInit {
       changed: true,
       languageCodeHighlight: 'html',
       content: `<form (ngSubmit)="addTask()">
-  <label>{{titleCaption}}</label>
+  <label>{{titleLabel}}</label>
   <input [(ngModel)]="newTask.title" name="title" />
   <button type="submit" [disabled]="!canInsert">Add</button> // [!code ++]
   <div *ngIf="error" class="error">{{error}}</div>
