@@ -345,7 +345,7 @@ export type GetArguments<T> = T extends (...args: infer FirstArgument) => any
  *  */
 
 export interface RemultContext {
-  platform?: {
+  platform: {
     getHeader: (key: string) => string | undefined
     getHeaders: () => Record<string, string>
   }

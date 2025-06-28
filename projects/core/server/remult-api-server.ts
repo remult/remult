@@ -753,8 +753,8 @@ export class RemultServerImplementation<RequestType>
         else
           await this.runWithRemult(async (remult) => {
             if (req) {
-              ;(remult.context as { request: any }).request = req
-              ;(remult.context as RemultContext).platform = {
+              ;(remult.context as unknown as { request: any }).request = req
+              remult.context.platform = {
                 getHeader: (key: string) =>
                   genReqPublic.headers.get(key) ?? undefined,
                 getHeaders: () => {

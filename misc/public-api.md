@@ -2384,7 +2384,7 @@ export declare class Remult {
   apiClient: ApiClient
 }
 export interface RemultContext {
-  platform?: {
+  platform: {
     getHeader: (key: string) => string | undefined
     getHeaders: () => Record<string, string>
   }
