@@ -755,6 +755,16 @@ export class RemultServerImplementation<RequestType>
           await this.runWithRemult(async (remult) => {
             if (req) {
               ;(remult.context as { request: any }).request = req
+              ;(remult.context as any).headers = {
+                get: (key: string) => genReqPublic.headers.get(key),
+                getAll: () => {
+                  const result: Record<string, string> = {}
+                  genReqPublic.headers.forEach((value, key) => {
+                    result[key] = value
+                  })
+                  return result
+                },
+              }
               remultStatic.asyncContext.setInInitRequest(true)
               try {
                 let user

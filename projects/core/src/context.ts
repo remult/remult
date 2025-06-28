@@ -319,7 +319,7 @@ export class Remult {
   /** A helper callback that is called whenever an entity is created. */
   static entityRefInit?: (ref: EntityRef<any>, row: any) => void
   /** context information that can be used to store custom information that will be disposed as part of the `remult` object */
-  readonly context: RemultContext = {} as any
+  readonly context: RemultContext = {} as RemultContext
   /** The api client that will be used by `remult` to perform calls to the `api` */
   apiClient: ApiClient = {
     url: '/api',
@@ -344,7 +344,12 @@ export type GetArguments<T> = T extends (...args: infer FirstArgument) => any
  * }
  *  */
 
-export interface RemultContext {}
+export interface RemultContext {
+  headers?: {
+    get: (key: string) => string | null
+    getAll: () => Record<string, string>
+  }
+}
 /**
  * Interface for configuring the API client used by Remult to perform HTTP calls to the backend.
  */

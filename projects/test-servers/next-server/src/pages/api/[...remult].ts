@@ -1,11 +1,15 @@
 import { remultNext } from 'remult/remult-next'
 import { Task } from '../../shared/Task'
 import { Module } from 'remult/server'
+import { remult } from 'remult'
 
 const initRequestModule = new Module({
   key: 'init-request-module-next',
   async initRequest(_, { req }) {
     if (req.headers.get('remult-test-crash') === 'yes') {
+      throw new Error('test crash')
+    }
+    if (remult.context.headers!.get('remult-test-crash-ctx') === 'yes-c') {
       throw new Error('test crash')
     }
   },
