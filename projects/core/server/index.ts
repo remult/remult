@@ -48,3 +48,4 @@ export function createRemultServer<RequestType>(
     },
   )
 }
+export { getHeader, getHeaders } from './platform.js'

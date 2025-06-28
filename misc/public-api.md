@@ -2384,11 +2384,9 @@ export declare class Remult {
   apiClient: ApiClient
 }
 export interface RemultContext {
-  _?: {
-    headers: {
-      get: (key: string) => string | null
-      getAll: () => Record<string, string>
-    }
+  platform?: {
+    getHeader: (key: string) => string | undefined
+    getHeaders: () => Record<string, string>
   }
 }
 export declare function repo<entityType>(
@@ -3609,6 +3607,8 @@ export interface GenericResponse {
 export type GenericRouter<RequestType> = {
   route(path: string): SpecificRoute<RequestType>
 }
+export const getHeader: (key: string) => string | undefined
+export const getHeaders: () => Record<string, string>
 export interface InitRequestOptions {
   liveQueryStorage: LiveQueryStorage
   readonly remult: Remult

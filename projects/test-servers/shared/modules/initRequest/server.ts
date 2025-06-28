@@ -1,5 +1,6 @@
 import { Module } from '../../../../core/server/module.js'
 import { remult } from '../../../../core'
+import { getHeader } from '../../../../core/server'
 
 /**
  * in next-server, we need to copy the same module...
@@ -12,7 +13,7 @@ import { remult } from '../../../../core'
 export const initRequestModule = new Module({
   key: 'init-request-module',
   async initRequest() {
-    if (remult.context._?.headers.get('remult-test-crash-ctx') === 'yes-c') {
+    if (getHeader('remult-test-crash-ctx') === 'yes-c') {
       throw new Error('test crash')
     }
   },
