@@ -2383,7 +2383,12 @@ export declare class Remult {
   /** The api client that will be used by `remult` to perform calls to the `api` */
   apiClient: ApiClient
 }
-export interface RemultContext {}
+export interface RemultContext {
+  headers?: {
+    get: (key: string) => string | null
+    getAll: () => Record<string, string>
+  }
+}
 export declare function repo<entityType>(
   entity: ClassType<entityType>,
   dataProvider?: DataProvider,

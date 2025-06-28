@@ -1,4 +1,4 @@
-import type { ResponseRequiredForSSE } from 'SseSubscriptionServer.js'
+import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 import type { H3Event } from 'h3'
 import { readBody, setResponseStatus } from 'h3'
 import type {
