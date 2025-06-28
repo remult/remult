@@ -20,7 +20,6 @@
     "@angular/platform-browser": "^18.2.0",
     "@angular/platform-browser-dynamic": "^18.2.0",
     "@angular/router": "^18.2.0",
-    "css-select": "5.2.0",
     "remult": "^0.27.19",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
@@ -39,8 +38,5 @@
     "karma-jasmine-html-reporter": "~2.1.0",
     "tsx": "^4.19.1",
     "typescript": "~5.5.2"
-  },
-  "resolutions": {
-    "css-select": "5.2.0"
   }
 }
