@@ -3610,12 +3610,9 @@ export type GenericRouter<RequestType> = {
 export interface InitRequestOptions {
   liveQueryStorage: LiveQueryStorage
   readonly remult: Remult
-  /** generic request, the same for all supported servers */
-  req: GenericRequest
 }
 //[ ] LiveQueryStorage from TBD is not exported
 //[ ] Remult from TBD is not exported
-//[ ] GenericRequest from TBD is not exported
 export declare class JsonEntityFileStorage implements JsonEntityStorage {
   private folderPath
   getItem(entityDbName: string): string | null

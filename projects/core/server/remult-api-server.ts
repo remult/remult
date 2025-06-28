@@ -165,8 +165,6 @@ export interface RemultServerOptions<RequestType> {
 export interface InitRequestOptions {
   liveQueryStorage: LiveQueryStorage
   readonly remult: Remult
-  /** generic request, the same for all supported servers */
-  req: GenericRequest
 }
 
 export function createRemultServerCore<RequestType>(
@@ -396,9 +394,6 @@ export class RemultServerImplementation<RequestType>
                 },
                 set liveQueryStorage(value: LiveQueryStorage) {
                   remult.liveQueryStorage = value
-                },
-                req: {
-                  headers: new Headers(),
                 },
               },
             )
@@ -786,7 +781,6 @@ export class RemultServerImplementation<RequestType>
                       set liveQueryStorage(value: LiveQueryStorage) {
                         remult.liveQueryStorage = value
                       },
-                      req: genReqPublic,
                     })
                   }
                 }

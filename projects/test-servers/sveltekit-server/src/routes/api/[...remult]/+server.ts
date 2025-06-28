@@ -4,7 +4,16 @@ import { Task } from '../../../shared/Task'
 import { TasksController } from '../../../shared/TasksController'
 import { remult } from 'remult'
 import { remultApi } from 'remult/remult-sveltekit'
-import { initRequestModule } from '../../../../../../test-servers/shared/modules/initRequest/server.js'
+import { Module } from 'remult/server'
+
+const initRequestModule = new Module({
+  key: 'init-request-module-next',
+  async initRequest() {
+    if (remult.context.headers?.get('remult-test-crash-ctx') === 'yes-c') {
+      throw new Error('test crash')
+    }
+  },
+})
 
 export const _api = remultApi({
   entities: [Task],
@@ -18,7 +27,7 @@ export const _api = remultApi({
       event.cookies.set(name, value, { path: '.' })
     }
   },
-  modules: [initRequestModule as any],
+  modules: [initRequestModule],
 })
 
 declare module 'remult' {

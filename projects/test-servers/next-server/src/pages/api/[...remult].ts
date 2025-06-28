@@ -5,10 +5,7 @@ import { remult } from 'remult'
 
 const initRequestModule = new Module({
   key: 'init-request-module-next',
-  async initRequest(_, { req }) {
-    if (req.headers.get('remult-test-crash') === 'yes') {
-      throw new Error('test crash')
-    }
+  async initRequest() {
     if (remult.context.headers?.get('remult-test-crash-ctx') === 'yes-c') {
       throw new Error('test crash')
     }
