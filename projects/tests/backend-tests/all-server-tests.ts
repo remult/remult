@@ -1,14 +1,14 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import EventSource from 'eventsource'
-import { Task } from '../../test-servers/shared/Task.js'
-import { Remult, RestDataProvider, remult, repo, withRemult } from '../../core'
 import axios from 'axios'
+import EventSource from 'eventsource'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { RestDataProvider, remult, repo, withRemult } from '../../core'
+import { Task } from '../../test-servers/shared/Task.js'
 
+import express from 'express'
 import { actionInfo } from '../../core/internals.js'
 import { initAsyncHooks } from '../../core/server/initAsyncHooks.js'
 import { RemultAsyncLocalStorage } from '../../core/src/context.js'
 import { SseSubscriptionClient } from '../../core/src/live-query/SseSubscriptionClient.js'
-import express from 'express'
 
 export function testAsExpressMW(
   port: number,
@@ -45,6 +45,7 @@ export function allServerTests(
   options?: {
     skipAsyncHooks?: boolean
     skipLiveQuery?: boolean
+    skipExtraRoutes?: boolean
   },
   additionalTests?: (
     withRemultForTest: (what: () => Promise<void>) => () => Promise<void>,
@@ -575,6 +576,202 @@ export function allServerTests(
       }
     }),
   )
+
+  describe('extra routes', { skip: options?.skipExtraRoutes }, () => {
+    it(
+      'test 404 in extra routes of module',
+      withRemultForTest(async () => {
+        try {
+          await axios.get(remult.apiClient.url + '/nothing')
+          expect('should never').toBe('be here')
+        } catch (error) {
+          expect(error).toMatchInlineSnapshot(
+            `[AxiosError: Request failed with status code 404]`,
+          )
+        }
+      }),
+    )
+
+    it(
+      'should get json',
+      withRemultForTest(async () => {
+        const result = await axios.get(remult.apiClient.url + '/new-route')
+        expect(result.data).toMatchInlineSnapshot(`
+          {
+            "Soooooo": "Cool! A new new-route!",
+          }
+        `)
+      }),
+    )
+
+    it(
+      'should get html styled (staticFolder)',
+      withRemultForTest(async () => {
+        let result = await axios.get(remult.apiClient.url + '/styled')
+        expect(result.data).toMatchInlineSnapshot(`
+          "<html>
+            <link rel="stylesheet" href="./styled/style.css" />
+            <script src="./styled/demo.js"></script>
+            <body>
+              <b>Styled Replaced!</b>
+            </body>
+          </html>
+          "
+        `)
+        result = await axios.get(remult.apiClient.url + '/styled/style.css')
+        expect(result.data).toMatchInlineSnapshot(`
+          "html {
+            background-color: gray;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-family: Arial, Helvetica, sans-serif;
+          }
+          "
+        `)
+        result = await axios.get(remult.apiClient.url + '/styled/demo.js')
+        expect(result.data).toMatchInlineSnapshot(`"console.log('demo.js')"`)
+      }),
+    )
+
+    it(
+      'should redirect',
+      withRemultForTest(async () => {
+        try {
+          await axios.get(remult.apiClient.url + '/redirect', {
+            maxRedirects: 0, // Prevent following redirects completely
+          })
+          expect('should never').toBe('be here')
+        } catch (error: any) {
+          // Axios throws on redirects when maxRedirects is 0
+          expect(error.response.status).toBe(307)
+          expect(error.response.headers.location).toContain('/api/html')
+        }
+      }),
+    )
+
+    it(
+      'should deleteCookie',
+      withRemultForTest(async () => {
+        let result = await axios.get(remult.apiClient.url + '/deleteCookie')
+        expect(result.data).includes('deleted')
+      }),
+    )
+
+    it(
+      'should getCookie',
+      withRemultForTest(async () => {
+        let result = await axios.get(remult.apiClient.url + '/getCookie')
+        expect(result.data).includes('get: undefined')
+      }),
+    )
+
+    it(
+      'should setCookie',
+      withRemultForTest(async () => {
+        let result = await axios.get(remult.apiClient.url + '/setCookie')
+        const data = result.headers['set-cookie']
+
+        expect(data).toHaveLength(1)
+        if (data && data.length === 1) {
+          // Split the result and we want all this parts (no matter the order)
+          const p = data[0].split(' ').sort()
+          expect(p[0]).toContain('HttpOnly')
+          expect(p[1]).toContain('Path=/')
+          expect(p[2]).toContain('SameSite=Lax')
+          expect(p[3]).toContain('Secure')
+          expect(p[4]).toContain('the_cookie_name=Hello')
+        }
+        expect(result.data).includes('set: Hello')
+      }),
+    )
+
+    it(
+      'should setCookie strict',
+      withRemultForTest(async () => {
+        let result = await axios.get(remult.apiClient.url + '/setCookieStrict')
+        const data = result.headers['set-cookie']
+
+        expect(data).toHaveLength(1)
+        if (data && data.length === 1) {
+          // Split the result and we want all this parts (no matter the order)
+          const p = data[0].split(' ').sort()
+          expect(p[0]).toContain('HttpOnly')
+          expect(p[1]).toContain('Path=/')
+          expect(p[2]).toContain('SameSite=Strict')
+          expect(p[3]).toContain('Secure')
+          expect(p[4]).toContain('the_cookie_name=Hello')
+        }
+        expect(result.data).includes('set: Hello')
+      }),
+    )
+
+    it(
+      'should getCookie with cookie header',
+      withRemultForTest(async () => {
+        let result = await axios.get(remult.apiClient.url + '/getCookie', {
+          headers: {
+            Cookie: 'the_cookie_name=Hello',
+          },
+        })
+        expect(result.data).includes('get: Hello')
+      }),
+    )
+
+    it(
+      'should set headers',
+      withRemultForTest(async () => {
+        let result = await axios.get(remult.apiClient.url + '/setHeader')
+        expect(result.headers['x-test-header']).toBe('Hello')
+      }),
+    )
+
+    it(
+      'POST reading headers',
+      withRemultForTest(async () => {
+        let result = await axios.post(
+          remult.apiClient.url + '/post-headers',
+          {},
+          { headers: { hello: 'world' } },
+        )
+        expect(result.data).toMatchInlineSnapshot(`
+          {
+            "reqHeaders": "world",
+          }
+        `)
+      }),
+    )
+
+    it(
+      'POST reading body',
+      withRemultForTest(async () => {
+        let result = await axios.post(remult.apiClient.url + '/post-body-add', {
+          count: 7,
+        })
+        expect(result.data).toMatchInlineSnapshot(`
+          {
+            "newCount": 8,
+            "oldValue": 7,
+          }
+        `)
+      }),
+    )
+  })
+
+  describe('server crash', {}, () => {
+    it(
+      'should crash',
+      withRemultForTest(async () => {
+        try {
+          await axios.get(remult.apiClient.url + '/crash-test')
+          expect('should never').toBe('be here')
+        } catch (error: any) {
+          expect(error.response.status).toBe(500)
+        }
+      }),
+    )
+  })
+
   async function create3Tasks() {
     const taskRepo = remult.repo(Task)
 

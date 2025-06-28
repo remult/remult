@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { Task } from '../../test-servers/shared/Task.js'
 import { RemultAsyncLocalStorage } from '../../core/src/context.js'
 import { allServerTests } from './all-server-tests.js'
+import { someRoutes } from '../../test-servers/shared/modules/someRoutes/server.js'
 
 describe.skipIf(process.env['SKIP_KOA'])('test koa server', async () => {
   let destroy: () => Promise<void>
@@ -16,6 +17,7 @@ describe.skipIf(process.env['SKIP_KOA'])('test koa server', async () => {
       const api = createRemultServer({
         entities: [Task],
         admin: true,
+        modules: [someRoutes],
       })
       app.use(bodyParser())
       app.use(async (ctx, next) => {
@@ -38,7 +40,7 @@ describe.skipIf(process.env['SKIP_KOA'])('test koa server', async () => {
     })
   })
 
-  allServerTests(port, { skipLiveQuery: true })
+  allServerTests(port, { skipLiveQuery: true, skipExtraRoutes: true })
   afterAll(async () => {
     RemultAsyncLocalStorage.disable()
     return destroy()

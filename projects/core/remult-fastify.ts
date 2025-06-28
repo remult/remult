@@ -4,93 +4,205 @@ import type {
   FastifyRequest,
   RouteHandlerMethod,
 } from 'fastify'
-import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
+import { createRemultServer } from './server/index.js'
 import type {
-  GenericRequestHandler,
-  GenericResponse,
-  GenericRouter,
+  InternalGenericRequestHandler,
+  InternalSpecificRoute,
+  RemultServer,
   RemultServerCore,
   RemultServerOptions,
-  SpecificRoute,
-  RemultServer,
+  ServerCoreOptions,
 } from './server/remult-api-server.js'
-import { createRemultServer } from './server/index.js'
+import { RouteImplementation } from './server/remult-api-server.js'
+import {
+  getBaseTypicalRouteInfo,
+  type TypicalRouteInfo,
+} from './server/route-helpers.js'
+import { parse, serialize } from './src/remult-cookie.js'
 
-export function remultApi(
-  options: RemultServerOptions<FastifyRequest>,
-): RemultFastifyServer {
-  function fastifyHandler(handler: GenericRequestHandler<FastifyRequest>) {
-    const response: RouteHandlerMethod = (req, res) => {
-      const myRes: GenericResponse & ResponseRequiredForSSE = {
+class FastifyRouteImplementation extends RouteImplementation<FastifyRequest> {
+  constructor(
+    private instance: FastifyInstance,
+    coreOptions: ServerCoreOptions<FastifyRequest>,
+  ) {
+    super(coreOptions)
+  }
+
+  route(path: string): InternalSpecificRoute<FastifyRequest> {
+    const parentRoute = super.route(path)
+    return this.createFastifyRoute(path, parentRoute)
+  }
+
+  createRouteHandlers(
+    path: string,
+    m: Map<string, InternalGenericRequestHandler<FastifyRequest>>,
+  ): InternalSpecificRoute<FastifyRequest> {
+    const parentRoute = super.createRouteHandlers(path, m)
+    return this.createFastifyRoute(path, parentRoute, m)
+  }
+
+  private createFastifyRoute(
+    path: string,
+    parentRoute: InternalSpecificRoute<FastifyRequest>,
+    methodMap?: Map<string, InternalGenericRequestHandler<FastifyRequest>>,
+  ): InternalSpecificRoute<FastifyRequest> {
+    const registerMethod = (
+      method: 'get' | 'post' | 'put' | 'delete',
+      handler: InternalGenericRequestHandler<FastifyRequest>,
+    ) => {
+      methodMap?.set(method, handler)
+      const fastifyHandler = this.createFastifyHandler(handler)
+
+      switch (method) {
+        case 'get':
+          this.instance.get(path, fastifyHandler)
+          break
+        case 'post':
+          this.instance.post(path, fastifyHandler)
+          break
+        case 'put':
+          this.instance.put(path, fastifyHandler)
+          break
+        case 'delete':
+          this.instance.delete(path, fastifyHandler)
+          break
+      }
+
+      return route
+    }
+
+    const route = {
+      delete: (handler: InternalGenericRequestHandler<FastifyRequest>) =>
+        registerMethod('delete', handler),
+      get: (handler: InternalGenericRequestHandler<FastifyRequest>) =>
+        registerMethod('get', handler),
+      post: (handler: InternalGenericRequestHandler<FastifyRequest>) =>
+        registerMethod('post', handler),
+      put: (handler: InternalGenericRequestHandler<FastifyRequest>) =>
+        registerMethod('put', handler),
+      staticFolder: (
+        folderPath: string,
+        options?: {
+          packageName?: string
+          contentTypes?: Record<string, string>
+          editFile?: (filePath: string, content: string) => string
+        },
+      ) => {
+        parentRoute.staticFolder(folderPath, options)
+
+        if (methodMap) {
+          const handler = methodMap.get('get')
+          if (handler) {
+            const fastifyHandler = this.createFastifyHandler(handler)
+            this.instance.get(path, fastifyHandler)
+          }
+        }
+
+        return route
+      },
+    } as InternalSpecificRoute<FastifyRequest>
+
+    return route
+  }
+
+  private createFastifyHandler(
+    handler: InternalGenericRequestHandler<FastifyRequest>,
+  ): RouteHandlerMethod {
+    return (req, res) => {
+      // Add close event listener to the request
+      Object.assign(req, {
+        on(event: 'close', listener: () => {}) {
+          req.raw.on(event, listener)
+        },
+      })
+
+      const response = this.createFastifyResponse(res)
+      handler(req, response, () => {})
+    }
+  }
+
+  private createFastifyResponse(res: any): TypicalRouteInfo {
+    const tri = getBaseTypicalRouteInfo({
+      url: res.request.url,
+      headers: res.request.headers,
+    })
+
+    return {
+      req: tri.req,
+      res: {
+        redirect: (url, statusCode = 307) => {
+          res.redirect(statusCode, url)
+        },
         status(statusCode) {
           res.status(statusCode)
-          return myRes
+          return this
         },
         end() {
           res.send()
         },
-        send(html) {
-          res.type('text/html').send(html)
+        send(html, headers) {
+          res.type(headers?.['Content-Type'] || 'text/html').send(html)
         },
         json(data) {
           res.send(data)
         },
+      },
+      sse: {
         write(data: string) {
           res.raw.write(data)
         },
         writeHead(status: number, headers: any) {
           res.raw.writeHead(status, headers)
         },
-      }
-      Object.assign(req, {
-        on(event: 'close', listener: () => {}) {
-          req.raw.on(event, listener)
-        },
-      })
-      handler(req, myRes, () => { })
-    }
-    return response
-  }
-  const api = createRemultServer(options, {
-    buildGenericRequestInfo: (req) => req,
-    getRequestBody: async (req) => req.body,
-  })
-  const pluginFunction: FastifyPluginCallback = async (
-    instance: FastifyInstance,
-    op,
-  ) => {
-    //@ts-ignore
-    let fastifyRouter: GenericRouter = {
-      route(path: string) {
-        let r = {
-          delete(handler) {
-            instance.delete(path, fastifyHandler(handler))
-            return r
+      },
+      cookie: (name) => {
+        return {
+          set: (value, options = {}) => {
+            res.header('Set-Cookie', serialize(name, value, options))
           },
-          get(handler) {
-            instance.get(path, fastifyHandler(handler))
-            return r
+          get: (options = {}) => {
+            const cookieHeader = res.request.headers.cookie
+            return cookieHeader ? parse(cookieHeader, options)[name] : undefined
           },
-          post(handler) {
-            instance.post(path, fastifyHandler(handler))
-            return r
+          delete: (options = {}) => {
+            res.header(
+              'Set-Cookie',
+              serialize(name, '', { ...options, maxAge: 0 }),
+            )
           },
-          put(handler) {
-            instance.put(path, fastifyHandler(handler))
-            return r
-          },
-        } as SpecificRoute<FastifyRequest>
-        return r
+        }
+      },
+      setHeaders: (headers) => {
+        Object.entries(headers).forEach(([key, value]) => {
+          res.header(key, value)
+        })
       },
     }
-    api.registerRouter(fastifyRouter)
+  }
+}
+
+export function remultApi(
+  options: RemultServerOptions<FastifyRequest>,
+): RemultFastifyServer {
+  const coreOptions: ServerCoreOptions<FastifyRequest> = {
+    buildGenericRequestInfo: (req) => req,
+    getRequestBody: async (req) => req.body,
+  }
+
+  const api = createRemultServer(options, coreOptions)
+
+  const pluginFunction: FastifyPluginCallback = async (
+    instance: FastifyInstance,
+  ) => {
+    const router = new FastifyRouteImplementation(instance, coreOptions)
+    api.registerRouter(router)
   }
 
   return Object.assign(pluginFunction, {
-    getRemult: (x: FastifyRequest) => api.getRemult(x),
-    openApiDoc: (x: any) => api.openApiDoc(x),
-    withRemult: <T>(req: FastifyRequest, what: () => Promise<T>) =>
-      api.withRemultAsync<T>(req, what),
+    getRemult: (req: FastifyRequest) => api.getRemult(req),
+    openApiDoc: (options: any) => api.openApiDoc(options),
+    withRemult: <T>(req: FastifyRequest, action: () => Promise<T>) =>
+      api.withRemultAsync<T>(req, action),
   })
 }
 
