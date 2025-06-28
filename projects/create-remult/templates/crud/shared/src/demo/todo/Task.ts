@@ -1,13 +1,15 @@
 import { Entity, Fields } from "remult";
 
-@Entity("tasks", {
+@Entity<Task>("tasks", {
   allowApiCrud: true,
 })
 export class Task {
   @Fields.cuid()
   id = "";
 
-  @Fields.string()
+  @Fields.string<Task>({
+    validate: (item) => item.title.length > 2 || "Too short",
+  })
   title = "";
 
   @Fields.boolean()
