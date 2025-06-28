@@ -9,7 +9,7 @@ const initRequestModule = new Module({
     if (req.headers.get('remult-test-crash') === 'yes') {
       throw new Error('test crash')
     }
-    if (remult.context.headers!.get('remult-test-crash-ctx') === 'yes-c') {
+    if (remult.context.headers?.get('remult-test-crash-ctx') === 'yes-c') {
       throw new Error('test crash')
     }
   },

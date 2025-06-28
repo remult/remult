@@ -16,7 +16,7 @@ export const initRequestModule = new Module({
       throw new Error('test crash')
     }
 
-    if (remult.context.headers!.get('remult-test-crash-ctx') === 'yes-c') {
+    if (remult.context.headers?.get('remult-test-crash-ctx') === 'yes-c') {
       throw new Error('test crash')
     }
   },
