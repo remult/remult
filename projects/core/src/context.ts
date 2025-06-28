@@ -345,9 +345,11 @@ export type GetArguments<T> = T extends (...args: infer FirstArgument) => any
  *  */
 
 export interface RemultContext {
-  headers?: {
-    get: (key: string) => string | null
-    getAll: () => Record<string, string>
+  _?: {
+    headers: {
+      get: (key: string) => string | null
+      getAll: () => Record<string, string>
+    }
   }
 }
 /**

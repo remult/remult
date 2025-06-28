@@ -1,7 +1,12 @@
 import type { ResponseRequiredForSSE } from '../SseSubscriptionServer.js'
 import { SseSubscriptionServer } from '../SseSubscriptionServer.js'
 import type { ClassType } from '../classType.js'
-import type { Allowed, AllowedForInstance, UserInfo } from '../src/context.js'
+import type {
+  Allowed,
+  AllowedForInstance,
+  RemultContext,
+  UserInfo,
+} from '../src/context.js'
 import { Remult, RemultAsyncLocalStorage, withRemult } from '../src/context.js'
 import type { DataApiRequest, DataApiResponse } from '../src/data-api.js'
 import { DataApi, serializeError } from '../src/data-api.js'
@@ -749,14 +754,16 @@ export class RemultServerImplementation<RequestType>
           await this.runWithRemult(async (remult) => {
             if (req) {
               ;(remult.context as { request: any }).request = req
-              ;(remult.context as any).headers = {
-                get: (key: string) => genReqPublic.headers.get(key),
-                getAll: () => {
-                  const result: Record<string, string> = {}
-                  genReqPublic.headers.forEach((value, key) => {
-                    result[key] = value
-                  })
-                  return result
+              ;(remult.context as RemultContext)._ = {
+                headers: {
+                  get: (key: string) => genReqPublic.headers.get(key),
+                  getAll: () => {
+                    const result: Record<string, string> = {}
+                    genReqPublic.headers.forEach((value, key) => {
+                      result[key] = value
+                    })
+                    return result
+                  },
                 },
               }
               remultStatic.asyncContext.setInInitRequest(true)

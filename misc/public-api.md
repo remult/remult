@@ -2384,9 +2384,11 @@ export declare class Remult {
   apiClient: ApiClient
 }
 export interface RemultContext {
-  headers?: {
-    get: (key: string) => string | null
-    getAll: () => Record<string, string>
+  _?: {
+    headers: {
+      get: (key: string) => string | null
+      getAll: () => Record<string, string>
+    }
   }
 }
 export declare function repo<entityType>(
