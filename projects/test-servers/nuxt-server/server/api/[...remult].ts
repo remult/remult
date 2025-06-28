@@ -1,6 +1,20 @@
 import { remultApi } from 'remult/remult-nuxt'
 import { Task } from '~/shared/Task.js'
-import { initRequestModule } from '../../../../test-servers/shared/modules/initRequest/server.js'
+import { Module } from 'remult/server'
+import { remult } from 'remult'
+
+export const initRequestModule = new Module({
+  key: 'init-request-module',
+  async initRequest(_, { req }) {
+    if (req.headers.get('remult-test-crash') === 'yes') {
+      throw new Error('test crash')
+    }
+
+    if (remult.context.headers?.get('remult-test-crash-ctx') === 'yes-c') {
+      throw new Error('test crash')
+    }
+  },
+})
 
 export const api = remultApi({
   entities: [Task],
