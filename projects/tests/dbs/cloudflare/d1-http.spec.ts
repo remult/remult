@@ -1,7 +1,6 @@
 import { beforeAll, beforeEach, describe, expect, it } from "vitest"
 import { Remult, SqlDatabase } from "../../../core"
-import { D1DataProvider } from "../../../core/remult-d1.js"
-import { D1HttpClient } from "../../../core/remult-d1-http.js"
+import { D1DataProvider, D1HttpClient } from "../../../core/remult-d1-http.js"
 import type { DbTestProps } from "../shared-tests/db-tests-props.js"
 import { allDbTests } from "../shared-tests/index.js"
 import { SqlDbTests } from "../shared-tests/sql-db-tests.js"
@@ -10,7 +9,8 @@ import { SqlDbTests } from "../shared-tests/sql-db-tests.js"
 const CLOUDFLARE_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID
 const CLOUDFLARE_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN
 const CLOUDFLARE_DATABASE_ID = process.env.CLOUDFLARE_DATABASE_ID
-describe.skipIf(!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_API_TOKEN || !CLOUDFLARE_DATABASE_ID)('d1', () => {
+
+describe.skipIf(!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_API_TOKEN || !CLOUDFLARE_DATABASE_ID)('d1-http', () => {
   let d1DataProvider: D1DataProvider
   let db: SqlDatabase
   let remult: Remult
@@ -75,4 +75,7 @@ describe.skipIf(!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_API_TOKEN || !CLOUDFLARE_D
       ]
     `)
   })
-})
+}, 15_000)
+// NOTE: need to set this because the aggregation test "basic test" needs more time to make the multiple network roundtrips.
+// for the array insert. Default vitest timeout is 5000ms. It looks like RepositoryImplementation does not do bulk insert 
+// unless data provider `isProxy`
