@@ -164,7 +164,13 @@ Arguments:
 ## entityRefInit
 A helper callback that is called whenever an entity is created.
 ## context
-context information that can be used to store custom information that will be disposed as part of the `remult` object
+context that can be used to store custom information that will be disposed as part of the `remult` object.
+
+`remult.context` is pre-filled in a framework-agnostic way with:
+  - `headers.get("x-info")`
+  - `headers.getAll()`
+
+Check out the [Extensibility section](/docs/custom-options#enhancing-field-and-entity-definitions-with-custom-options) for more custom options.
 ## apiClient
 The api client that will be used by `remult` to perform calls to the `api`
 ## user

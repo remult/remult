@@ -754,10 +754,9 @@ export class RemultServerImplementation<RequestType>
           await this.runWithRemult(async (remult) => {
             if (req) {
               ;(remult.context as unknown as { request: any }).request = req
-              remult.context.platform = {
-                getHeader: (key: string) =>
-                  genReqPublic.headers.get(key) ?? undefined,
-                getHeaders: () => {
+              remult.context.headers = {
+                get: (key) => genReqPublic.headers.get(key) ?? undefined,
+                getAll: () => {
                   const result: Record<string, string> = {}
                   genReqPublic.headers.forEach((value, key) => {
                     result[key] = value

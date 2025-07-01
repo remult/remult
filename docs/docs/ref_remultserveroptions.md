@@ -73,3 +73,22 @@ export const api = remultApi({
   }
 })
 ```
+## modules
+Modules are here to group code by feature.
+
+
+#### example:
+```ts
+import { Module } from 'remult/server'
+
+modules: [
+  new Module({
+    key: 'analytics',
+    entities: [AnalyticsEvent],
+    controllers: [AnalyticsController],
+    initApi: () => {
+      console.log('analytics module initialized')
+    },
+  }),
+]
+```
