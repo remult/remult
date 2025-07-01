@@ -297,7 +297,7 @@ async function init() {
   const pkgInfo = pkgFromUserAgent(process.env.npm_config_user_agent);
   const pkgManager = pkgInfo ? pkgInfo.name : "npm";
 
-  console.log(`\nScaffolding project in ${root}...`);
+  console.log(`\nScaffolding project in ${root}`);
 
   const templatesDir = path.resolve(
     fileURLToPath(import.meta.url),
@@ -398,15 +398,30 @@ async function init() {
       key: "AUTH_GITHUB_ID",
       comment:
         "Github OAuth App ID & Secret see https://authjs.dev/getting-started/providers/github",
+      optional: true,
     });
-    envVariables.push({ key: "AUTH_GITHUB_SECRET" });
+    envVariables.push({ key: "AUTH_GITHUB_SECRET", optional: true });
   }
-  if (envVariables.length > 0) {
+  const envToShow = envVariables.filter((env) => !env.optional && !env.value);
+  if (envToShow.length > 0) {
     console.log(
       `  Set the following environment variables in the '${envFile}' file:`,
     );
-    envVariables.forEach((env) => {
-      console.log(`    ${env.key} ${env.comment ? `# ${env.comment}` : ""}`);
+    envToShow.forEach((env) => {
+      if (env.comment) {
+        console.log(`    ${gray(`# ${env.comment}`)}`);
+      }
+      console.log(
+        `    ${env.key}=${
+          env.value
+            ? `*****${" ".repeat(20 - env.key.length)}${gray(
+                "# done by the cli",
+              )}`
+            : env.optional
+            ? `${" ".repeat(25 - env.key.length)}${gray("# optional")}`
+            : ""
+        }`,
+      );
     });
   }
   function buildEnv(withValue?: boolean) {
