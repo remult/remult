@@ -26,8 +26,8 @@ export class Module<RequestType> {
     this.priority = options.priority ?? 0
     this.entities = options.entities
     this.controllers = options.controllers
-    this.initRequest = options.initRequest
     this.initApi = options.initApi
+    this.initRequest = options.initRequest
     this.modules = options.modules
   }
 }

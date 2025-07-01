@@ -167,10 +167,10 @@ A helper callback that is called whenever an entity is created.
 context that can be used to store custom information that will be disposed as part of the `remult` object.
 
 `remult.context` is pre-filled in a framework-agnostic way with:
-  - `headers.get("x-info")`
-  - `headers.getAll()`
+  - `headers.get(key: string)` _of request_
+  - `headers.getAll()` _of request_
 
-Check out the [Extensibility section](/docs/custom-options#enhancing-field-and-entity-definitions-with-custom-options) for more custom options.
+Check out the [extensibility section](/docs/custom-options#enhancing-field-and-entity-definitions-with-custom-options) for more custom options.
 ## apiClient
 The api client that will be used by `remult` to perform calls to the `api`
 ## user

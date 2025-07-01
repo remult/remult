@@ -153,16 +153,23 @@ export interface RemultServerOptions<RequestType> {
    * @example
    * import { Module } from 'remult/server'
    *
-   * modules: [
-   *   new Module({
-   *     key: 'analytics',
-   *     entities: [AnalyticsEvent],
-   *     controllers: [AnalyticsController],
-   *     initApi: () => {
-   *       console.log('analytics module initialized')
-   *     },
-   *   }),
-   * ]
+   * // create an analytics module
+   * const analytics = () => new Module({
+   *   key: 'analytics',
+   *   priority: 11, // Default: 0, Prioritized by ascending order.
+   *   entities: [AnalyticsEvent],
+   *   controllers: [AnalyticsController],
+   *   initApi: () => console.log('analytics module initialized'),
+   *   initRequest: () => {},
+   *   modules: [] // You can nest modules
+   * })
+   *
+   * // use the module in the remultApi
+   * remultApi({
+   *   modules: [
+   *     analytics(),
+   *   ]
+   * })
    */
   modules?: Module<RequestType>[]
 }
