@@ -69,7 +69,7 @@ export {
 import { LabelTransformer } from './src/remult3/RepositoryImplementation.js'
 export { LabelTransformer } from './src/remult3/RepositoryImplementation.js'
 /**
- * @obsolete use LabelTransformer instead
+ * @deprecated use `LabelTransformer` instead
  */
 export const CaptionTransformer = LabelTransformer
 export { Entity } from './src/remult3/entity.js'
