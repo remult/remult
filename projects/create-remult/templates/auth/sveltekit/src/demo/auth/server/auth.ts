@@ -5,8 +5,8 @@ import GitHub from "@auth/sveltekit/providers/github";
 import type { RequestEvent } from "@sveltejs/kit";
 import { repo, withRemult, type UserInfo } from "remult";
 import bcrypt from "bcryptjs";
-import { User } from "../demo/auth/User";
-import { Roles } from "../demo/auth/Roles";
+import { User } from "../User";
+import { Roles } from "../Roles";
 
 // Configuration for Auth.js
 const authConfig: SvelteKitAuthConfig = {
@@ -78,8 +78,10 @@ const authConfig: SvelteKitAuthConfig = {
     },
   },
 };
+
 // Auth.js middleware for SvelteKit
 export const { handle } = SvelteKitAuth(authConfig);
+
 export type { ProviderType }; // Export ProviderType for use in `User.providerType`
 export async function getUserFromRequest(
   req: RequestEvent,

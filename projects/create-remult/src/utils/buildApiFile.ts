@@ -38,7 +38,7 @@ export function buildApiFile(
   }
   if (auth) {
     imports.push({
-      from: "./auth.js",
+      from: "../demo/auth/server/auth.js",
       imports: ["getUserFromRequest"],
     });
     imports.push({
