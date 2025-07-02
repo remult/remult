@@ -758,7 +758,7 @@ export function remultGraphql(options: {
               currentType.fields.push({
                 key: f.key,
                 value: `${getMetaType(ref)}${f.allowNull ? '' : '!'}`,
-                comment: f.caption,
+                comment: f.label,
               })
               currentType.query.resultProcessors.push((r, orig) => {
                 r[f.key] = async (args: any, req: any, gqlInfo: any) => {
@@ -844,7 +844,7 @@ export function remultGraphql(options: {
           currentType.fields.push({
             key: f.key,
             value: `${getMetaType(ref)}${f.allowNull ? '' : '!'}`,
-            comment: f.caption,
+            comment: f.label,
           })
           const refKey = ref.key
           currentType.query.resultProcessors.push((r) => {
@@ -895,7 +895,7 @@ export function remultGraphql(options: {
           currentType.fields.push({
             key: f.key,
             value: `${type}${f.allowNull ? '' : '!'}`,
-            comment: f.caption,
+            comment: f.label,
           })
         }
 

@@ -279,7 +279,7 @@ When you require additional customization for a relation field in Remult, you ca
 ```typescript
 @Relations.toOne<Order, Customer>(() => Customer, {
   field: "customerId", // [!code ++]
-  caption: "The Customer",
+  label: "The Customer",
 })
 ```
 
@@ -287,7 +287,7 @@ In this example, we use the `field` option to define a custom relation between t
 
 1. **Custom Relation Field**: The `field` option allows you to specify a custom field name (e.g., `"customerId"`) that represents the relationship between entities. This field can be used to access related data without loading the entire related entity.
 
-2. **Additional Configuration**: In addition to specifying the `field`, you can include other options as well. In this example, we set the `caption` option to provide a descriptive caption for the relation field.
+2. **Additional Configuration**: In addition to specifying the `field`, you can include other options as well. In this example, we set the `label` option to provide a descriptive label for the relation field.
 
 Using the `field` option provides you with granular control over how the relation field is configured and accessed . You can customize various aspects of the relation to meet your specific requirements, enhance documentation, and improve the overall usability of your codebase.
 

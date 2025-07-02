@@ -19,7 +19,7 @@ export class Task {
   id!: string
 
   @Fields.string({
-    caption: 'Title of the task',
+    label: 'Title of the task',
     validate: Validators.required // [!code ++]
   })
   title = ''
@@ -57,7 +57,7 @@ export default function App() {
   return (
     <div>
       <form onSubmit={addTask}> 
-        <label>{repo(Task).metadata.fields.title.caption}</label>
+        <label>{repo(Task).metadata.fields.title.label}</label>
         <input
           value={newTaskTitle} 
           onChange={e => setNewTaskTitle(e.target.value)} 
@@ -105,7 +105,7 @@ export default function App() {
 </script>
 
 <form onsubmit={addTask}> 
-  <label>{repo(Task).metadata.fields.title.caption}</label>
+  <label>{repo(Task).metadata.fields.title.label}</label>
   <input bind:value={newTask.title} /> 
   <button>Add</button> 
 </form> 
@@ -145,7 +145,7 @@ export default function App() {
 
 <template>
   <form @submit.prevent="addTask()">
-    <label>{repo(Task).metadata.fields.title.caption}</label>
+    <label>{repo(Task).metadata.fields.title.label}</label>
     <input v-model="newTask.title" />
     <button>Add</button>
   </form>
@@ -175,7 +175,7 @@ import { Task } from './entities'
 export class TodoComponent implements OnInit {
   tasks: Task[] = []
   newTask = repo(Task).create()
-  titleCaption = repo(Task).metadata.fields.title.caption
+  titleLabel = repo(Task).metadata.fields.title.label
   error?: string
 
   ngOnInit() {
@@ -200,7 +200,7 @@ export class TodoComponent implements OnInit {
       framework: 'angular',
       languageCodeHighlight: 'html',
       content: `<form (ngSubmit)="addTask()">
-  <label>{{titleCaption}}</label>
+  <label>{{titleLabel}}</label>
   <input [(ngModel)]="newTask.title" name="title" />
   <button type="submit">Add</button>
   <div *ngIf="error" class="error">{{error}}</div>

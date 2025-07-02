@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { Entity, EntityBase, Fields } from '../../core'
+import { Entity, EntityBase, Fields, repo } from '../../core'
 import { Remult } from '../../core/src/context'
 
 @Entity('my entity')
@@ -20,14 +20,26 @@ describe('test decorator precedence', () => {
     let c = new Remult()
     let r = c.repo(myEntity)
     expect([...r.metadata.fields].length).toBe(3)
-    expect(r.metadata.fields.a.caption).toBe('123')
-    expect(r.metadata.fields.b.caption).toBe('123')
-    expect(r.metadata.fields.c.caption).toBe('456')
+    expect(r.metadata.fields.a.label).toBe('123')
+    expect(r.metadata.fields.b.label).toBe('123')
+    expect(r.metadata.fields.c.label).toBe('456')
   })
   it('testit', () => {
     let c = new Remult()
     let r = c.repo(user).create()
-    expect(r.$.username.metadata.caption).toBe('Username')
+    expect(r.$.username.metadata.label).toBe('Username')
+  })
+  it('test label', () => {
+    @Entity('test it', {
+      label: 'Test It',
+    })
+    class TestIt {
+      @Fields.string({ label: 'Test It' })
+      a!: string
+    }
+    var r = repo(TestIt)
+    expect(r.metadata.label).toBe('Test It')
+    expect(r.metadata.fields.a.label).toBe('Test It')
   })
 })
 

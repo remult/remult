@@ -102,11 +102,11 @@ import { SubscribableImp } from './SubscribableImp.js'
 
 let classValidatorValidate:
   | ((
-    item: any,
-    ref: {
-      fields: FieldsRef<any>
-    },
-  ) => Promise<void>)
+      item: any,
+      ref: {
+        fields: FieldsRef<any>
+      },
+    ) => Promise<void>)
   | undefined = undefined
 // import ("class-validator".toString())
 //     .then((v) => {
@@ -127,7 +127,8 @@ let classValidatorValidate:
 //     });
 
 export class RepositoryImplementation<entityType>
-  implements Repository<entityType>, RepositoryInternal<entityType> {
+  implements Repository<entityType>, RepositoryInternal<entityType>
+{
   _notFoundError(id: any) {
     return {
       message: `id ${id} not found in entity ${this.metadata.key}`,
@@ -224,15 +225,15 @@ export class RepositoryImplementation<entityType>
     public _dataProvider: DataProvider,
     private _info: EntityFullInfo<entityType>,
     private _defaultFindOptions?: FindOptions<entityType>,
-  ) { }
+  ) {}
   async aggregate<
     sumFields extends NumericKeys<entityType>[] | undefined = undefined,
     averageFields extends NumericKeys<entityType>[] | undefined = undefined,
     minFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
     maxFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
     distinctCountFields extends
-    | (keyof MembersOnly<entityType>)[]
-    | undefined = undefined,
+      | (keyof MembersOnly<entityType>)[]
+      | undefined = undefined,
   >(
     options: Omit<
       GroupByOptions<
@@ -261,15 +262,15 @@ export class RepositoryImplementation<entityType>
   }
   async groupBy<
     groupByFields extends
-    | (keyof MembersOnly<entityType>)[]
-    | undefined = undefined,
+      | (keyof MembersOnly<entityType>)[]
+      | undefined = undefined,
     sumFields extends NumericKeys<entityType>[] | undefined = undefined,
     averageFields extends NumericKeys<entityType>[] | undefined = undefined,
     minFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
     maxFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
     distinctCountFields extends
-    | (keyof MembersOnly<entityType>)[]
-    | undefined = undefined,
+      | (keyof MembersOnly<entityType>)[]
+      | undefined = undefined,
   >(
     options: GroupByOptions<
       entityType,
@@ -329,7 +330,8 @@ export class RepositoryImplementation<entityType>
     const getFieldNotInGroupBy = (key: keyof entityType) => {
       if (options?.group?.includes(key as any))
         throw Error(
-          `field "${key as string
+          `field "${
+            key as string
           }" cannot be used both in an aggregate and in group by`,
         )
       return getField(key)
@@ -801,13 +803,13 @@ export class RepositoryImplementation<entityType>
         if (typeof l === 'function') {
           listener = {
             next: l,
-            complete: () => { },
-            error: () => { },
+            complete: () => {},
+            error: () => {},
           }
         }
 
-        listener.error ??= () => { }
-        listener.complete ??= () => { }
+        listener.error ??= () => {}
+        listener.complete ??= () => {}
         return this._remult.liveQuerySubscriber.subscribe<entityType>( //TODO - figure out why the type was required
           this,
           options!,
@@ -1624,7 +1626,7 @@ abstract class rowHelperBase<T> {
       for (const col of this.fieldsMetadata) {
         if (this.errors?.[col.key]) {
           error.message =
-            this.fields[col.key as keyof T].metadata.caption +
+            this.fields[col.key as keyof T].metadata.label +
             ': ' +
             this.errors[col.key]
           this.error = error.message
@@ -1707,7 +1709,7 @@ abstract class rowHelperBase<T> {
     this.originalValues = this.copyDataToObject()
     this.saveMoreOriginalData()
   }
-  saveMoreOriginalData() { }
+  saveMoreOriginalData() {}
   async validate() {
     this.__clearErrorsAndReportChanged()
     if (classValidatorValidate)
@@ -1724,7 +1726,7 @@ abstract class rowHelperBase<T> {
     await this.__performColumnAndEntityValidations()
     this.__assertValidity()
   }
-  async __performColumnAndEntityValidations() { }
+  async __performColumnAndEntityValidations() {}
   toApiJson(includeRelatedEntities = false, notJustApi = false) {
     let result: any = {}
     for (const col of this.fieldsMetadata) {
@@ -1787,7 +1789,8 @@ abstract class rowHelperBase<T> {
 
 export class rowHelperImplementation<T>
   extends rowHelperBase<T>
-  implements EntityRef<T> {
+  implements EntityRef<T>
+{
   constructor(
     private info: EntityFullInfo<T>,
     instance: T,
@@ -2043,7 +2046,7 @@ export class rowHelperImplementation<T>
     return d
   }
 
-  private buildLifeCycleEvent(preventDefault: VoidFunction = () => { }) {
+  private buildLifeCycleEvent(preventDefault: VoidFunction = () => {}) {
     const self = this
     return {
       isNew: self.isNew(),
@@ -2163,7 +2166,7 @@ export class rowHelperImplementation<T>
     }
 
     if (this.info.entityInfo.validation) {
-      let e = this.buildLifeCycleEvent(() => { })
+      let e = this.buildLifeCycleEvent(() => {})
       await this.info.entityInfo.validation(this.instance, e)
     }
     if (this.repo.listeners)
@@ -2237,7 +2240,8 @@ export function getControllerRef<fieldsContainerType>(
 
 export class controllerRefImpl<T = unknown>
   extends rowHelperBase<T>
-  implements ControllerRef<T> {
+  implements ControllerRef<T>
+{
   constructor(columnsInfo: FieldMetadata[], instance: any, remult: Remult) {
     super(columnsInfo, instance, remult, false)
 
@@ -2273,7 +2277,8 @@ export class controllerRefImpl<T = unknown>
   fields: FieldsRef<T>
 }
 export class FieldRefImplementation<entityType, valueType>
-  implements FieldRef<entityType, valueType> {
+  implements FieldRef<entityType, valueType>
+{
   constructor(
     private settings: FieldOptions,
     public metadata: FieldMetadata<valueType, entityType>,
@@ -2321,7 +2326,7 @@ export class FieldRefImplementation<entityType, valueType>
       } else {
         let val = await this.repo
           .relations(this.container)
-        [this.metadata.key].findOne()
+          [this.metadata.key].findOne()
         if (val) this.container[this.metadata.key] = val
         else return null! //TODO: check if this (!) is correct
       }
@@ -2472,13 +2477,23 @@ export class FieldRefImplementation<entityType, valueType>
     return !!!this.error
   }
 }
-let tempCaptionTransformer: (typeof remultStatic)['captionTransformer'] = {
-  transformCaption: (
+let tempLabelTransformer: (typeof remultStatic)['labelTransformer'] = {
+  transformLabel: (
     remult: Remult,
     key: string,
-    caption: string,
+    label: string,
     entityMetaData: EntityMetadata<any>,
-  ) => caption,
+  ) => label,
+  set transformCaption(
+    val: (
+      remult: Remult,
+      key: string,
+      caption: string,
+      entityMetaData: EntityMetadata<any>,
+    ) => string,
+  ) {
+    this.transformLabel = val
+  },
 }
 export const fieldOptionsEnricher: {
   enrichFieldOptions: (options: FieldOptions) => void
@@ -2486,62 +2501,66 @@ export const fieldOptionsEnricher: {
   enrichFieldOptions: (options: FieldOptions) => options,
 }
 
-export const CaptionTransformer: {
+export const LabelTransformer: {
   /**
-   * Transforms the caption of a column based on custom rules or criteria.
+   * Transforms the label of a column based on custom rules or criteria.
    *
    * This method can be assigned an arrow function that dynamically alters the
-   * caption of a column. It is particularly useful for internationalization,
-   * applying specific labeling conventions, or any other custom caption transformation
+   * label of a column. It is particularly useful for internationalization,
+   * applying specific labeling conventions, or any other custom label transformation
    * logic that your application requires.
    *
    * @param {Remult} remult - The Remult context, providing access to various framework features.
-   * @param {string} key - The key (name) of the field whose caption is being transformed.
-   * @param {string} caption - The original caption of the field.
+   * @param {string} key - The key (name) of the field whose label is being transformed.
+   * @param {string} label - The original label of the field.
    * @param {EntityMetadata<any>} entityMetaData - Metadata of the entity that the field belongs to.
-   * @returns {string} The transformed caption for the field. If no transformation is applied,
-   *                   the original caption is returned.
+   * @returns {string} The transformed label for the field. If no transformation is applied,
+   *                   the original label is returned.
    *
    * @example
-   * // Example of translating a field caption to French
-   * CaptionTransformer.transformCaption = (
-   *   remult, key, caption, entityMetaData
+   * // Example of translating a field label to French
+   * LabelTransformer.transformLabel = (
+   *   remult, key, label, entityMetaData
    * ) => {
    *   if (key === 'firstName') {
    *     return 'Prénom'; // French translation for 'firstName'
    *   }
-   *   return caption;
+   *   return label;
    * };
    *
    * // Usage
-   * const firstNameCaption = repo(Person).fields.firstName.caption; // Returns 'Prénom'
+   * const firstNameLabel = repo(Person).fields.firstName.label; // Returns 'Prénom'
+   */
+  transformLabel: (
+    remult: Remult,
+    key: string,
+    label: string,
+    entityMetaData: EntityMetadata<any>,
+  ) => string
+  /**
+   * @obsolete use LabelTransformer.transformLabel instead
    */
   transformCaption: (
     remult: Remult,
     key: string,
-    caption: string,
+    label: string,
     entityMetaData: EntityMetadata<any>,
   ) => string
 } =
-  remultStatic.captionTransformer ||
-  (remultStatic.captionTransformer = tempCaptionTransformer)
-export function buildCaption(
-  caption: string | ((remult: Remult) => string) | undefined,
+  remultStatic.labelTransformer ||
+  (remultStatic.labelTransformer = tempLabelTransformer)
+export function buildLabel(
+  label: string | ((remult: Remult) => string) | undefined,
   key: string,
   remult: Remult,
   metaData: EntityMetadata<any>,
 ): string {
   let result: string | undefined = undefined
-  if (typeof caption === 'function') {
-    if (remult) result = caption(remult)
-  } else if (caption) result = caption
+  if (typeof label === 'function') {
+    if (remult) result = label(remult)
+  } else if (label) result = label
 
-  result = CaptionTransformer.transformCaption(
-    remult,
-    key,
-    result ?? '',
-    metaData,
-  )
+  result = LabelTransformer.transformLabel(remult, key, result ?? '', metaData)
   if (result) return result
   if (key) return makeTitle(key)
   return ''
@@ -2565,10 +2584,11 @@ export class columnDefsImpl implements FieldMetadata {
             } catch (err: any) {
               const error = `${String(
                 prop,
-              )} failed for value ${args?.[0]}. Error: ${typeof err === 'string' ? err : err.message
-                }`
+              )} failed for value ${args?.[0]}. Error: ${
+                typeof err === 'string' ? err : err.message
+              }`
               throw new EntityError({
-                message: this.caption + ': ' + error,
+                message: this.label + ': ' + error,
                 modelState: {
                   [this.key]: error,
                 },
@@ -2589,8 +2609,8 @@ export class columnDefsImpl implements FieldMetadata {
     if (!this.inputType) this.inputType = this.valueConverter.inputType
     this.dbName = settings.dbName!
     if (this.dbName == undefined) this.dbName = settings.key!
-    this.caption = buildCaption(
-      settings.caption,
+    this.label = buildLabel(
+      settings.label ?? settings.caption,
       settings.key!,
       remult,
       entityDefs,
@@ -2628,7 +2648,10 @@ export class columnDefsImpl implements FieldMetadata {
   valueConverter: Required<ValueConverter<any>>
   allowNull: boolean
 
-  caption: string
+  label: string
+  get caption() {
+    return this.label
+  }
   dbName: string
 
   inputType: string
@@ -2685,17 +2708,22 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
 
     this.fields = r as unknown as FieldsMetadata<T>
 
-    this.caption = buildCaption(entityInfo.caption, this.key, remult, this)
+    this.label = buildLabel(
+      entityInfo.label ?? entityInfo.caption,
+      this.key,
+      remult,
+      this,
+    )
 
     if (entityInfo.id) {
       let r =
         typeof entityInfo.id === 'string'
           ? this.fields.find(entityInfo.id)
           : Array.isArray(entityInfo.id)
-            ? entityInfo.id.map((x: string) => this.fields.find(x))
-            : typeof entityInfo.id === 'function'
-              ? entityInfo.id(this.fields)
-              : Object.keys(entityInfo.id).map((x) => this.fields.find(x))
+          ? entityInfo.id.map((x: string) => this.fields.find(x))
+          : typeof entityInfo.id === 'function'
+          ? entityInfo.id(this.fields)
+          : Object.keys(entityInfo.id).map((x) => this.fields.find(x))
       if (Array.isArray(r)) {
         if (r.length > 1) this.idMetadata.field = new CompoundIdField(...r)
         else if (r.length == 1) this.idMetadata.field = r[0]
@@ -2794,7 +2822,10 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
   fields: FieldsMetadata<T>
 
   dbName: string
-  caption: string
+  label: string
+  get caption() {
+    return this.label
+  }
 }
 
 export function FieldType<valueType = unknown>(
@@ -2829,8 +2860,8 @@ export function ValueListFieldType<
   return (type: ClassType<valueType>, context?: any) => {
     FieldType<valueType>(
       (o) => {
-        ; (o.valueConverter = ValueListInfo.get(type)),
-          (o.displayValue = (item, val) => val?.caption)
+        ;(o.valueConverter = ValueListInfo.get(type)),
+          (o.displayValue = (item, val) => val?.label ?? val?.caption)
         o.validate = (entity, ref) => {
           const values = ValueListInfo.get(type).getValues()
           if (ref.value && !values.find((v) => v === ref.value)) {
@@ -2848,7 +2879,8 @@ export interface ValueListFieldOptions<entityType, valueType>
   getValues?: () => valueType[]
 }
 export class ValueListInfo<T extends ValueListItem>
-  implements ValueConverter<T> {
+  implements ValueConverter<T>
+{
   static get<T extends ValueListItem>(type: ClassType<T>): ValueListInfo<T> {
     let r = typeCache.get(type)
     if (!r) {
@@ -2866,8 +2898,7 @@ export class ValueListInfo<T extends ValueListItem>
       if (s instanceof this.valueListType) {
         if (s.id === undefined) s.id = member
         if (typeof s.id === 'number') this.isNumeric = true
-        if (s.caption === undefined)
-          s.caption = makeTitle(s.id !== undefined ? s.id.toString() : member)
+        setLabelAndCaption<T>(s, member)
         this.byIdMap.set(s.id, s)
         this.values.push(s)
       }
@@ -2886,8 +2917,7 @@ export class ValueListInfo<T extends ValueListItem>
           this.values.splice(0, this.values.length, ...op.getValues())
           this.byIdMap.clear()
           this.values.forEach((s) => {
-            if (s.caption === undefined && s.id !== undefined)
-              s.caption = makeTitle(s.id)
+            setLabelAndCaption<T>(s, '')
             this.byIdMap.set(s.id, s)
           })
         }
@@ -2899,7 +2929,7 @@ export class ValueListInfo<T extends ValueListItem>
     } else
       throw new Error(
         `ValueType not yet initialized, did you forget to call @ValueListFieldType on ` +
-        valueListType,
+          valueListType,
       )
   }
 
@@ -2937,6 +2967,14 @@ export class ValueListInfo<T extends ValueListItem>
   inputType?: string
 }
 const typeCache = new Map<any, ValueListInfo<any>>()
+function setLabelAndCaption<T extends ValueListItem>(s: T, member: string) {
+  let label = s.label ?? s.caption
+  if (label === undefined)
+    label = makeTitle(s.id !== undefined ? s.id.toString() : member)
+  if (s.label === undefined) s.label = label
+  if (s.caption === undefined) s.caption = label
+}
+
 export function getValueList<T>(field: FieldRef<T>): T[]
 export function getValueList<T>(field: FieldMetadata<T>): T[]
 export function getValueList<T>(type: ClassType<T>): T[]

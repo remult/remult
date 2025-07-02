@@ -23,7 +23,7 @@ export class Task {
   id!: string
 
   @Fields.string({ 
-    caption: 'Title of the task' // [!code ++]
+    label: 'Title of the task' // [!code ++]
   })
   title = ''
 }`,
@@ -56,7 +56,7 @@ export default function App() {
   return (
     <div>
       <form onSubmit={addTask}> 
-        <label>{repo(Task).metadata.fields.title.caption}</label> // [!code ++]
+        <label>{repo(Task).metadata.fields.title.label}</label> // [!code ++]
         <input
           value={newTaskTitle} 
           onChange={e => setNewTaskTitle(e.target.value)} 
@@ -100,7 +100,7 @@ export default function App() {
 </script>
 
 <form onsubmit={addTask}> 
-  <label>{repo(Task).metadata.fields.title.caption}</label> // [!code ++]
+  <label>{repo(Task).metadata.fields.title.label}</label> // [!code ++]
   <input bind:value={newTask.title} /> 
   <button>Add</button> 
 </form> 
@@ -136,7 +136,7 @@ export default function App() {
 
 <template>
   <form @submit.prevent="addTask()">
-    <label>{repo(Task).metadata.fields.title.caption}</label> // [!code ++]
+    <label>{repo(Task).metadata.fields.title.label}</label> // [!code ++]
     <input v-model="newTask.title" />
     <button>Add</button>
   </form>
@@ -166,7 +166,7 @@ import { Task } from './entities'
 export class TodoComponent implements OnInit {
   tasks: Task[] = []
   newTask = repo(Task).create()
-  titleCaption = repo(Task).metadata.fields.title.caption // [!code ++]
+  titleLabel = repo(Task).metadata.fields.title.label // [!code ++]
 
   ngOnInit() {
     repo(Task).find({ /* ... */ }).then(items => this.tasks = items)
@@ -186,7 +186,7 @@ export class TodoComponent implements OnInit {
       changed: true,
       languageCodeHighlight: 'html',
       content: `<form (ngSubmit)="addTask()">
-  <label>{{titleCaption}}</label> // [!code ++]
+  <label>{{titleLabel}}</label> // [!code ++]
   <input [(ngModel)]="newTask.title" name="title" />
   <button type="submit">Add</button>
 </form>

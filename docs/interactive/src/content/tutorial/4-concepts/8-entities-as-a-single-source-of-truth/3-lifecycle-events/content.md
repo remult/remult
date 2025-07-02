@@ -29,7 +29,7 @@ This example defines the following lifecycle hooks for the `Task` entity:
   - Runs before an entity is saved.
   - If the entity is new (indicated by `e.isNew`), it logs the task title with the message "New task."
   - If the entity is being updated, it iterates over all fields in `e.fields`, checking if any values have changed with `field.valueChanged()`.
-    - When a field has changed, it logs the field’s caption (`field.metadata.caption`), its original value (`field.originalValue`), and its new value (`field.value`).
+    - When a field has changed, it logs the field’s label (`field.metadata.label`), its original value (`field.originalValue`), and its new value (`field.value`).
 
 - **Deleting Hook**:
   - Runs before an entity is deleted.

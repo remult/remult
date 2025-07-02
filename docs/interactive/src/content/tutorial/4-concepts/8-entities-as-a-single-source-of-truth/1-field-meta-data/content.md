@@ -9,30 +9,30 @@ template: metadata
 
 Entities in Remult are not just a single source of truth for storage, APIs, and authentication—they can serve as a central point for managing any entity-related aspect across your application. Let’s explore how to utilize field metadata for consistent UI labeling and data formatting.
 
-### Setting Captions
+### Setting Labels
 
-To ensure consistent captions across your app, set the `caption` attribute directly in the field definition. This way, the same caption is automatically used wherever the field appears.
+To ensure consistent labels across your app, set the `label` attribute directly in the field definition. This way, the same label is automatically used wherever the field appears.
 
 ```file:/shared/Task.ts title="shared/Task.ts" collapse={1-6,16-100} add={12}
 
 ```
 
-### Accessing Captions
+### Accessing Labels
 
-Field metadata, like `caption`, can be accessed using the `fields` property of a repository:
+Field metadata, like `label`, can be accessed using the `fields` property of a repository:
 
 ```typescript
-const titleCaption = repo(Task).fields.title.caption
-console.log(titleCaption) // Outputs: "The Task Title"
+const titleLabel = repo(Task).fields.title.label
+console.log(titleLabel) // Outputs: "The Task Title"
 ```
 
-Using captions this way allows for a unified UI. For example, in `TodoItem.tsx`:
+Using labels this way allows for a unified UI. For example, in `TodoItem.tsx`:
 
 ```file:/frontend/TodoItem.tsx title="frontend/TodoItem.tsx" collapse={15-100} add={6,13}
 
 ```
 
-Try changing the caption of `title` in `Task` and observe how the UI updates automatically!
+Try changing the label of `title` in `Task` and observe how the UI updates automatically!
 
 ## Display Consistency with `displayValue`
 
@@ -78,7 +78,7 @@ Now, any date field can use this `displayDate` function for consistent date form
 import { displayDate } from './utils/displayValueHelpers'
 
 @Fields.createdAt({
-  caption: 'Task Creation Date',
+  label: 'Task Creation Date',
   displayValue: displayDate,
 })
 createdAt?: Date
@@ -102,7 +102,7 @@ With field metadata, you can abstract your UI components for consistent display 
 
 ```
 
-Click **"Solve"** at the top right of the code editor to see this abstraction in action. This dynamic UI approach ensures your fields are displayed with the same metadata-defined captions and formatting throughout the app.
+Click **"Solve"** at the top right of the code editor to see this abstraction in action. This dynamic UI approach ensures your fields are displayed with the same metadata-defined labels and formatting throughout the app.
 
 ---
 
@@ -115,7 +115,7 @@ return (
     <div>
       {fields.map((field) => (
         <div key={field.key}>
-          {field.caption}: <strong>{field.displayValue(task)}</strong>{' '}
+          {field.label}: <strong>{field.displayValue(task)}</strong>{' '}
           {getValueList(field as any)
             ? `(options: ${getValueList(field as any)})`
             : ''}

@@ -246,6 +246,12 @@ export interface EntityMetadata<entityType = unknown> {
    * @see {@link EntityOptions.caption}
    */
   readonly caption: string
+  /** A human readable label for the entity. Can be used to achieve a consistent label for a field throughout the app
+   * @example
+   * <h1>Create a new item in {taskRepo.metadata.label}</h1>
+   * @see {@link EntityOptions.label}
+   */
+  readonly label: string
   /** The name of the table in the database that holds the data for this entity.
    * If no name is set in the entity options, the `key` will be used instead.
    * @see {@link EntityOptions.dbName}
@@ -847,7 +853,7 @@ export interface Repository<entityType> {
   getEntityRef(item: entityType): EntityRef<entityType>
   /** Provides information about the fields of the Repository's entity
    * @example
-   * console.log(repo.fields.title.caption) // displays the caption of a specific field
+   * console.log(repo.fields.title.label) // displays the label of a specific field
    * console.log(repo.fields.title.options)// writes the options that were defined for this field
    */
   fields: FieldsMetadata<entityType>
@@ -1402,7 +1408,7 @@ export interface RelationOptions<
   toEntity,
   matchIdEntity,
   optionsType extends FindOptionsBase<toEntity> = FindOptionsBase<toEntity>,
-> extends Pick<FieldOptions, 'caption'> {
+> extends Pick<FieldOptions, 'caption' | 'label'> {
   /**
    * An object specifying custom field names for the relation.
    * Each key represents a field in the related entity, and its value is the corresponding field in the source entity.

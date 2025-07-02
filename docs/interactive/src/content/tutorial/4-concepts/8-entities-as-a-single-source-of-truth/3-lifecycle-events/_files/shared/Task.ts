@@ -9,7 +9,7 @@ import { Entity, Fields } from 'remult'
       for (const field of e.fields) {
         if (field.valueChanged())
           console.log(
-            `  Field ${field.metadata.caption} changed from ${field.originalValue} to ${field.value}`,
+            `  Field ${field.metadata.label} changed from ${field.originalValue} to ${field.value}`,
           )
       }
     }
