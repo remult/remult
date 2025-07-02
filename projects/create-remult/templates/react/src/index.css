@@ -118,9 +118,7 @@ h3 {
 button,
 .button,
 select,
-input[type="text"],
-input[type="date"],
-input[type="time"] {
+input {
   border-radius: 5px;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
