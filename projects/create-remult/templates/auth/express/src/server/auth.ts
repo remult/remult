@@ -5,8 +5,8 @@ import GitHub from "@auth/express/providers/github";
 import { Request } from "express";
 import { repo, withRemult, type UserInfo } from "remult";
 import bcrypt from "bcryptjs";
-import { User } from "../demo/auth/User.js";
-import { Roles } from "../demo/auth/Roles.js";
+import { User } from "../User.js";
+import { Roles } from "../Roles.js";
 
 // Configuration for Auth.js
 const authConfig: ExpressAuthConfig = {
