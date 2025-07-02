@@ -2378,7 +2378,15 @@ export declare class Remult {
   clearAllCache(): any
   /** A helper callback that is called whenever an entity is created. */
   static entityRefInit?: (ref: EntityRef<any>, row: any) => void
-  /** context information that can be used to store custom information that will be disposed as part of the `remult` object */
+  /**
+   * context that can be used to store custom information that will be disposed as part of the `remult` object.
+   *
+   * `remult.context` is pre-filled in a framework-agnostic way with:
+   *   - `headers.get(key: string)` _of request_
+   *   - `headers.getAll()` _of request_
+   *
+   * Check out the [extensibility section](/docs/custom-options#enhancing-field-and-entity-definitions-with-custom-options) for more custom options.
+   */
   readonly context: RemultContext
   /** The api client that will be used by `remult` to perform calls to the `api` */
   apiClient: ApiClient
@@ -3773,16 +3781,23 @@ export interface RemultServerOptions<RequestType> {
    * @example
    * import { Module } from 'remult/server'
    *
-   * modules: [
-   *   new Module({
-   *     key: 'analytics',
-   *     entities: [AnalyticsEvent],
-   *     controllers: [AnalyticsController],
-   *     initApi: () => {
-   *       console.log('analytics module initialized')
-   *     },
-   *   }),
-   * ]
+   * // create an analytics module
+   * const analytics = () => new Module({
+   *   key: 'analytics',
+   *   priority: 11, // Default: 0, Prioritized by ascending order.
+   *   entities: [AnalyticsEvent],
+   *   controllers: [AnalyticsController],
+   *   initApi: () => console.log('analytics module initialized'),
+   *   initRequest: () => {},
+   *   modules: [] // You can nest modules
+   * })
+   *
+   * // use the module in the remultApi
+   * remultApi({
+   *   modules: [
+   *     analytics(),
+   *   ]
+   * })
    */
   modules?: Module<RequestType>[]
 }
@@ -4003,16 +4018,23 @@ export interface RemultServerOptions<RequestType> {
    * @example
    * import { Module } from 'remult/server'
    *
-   * modules: [
-   *   new Module({
-   *     key: 'analytics',
-   *     entities: [AnalyticsEvent],
-   *     controllers: [AnalyticsController],
-   *     initApi: () => {
-   *       console.log('analytics module initialized')
-   *     },
-   *   }),
-   * ]
+   * // create an analytics module
+   * const analytics = () => new Module({
+   *   key: 'analytics',
+   *   priority: 11, // Default: 0, Prioritized by ascending order.
+   *   entities: [AnalyticsEvent],
+   *   controllers: [AnalyticsController],
+   *   initApi: () => console.log('analytics module initialized'),
+   *   initRequest: () => {},
+   *   modules: [] // You can nest modules
+   * })
+   *
+   * // use the module in the remultApi
+   * remultApi({
+   *   modules: [
+   *     analytics(),
+   *   ]
+   * })
    */
   modules?: Module<RequestType>[]
 }
