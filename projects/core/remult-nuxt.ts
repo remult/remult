@@ -1,4 +1,4 @@
-import type { ResponseRequiredForSSE } from 'SseSubscriptionServer.js'
+import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
 import type { H3Event } from 'h3'
 import { readBody, setResponseStatus } from 'h3'
 import type {
@@ -13,25 +13,28 @@ export function remultApi(
   options: RemultServerOptions<H3Event>,
 ): RemultNuxtServer {
   const result = createRemultServer<H3Event>(options, {
-    buildGenericRequestInfo: (event) => {
-      return {
+    buildGenericRequestInfo: (event) => ({
+      internal: {
         method: event.node.req.method,
         url: event.node.req.url,
         on: (a: 'close', b: () => void) =>
           event.node.req.on('close', () => {
             b()
           }),
-      }
-    },
+      },
+      public: {
+        headers: new Headers(event.node.req.headers as Record<string, string>),
+      },
+    }),
     getRequestBody: async (event) => await readBody(event),
   })
   const handler = async (event: H3Event) => {
     let sse = false
 
     const response: GenericResponse & ResponseRequiredForSSE = {
-      end: () => { },
-      send: () => { },
-      json: () => { },
+      end: () => {},
+      send: () => {},
+      json: () => {},
       status: () => {
         return response
       },

@@ -5,6 +5,7 @@ import { Task } from '../../test-servers/shared/Task.js'
 import { Remult, remult } from '../../core'
 import { RemultAsyncLocalStorage } from '../../core/src/context.js'
 import { allServerTests } from './all-server-tests.js'
+import { initRequestModule } from '../../test-servers/shared/modules/initRequest/server.js'
 
 describe('test hapi server', async () => {
   let destroy: () => Promise<void>
@@ -15,8 +16,8 @@ describe('test hapi server', async () => {
       const app = server({ port })
       const api = remultApi({
         entities: [Task],
-
         admin: true,
+        modules: [initRequestModule],
       })
       await app.register(api)
       app.route({

@@ -7,6 +7,7 @@ import { Task } from '../../test-servers/shared/Task.js'
 import { RemultAsyncLocalStorage } from '../../core/src/context.js'
 import { allServerTests } from './all-server-tests.js'
 import { remult } from '../../core/index.js'
+import { initRequestModule } from '../../test-servers/shared/modules/initRequest/server.js'
 
 describe('test holo server', async () => {
   let destroy: () => Promise<void>
@@ -17,6 +18,7 @@ describe('test holo server', async () => {
     const api = remultApi({
       entities: [Task],
       admin: true,
+      modules: [initRequestModule],
     })
     app.route('', api)
     app.get('/api/test', api.withRemult, async (c) =>

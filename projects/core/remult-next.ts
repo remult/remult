@@ -18,12 +18,15 @@ export function remultNext(
   options: RemultServerOptions<NextApiRequest>,
 ): RemultNextServer {
   let result = createRemultServer(options, {
-    buildGenericRequestInfo: (req) => req,
+    buildGenericRequestInfo: (req) => ({
+      internal: { ...req, on: req.on },
+      public: { headers: new Headers(req.headers as Record<string, string>) },
+    }),
     getRequestBody: async (req) => req.body,
   })
   return Object.assign(
     (req: NextApiRequest, res: GenericResponse) =>
-      result.handle(req, res).then(() => { }),
+      result.handle(req, res).then(() => {}),
     result,
     {
       getRemult: (req: NextApiRequest) => result.getRemult(req),
@@ -88,29 +91,31 @@ export function remultApi(
   let result = createRemultServer<Request>(options!, {
     getRequestBody: (req) => req.json(),
     buildGenericRequestInfo: (req) => ({
-      url: req?.url,
-      method: req?.method,
-
-      on: (e: 'close', do1: VoidFunction) => {
-        if (e === 'close') {
-          ; (req as any)['_tempOnClose'] = do1
-        }
+      internal: {
+        url: req?.url,
+        method: req?.method,
+        on: (e: 'close', do1: VoidFunction) => {
+          if (e === 'close') {
+            ;(req as any)['_tempOnClose'] = do1
+          }
+        },
       },
+      public: { headers: req.headers },
     }),
   })
   const handler = async (req: Request) => {
     {
       let sseResponse: Response | undefined = undefined
-        ; (req as any)['_tempOnClose'] = () => { }
+      ;(req as any)['_tempOnClose'] = () => {}
 
       const response: GenericResponse & ResponseRequiredForSSE = {
-        end: () => { },
-        json: () => { },
-        send: () => { },
+        end: () => {},
+        json: () => {},
+        send: () => {},
         status: () => {
           return response
         },
-        write: () => { },
+        write: () => {},
         writeHead: (status, headers) => {
           if (status === 200 && headers) {
             const contentType = headers['Content-Type']
@@ -127,8 +132,8 @@ export function remultApi(
                   }
                 },
                 cancel: () => {
-                  response.write = () => { }
-                    ; (req as any)['_tempOnClose']()
+                  response.write = () => {}
+                  ;(req as any)['_tempOnClose']()
                 },
               })
               sseResponse = new Response(stream, { headers })

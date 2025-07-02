@@ -318,8 +318,16 @@ export class Remult {
   }
   /** A helper callback that is called whenever an entity is created. */
   static entityRefInit?: (ref: EntityRef<any>, row: any) => void
-  /** context information that can be used to store custom information that will be disposed as part of the `remult` object */
-  readonly context: RemultContext = {} as any
+  /**
+   * context that can be used to store custom information that will be disposed as part of the `remult` object.
+   *
+   * `remult.context` is pre-filled in a framework-agnostic way with:
+   *   - `headers.get(key: string)` _of request_
+   *   - `headers.getAll()` _of request_
+   *
+   * Check out the [extensibility section](/docs/custom-options#enhancing-field-and-entity-definitions-with-custom-options) for more custom options.
+   */
+  readonly context: RemultContext = {} as RemultContext
   /** The api client that will be used by `remult` to perform calls to the `api` */
   apiClient: ApiClient = {
     url: '/api',
@@ -337,14 +345,19 @@ export type GetArguments<T> = T extends (...args: infer FirstArgument) => any
  * To type it correctly, you can extend it with your own properties.
  * @example
  * import type express from 'express'
+ *
  * declare module 'remult' {
  *   export interface RemultContext {
  *     request?: express.Request
  *   }
  * }
- *  */
-
-export interface RemultContext {}
+ */
+export interface RemultContext {
+  headers?: {
+    get: (key: string) => string | undefined
+    getAll: () => Record<string, string>
+  }
+}
 /**
  * Interface for configuring the API client used by Remult to perform HTTP calls to the backend.
  */

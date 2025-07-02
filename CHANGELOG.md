@@ -1,5 +1,10 @@
 All notable changes to this project will be documented in this file.
 
+## [3.0.6] 2025-7-x
+
+- Added [modules](https://remult.dev/docs/ref_remultserveroptions#modules) to `remultApi` options.
+- Added `remult.context.headers` to access the request headers in a framework-agnostic way.
+
 ## [3.0.5] 2025-6-6
 
 - Fixed a performance issue added in 3.0.0

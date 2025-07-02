@@ -7,9 +7,10 @@ import {
   type EntityMetadata,
   type Remult,
 } from '../index.js'
-import type { RemultServerOptions, GenericRequestInfo } from './index.js'
+import type { RemultServerOptions } from './index.js'
 import {
   createRemultServerCore,
+  type GenericRequestInfo,
   type RemultServerImplementation,
 } from './remult-api-server.js'
 import { remultStatic } from '../src/remult-static.js'
@@ -29,7 +30,10 @@ export function TestApiDataProvider(
     { ...options, dataProvider: dp },
     {
       getRequestBody: async (req) => req.body,
-      buildGenericRequestInfo: (req) => req,
+      buildGenericRequestInfo: (req) => ({
+        internal: req,
+        public: { headers: new Headers() },
+      }),
       ignoreAsyncStorage: true,
     },
   ) as RemultServerImplementation<GenericRequestInfo & { body?: any }>
