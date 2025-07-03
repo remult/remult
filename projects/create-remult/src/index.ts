@@ -326,15 +326,11 @@ async function init() {
     server ||
     Servers[argServer as keyof typeof Servers] ||
     Servers.express;
-  const safeServerName = fw.name || argServer;
 
-  // if (auth === undefined && argAuth === "auth.js") {
-  //   auth = true;
-  // }
+  const safeServerName = fw.serverInfo?.name || argServer || server;
   const authInfo: AuthInfo | undefined =
     auth || Auths[argAuth as keyof typeof Auths] || Auths.none;
 
-  // if (auth && !safeServer.auth) auth = false;
   const files = fs.readdirSync(templateDir);
   for (const file of files.filter((f) => !f.includes("node_modules"))) {
     write(file);
@@ -484,8 +480,8 @@ async function init() {
 
   if (safeServer.requiresTwoTerminal) {
     console.log(`  ${gray("Then, open two terminals and run:")}
-    npm run dev ${gray("      # in one for the frontend.")}
-    npm run dev-node ${gray(" # in the other for the backend.")}`);
+    npm run dev-node ${gray(" # in one for the backend.")}
+    npm run dev ${gray("      # in the other for the frontend.")}`);
   } else {
     console.log(`  npm run dev`);
   }
