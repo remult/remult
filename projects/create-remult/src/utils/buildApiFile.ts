@@ -42,7 +42,7 @@ export function buildApiFile(
       imports: ["getUserFromRequest"],
     });
     imports.push({
-      from: "../demo/auth/server",
+      from: "../demo/auth/server/index.js",
       imports: ["auth"],
     });
     serverArguments.push(`getUser: getUserFromRequest`);

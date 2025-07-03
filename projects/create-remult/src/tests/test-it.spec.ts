@@ -241,7 +241,7 @@ describe.sequential("test-write-react stuff", async () => {
   const nextAppDir = path.join(sourceDir, "app");
   const basicArgs: WriteFilesArgs = {
     admin: false,
-    copyDir: (_: string, _1: string) => { },
+    copyDir: (_: string, _1: string) => {},
     crud: true,
     db: DATABASES.json,
     framework: react,
@@ -398,7 +398,7 @@ describe.sequential("test-write-react stuff", async () => {
   });
   test.sequential("remove .js", () => {
     expect(
-      removeJs(`import type { ProviderType } from "../../server/auth.js";
+      removeJs(`import type { ProviderType } from "./server/auth.js";
 import { Roles } from "./Roles.js";`),
     ).toMatchInlineSnapshot(`
       "import type { ProviderType } from "../../server/auth";
@@ -479,12 +479,12 @@ if (false)
                 ) {
                   test.sequential(
                     "test " +
-                    fw.name +
-                    " db " +
-                    database +
-                    " server " +
-                    server +
-                    " with auth",
+                      fw.name +
+                      " db " +
+                      database +
+                      " server " +
+                      server +
+                      " with auth",
                     async () => {
                       const dir = await testItBuildsAndRuns({
                         template: fw.name,
