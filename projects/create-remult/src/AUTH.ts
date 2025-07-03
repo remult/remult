@@ -43,7 +43,7 @@ export const Auths: Record<string, AuthInfo | undefined> = {
       };
 
       if (server === "sveltekit") d["@auth/sveltekit"] = "^1.5.0";
-      else if (server === "nextjs") d["next-auth"] = '"^5.0.0-beta.21"';
+      else if (server === "nextjs") d["next-auth"] = "^5.0.0-beta.21";
       else if (server === "express") d["@auth/express"] = "^0.6.1";
       else if (server === "express-vite") d["@auth/express"] = "^0.6.1";
 
