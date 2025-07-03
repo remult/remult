@@ -97,6 +97,6 @@ jobs:
 
       - name: ➕ Create template
         run: cd projects/create-remult && node dist/index.mjs tmp-${{ matrix.template }}-${{ matrix.database }}-${{ matrix.server }}-${{ matrix.auth }} -t ${{ matrix.template }} -d ${{ matrix.database }} -s ${{ matrix.server }} -a ${{ matrix.auth }} --crud --admin
-
+      # tmp --force (because of 3.0.6-next.1 not accepted by @nerdfolio/remult-better-auth peer)
       - name: 🛠️ install & build
-        run: cd projects/create-remult/tmp-${{ matrix.template }}-${{ matrix.database }}-${{ matrix.server }}-${{ matrix.auth }} && npm i && npm run build
+        run: cd projects/create-remult/tmp-${{ matrix.template }}-${{ matrix.database }}-${{ matrix.server }}-${{ matrix.auth }} && npm i --force && npm run build
