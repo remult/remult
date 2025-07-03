@@ -364,6 +364,12 @@ async function init() {
       ...safeServer.devDependencies,
       ...authInfo?.devDependencies?.(safeServerName),
     });
+    if (authInfo?.scripts) {
+      pkg.scripts = {
+        ...pkg.scripts,
+        ...authInfo.scripts,
+      };
+    }
     if (fw === svelteKit) {
       pkg.devDependencies = sortObject({
         ...pkg.devDependencies,
