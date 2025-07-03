@@ -39,7 +39,7 @@ export const Auths: Record<string, AuthInfo | undefined> = {
 
     dependencies: (server) => {
       const d: Record<string, string> = {
-        bcryptjs: "^2.4.3",
+        bcryptjs: "^3.0.2",
       };
 
       if (server === "sveltekit") d["@auth/sveltekit"] = "^1.5.0";
@@ -50,9 +50,7 @@ export const Auths: Record<string, AuthInfo | undefined> = {
       return d;
     },
     devDependencies: () => {
-      const d = {
-        "@types/bcryptjs": "^2.4.6",
-      };
+      const d: Record<string, string> = {};
       return d;
     },
 
