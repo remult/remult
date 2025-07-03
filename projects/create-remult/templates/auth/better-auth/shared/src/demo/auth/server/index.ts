@@ -7,10 +7,7 @@ export const auth = () =>
   new Module({
     key: "auth",
     entities: Object.values(authEntities),
-    initApi: async () => {
-      // await User.createDemoUsers();
-    },
-    initRequest: async (req) => {
+    initRequest: async () => {
       const s = await authConfig.api.getSession({
         headers: new Headers(remult.context.headers?.getAll()),
       });

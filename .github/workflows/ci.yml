@@ -61,7 +61,6 @@ jobs:
 
           - template: sveltekit
             server: express
-
           - template: sveltekit
             server: fastify
           - template: sveltekit
@@ -75,11 +74,13 @@ jobs:
             server: express-vite
           - template: nuxt
             auth: auth.js
+          - template: nuxt
+            auth: better-auth
 
           - server: fastify
             auth: auth.js
-          - server: nuxt
-            auth: auth.js
+          - server: fastify
+            auth: better-auth
 
     steps:
       - name: 🌐 Checkout Repository
