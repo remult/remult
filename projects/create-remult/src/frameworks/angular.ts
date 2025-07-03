@@ -10,7 +10,7 @@ export const angular: Framework = {
   url: "https://angular.dev/",
   distLocation: (name: string) => `dist/${name}/browser`,
   writeFiles: (args) => {
-    if (args.withAuth) {
+    if (args.authInfo) {
       const proxy = JSON.parse(
         fs.readFileSync(path.join(args.root, "proxy.conf.json"), "utf-8"),
       );
@@ -45,7 +45,7 @@ ${
 `
           : ""
       }${
-        args.withAuth
+        args.authInfo
           ? `import { AuthComponent } from './demo/auth/auth.component';
 `
           : ""
@@ -72,7 +72,7 @@ ${
 `
           : ""
       }${
-        args.withAuth
+        args.authInfo
           ? `    AuthComponent,
 `
           : ``

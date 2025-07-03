@@ -6,7 +6,7 @@ export function prepareInfoReadmeAndHomepage(
   args: WriteFilesArgs & { frontendTemplate: string },
 ) {
   let {
-    withAuth,
+    authInfo,
     root,
     server,
     templatesDir,
@@ -57,8 +57,11 @@ export function prepareInfoReadmeAndHomepage(
     });
     li.push(() => "<ServerStatus />");
   }
-  if (withAuth) {
-    copyDir(path.join(templatesDir, "auth", frontendTemplate), path.join(root));
+  if (authInfo) {
+    copyDir(
+      path.join(templatesDir, "auth", authInfo.name, frontendTemplate),
+      path.join(root),
+    );
 
     components.push({
       display: "auth.js",

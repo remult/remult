@@ -1,10 +1,12 @@
+import { AuthInfo } from "../AUTH.js";
+
 export function createViteConfig({
   framework,
-  withAuth,
+  authInfo,
   withPlugin,
 }: {
   framework: string;
-  withAuth: boolean;
+  authInfo: AuthInfo | undefined;
   withPlugin: boolean;
 }) {
   return `import { defineConfig } from "vite";
@@ -25,7 +27,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": "http://localhost:3002",${
-        withAuth
+        authInfo
           ? `
       "/auth": {
         target: "http://localhost:3002",

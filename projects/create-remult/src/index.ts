@@ -430,7 +430,7 @@ async function init() {
   fs.writeFileSync(path.join(root, envFile + ".example"), buildEnv(false));
   const writeFilesArgs = {
     root,
-    withAuth: authInfo !== undefined,
+    authInfo,
     distLocation: fw.distLocation?.(getProjectName()) || "dist",
     templatesDir,
     framework: fw,
@@ -442,15 +442,15 @@ async function init() {
     projectName: getProjectName(),
     envVariables,
   };
+
   if (authInfo) {
     copyDir(
-      path.join(templatesDir, "auth", authInfo.name, safeServer.name),
+      path.join(templatesDir, "auth", authInfo.name, safeServerName),
       root,
     );
     copyDir(path.join(templatesDir, "auth", authInfo.name, "shared"), root);
   }
   if (crud) {
-    //copyDir(path.join(templatesDir, "crud", safeServer.auth?.template!), root);
     copyDir(path.join(templatesDir, "crud", "shared"), root);
   }
   fw?.writeFiles?.(writeFilesArgs);

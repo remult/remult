@@ -9,6 +9,7 @@ import { vue } from "./frameworks/vue";
 import { angular } from "./frameworks/angular";
 import { nuxt } from "./frameworks/nuxt";
 import type { ComponentInfo } from "./utils/prepareInfoReadmeAndHomepage";
+import { AuthInfo } from "./AUTH.js";
 
 type ColorFunc = (str: string | number) => string;
 export type Framework = {
@@ -41,7 +42,7 @@ export type ServerInfo = {
 export type WriteFilesArgs = {
   root: string;
   distLocation: string;
-  withAuth: boolean;
+  authInfo: AuthInfo | undefined;
   templatesDir: string;
   framework: Framework;
   server: ServerInfo;
@@ -119,8 +120,8 @@ export const Servers = {
       "@types/node": "^22.7.7",
     },
     authImplementedReason: "not-yet",
-    writeFiles: ({ distLocation, withAuth, root }) => {
-      if (withAuth)
+    writeFiles: ({ distLocation, authInfo, root }) => {
+      if (authInfo)
         throw new Error(
           "auth not yet implemented for Fastify. Please use Express for now.",
         );
@@ -182,7 +183,7 @@ app.listen({ port: Number(process.env["PORT"] || 3002) }, () =>
         path.join(args.root, "vite.config.ts"),
         createViteConfig({
           framework: args.framework.name,
-          withAuth: args.withAuth,
+          authInfo: args.authInfo,
           withPlugin: true,
         }),
       );
@@ -191,7 +192,7 @@ app.listen({ port: Number(process.env["PORT"] || 3002) }, () =>
 } satisfies Record<string, ServerInfo>;
 function writeExpressIndex({
   distLocation,
-  withAuth,
+  authInfo,
   root,
   vitePlugin,
 }: WriteFilesArgs & { vitePlugin?: boolean }) {
@@ -214,7 +215,7 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"));`;
     path.join(root, "src/server/index.ts"),
     `import express from "express";
 ${
-  withAuth
+  authInfo
     ? `import { auth } from "../demo/auth/server/auth.js";
 `
     : ``
@@ -223,7 +224,7 @@ ${
 ${vitePlugin ? "export " : ""}const app = express();
 
 ${
-  withAuth
+  authInfo
     ? `app.set("trust proxy", true);
 app.use("/auth/*", auth);
 `
