@@ -25,6 +25,7 @@ export type Framework = {
 };
 
 export type ServerInfo = {
+  name: string;
   doesNotLikeJsFileSuffix?: boolean;
   componentInfo?: ComponentInfo;
 
@@ -35,10 +36,7 @@ export type ServerInfo = {
   devDependencies?: Record<string, string>;
   requiresTwoTerminal?: boolean;
   writeFiles?: (args: WriteFilesArgs) => void;
-  auth?: {
-    dependencies?: Record<string, string>;
-    template?: string;
-  };
+  authImplementedReason?: "not-yet";
 };
 export type WriteFilesArgs = {
   root: string;
@@ -73,6 +71,7 @@ export const FRAMEWORKS: Framework[] = [
 export const vite_express_key = "express_vite";
 export const Servers = {
   express: {
+    name: "express",
     componentInfo: {
       display: "Express",
       url: "https://expressjs.com/",
@@ -89,18 +88,19 @@ export const Servers = {
     devDependencies: {
       "@types/express": "^4.17.21",
     },
-    auth: {
-      template: "express",
+    // auth: {
+    //   template: "express",
 
-      dependencies: {
-        "@auth/express": "^0.6.1",
-      },
-    },
+    //   dependencies: {
+    //     "@auth/express": "^0.6.1",
+    //   },
+    // },
     writeFiles: (args) => {
       writeExpressIndex(args);
     },
   },
   fastify: {
+    name: "fastify",
     componentInfo: {
       display: "Fastify",
       url: "https://www.fastify.io/",
@@ -118,6 +118,7 @@ export const Servers = {
     devDependencies: {
       "@types/node": "^22.7.7",
     },
+    authImplementedReason: "not-yet",
     writeFiles: ({ distLocation, withAuth, root }) => {
       if (withAuth)
         throw new Error(
@@ -152,6 +153,7 @@ app.listen({ port: Number(process.env["PORT"] || 3002) }, () =>
     },
   },
   [vite_express_key]: {
+    name: "express-vite",
     componentInfo: {
       display: "Express vite plugin (experimental)",
       url: "https://expressjs.com/",
@@ -168,12 +170,12 @@ app.listen({ port: Number(process.env["PORT"] || 3002) }, () =>
       "@types/express": "^4.17.21",
       "vite3-plugin-express": "^0.1.10",
     },
-    auth: {
-      template: "express",
-      dependencies: {
-        "@auth/express": "^0.6.1",
-      },
-    },
+    // auth: {
+    //   template: "express",
+    //   dependencies: {
+    //     "@auth/express": "^0.6.1",
+    //   },
+    // },
     writeFiles: (args) => {
       writeExpressIndex({ ...args, vitePlugin: true });
       fs.writeFileSync(

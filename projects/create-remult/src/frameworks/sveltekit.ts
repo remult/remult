@@ -12,15 +12,16 @@ export const svelteKit: Framework = {
   url: "https://kit.svelte.dev/",
   componentFileSuffix: ".svelte",
   serverInfo: {
+    name: "sveltekit",
     remultServerFunction: "remultApi",
     import: "remult-sveltekit",
     doesNotLikeJsFileSuffix: true,
-    auth: {
-      template: "sveltekit",
-      dependencies: {
-        "@auth/sveltekit": "^1.5.0",
-      },
-    },
+    // auth: {
+    //   template: "sveltekit",
+    //   dependencies: {
+    //     "@auth/sveltekit": "^1.5.0",
+    //   },
+    // },
     writeFiles: (args) => {
       const apiPath = path.join(args.root, "src/server/api.ts");
 
@@ -61,13 +62,13 @@ export const svelteKit: Framework = {
     </div>
     <div class="intro__stack">
       ${info.components
-          .map(
-            (c) => `<div class="intro__stack-item">
+        .map(
+          (c) => `<div class="intro__stack-item">
         <span>${c.type}</span>
         ${c.display}
       </div>`,
-          )
-          .join("\n      ")}
+        )
+        .join("\n      ")}
     </div>
   </Tile>
   ${info.li.map((l) => `${l()}`).join("\n  ")}

@@ -19,6 +19,7 @@ import { buildApiFile } from "./utils/buildApiFile";
 import { extractEnvironmentVariables } from "./utils/extractEnvironmentVariables";
 import { removeJs } from "./frameworks/nextjs";
 import { svelteKit } from "./frameworks/sveltekit";
+import { type AuthInfo, Auths } from "./AUTH.js";
 
 const argv = minimist<{
   template?: string;
@@ -209,23 +210,21 @@ async function init() {
             { framework, server }: { framework: Framework; server: ServerInfo },
           ) => {
             const result =
-              Boolean(server?.auth || framework?.serverInfo?.auth) &&
-              (!argAuth || argAuth !== "auth.js");
+              (server?.authImplementedReason === undefined ||
+                framework?.serverInfo?.authImplementedReason === undefined) &&
+              (!argAuth || !Auths[argAuth as keyof typeof Auths]);
             return result ? "select" : null;
           },
           name: "auth",
           initial: 0,
           message: reset("Select auth:"),
-          choices: (framework: Framework) => [
-            {
-              title: "none",
-              value: false,
-            },
-            {
-              title: "auth.js",
-              value: true,
-            },
-          ],
+          choices: () =>
+            Object.keys(Auths).map((auth) => ({
+              title:
+                Auths[auth as keyof typeof Auths]?.componentInfo?.display ||
+                "None",
+              value: Auths[auth as keyof typeof Auths],
+            })),
         },
         {
           type:
@@ -316,7 +315,7 @@ async function init() {
     }
   };
 
-  if (auth === undefined) auth = argAuth === "auth.js";
+  // if (auth === undefined) auth = argAuth === "auth.js";
 
   const db: DatabaseType =
     database || DATABASES[argDatabase as keyof typeof DATABASES];
@@ -327,11 +326,15 @@ async function init() {
     server ||
     Servers[argServer as keyof typeof Servers] ||
     Servers.express;
+  const safeServerName = fw.name || argServer;
 
-  if (auth === undefined && argAuth === "auth.js") {
-    auth = true;
-  }
-  if (auth && !safeServer.auth) auth = false;
+  // if (auth === undefined && argAuth === "auth.js") {
+  //   auth = true;
+  // }
+  const authInfo: AuthInfo | undefined =
+    auth || Auths[argAuth as keyof typeof Auths] || Auths.none;
+
+  // if (auth && !safeServer.auth) auth = false;
   const files = fs.readdirSync(templateDir);
   for (const file of files.filter((f) => !f.includes("node_modules"))) {
     write(file);
@@ -357,13 +360,13 @@ async function init() {
       remult: "3.0.6-next.1",
       ...db.dependencies,
       ...safeServer.dependencies,
-      ...(auth ? { ...safeServer.auth?.dependencies, bcryptjs: "^2.4.3" } : {}),
+      ...authInfo?.dependencies?.(safeServerName),
     });
     pkg.devDependencies = sortObject({
       ...pkg.devDependencies,
       ...db.devDependencies,
       ...safeServer.devDependencies,
-      ...(auth ? { "@types/bcryptjs": "^2.4.6" } : {}),
+      ...authInfo?.devDependencies?.(safeServerName),
     });
     if (fw === svelteKit) {
       pkg.devDependencies = sortObject({
@@ -453,9 +456,12 @@ async function init() {
     projectName: getProjectName(),
     envVariables,
   };
-  if (auth) {
-    copyDir(path.join(templatesDir, "auth", safeServer.auth?.template!), root);
-    copyDir(path.join(templatesDir, "auth", "shared"), root);
+  if (authInfo) {
+    copyDir(
+      path.join(templatesDir, "auth", authInfo.name, safeServer.name),
+      root,
+    );
+    copyDir(path.join(templatesDir, "auth", authInfo.name, "shared"), root);
   }
   if (crud) {
     //copyDir(path.join(templatesDir, "crud", safeServer.auth?.template!), root);

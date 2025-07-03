@@ -50,7 +50,7 @@ describe("api file variations", async () => {
       "import { remultApi } from "remult/remult-express";
       import { createPostgresDataProvider } from "remult/postgres";
       import { getUserFromRequest } from "../demo/auth/server/auth.js";
-      import { auth } from "../demo/auth/server";
+      import { auth } from "../demo/auth/server/index.js";
         
       export const api = remultApi({
         dataProvider: createPostgresDataProvider({
@@ -78,7 +78,7 @@ describe("api file variations", async () => {
       import { MSSQL_SERVER, MSSQL_DATABASE, MSSQL_USER, MSSQL_PASSWORD, MSSQL_INSTANCE } from "$env/static/private";
       import { building } from "$app/environment";
       import { getUserFromRequest } from "../demo/auth/server/auth";
-      import { auth } from "../demo/auth/server";
+      import { auth } from "../demo/auth/server/index";
         
       export const api = remultApi({
         dataProvider: building ? undefined : createKnexDataProvider({
@@ -118,7 +118,7 @@ describe("api file variations", async () => {
       import { building } from "$app/environment";
       import { MongoDataProvider } from "remult/remult-mongo";
       import { getUserFromRequest } from "../demo/auth/server/auth";
-      import { auth } from "../demo/auth/server";
+      import { auth } from "../demo/auth/server/index";
         
       export const api = remultApi({
         dataProvider: building ? undefined : async () => {
@@ -136,7 +136,7 @@ describe("api file variations", async () => {
       .toMatchInlineSnapshot(`
         "import { remultApi } from "remult/remult-express";
         import { getUserFromRequest } from "../demo/auth/server/auth.js";
-        import { auth } from "../demo/auth/server";
+        import { auth } from "../demo/auth/server/index.js";
           
         export const api = remultApi({
           getUser: getUserFromRequest,
@@ -401,7 +401,7 @@ describe.sequential("test-write-react stuff", async () => {
       removeJs(`import type { ProviderType } from "./server/auth.js";
 import { Roles } from "./Roles.js";`),
     ).toMatchInlineSnapshot(`
-      "import type { ProviderType } from "../../server/auth";
+      "import type { ProviderType } from "./server/auth";
       import { Roles } from "./Roles";"
     `);
   });
@@ -475,7 +475,8 @@ if (false)
                   },
                 );
                 if (
-                  (Servers[server as keyof typeof Servers] as ServerInfo).auth
+                  (Servers[server as keyof typeof Servers] as ServerInfo)
+                    .authImplementedReason === undefined
                 ) {
                   test.sequential(
                     "test " +
@@ -511,7 +512,7 @@ if (false)
                 database: database,
               });
             });
-          if (fw.serverInfo?.auth) {
+          if (fw.serverInfo?.authImplementedReason === undefined) {
             test.sequential(
               "test " + fw.name + " db " + database + " with auth",
               async () => {

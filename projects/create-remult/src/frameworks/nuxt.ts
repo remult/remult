@@ -11,6 +11,7 @@ export const nuxt: Framework = {
   url: "https://nuxt.com/",
 
   serverInfo: {
+    name: "nuxt",
     remultServerFunction: "remultApi",
     import: "remult-nuxt",
     path: "server/api/[...remult].ts",
