@@ -211,25 +211,38 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"));`;
 }`;
   }
 
+  const getAuthImportPart = () => {
+    if (authInfo?.name === "auth.js") {
+      return `import { auth } from "../demo/auth/server/auth.js";
+`;
+    } else if (authInfo?.name === "better-auth") {
+      return `import { auth } from "../demo/auth/server/auth.js";
+import { toNodeHandler } from "better-auth/node";
+`;
+    }
+    return ``;
+  };
+
+  const getAuthCodePart = () => {
+    if (authInfo?.name === "auth.js") {
+      return `app.set("trust proxy", true);
+app.use("/auth/*", auth);
+`;
+    } else if (authInfo?.name === "better-auth") {
+      return `app.all("/api/auth/*", toNodeHandler(auth));
+`;
+    }
+    return ``;
+  };
+
   fs.writeFileSync(
     path.join(root, "src/server/index.ts"),
     `import express from "express";
-${
-  authInfo
-    ? `import { auth } from "../demo/auth/server/auth.js";
-`
-    : ``
-}import { api } from "./api.js";
+${getAuthImportPart()}import { api } from "./api.js";
 
 ${vitePlugin ? "export " : ""}const app = express();
 
-${
-  authInfo
-    ? `app.set("trust proxy", true);
-app.use("/auth/*", auth);
-`
-    : ``
-}app.use(api);
+${getAuthCodePart()}app.use(api);
 
 ` + serveExpress,
   );

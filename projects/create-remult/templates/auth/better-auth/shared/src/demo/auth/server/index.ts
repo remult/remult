@@ -1,6 +1,6 @@
 import { Module } from "remult/server";
-import { authEntities } from "../authEntities";
-import { auth as authConfig } from "./auth";
+import { authEntities } from "../authEntities.js";
+import { auth as authConfig } from "./auth.js";
 import { remult } from "remult";
 
 export const auth = () =>

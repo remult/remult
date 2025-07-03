@@ -1,7 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { remult } from "remult";
 import { TileComponent, type TileStatus } from "../tile/tile.component";
-import { createAuthClient } from "better-auth/angular";
+import { createAuthClient } from "better-auth/client";
 import { FormsModule } from "@angular/forms";
 
 @Component({
