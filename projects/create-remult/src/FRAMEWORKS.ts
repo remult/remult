@@ -69,7 +69,7 @@ export const FRAMEWORKS: Framework[] = [
   nuxt,
 ];
 
-export const vite_express_key = "express_vite";
+export const vite_express_key = "express-vite";
 export const Servers = {
   express: {
     name: "express",

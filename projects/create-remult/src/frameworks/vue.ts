@@ -16,12 +16,12 @@ export const vue: Framework = {
   canWorkWithVitePluginExpress: true,
   componentFileSuffix: ".vue",
   writeFiles: (args) => {
-    const { withAuth, root } = args;
+    const { authInfo, root } = args;
     fs.writeFileSync(
       path.join(root, "vite.config.ts"),
       createViteConfig({
         framework: "vue",
-        withAuth,
+        authInfo,
         withPlugin: false,
       }),
     );
@@ -83,13 +83,13 @@ ${writeImports(info.imports, args.server)}
       </div>
       <div class="intro__stack">
         ${info.components
-      .map(
-        (c) => `<div class="intro__stack-item">
+          .map(
+            (c) => `<div class="intro__stack-item">
           <span>${c.type}</span>
           ${c.display}
         </div>`,
-      )
-      .join("\n        ")}
+          )
+          .join("\n        ")}
       </div>
     </Tile>
     ${info.li.map((l) => `${l()}`).join("\n    ")}

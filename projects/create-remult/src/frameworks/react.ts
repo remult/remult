@@ -17,7 +17,7 @@ export const react: Framework = {
       path.join(args.root, "vite.config.ts"),
       createViteConfig({
         framework: "react",
-        withAuth: args.withAuth,
+        authInfo: args.authInfo,
         withPlugin: false,
       }),
     );
@@ -67,13 +67,13 @@ export default function ${framework === nextJs ? "Home" : "App"}() {
         </div>
         <div className="intro__stack">
           ${components
-      .map(
-        (c) => `<div className="intro__stack-item">
+            .map(
+              (c) => `<div className="intro__stack-item">
             <span>${c.type}</span>
             ${c.display}
           </div>`,
-      )
-      .join("\n          ")}
+            )
+            .join("\n          ")}
         </div>
       </Tile>
       ${li.map((l) => `${l()}`).join("\n      ")}

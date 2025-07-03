@@ -42,7 +42,7 @@ jobs:
         template: [react, angular, vue, nextjs, sveltekit, nuxt]
         database:
           [json, postgres, mysql, mongodb, bettersqlite3, sqlite3, mssql]
-        server: [express, fastify, express_vite, noserver]
+        server: [express, fastify, express-vite, noserver]
         auth: [auth.js, noauth]
         exclude:
           - template: react
@@ -57,7 +57,7 @@ jobs:
           - template: nextjs
             server: fastify
           - template: nextjs
-            server: express_vite
+            server: express-vite
 
           - template: sveltekit
             server: express
@@ -65,14 +65,14 @@ jobs:
           - template: sveltekit
             server: fastify
           - template: sveltekit
-            server: express_vite
+            server: express-vite
 
           - template: nuxt
             server: express
           - template: nuxt
             server: fastify
           - template: nuxt
-            server: express_vite
+            server: express-vite
           - template: nuxt
             auth: auth.js
 
