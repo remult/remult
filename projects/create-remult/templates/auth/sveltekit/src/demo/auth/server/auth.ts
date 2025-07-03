@@ -1,14 +1,15 @@
-import NextAuth, { NextAuthConfig } from "next-auth";
-import type { ProviderType } from "next-auth/providers";
-import Credentials from "next-auth/providers/credentials";
-import GitHub from "next-auth/providers/github";
+import { SvelteKitAuth, type SvelteKitAuthConfig } from "@auth/sveltekit";
+import type { ProviderType } from "@auth/sveltekit/providers";
+import Credentials from "@auth/sveltekit/providers/credentials";
+import GitHub from "@auth/sveltekit/providers/github";
+import type { RequestEvent } from "@sveltejs/kit";
 import { repo, withRemult, type UserInfo } from "remult";
 import bcrypt from "bcryptjs";
-import { User } from "../demo/auth/User.js";
-import { Roles } from "../demo/auth/Roles.js";
+import { User } from "../User";
+import { Roles } from "../Roles";
 
 // Configuration for Auth.js
-const authConfig: NextAuthConfig = {
+const authConfig: SvelteKitAuthConfig = {
   providers: [
     Credentials({
       credentials: {
@@ -77,11 +78,15 @@ const authConfig: NextAuthConfig = {
     },
   },
 };
-// Auth.js middleware for Next.js
-export const { handlers, signIn, signOut, auth } = NextAuth(authConfig);
+
+// Auth.js middleware for SvelteKit
+export const { handle } = SvelteKitAuth(authConfig);
+
 export type { ProviderType }; // Export ProviderType for use in `User.providerType`
-export async function getUserFromRequest(): Promise<UserInfo | undefined> {
-  const session = await auth(); // Get the session from the request
+export async function getUserFromRequest(
+  req: RequestEvent,
+): Promise<UserInfo | undefined> {
+  const session = await req.locals.auth(); // Get the session from the request
   if (!session?.user?.id) return undefined; // If no session or user ID, return undefined
   const user = await repo(User).findId(session.user.id); // Find the user in the database by their session ID
   if (!user) return undefined; // If no user is found, return undefined

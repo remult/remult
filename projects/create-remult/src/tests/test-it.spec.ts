@@ -49,18 +49,15 @@ describe("api file variations", async () => {
     ).toMatchInlineSnapshot(`
       "import { remultApi } from "remult/remult-express";
       import { createPostgresDataProvider } from "remult/postgres";
-      import { getUserFromRequest } from "./auth.js";
-      import { User } from "../demo/auth/User.js";
+      import { getUserFromRequest } from "../demo/auth/server/auth.js";
+      import { auth } from "../demo/auth/server";
         
       export const api = remultApi({
-        getUser: getUserFromRequest,
-        initApi: async () => {
-          await User.createDemoUsers();
-        },
         dataProvider: createPostgresDataProvider({
           connectionString: process.env["DATABASE_URL"]    
         }),
-        entities: [User],
+        getUser: getUserFromRequest,
+        modules: [auth()],
       });"
     `);
   });
@@ -80,14 +77,10 @@ describe("api file variations", async () => {
       import { createKnexDataProvider } from "remult/remult-knex";
       import { MSSQL_SERVER, MSSQL_DATABASE, MSSQL_USER, MSSQL_PASSWORD, MSSQL_INSTANCE } from "$env/static/private";
       import { building } from "$app/environment";
-      import { getUserFromRequest } from "./auth";
-      import { User } from "../demo/auth/User";
+      import { getUserFromRequest } from "../demo/auth/server/auth";
+      import { auth } from "../demo/auth/server";
         
       export const api = remultApi({
-        getUser: getUserFromRequest,
-        initApi: async () => {
-          await User.createDemoUsers();
-        },
         dataProvider: building ? undefined : createKnexDataProvider({
           client: "mssql",
           connection: {
@@ -102,7 +95,8 @@ describe("api file variations", async () => {
             },
           }
         }),
-        entities: [User],
+        getUser: getUserFromRequest,
+        modules: [auth()],
       });"
     `);
   });
@@ -123,20 +117,17 @@ describe("api file variations", async () => {
       import { MONGO_URL, MONGO_DB } from "$env/static/private";
       import { building } from "$app/environment";
       import { MongoDataProvider } from "remult/remult-mongo";
-      import { getUserFromRequest } from "./auth";
-      import { User } from "../demo/auth/User";
+      import { getUserFromRequest } from "../demo/auth/server/auth";
+      import { auth } from "../demo/auth/server";
         
       export const api = remultApi({
-        getUser: getUserFromRequest,
-        initApi: async () => {
-          await User.createDemoUsers();
-        },
         dataProvider: building ? undefined : async () => {
           const client = new MongoClient(MONGO_URL!)
           await client.connect()
           return new MongoDataProvider(client.db(MONGO_DB), client)
         },
-        entities: [User],
+        getUser: getUserFromRequest,
+        modules: [auth()],
       });"
     `);
   });
@@ -144,15 +135,12 @@ describe("api file variations", async () => {
     expect(buildApiFile(DATABASES.json, Servers.express, true, false, false))
       .toMatchInlineSnapshot(`
         "import { remultApi } from "remult/remult-express";
-        import { getUserFromRequest } from "./auth.js";
-        import { User } from "../demo/auth/User.js";
+        import { getUserFromRequest } from "../demo/auth/server/auth.js";
+        import { auth } from "../demo/auth/server";
           
         export const api = remultApi({
           getUser: getUserFromRequest,
-          initApi: async () => {
-            await User.createDemoUsers();
-          },
-          entities: [User],
+          modules: [auth()],
         });"
       `);
   });
@@ -253,7 +241,7 @@ describe.sequential("test-write-react stuff", async () => {
   const nextAppDir = path.join(sourceDir, "app");
   const basicArgs: WriteFilesArgs = {
     admin: false,
-    copyDir: (_: string, _1: string) => { },
+    copyDir: (_: string, _1: string) => {},
     crud: true,
     db: DATABASES.json,
     framework: react,
@@ -410,7 +398,7 @@ describe.sequential("test-write-react stuff", async () => {
   });
   test.sequential("remove .js", () => {
     expect(
-      removeJs(`import type { ProviderType } from "../../server/auth.js";
+      removeJs(`import type { ProviderType } from "./server/auth.js";
 import { Roles } from "./Roles.js";`),
     ).toMatchInlineSnapshot(`
       "import type { ProviderType } from "../../server/auth";
@@ -491,12 +479,12 @@ if (false)
                 ) {
                   test.sequential(
                     "test " +
-                    fw.name +
-                    " db " +
-                    database +
-                    " server " +
-                    server +
-                    " with auth",
+                      fw.name +
+                      " db " +
+                      database +
+                      " server " +
+                      server +
+                      " with auth",
                     async () => {
                       const dir = await testItBuildsAndRuns({
                         template: fw.name,
