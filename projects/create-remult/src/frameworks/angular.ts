@@ -10,7 +10,7 @@ export const angular: Framework = {
   url: "https://angular.dev/",
   distLocation: (name: string) => `dist/${name}/browser`,
   writeFiles: (args) => {
-    if (args.withAuth) {
+    if (args.authInfo) {
       const proxy = JSON.parse(
         fs.readFileSync(path.join(args.root, "proxy.conf.json"), "utf-8"),
       );
@@ -34,22 +34,26 @@ export const angular: Framework = {
 import { RouterOutlet } from '@angular/router';
 import { remult } from 'remult';
 import { TileComponent } from './demo/tile/tile.component';
-${args.crud
-        ? `import { TodoComponent } from './demo/todo/todo.component';
+${
+  args.crud
+    ? `import { TodoComponent } from './demo/todo/todo.component';
 `
-        : ""
-      }${args.server.requiresTwoTerminal
-        ? `import { ServerStatusComponent } from './demo/server-status/server-status.component';
+    : ""
+}${
+        args.server.requiresTwoTerminal
+          ? `import { ServerStatusComponent } from './demo/server-status/server-status.component';
 `
-        : ""
-      }${args.withAuth
-        ? `import { AuthComponent } from './demo/auth/auth.component';
+          : ""
+      }${
+        args.authInfo
+          ? `import { AuthComponent } from './demo/auth/auth.component';
 `
-        : ""
-      }${args.admin
-        ? `import { AdminComponent } from './demo/admin/admin.component';
+          : ""
+      }${
+        args.admin
+          ? `import { AdminComponent } from './demo/admin/admin.component';
 `
-        : ""
+          : ""
       }
 @Component({
   selector: 'app-root',
@@ -57,22 +61,26 @@ ${args.crud
   imports: [
     RouterOutlet,
     TileComponent,
-${args.crud
-        ? `    TodoComponent,
+${
+  args.crud
+    ? `    TodoComponent,
 `
-        : ""
-      }${args.server.requiresTwoTerminal
-        ? `    ServerStatusComponent,
+    : ""
+}${
+        args.server.requiresTwoTerminal
+          ? `    ServerStatusComponent,
 `
-        : ""
-      }${args.withAuth
-        ? `    AuthComponent,
+          : ""
+      }${
+        args.authInfo
+          ? `    AuthComponent,
 `
-        : ``
-      }${args.admin
-        ? `    AdminComponent,
+          : ``
+      }${
+        args.admin
+          ? `    AdminComponent,
 `
-        : ``
+          : ``
       }
   ],
   templateUrl: './app.component.html',
@@ -123,15 +131,15 @@ export class AppComponent {
   </app-tile>
 
   ${info.li
-        .map(
-          (l) =>
-            `${l()
-              .replace("<Auth", "<app-auth")
-              .replace("<Admin", "<app-admin")
-              .replace("<ServerStatus", "<app-server-status")
-              .replace("<Todo", "<app-todo")}`,
-        )
-        .join("\n  ")}
+    .map(
+      (l) =>
+        `${l()
+          .replace("<Auth", "<app-auth")
+          .replace("<Admin", "<app-admin")
+          .replace("<ServerStatus", "<app-server-status")
+          .replace("<Todo", "<app-todo")}`,
+    )
+    .join("\n  ")}
 </div>`,
     );
     createReadmeFile(

@@ -10,13 +10,14 @@ export const nextJs: Framework = {
 
   envFile: ".env.local",
   serverInfo: {
+    name: "nextjs",
     doesNotLikeJsFileSuffix: true,
     remultServerFunction: "remultApi",
     import: "remult-next",
-    auth: {
-      template: "nextjs",
-      dependencies: { "next-auth": "^5.0.0-beta.21" },
-    },
+    // auth: {
+    //   template: "nextjs",
+    //   dependencies: { "next-auth": "^5.0.0-beta.21" },
+    // },
   },
   writeFiles: (args) => {
     const { root } = args;
@@ -43,7 +44,7 @@ export default nextConfig;
       );
     }
     writeAppTsxAndReadme(args);
-    if (args.withAuth) {
+    if (args.authInfo) {
       const checkAuthPath = path.join(root, "src/demo/auth/Auth.tsx");
       fs.writeFileSync(
         checkAuthPath,

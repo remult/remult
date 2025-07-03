@@ -1,3 +1,4 @@
+import { AuthInfo } from "../AUTH.js";
 import type { DatabaseType } from "../DATABASES";
 import type { ServerInfo } from "../FRAMEWORKS";
 import { writeImports } from "./writeImports";
@@ -5,7 +6,7 @@ import { writeImports } from "./writeImports";
 export function buildApiFile(
   db: DatabaseType,
   server: ServerInfo,
-  auth: boolean,
+  auth: AuthInfo | undefined,
   admin: boolean,
   crud: boolean,
 ) {
@@ -37,16 +38,12 @@ export function buildApiFile(
     serverArguments.push(`entities: [${entities.join(", ")}]`);
   }
   if (auth) {
-    imports.push({
-      from: "../demo/auth/server/auth.js",
-      imports: ["getUserFromRequest"],
+    auth.apiFiles?.imports.forEach((i) => {
+      imports.push(i);
     });
-    imports.push({
-      from: "../demo/auth/server/index.js",
-      imports: ["auth"],
+    auth.apiFiles?.serverArguments.forEach((a) => {
+      serverArguments.push(a);
     });
-    serverArguments.push(`getUser: getUserFromRequest`);
-    serverArguments.push(`modules: [auth()]`);
   }
 
   let api = `
