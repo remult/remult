@@ -213,7 +213,7 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"));`;
     `import express from "express";
 ${
   withAuth
-    ? `import { auth } from "./auth.js";
+    ? `import { auth } from "../demo/auth/server/auth.js";
 `
     : ``
 }import { api } from "./api.js";
