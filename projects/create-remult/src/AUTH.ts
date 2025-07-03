@@ -1,4 +1,6 @@
+import { envVariable } from "./FRAMEWORKS.js";
 import { ComponentInfo } from "./utils/prepareInfoReadmeAndHomepage.js";
+import { Import } from "./utils/writeImports.js";
 
 export type AuthInfo = {
   name: string;
@@ -6,6 +8,13 @@ export type AuthInfo = {
 
   dependencies?: (server: string) => Record<string, string>;
   devDependencies?: (server: string) => Record<string, string>;
+
+  apiFiles?: {
+    imports: Import[];
+    serverArguments: string[];
+  };
+
+  envVariables?: envVariable[];
 };
 
 export const Auths: Record<string, AuthInfo | undefined> = {
@@ -32,9 +41,12 @@ export const Auths: Record<string, AuthInfo | undefined> = {
       const d: Record<string, string> = {
         bcryptjs: "^2.4.3",
       };
+
       if (server === "sveltekit") d["@auth/sveltekit"] = "^1.5.0";
-      if (server === "nextjs") d["next-auth"] = '"^5.0.0-beta.21"';
-      if (server === "express") d["@auth/express"] = "^0.6.1";
+      else if (server === "nextjs") d["next-auth"] = '"^5.0.0-beta.21"';
+      else if (server === "express") d["@auth/express"] = "^0.6.1";
+      else if (server === "express-vite") d["@auth/express"] = "^0.6.1";
+
       return d;
     },
     devDependencies: () => {
@@ -43,6 +55,44 @@ export const Auths: Record<string, AuthInfo | undefined> = {
       };
       return d;
     },
+
+    apiFiles: {
+      imports: [
+        {
+          from: "../demo/auth/server/auth.js",
+          imports: ["getUserFromRequest"],
+        },
+        {
+          from: "../demo/auth/server/index.js",
+          imports: ["auth"],
+        },
+      ],
+      serverArguments: [`getUser: getUserFromRequest`, `modules: [auth()]`],
+    },
+
+    envVariables: [
+      {
+        key: `AUTH_SECRET`,
+        value: generateSecret(),
+        comment:
+          "Secret key for authentication. (You can use Online UUID generator: https://www.uuidgenerator.net)",
+      },
+      {
+        key: "AUTH_GITHUB_ID",
+        comment:
+          "Github OAuth App ID & Secret see https://authjs.dev/getting-started/providers/github",
+        optional: true,
+      },
+      { key: "AUTH_GITHUB_SECRET", optional: true },
+    ],
   },
   none: undefined,
 };
+
+function generateSecret() {
+  try {
+    return crypto.randomUUID();
+  } catch {
+    return "something-secret-for-auth-cookie-signature";
+  }
+}

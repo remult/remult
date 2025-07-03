@@ -377,7 +377,7 @@ async function init() {
   if (!fs.existsSync(apiFileDir)) fs.mkdirSync(apiFileDir);
   fs.writeFileSync(
     apiFileName,
-    buildApiFile(db, safeServer, auth, admin, crud),
+    buildApiFile(db, safeServer, authInfo, admin, crud),
   );
   let envVariables: envVariable[] = extractEnvironmentVariables(
     db.code ?? "",
@@ -388,20 +388,10 @@ async function init() {
   // Output the array of environment variables
   const envFile = fw.envFile || ".env";
 
-  if (auth) {
-    envVariables.push({
-      key: `AUTH_SECRET`,
-      value: generateSecret(),
-      comment:
-        "Secret key for authentication. (You can use Online UUID generator: https://www.uuidgenerator.net)",
+  if (authInfo) {
+    authInfo.envVariables?.forEach((env) => {
+      envVariables.push(env);
     });
-    envVariables.push({
-      key: "AUTH_GITHUB_ID",
-      comment:
-        "Github OAuth App ID & Secret see https://authjs.dev/getting-started/providers/github",
-      optional: true,
-    });
-    envVariables.push({ key: "AUTH_GITHUB_SECRET", optional: true });
   }
   const envToShow = envVariables.filter((env) => !env.optional && !env.value);
   if (envToShow.length > 0) {
@@ -440,7 +430,7 @@ async function init() {
   fs.writeFileSync(path.join(root, envFile + ".example"), buildEnv(false));
   const writeFilesArgs = {
     root,
-    withAuth: auth,
+    withAuth: authInfo !== undefined,
     distLocation: fw.distLocation?.(getProjectName()) || "dist",
     templatesDir,
     framework: fw,
@@ -521,14 +511,6 @@ async function init() {
       callback(j);
       return JSON.stringify(j, undefined, 2) + "\n";
     });
-  }
-}
-
-function generateSecret() {
-  try {
-    return crypto.randomUUID();
-  } catch {
-    return "something-secret-for-auth-cookie-signature";
   }
 }
 
