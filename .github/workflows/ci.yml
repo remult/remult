@@ -43,7 +43,7 @@ jobs:
         database:
           [json, postgres, mysql, mongodb, bettersqlite3, sqlite3, mssql]
         server: [express, fastify, express-vite, noserver]
-        auth: [auth.js, noauth]
+        auth: [better-auth, auth.js, noauth]
         exclude:
           - template: react
             server: noserver
