@@ -34,6 +34,7 @@ export const Auths: Record<string, AuthInfo | undefined> = {
       };
       if (server === "sveltekit") d["@auth/sveltekit"] = "^1.5.0";
       if (server === "nextjs") d["next-auth"] = '"^5.0.0-beta.21"';
+      if (server === "express") d["@auth/express"] = "^0.6.1";
       return d;
     },
     devDependencies: () => {
