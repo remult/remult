@@ -450,11 +450,11 @@ async function init() {
   };
 
   if (authInfo) {
+    copyDir(path.join(templatesDir, "auth", authInfo.name, "shared"), root);
     copyDir(
       path.join(templatesDir, "auth", authInfo.name, safeServerName),
       root,
     );
-    copyDir(path.join(templatesDir, "auth", authInfo.name, "shared"), root);
   }
   if (crud) {
     copyDir(path.join(templatesDir, "crud", "shared"), root);
