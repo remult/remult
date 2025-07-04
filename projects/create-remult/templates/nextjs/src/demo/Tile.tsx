@@ -36,7 +36,7 @@ const Tile: React.FC<TileProps> = ({
           status && <div className="tile__status-indicator"></div>
         )}
       </div>
-      {children}
+      <div className="tile__content">{children}</div>
     </div>
   );
 };

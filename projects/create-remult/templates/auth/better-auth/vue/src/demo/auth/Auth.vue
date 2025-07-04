@@ -28,13 +28,8 @@
       <div v-if="messageError" class="message error">
         <p>{{ messageError }}</p>
       </div>
-      <br v-if="messageError" />
       <input type="text" v-model="name" placeholder="Name" />
-      <br />
-      <br />
       <input type="email" v-model="email" placeholder="Email" />
-      <br />
-      <br />
       <input type="password" v-model="password" placeholder="Password" />
       <div class="button-row">
         <button class="button" @click="signUp">Sign Up</button>

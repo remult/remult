@@ -79,7 +79,6 @@ export default function Auth() {
             <div className="message error">
               <p>{messageError}</p>
             </div>
-            <br />
           </>
         )}
         <input
@@ -88,16 +87,12 @@ export default function Auth() {
           onChange={(e) => setName(e.target.value)}
           placeholder="Name"
         />
-        <br />
-        <br />
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Email"
         />
-        <br />
-        <br />
         <input
           type="password"
           value={password}

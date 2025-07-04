@@ -40,14 +40,9 @@
       <div class="message error">
         <p>{messageError}</p>
       </div>
-      <br />
     {/if}
     <input type="text" bind:value={name} placeholder="Name" />
-    <br />
-    <br />
     <input type="email" bind:value={email} placeholder="Email" />
-    <br />
-    <br />
     <input type="password" bind:value={password} placeholder="Password" />
     <div class="button-row">
       <button
