@@ -12,7 +12,7 @@
     // Define the allowed values for status and width if using TypeScript
     status?: TileStatus;
     width?: WidthOption;
-    children?: import('svelte').Snippet;
+    children?: import("svelte").Snippet;
   }
 
   let {
@@ -22,7 +22,7 @@
     className = "",
     status = "Loading",
     width = "full",
-    children
+    children,
   }: Props = $props();
 
   const children_render = $derived(children);
@@ -38,5 +38,7 @@
       <div class="tile__status-indicator"></div>
     {/if}
   </div>
-  {@render children_render?.()}
+  <div class="tile__content">
+    {@render children_render?.()}
+  </div>
 </div>

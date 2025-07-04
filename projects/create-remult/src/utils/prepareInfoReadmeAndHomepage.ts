@@ -64,11 +64,8 @@ export function prepareInfoReadmeAndHomepage(
     );
 
     components.push({
-      display: "auth.js",
-      url: "https://authjs.dev",
+      ...authInfo.componentInfo,
       type: "Auth",
-      description: "Authentication made easy and secure",
-      emoji: "🔒",
     });
     imports.push({
       from: "./demo/auth/Auth" + (framework.componentFileSuffix ?? ""),

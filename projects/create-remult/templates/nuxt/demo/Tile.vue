@@ -11,7 +11,9 @@
       />
       <div v-else-if="status" class="tile__status-indicator"></div>
     </div>
-    <slot />
+    <div class="tile__content">
+      <slot />
+    </div>
   </div>
 </template>
 

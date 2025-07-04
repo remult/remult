@@ -364,6 +364,12 @@ async function init() {
       ...safeServer.devDependencies,
       ...authInfo?.devDependencies?.(safeServerName),
     });
+    if (authInfo?.scripts) {
+      pkg.scripts = {
+        ...pkg.scripts,
+        ...authInfo.scripts,
+      };
+    }
     if (fw === svelteKit) {
       pkg.devDependencies = sortObject({
         ...pkg.devDependencies,
@@ -444,11 +450,11 @@ async function init() {
   };
 
   if (authInfo) {
+    copyDir(path.join(templatesDir, "auth", authInfo.name, "shared"), root);
     copyDir(
       path.join(templatesDir, "auth", authInfo.name, safeServerName),
       root,
     );
-    copyDir(path.join(templatesDir, "auth", authInfo.name, "shared"), root);
   }
   if (crud) {
     copyDir(path.join(templatesDir, "crud", "shared"), root);

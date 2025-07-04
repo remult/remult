@@ -1,0 +1,42 @@
+<app-tile
+  title="Auth"
+  [status]="status"
+  [subtitle]="tileSubtitle"
+  class="auth"
+  width="half"
+>
+  @if (status === 'Loading') {
+  <!-- Optionally, add a loading indicator here -->
+  } @else if (status === 'Error') {
+  <p>{{ error }}</p>
+  } @else if (isAuthenticated) {
+  <p>
+    You are authenticated as <strong>{{ userName }}</strong>
+    <br />
+    <i>Roles:</i>
+    {{ userRoles.length > 0 ? userRoles.join(", ") : "-" }}
+  </p>
+  <div class="button-row">
+    <button (click)="signOut()">Sign Out</button>
+  </div>
+  } @else {
+  <p>You are currently not authenticated</p>
+  @if (messageError) {
+  <div class="message error">
+    <p>{{ messageError }}</p>
+  </div>
+  }
+  <input type="text" [(ngModel)]="name" placeholder="Name" />
+  <input type="email" [(ngModel)]="email" placeholder="Email" />
+  <input type="password" [(ngModel)]="password" placeholder="Password" />
+  <div class="button-row">
+    <button class="button" (click)="signUp()">Sign Up</button>
+    <button class="button" (click)="signIn()">Sign In</button>
+  </div>
+  <div class="button-row">
+    <a class="button" target="_blank" href="https://better-auth.com"
+      >Better-Auth Docs</a
+    >
+  </div>
+  }
+</app-tile>
