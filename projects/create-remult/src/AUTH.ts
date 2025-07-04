@@ -4,7 +4,7 @@ import { Import } from "./utils/writeImports.js";
 
 export type AuthInfo = {
   name: string;
-  componentInfo?: ComponentInfo;
+  componentInfo: ComponentInfo;
 
   scripts?: Record<string, string>;
   devDependencies?: (server: string) => Record<string, string>;
