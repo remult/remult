@@ -58,6 +58,7 @@ export type envVariable = {
   key: string;
   comment?: string;
   value?: string;
+  optional?: boolean;
 };
 
 export const FRAMEWORKS: Framework[] = [
