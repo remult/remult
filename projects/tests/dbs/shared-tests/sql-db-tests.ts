@@ -330,7 +330,7 @@ export function SqlDbTests({
       ]) {
         try {
           await db.execute('drop table  ' + db.wrapIdentifier!(iterator))
-        } catch { }
+        } catch {}
       }
     })
     it('test migrations', async () => {
@@ -359,7 +359,7 @@ export function SqlDbTests({
         entities: [Task],
         snapshot: snapshot,
         migrationBuilder,
-        reporter: () => { },
+        reporter: () => {},
       })
       expect(Object.keys(migrations).length).toBe(1)
       await migrate({
@@ -374,7 +374,7 @@ export function SqlDbTests({
         entities: [TaskEnhanced],
         snapshot: snapshot,
         migrationBuilder,
-        reporter: () => { },
+        reporter: () => {},
       })
       expect(Object.keys(migrations).length).toBe(3)
       await migrate({
@@ -494,7 +494,7 @@ export function SqlDbTests({
         const tableName = db.wrapIdentifier!('xyz1')
         try {
           await cast(getDb(), 'execute').execute(`drop table ${tableName}`)
-        } catch { }
+        } catch {}
         await expect(
           async () =>
             await migrate({
