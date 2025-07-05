@@ -279,7 +279,8 @@ export function SqlDbTests({
     const e = await dbNamesOf(repo, f.wrapIdentifier)
     const c = f.createCommand()
     const result = await c.execute(
-      `select ${e.myId}, ${e.name} from ${e.$entityName} where ${e.myId
+      `select ${e.myId}, ${e.name} from ${e.$entityName} where ${
+        e.myId
       } in (${c.param(1)},${c.param(2)})`,
     )
 
@@ -339,8 +340,8 @@ export function SqlDbTests({
       let snapshot = emptySnapshot()
       let code = {
         addSql: (s: string) =>
-        (migrations[Object.keys(migrations).length] = async ({ sql }) =>
-          await sql(s)),
+          (migrations[Object.keys(migrations).length] = async ({ sql }) =>
+            await sql(s)),
         addComment: () => {
           throw Error('not implemented')
         },
