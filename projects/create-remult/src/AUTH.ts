@@ -31,11 +31,11 @@ export const Auths: Record<string, AuthInfo | undefined> = {
 
     scripts: {
       "auth:generate":
-        "pnpx @better-auth/cli@latest generate --config ./src/demo/auth/server/auth.ts --output ./src/demo/auth/entities.ts -y",
+        "pnpx @better-auth/cli@latest generate --config ./src/demo/auth/server/auth.ts --output ./src/demo/auth/authEntities.ts -y",
     },
     devDependencies: () => {
       const d: Record<string, string> = {
-        "@nerdfolio/remult-better-auth": "0.2.23",
+        "@nerdfolio/remult-better-auth": "0.2.25",
         "better-auth": "^1.2.12",
       };
       return d;

@@ -1,22 +1,15 @@
-import { Allow, Entity, Fields, Relations, remult, Validators } from "remult";
+import { Allow, Entity, Fields, Relations, Validators } from "remult";
 
 export const Role_Auth = {
   Auth__Admin: "auth__admin",
   // Auth__Read_Stuff: "auth__read_stuff",
 } as const;
 
-@Entity<User>("user", {
+@Entity<User>("users", {
+  // admin can do anything
   allowApiCrud: Role_Auth.Auth__Admin,
+  // Any one can read
   allowApiRead: Allow.authenticated,
-  allowApiUpdate: (item) => {
-    return item?.id === remult.user?.id;
-  },
-  apiPrefilter: () => {
-    if (!remult.user?.id) {
-      throw new Error("User not authenticated");
-    }
-    return { id: remult.user?.id };
-  },
 })
 export class User {
   @Fields.string({
@@ -33,25 +26,37 @@ export class User {
 
   @Fields.string({
     required: true,
-    includeInApi: Role_Auth.Auth__Admin,
     validate: [Validators.unique(), Validators.email()],
+    includeInApi: Role_Auth.Auth__Admin,
   })
   email = "";
 
-  @Fields.boolean({ required: true, defaultValue: () => false })
+  @Fields.boolean({
+    required: true,
+    defaultValue: () => false,
+    includeInApi: Role_Auth.Auth__Admin,
+  })
   emailVerified = false;
 
   @Fields.string({ required: false })
   image = "";
 
-  @Fields.createdAt()
+  @Fields.createdAt({
+    required: true,
+    defaultValue: () => new Date(),
+    allowApiUpdate: false,
+  })
   createdAt!: Date;
 
-  @Fields.updatedAt()
+  @Fields.updatedAt({
+    required: true,
+    defaultValue: () => new Date(),
+    allowApiUpdate: false,
+  })
   updatedAt!: Date;
 }
 
-@Entity<Session>("session", {
+@Entity<Session>("sessions", {
   allowApiCrud: Role_Auth.Auth__Admin,
 })
 export class Session {
@@ -70,10 +75,10 @@ export class Session {
   @Fields.string({ required: true, validate: Validators.unique() })
   token = "";
 
-  @Fields.createdAt()
+  @Fields.createdAt({ required: true, allowApiUpdate: false })
   createdAt!: Date;
 
-  @Fields.updatedAt()
+  @Fields.updatedAt({ required: true, allowApiUpdate: false })
   updatedAt!: Date;
 
   @Fields.string({ required: false })
@@ -88,7 +93,7 @@ export class Session {
   user!: User;
 }
 
-@Entity<Account>("account", {
+@Entity<Account>("accounts", {
   allowApiCrud: Role_Auth.Auth__Admin,
 })
 export class Account {
@@ -133,14 +138,14 @@ export class Account {
   @Fields.string({ required: false })
   password = "";
 
-  @Fields.createdAt()
+  @Fields.createdAt({ required: true, allowApiUpdate: false })
   createdAt!: Date;
 
-  @Fields.updatedAt()
+  @Fields.updatedAt({ required: true, allowApiUpdate: false })
   updatedAt!: Date;
 }
 
-@Entity<Verification>("verification", {
+@Entity<Verification>("verifications", {
   allowApiCrud: Role_Auth.Auth__Admin,
 })
 export class Verification {
@@ -162,10 +167,18 @@ export class Verification {
   @Fields.date({ required: true })
   expiresAt = new Date();
 
-  @Fields.createdAt()
+  @Fields.createdAt({
+    required: false,
+    defaultValue: () => new Date(),
+    allowApiUpdate: false,
+  })
   createdAt!: Date;
 
-  @Fields.updatedAt()
+  @Fields.updatedAt({
+    required: false,
+    defaultValue: () => new Date(),
+    allowApiUpdate: false,
+  })
   updatedAt!: Date;
 }
 
