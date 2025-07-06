@@ -315,8 +315,6 @@ async function init() {
     }
   };
 
-  // if (auth === undefined) auth = argAuth === "auth.js";
-
   const db: DatabaseType =
     database || DATABASES[argDatabase as keyof typeof DATABASES];
   const fw: Framework =
@@ -327,7 +325,7 @@ async function init() {
     Servers[argServer as keyof typeof Servers] ||
     Servers.express;
 
-  const safeServerName = fw.serverInfo?.name || argServer || server;
+  const safeServerName = fw.serverInfo?.name || argServer || server?.name;
   const authInfo: AuthInfo | undefined =
     auth || Auths[argAuth as keyof typeof Auths] || Auths.none;
 
