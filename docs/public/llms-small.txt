@@ -1230,7 +1230,7 @@ export class Country {
 
   constructor(
     public id: string,
-    public caption: string,
+    public label: string,
     public currency: string,
     public phonePrefix: string,
   ) {}
@@ -1254,7 +1254,7 @@ The property called `id` will be stored in the database and used through the API
 call('+' + person.country.phonePrefix + person.phone)
 ```
 
-Note: Only the `id` property is saved in the database and used in the API. Other properties, such as `caption`, `currency`, and `phonePrefix`, are only accessible in the code and are not persisted in the database.
+Note: Only the `id` property is saved in the database and used in the API. Other properties, such as `label`, `currency`, and `phonePrefix`, are only accessible in the code and are not persisted in the database.
 
 ### Getting Optional Values
 
@@ -1264,27 +1264,27 @@ To get the optional values for `Country`, you can use the `getValueList` functio
 console.table(getValueList(Country))
 ```
 
-### Special Properties: id and caption
+### Special Properties: id and label
 
-The `id` and `caption` properties are special in that the `id` will be used to save and load from the database, and the `caption` will be used as the display value.
+The `id` and `label` properties are special in that the `id` will be used to save and load from the database, and the `label` will be used as the display value.
 
-### Automatic Generation of id and caption
+### Automatic Generation of id, caption and label
 
-If `id` and/or `caption` are not provided, they are automatically generated based on the static member name. For example:
+If `id` and/or `caption` & `label` are not provided, they are automatically generated based on the static member name. For example:
 
 ```ts
 @ValueListFieldType()
 export class TaskStatus {
-  static open = new TaskStatus() // { id: 'open', caption: 'Open' }
-  static closed = new TaskStatus() // { id: 'closed', caption: 'Closed' }
+  static open = new TaskStatus() // { id: 'open', label: 'Open' }
+  static closed = new TaskStatus() // { id: 'closed', label: 'Closed' }
 
   id!: string
-  caption!: string
+  label!: string
   constructor() {}
 }
 ```
 
-In this case, the `open` member will have an `id` of `'open'` and a `caption` of `'Open'`, and similarly for the `closed` member.
+In this case, the `open` member will have an `id` of `'open'` and a `label` of `'Open'`, and similarly for the `closed` member.
 
 ### Handling Partial Lists of Values
 
@@ -1296,7 +1296,7 @@ In cases where you only want to generate members for a subset of values, you can
     Country.us,
     Country.canada,
     Country.france,
-    { id: 'uk', caption: 'United Kingdom', currency: 'GBP', phonePrefix: '44' }
+    { id: 'uk', label: 'United Kingdom', currency: 'GBP', phonePrefix: '44' }
   ]
 })
 ```
@@ -1312,7 +1312,7 @@ export class TaskStatus {
   static closed = new TaskStatus()
 
   id!: string
-  caption!: string
+  label!: string
   constructor() {}
 }
 ValueListFieldType()(TaskStatus)
@@ -1476,6 +1476,10 @@ export class Contact {
 
 
 # Entities - Relations
+
+---
+outline: [2, 3]
+---
 
 # Relations Between Entities
 
@@ -1754,7 +1758,7 @@ When you require additional customization for a relation field in Remult, you ca
 ```typescript
 @Relations.toOne<Order, Customer>(() => Customer, {
   field: "customerId", // [!code ++]
-  caption: "The Customer",
+  label: "The Customer",
 })
 ```
 
@@ -1762,7 +1766,7 @@ In this example, we use the `field` option to define a custom relation between t
 
 1. **Custom Relation Field**: The `field` option allows you to specify a custom field name (e.g., `"customerId"`) that represents the relationship between entities. This field can be used to access related data without loading the entire related entity.
 
-2. **Additional Configuration**: In addition to specifying the `field`, you can include other options as well. In this example, we set the `caption` option to provide a descriptive caption for the relation field.
+2. **Additional Configuration**: In addition to specifying the `field`, you can include other options as well. In this example, we set the `label` option to provide a descriptive label for the relation field.
 
 Using the `field` option provides you with granular control over how the relation field is configured and accessed . You can customize various aspects of the relation to meet your specific requirements, enhance documentation, and improve the overall usability of your codebase.
 
@@ -2318,6 +2322,7 @@ Utilizing an intermediate table for managing many-to-many relationships in Remul
 ---
 
 In this guide, we've explored the essential concepts of managing entity relations within the Remult library. From one-to-one to many-to-many relationships, we've covered the declaration, customization, and querying of these relations. By understanding the nuances of entity relations, users can harness the full potential of Remult to build robust TypeScript applications with ease.
+
 
 
 # Relations - Filtering and Relations
@@ -6176,7 +6181,7 @@ Navigate to `/api/admin` to access the Admin UI. Here, you can perform CRUD oper
 
 - **Settings**: On top left, you have a menu _(remult logo)_ where you can find various settings for your admin ui.
   - You want to confirm a delete all the time?
-  - You want to display Captions or Keys?
+  - You want to display Labels or Keys?
   - Multiple options for automatic diagram layout (you want also do your own layout)
   - You don't use cookies? No problem, you can set your bearer token (it will only be in session)
 
@@ -6731,6 +6736,14 @@ Accessing the underlying database directly in Remult provides the flexibility to
 
 # Escape Hatches - Using in Non-Remult Routes
 
+---
+keywords:
+  [
+    Error: remult object was requested outside of a valid context,
+    try running it within initApi or a remult request cycle,
+  ]
+---
+
 # Using Remult in Non-Remult Routes
 
 When using the CRUD api or [BackendMethods](./backendMethods.md), `remult` is automatically available. Still, there are many use cases where you may want to user remult in your own routes or other code without using `BackendMethods` but would still want to take advantage of `Remult` as an ORM and use it to check for user validity, etc...
@@ -6981,6 +6994,7 @@ import { remultApi } from 'remult/remult-hapi'
 :::
 
 
+
 # Escape Hatches - Avoiding Decorators
 
 # Working without decorators
@@ -7063,6 +7077,18 @@ This is the same backend method that is detailed in the [Backend methods of the 
 
 
 # Escape Hatches - Extensibility
+
+---
+tags:
+  - options
+  - bespoke options
+  - customizing options
+  - type augmentation
+  - module augmentation
+  - UserInfo
+  - RemultContext
+  - context
+---
 
 # Extensibility
 
@@ -7213,6 +7239,7 @@ or in an entity's saving event:
 ```
 
 By leveraging module augmentation, you can tailor Remult to your specific needs, adding custom options and extending interfaces to suit your application's requirements.
+
 
 
 # Integrations - Open API
@@ -9363,6 +9390,14 @@ remultApi({
 
 # API Reference - EntityFilter
 
+---
+tags:
+  - Where
+  - Filter
+  - Entity Where
+  - Entity Filter
+---
+
 # EntityFilter
 
 Used to filter the desired result set
@@ -9501,6 +9536,7 @@ where: {
   }
 }
 ```
+
 
 
 # API Reference - EntityMetadata
@@ -10809,7 +10845,13 @@ Arguments:
 
 
 
-# Introducing Remult: The Backend to Frontend Framework You Always Wanted
+# Remult Blog - Introducing Remult
+
+---
+title: "Introducing Remult: The Backend to Frontend Framework You Always Wanted"
+sidebar: false
+editLink: false
+---
 
 > March 14, 2023 | Noam Honig
 
@@ -10884,6 +10926,7 @@ So we open sourced the framework, to enable other lazy developers like us to be 
 Check out [Remult](https://remult.dev), and if you like it, give it a star.  Let us know what you’d like to see next, and also feel free to contribute to the project.
 
 In our next post, we’ll do a roundup of tools in the ecosystem looking to solve similar challenges though different approaches, and unpack where Remult fits in, and what it’s optimized for.
+
 
 
 # SvelteKit - Tutorial - Go further / Extra
