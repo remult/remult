@@ -181,7 +181,7 @@ export class Country {
 
   constructor(
     public id: string,
-    public caption: string,
+    public label: string,
     public currency: string,
     public phonePrefix: string,
   ) {}
@@ -205,7 +205,7 @@ The property called `id` will be stored in the database and used through the API
 call('+' + person.country.phonePrefix + person.phone)
 ```
 
-Note: Only the `id` property is saved in the database and used in the API. Other properties, such as `caption`, `currency`, and `phonePrefix`, are only accessible in the code and are not persisted in the database.
+Note: Only the `id` property is saved in the database and used in the API. Other properties, such as `label`, `currency`, and `phonePrefix`, are only accessible in the code and are not persisted in the database.
 
 ### Getting Optional Values
 
@@ -215,27 +215,27 @@ To get the optional values for `Country`, you can use the `getValueList` functio
 console.table(getValueList(Country))
 ```
 
-### Special Properties: id and caption
+### Special Properties: id and label
 
-The `id` and `caption` properties are special in that the `id` will be used to save and load from the database, and the `caption` will be used as the display value.
+The `id` and `label` properties are special in that the `id` will be used to save and load from the database, and the `label` will be used as the display value.
 
-### Automatic Generation of id and caption
+### Automatic Generation of id, caption and label
 
-If `id` and/or `caption` are not provided, they are automatically generated based on the static member name. For example:
+If `id` and/or `caption` & `label` are not provided, they are automatically generated based on the static member name. For example:
 
 ```ts
 @ValueListFieldType()
 export class TaskStatus {
-  static open = new TaskStatus() // { id: 'open', caption: 'Open' }
-  static closed = new TaskStatus() // { id: 'closed', caption: 'Closed' }
+  static open = new TaskStatus() // { id: 'open', label: 'Open' }
+  static closed = new TaskStatus() // { id: 'closed', label: 'Closed' }
 
   id!: string
-  caption!: string
+  label!: string
   constructor() {}
 }
 ```
 
-In this case, the `open` member will have an `id` of `'open'` and a `caption` of `'Open'`, and similarly for the `closed` member.
+In this case, the `open` member will have an `id` of `'open'` and a `label` of `'Open'`, and similarly for the `closed` member.
 
 ### Handling Partial Lists of Values
 
@@ -247,7 +247,7 @@ In cases where you only want to generate members for a subset of values, you can
     Country.us,
     Country.canada,
     Country.france,
-    { id: 'uk', caption: 'United Kingdom', currency: 'GBP', phonePrefix: '44' }
+    { id: 'uk', label: 'United Kingdom', currency: 'GBP', phonePrefix: '44' }
   ]
 })
 ```
@@ -263,7 +263,7 @@ export class TaskStatus {
   static closed = new TaskStatus()
 
   id!: string
-  caption!: string
+  label!: string
   constructor() {}
 }
 ValueListFieldType()(TaskStatus)

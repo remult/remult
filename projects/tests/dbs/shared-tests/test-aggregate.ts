@@ -598,6 +598,7 @@ export function aggregateTest(
             "status": Status {
               "caption": "Open",
               "id": "open",
+              "label": "Open",
             },
           },
         ]

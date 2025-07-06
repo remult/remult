@@ -1,5 +1,9 @@
 All notable changes to this project will be documented in this file.
 
+## [3.0.6] TBD
+
+- Added a `label` option for field and entity that'll gradually replace `caption`
+
 ## [3.0.5] 2025-6-6
 
 - Fixed a performance issue added in 3.0.0

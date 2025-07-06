@@ -112,6 +112,7 @@ describe('Test sync from and to json', () => {
         "status": status {
           "caption": "Not Ok",
           "id": "notOk",
+          "label": "Not Ok",
         },
         "title": "test",
       }
@@ -134,6 +135,7 @@ describe('Test sync from and to json', () => {
             "status": status {
               "caption": "Not Ok",
               "id": "notOk",
+              "label": "Not Ok",
             },
             "title": "test",
           },
@@ -159,6 +161,7 @@ describe('Test sync from and to json', () => {
           "status": status {
             "caption": "Not Ok",
             "id": "notOk",
+            "label": "Not Ok",
           },
           "title": "test",
         },
@@ -183,6 +186,7 @@ describe('Test sync from and to json', () => {
         "status": status {
           "caption": "Not Ok",
           "id": "notOk",
+          "label": "Not Ok",
         },
         "title": "test",
       }

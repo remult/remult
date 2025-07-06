@@ -139,40 +139,17 @@ export interface BackendMethodOptions<type> {
   paramTypes?: any[] | (() => any[])
 }
 export const CaptionTransformer: {
-  /**
-   * Transforms the caption of a column based on custom rules or criteria.
-   *
-   * This method can be assigned an arrow function that dynamically alters the
-   * caption of a column. It is particularly useful for internationalization,
-   * applying specific labeling conventions, or any other custom caption transformation
-   * logic that your application requires.
-   *
-   * @param {Remult} remult - The Remult context, providing access to various framework features.
-   * @param {string} key - The key (name) of the field whose caption is being transformed.
-   * @param {string} caption - The original caption of the field.
-   * @param {EntityMetadata<any>} entityMetaData - Metadata of the entity that the field belongs to.
-   * @returns {string} The transformed caption for the field. If no transformation is applied,
-   *                   the original caption is returned.
-   *
-   * @example
-   * // Example of translating a field caption to French
-   * CaptionTransformer.transformCaption = (
-   *   remult, key, caption, entityMetaData
-   * ) => {
-   *   if (key === 'firstName') {
-   *     return 'Prénom'; // French translation for 'firstName'
-   *   }
-   *   return caption;
-   * };
-   *
-   * // Usage
-   * const firstNameCaption = repo(Person).fields.firstName.caption; // Returns 'Prénom'
-   */
-  transformCaption: (
-    remult: Remult,
+  transformLabel: (
+    remult: import("./src/context.js").Remult,
     key: string,
-    caption: string,
-    entityMetaData: EntityMetadata<any>,
+    label: string,
+    entityMetaData: import("./src/remult3/remult3.js").EntityMetadata<any>,
+  ) => string
+  transformCaption: (
+    remult: import("./src/context.js").Remult,
+    key: string,
+    label: string,
+    entityMetaData: import("./src/remult3/remult3.js").EntityMetadata<any>,
   ) => string
 }
 export type ClassFieldDecorator<entityType, valueType> = (
@@ -291,6 +268,7 @@ export declare class CompoundIdField implements FieldMetadata<string> {
   dbReadOnly: boolean
   isServerExpression: boolean
   key: string
+  label: string
   caption: string
   inputType: string
   dbName: string
@@ -612,6 +590,12 @@ export interface EntityMetadata<entityType = unknown> {
    * @see {@link EntityOptions.caption}
    */
   readonly caption: string
+  /** A human readable label for the entity. Can be used to achieve a consistent label for a field throughout the app
+   * @example
+   * <h1>Create a new item in {taskRepo.metadata.label}</h1>
+   * @see {@link EntityOptions.label}
+   */
+  readonly label: string
   /** The name of the table in the database that holds the data for this entity.
    * If no name is set in the entity options, the `key` will be used instead.
    * @see {@link EntityOptions.dbName}
@@ -667,6 +651,11 @@ export interface EntityMetadata<entityType = unknown> {
 export interface EntityOptions<entityType = unknown> {
   /**A human readable name for the entity */
   caption?: string
+  /** A human readable label for the entity. Can be used to achieve a consistent label for a field throughout the app
+   * @example
+   * <h1>Create a new item in {taskRepo.metadata.label}</h1>
+   */
+  label?: string
   /**
    * Determines if this Entity is available for get requests using Rest Api
    * @description
@@ -980,6 +969,12 @@ export interface FieldMetadata<valueType = unknown, entityType = unknown> {
    * @see {@link FieldOptions#caption} for configuration details
    */
   readonly caption: string
+  /** A human readable label for the field. Can be used to achieve a consistent label for a field throughout the app
+   * @example
+   * <input placeholder={taskRepo.metadata.fields.title.label}/>
+   * @see {@link FieldOptions.label} for configuration details
+   */
+  readonly label: string
   /** The name of the column in the database that holds the data for this field. If no name is set, the key will be used instead.
    * @example
    *
@@ -1073,6 +1068,11 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
    * <input placeholder={taskRepo.metadata.fields.title.caption}/>
    */
   caption?: string
+  /** A human readable name for the field. Can be used to achieve a consistent label for a field throughout the app
+   * @example
+   * <input placeholder={taskRepo.metadata.fields.title.label}/>
+   */
+  label?: string
   /** If it can store null in the database */
   allowNull?: boolean
   /** If a value is required. Short-cut to say `validate: Validators.required`.
@@ -1919,6 +1919,52 @@ export interface JsonEntityStorage {
   setItem(entityDbName: string, json: any): void | Promise<void>
   supportsRawJson?: boolean
 }
+export const LabelTransformer: {
+  /**
+   * Transforms the label of a column based on custom rules or criteria.
+   *
+   * This method can be assigned an arrow function that dynamically alters the
+   * label of a column. It is particularly useful for internationalization,
+   * applying specific labeling conventions, or any other custom label transformation
+   * logic that your application requires.
+   *
+   * @param {Remult} remult - The Remult context, providing access to various framework features.
+   * @param {string} key - The key (name) of the field whose label is being transformed.
+   * @param {string} label - The original label of the field.
+   * @param {EntityMetadata<any>} entityMetaData - Metadata of the entity that the field belongs to.
+   * @returns {string} The transformed label for the field. If no transformation is applied,
+   *                   the original label is returned.
+   *
+   * @example
+   * // Example of translating a field label to French
+   * LabelTransformer.transformLabel = (
+   *   remult, key, label, entityMetaData
+   * ) => {
+   *   if (key === 'firstName') {
+   *     return 'Prénom'; // French translation for 'firstName'
+   *   }
+   *   return label;
+   * };
+   *
+   * // Usage
+   * const firstNameLabel = repo(Person).fields.firstName.label; // Returns 'Prénom'
+   */
+  transformLabel: (
+    remult: Remult,
+    key: string,
+    label: string,
+    entityMetaData: EntityMetadata<any>,
+  ) => string
+  /**
+   * @obsolete use transformLabel instead
+   */
+  transformCaption: (
+    remult: Remult,
+    key: string,
+    label: string,
+    entityMetaData: EntityMetadata<any>,
+  ) => string
+}
 export interface LifecycleEvent<entityType> {
   /**
    * Indicates whether the entity is new or existing.
@@ -2159,7 +2205,7 @@ export interface RelationOptions<
   toEntity,
   matchIdEntity,
   optionsType extends FindOptionsBase<toEntity> = FindOptionsBase<toEntity>,
-> extends Pick<FieldOptions, "caption"> {
+> extends Pick<FieldOptions, "caption" | "label"> {
   /**
    * An object specifying custom field names for the relation.
    * Each key represents a field in the related entity, and its value is the corresponding field in the source entity.
@@ -2759,7 +2805,7 @@ export interface Repository<entityType> {
   getEntityRef(item: entityType): EntityRef<entityType>
   /** Provides information about the fields of the Repository's entity
    * @example
-   * console.log(repo.fields.title.caption) // displays the caption of a specific field
+   * console.log(repo.fields.title.label) // displays the label of a specific field
    * console.log(repo.fields.title.options)// writes the options that were defined for this field
    */
   fields: FieldsMetadata<entityType>
@@ -3451,6 +3497,7 @@ export declare class ValueListInfo<T extends ValueListItem>
 export interface ValueListItem {
   id?: any
   caption?: any
+  label?: any
 }
 export declare type ValueOrExpression<valueType> = valueType | (() => valueType)
 export type ValueValidationMessage<argsType> =

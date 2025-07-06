@@ -97,7 +97,7 @@ export default function App() {
   return (
     <div>
       <form onSubmit={addTask}> 
-        <label>{repo(Task).metadata.fields.title.caption}</label>
+        <label>{repo(Task).metadata.fields.title.label}</label>
         <input
           value={newTaskTitle} 
           onChange={e => setNewTaskTitle(e.target.value)} 
@@ -148,7 +148,7 @@ const addTask = async (e: Event) => {
 </script>
 
 <form onsubmit={addTask}> 
-<label>{repo(Task).metadata.fields.title.caption}</label>
+<label>{repo(Task).metadata.fields.title.label}</label>
 <input bind:value={newTask.title} /> 
 <button disabled={!repo(Task).metadata.apiInsertAllowed()}>Add</button>
 </form> 
@@ -192,7 +192,7 @@ const addTask = async (e: Event) => {
 
 <template>
   <form @submit.prevent="addTask()">
-    <label>{repo(Task).metadata.fields.title.caption}</label>
+    <label>{repo(Task).metadata.fields.title.label}</label>
     <input v-model="newTask.title" />
     <button v-if="taskRepo.metadata.apiDeleteAllowed(task)">Add</button> 
   </form>
@@ -222,7 +222,7 @@ import { Subscription } from 'rxjs'
 export class TodoComponent implements OnInit, OnDestroy {
   tasks: Task[] = []
   newTask = repo(Task).create()
-  titleCaption = repo(Task).metadata.fields.title.caption
+  titleLabel = repo(Task).metadata.fields.title.label
   error?: string
   canInsert = repo(Task).metadata.apiInsertAllowed()
   private subscription?: Subscription
@@ -256,7 +256,7 @@ export class TodoComponent implements OnInit, OnDestroy {
       framework: 'angular',
       languageCodeHighlight: 'html',
       content: `<form (ngSubmit)="addTask()">
-  <label>{{titleCaption}}</label>
+  <label>{{titleLabel}}</label>
   <input [(ngModel)]="newTask.title" name="title" />
   <button type="submit" [disabled]="!canInsert">Add</button>
   <div *ngIf="error" class="error">{{error}}</div>

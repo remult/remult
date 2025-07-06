@@ -25,7 +25,7 @@ let x = {
     }),
   },
   fieldOptionsEnricher: undefined as unknown as any,
-  captionTransformer: undefined as unknown as any,
+  labelTransformer: undefined as unknown as any,
   defaultDataProvider: () =>
     undefined as unknown as Promise<DataProvider | undefined>,
 }

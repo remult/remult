@@ -7,7 +7,7 @@ template: metadata
 
 ### Forms and Validation
 
-This lesson will guide you through creating a form with **field-level error handling** and **dynamic field captions** using metadata. You’ll learn how to capture validation errors, display custom field captions, and dynamically reflect error messages for specific fields.
+This lesson will guide you through creating a form with **field-level error handling** and **dynamic field labels** using metadata. You’ll learn how to capture validation errors, display custom field labels, and dynamically reflect error messages for specific fields.
 
 ### Code Example: TodoItem Component
 
@@ -66,7 +66,7 @@ To enhance the user experience, let’s switch the `priority` input to a dropdow
 2. Use the `options` list to render a dropdown:
    ```tsx title="frontend/TodoItem.tsx" add={3-12}
    <label>
-     {priorityField.caption}:
+     {priorityField.label}:
      <select
        value={state.priority}
        onChange={(e) => setState({ ...state, priority: e.target.value as any })}
@@ -115,7 +115,7 @@ export function TodoItem({ task }: { task: Task }) {
         const options = getValueList(field)
         return (
           <label key={field.key}>
-            {field.caption}:
+            {field.label}:
             {options ? (
               <select
                 value={state[field.key] as any}
@@ -156,7 +156,7 @@ Click the `solve` button at the top right of the code editor to see this in acti
 
 By utilizing field metadata, error handling, and dynamic rendering techniques, you can create reusable, rich forms and UI elements that enhance the consistency and maintainability of your application. These techniques allow you to:
 
-- **Centralize Display Logic**: Captions, input types, and validation can all be maintained within the entity definitions, providing a single source of truth that is easily accessible across the application.
+- **Centralize Display Logic**: Labels, input types, and validation can all be maintained within the entity definitions, providing a single source of truth that is easily accessible across the application.
 - **Efficiently Handle Validation**: By capturing and displaying field-level errors dynamically, you can offer immediate, user-friendly feedback, ensuring a smoother user experience.
 - **Build Scalable, Dynamic Forms**: With access to field metadata and validation options, you can dynamically generate forms that adapt to each field’s specific requirements, reducing code duplication and making it easy to create various form layouts.
 

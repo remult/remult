@@ -18,7 +18,11 @@ import type { DataProvider } from './data-interfaces.js'
 export interface EntityOptions<entityType = unknown> {
   /**A human readable name for the entity */
   caption?: string
-
+  /** A human readable label for the entity. Can be used to achieve a consistent label for a field throughout the app
+   * @example
+   * <h1>Create a new item in {taskRepo.metadata.label}</h1>
+   */
+  label?: string
   /**
    * Determines if this Entity is available for get requests using Rest Api
    * @description
