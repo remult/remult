@@ -1,10 +1,12 @@
 All notable changes to this project will be documented in this file.
 
-## [3.0.6] TBD
+## [3.0.6] 2025-7-6
 
 - Added a `label` option for field and entity that'll gradually replace `caption`
 - Added [modules](https://remult.dev/docs/ref_remultserveroptions#modules) to `remultApi` options.
 - Added `remult.context.headers` to access the request headers in a framework-agnostic way.
+- Added D1 Support by (@taivo)
+  Big thanks to @taivo for his first contribution
 
 ## [3.0.5] 2025-6-6
 

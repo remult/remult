@@ -1956,7 +1956,7 @@ export const LabelTransformer: {
     entityMetaData: EntityMetadata<any>,
   ) => string
   /**
-   * @obsolete use transformLabel instead
+   * @obsolete use LabelTransformer.transformLabel instead
    */
   transformCaption: (
     remult: Remult,
@@ -4557,6 +4557,7 @@ export declare class DuckDBDataProvider extends SqliteCoreDataProvider {
 
 ```ts
 export declare function createD1DataProvider(d1: D1Database): SqlDatabase
+//[ ] SqlDatabase from ./index.js is not exported
 //[ ] D1Database from TBD is not exported
 export declare class D1BindingClient implements D1Client {
   private d1
@@ -4581,6 +4582,7 @@ export declare class D1DataProvider extends SqliteCoreDataProvider {
   constructor(d1: D1Client)
   transaction(action: (sql: SqlImplementation) => Promise<void>): Promise<void>
 }
+//[ ] SqlImplementation from ./index.js is not exported
 export type D1RowObject = Record<string, unknown>
 ```
 
@@ -4590,6 +4592,7 @@ export type D1RowObject = Record<string, unknown>
 export declare function createD1HttpDataProvider(
   creds: D1Credentials,
 ): SqlDatabase
+//[ ] SqlDatabase from ./index.js is not exported
 type D1Credentials = {
   accountId: string
   apiToken: string
@@ -4602,6 +4605,7 @@ export declare class D1HttpClient implements D1Client {
   constructor({ accountId, databaseId, apiToken }: D1Credentials)
   execute(sql: string, params?: unknown[]): Promise<D1RowObject[]>
 }
+//[ ] D1RowObject from ./remult-d1.js is not exported
 ```
 
 ## ./remult-bun-sqlite.js
