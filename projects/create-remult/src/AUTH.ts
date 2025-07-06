@@ -48,7 +48,14 @@ export const Auths: Record<string, AuthInfo | undefined> = {
           imports: ["auth"],
         },
       ],
-      serverArguments: [`modules: [auth()]`],
+      serverArguments: [
+        `modules: [
+  auth({
+    // Add some roles to some users with env variable.
+    // SUPER_ADMIN_EMAILS
+  }),
+]`,
+      ],
     },
 
     envVariables: [
@@ -65,6 +72,12 @@ export const Auths: Record<string, AuthInfo | undefined> = {
         optional: true,
       },
       { key: "GITHUB_CLIENT_SECRET", optional: true },
+      {
+        key: "SUPER_ADMIN_EMAILS",
+        comment:
+          "List of emails that will be given all roles. (comma separated)",
+        optional: true,
+      },
     ],
   },
   ["auth.js"]: {

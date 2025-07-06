@@ -10,10 +10,13 @@ declare global {
   }
 }
 
-// declare module "remult" {
-//   interface FieldOptions<entityType, valueType> {
-//     placeholderText?: string
-//   }
-// }
+declare module "remult" {
+  // interface UserInfo {
+  //   phone: string;
+  // }
+  // interface FieldOptions<entityType, valueType> {
+  //   placeholder?: string;
+  // }
+}
 
 export {};

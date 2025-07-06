@@ -1,13 +1,24 @@
 import { betterAuth } from "better-auth";
 import { remultAdapter } from "@nerdfolio/remult-better-auth";
 import { remult } from "remult";
-import { authEntities } from "../authEntities.js";
+import { authEntities } from "../authEntities";
 
 export const auth = betterAuth({
   database: remultAdapter(remult, {
+    // When you `npm run auth:generate` you need to have `authEntities: {}`
+    // It generates all entites needed for better-auth. You might need to check diffs in GIT.
+    // Help: https://github.com/nerdfolio/remult-better-auth
     authEntities,
+    // authEntities: {},
     usePlural: true,
   }),
+
+  user: {
+    additionalFields: {
+      roles: { type: "string[]" },
+    },
+  },
+
   // config example:
   emailAndPassword: {
     enabled: true,
