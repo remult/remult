@@ -14,6 +14,8 @@ import { RemultAsyncLocalStorage } from '../../core/src/context.js'
 import { allServerTests, testAsExpressMW } from './all-server-tests.js'
 import { initAsyncHooks } from '../../core/server/initAsyncHooks.js'
 import type { RemultServerOptions } from '../../core/server/index.js'
+import axios from 'axios'
+import { initRequestModule } from '../../test-servers/shared/modules/initRequest/server.js'
 
 describe('test express server', async () => {
   let throwExceptionOnGetUser = false
@@ -29,7 +31,7 @@ describe('test express server', async () => {
       allow: true,
       customHtmlHead: (r) =>
         `<title>Test Admin (${r.user?.name ?? 'Anonymous'})</title>`,
-      disableLiveQuery: true
+      disableLiveQuery: true,
     },
     error: (e) => errorHandler?.(e),
     getUser: async () => {
@@ -40,6 +42,7 @@ describe('test express server', async () => {
         } satisfies ErrorInfo
       return undefined
     },
+    modules: [initRequestModule],
   })
   const app = express.Router()
   app.use(api)

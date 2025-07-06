@@ -19,6 +19,7 @@ import { buildApiFile } from "./utils/buildApiFile";
 import { extractEnvironmentVariables } from "./utils/extractEnvironmentVariables";
 import { removeJs } from "./frameworks/nextjs";
 import { svelteKit } from "./frameworks/sveltekit";
+import { type AuthInfo, Auths } from "./AUTH.js";
 
 const argv = minimist<{
   template?: string;
@@ -209,23 +210,21 @@ async function init() {
             { framework, server }: { framework: Framework; server: ServerInfo },
           ) => {
             const result =
-              Boolean(server?.auth || framework?.serverInfo?.auth) &&
-              (!argAuth || argAuth !== "auth.js");
+              (server?.authImplementedReason === undefined ||
+                framework?.serverInfo?.authImplementedReason === undefined) &&
+              (!argAuth || !Auths[argAuth as keyof typeof Auths]);
             return result ? "select" : null;
           },
           name: "auth",
           initial: 0,
           message: reset("Select auth:"),
-          choices: (framework: Framework) => [
-            {
-              title: "none",
-              value: false,
-            },
-            {
-              title: "auth.js",
-              value: true,
-            },
-          ],
+          choices: () =>
+            Object.keys(Auths).map((auth) => ({
+              title:
+                Auths[auth as keyof typeof Auths]?.componentInfo?.display ||
+                "None",
+              value: Auths[auth as keyof typeof Auths],
+            })),
         },
         {
           type:
@@ -316,7 +315,7 @@ async function init() {
     }
   };
 
-  if (auth === undefined) auth = argAuth === "auth.js";
+  // if (auth === undefined) auth = argAuth === "auth.js";
 
   const db: DatabaseType =
     database || DATABASES[argDatabase as keyof typeof DATABASES];
@@ -328,10 +327,10 @@ async function init() {
     Servers[argServer as keyof typeof Servers] ||
     Servers.express;
 
-  if (auth === undefined && argAuth === "auth.js") {
-    auth = true;
-  }
-  if (auth && !safeServer.auth) auth = false;
+  const safeServerName = fw.serverInfo?.name || argServer || server;
+  const authInfo: AuthInfo | undefined =
+    auth || Auths[argAuth as keyof typeof Auths] || Auths.none;
+
   const files = fs.readdirSync(templateDir);
   for (const file of files.filter((f) => !f.includes("node_modules"))) {
     write(file);
@@ -352,17 +351,25 @@ async function init() {
     pkg.name = packageName || getProjectName();
     pkg.dependencies = sortObject({
       ...pkg.dependencies,
-      remult: "latest",
+      // remult: "latest",
+      // TODO JYC DON3T MERGE THIS
+      remult: "3.0.6-next.1",
       ...db.dependencies,
       ...safeServer.dependencies,
-      ...(auth ? { ...safeServer.auth?.dependencies, bcryptjs: "^2.4.3" } : {}),
+      ...authInfo?.dependencies?.(safeServerName),
     });
     pkg.devDependencies = sortObject({
       ...pkg.devDependencies,
       ...db.devDependencies,
       ...safeServer.devDependencies,
-      ...(auth ? { "@types/bcryptjs": "^2.4.6" } : {}),
+      ...authInfo?.devDependencies?.(safeServerName),
     });
+    if (authInfo?.scripts) {
+      pkg.scripts = {
+        ...pkg.scripts,
+        ...authInfo.scripts,
+      };
+    }
     if (fw === svelteKit) {
       pkg.devDependencies = sortObject({
         ...pkg.devDependencies,
@@ -376,7 +383,7 @@ async function init() {
   if (!fs.existsSync(apiFileDir)) fs.mkdirSync(apiFileDir);
   fs.writeFileSync(
     apiFileName,
-    buildApiFile(db, safeServer, auth, admin, crud),
+    buildApiFile(db, safeServer, authInfo, admin, crud),
   );
   let envVariables: envVariable[] = extractEnvironmentVariables(
     db.code ?? "",
@@ -387,20 +394,10 @@ async function init() {
   // Output the array of environment variables
   const envFile = fw.envFile || ".env";
 
-  if (auth) {
-    envVariables.push({
-      key: `AUTH_SECRET`,
-      value: generateSecret(),
-      comment:
-        "Secret key for authentication. (You can use Online UUID generator: https://www.uuidgenerator.net)",
+  if (authInfo) {
+    authInfo.envVariables?.forEach((env) => {
+      envVariables.push(env);
     });
-    envVariables.push({
-      key: "AUTH_GITHUB_ID",
-      comment:
-        "Github OAuth App ID & Secret see https://authjs.dev/getting-started/providers/github",
-      optional: true,
-    });
-    envVariables.push({ key: "AUTH_GITHUB_SECRET", optional: true });
   }
   const envToShow = envVariables.filter((env) => !env.optional && !env.value);
   if (envToShow.length > 0) {
@@ -439,7 +436,7 @@ async function init() {
   fs.writeFileSync(path.join(root, envFile + ".example"), buildEnv(false));
   const writeFilesArgs = {
     root,
-    withAuth: auth,
+    authInfo,
     distLocation: fw.distLocation?.(getProjectName()) || "dist",
     templatesDir,
     framework: fw,
@@ -451,12 +448,15 @@ async function init() {
     projectName: getProjectName(),
     envVariables,
   };
-  if (auth) {
-    copyDir(path.join(templatesDir, "auth", safeServer.auth?.template!), root);
-    copyDir(path.join(templatesDir, "auth", "shared"), root);
+
+  if (authInfo) {
+    copyDir(path.join(templatesDir, "auth", authInfo.name, "shared"), root);
+    copyDir(
+      path.join(templatesDir, "auth", authInfo.name, safeServerName),
+      root,
+    );
   }
   if (crud) {
-    //copyDir(path.join(templatesDir, "crud", safeServer.auth?.template!), root);
     copyDir(path.join(templatesDir, "crud", "shared"), root);
   }
   fw?.writeFiles?.(writeFilesArgs);
@@ -476,8 +476,8 @@ async function init() {
 
   if (safeServer.requiresTwoTerminal) {
     console.log(`  ${gray("Then, open two terminals and run:")}
-    npm run dev ${gray("      # in one for the frontend.")}
-    npm run dev-node ${gray(" # in the other for the backend.")}`);
+    npm run dev-node ${gray(" # in one for the backend.")}
+    npm run dev ${gray("      # in the other for the frontend.")}`);
   } else {
     console.log(`  npm run dev`);
   }
@@ -517,14 +517,6 @@ async function init() {
       callback(j);
       return JSON.stringify(j, undefined, 2) + "\n";
     });
-  }
-}
-
-function generateSecret() {
-  try {
-    return crypto.randomUUID();
-  } catch {
-    return "something-secret-for-auth-cookie-signature";
   }
 }
 

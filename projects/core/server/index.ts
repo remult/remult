@@ -1,4 +1,5 @@
 import type {
+  GenericRequest,
   RemultServer,
   RemultServerOptions,
   ServerCoreOptions,
@@ -29,6 +30,8 @@ export {
   SpecificRoute,
   queuedJobInfo,
 } from './remult-api-server.js'
+export { Module } from './module.js'
+export type { ModuleInput } from './module.js'
 export function createRemultServer<RequestType>(
   options: RemultServerOptions<RequestType>,
   serverCoreOptions?: ServerCoreOptions<RequestType>,
@@ -37,7 +40,10 @@ export function createRemultServer<RequestType>(
   return createRemultServerCore<RequestType>(
     options,
     serverCoreOptions || {
-      buildGenericRequestInfo: (req) => cast<GenericRequestInfo>(req, 'method'),
+      buildGenericRequestInfo: (req) => ({
+        internal: cast<GenericRequestInfo>(req, 'method'),
+        public: { headers: new Headers((req as any).headers) },
+      }),
       getRequestBody: async (req) => (req as any).body,
     },
   )

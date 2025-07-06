@@ -1,3 +1,4 @@
+import { AuthInfo } from "../AUTH.js";
 import type { DatabaseType } from "../DATABASES";
 import type { ServerInfo } from "../FRAMEWORKS";
 import { writeImports } from "./writeImports";
@@ -5,7 +6,7 @@ import { writeImports } from "./writeImports";
 export function buildApiFile(
   db: DatabaseType,
   server: ServerInfo,
-  auth: boolean,
+  auth: AuthInfo | undefined,
   admin: boolean,
   crud: boolean,
 ) {
@@ -27,22 +28,6 @@ export function buildApiFile(
     });
   }
   let serverArguments: string[] = [];
-  if (auth) {
-    imports.push({
-      from: "./auth.js",
-      imports: ["getUserFromRequest"],
-    });
-    imports.push({
-      from: "../demo/auth/User.js",
-      imports: ["User"],
-    });
-    entities.push("User");
-    serverArguments.push(`getUser: getUserFromRequest`);
-    serverArguments.push(`initApi: async () => {
-  await User.createDemoUsers();
-}`);
-  }
-
   if (db.code) {
     serverArguments.push(`dataProvider: ${db.code}`);
   }
@@ -51,6 +36,14 @@ export function buildApiFile(
   }
   if (entities.length > 0) {
     serverArguments.push(`entities: [${entities.join(", ")}]`);
+  }
+  if (auth) {
+    auth.apiFiles?.imports.forEach((i) => {
+      imports.push(i);
+    });
+    auth.apiFiles?.serverArguments.forEach((a) => {
+      serverArguments.push(a);
+    });
   }
 
   let api = `

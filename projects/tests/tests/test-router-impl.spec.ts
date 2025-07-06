@@ -7,7 +7,7 @@ describe('test router impl', async () => {
   it('test a', async () => {
     const r = new RouteImplementation<GenericRequestInfo>({
       buildGenericRequestInfo: (req) => {
-        return req
+        return { internal: req, public: { headers: new Headers() } }
       },
       getRequestBody: (req) => {
         return undefined!
@@ -41,7 +41,10 @@ describe('test router impl', async () => {
         }
       `)
     expect(
-      await r.handle({ url: '/a/sdgbsdfgbfds%2Csdfgsdfgbs', method: 'GET' }),
+      await r.handle({
+        url: '/a/sdgbsdfgbfds%2Csdfgsdfgbs',
+        method: 'GET',
+      }),
     ).toMatchInlineSnapshot(`
       {
         "data": {
@@ -54,7 +57,7 @@ describe('test router impl', async () => {
   it('test b', async () => {
     const r = new RouteImplementation<GenericRequestInfo>({
       buildGenericRequestInfo: (req) => {
-        return req
+        return { internal: req, public: { headers: new Headers() } }
       },
       getRequestBody: (req) => {
         return undefined!
@@ -79,8 +82,12 @@ describe('test router impl', async () => {
         "statusCode": 200,
       }
     `)
-    expect(await r.handle({ url: '/aBc/123', method: 'GET' }))
-      .toMatchInlineSnapshot(`
+    expect(
+      await r.handle({
+        url: '/aBc/123',
+        method: 'GET',
+      }),
+    ).toMatchInlineSnapshot(`
         {
           "data": {
             "id": "123",
@@ -89,7 +96,10 @@ describe('test router impl', async () => {
         }
       `)
     expect(
-      await r.handle({ url: '/aBc/sdgbsdfgbfds%2Csdfgsdfgbs', method: 'GET' }),
+      await r.handle({
+        url: '/aBc/sdgbsdfgbfds%2Csdfgsdfgbs',
+        method: 'GET',
+      }),
     ).toMatchInlineSnapshot(`
       {
         "data": {
@@ -102,7 +112,7 @@ describe('test router impl', async () => {
   it('test *', async () => {
     const r = new RouteImplementation<GenericRequestInfo>({
       buildGenericRequestInfo: (req) => {
-        return req
+        return { internal: req, public: { headers: new Headers() } }
       },
       getRequestBody: (req) => {
         return undefined!
@@ -132,8 +142,12 @@ describe('test router impl', async () => {
       "statusCode": 200,
     }
   `)
-    expect(await r.handle({ url: '/a/tasks', method: 'GET' }))
-      .toMatchInlineSnapshot(`
+    expect(
+      await r.handle({
+        url: '/a/tasks',
+        method: 'GET',
+      }),
+    ).toMatchInlineSnapshot(`
       {
         "data": {
           "ok": true,

@@ -1,8 +1,12 @@
-import type { Response } from 'express'
 import type { ResponseRequiredForSSE } from '../SseSubscriptionServer.js'
 import { SseSubscriptionServer } from '../SseSubscriptionServer.js'
 import type { ClassType } from '../classType.js'
-import type { Allowed, AllowedForInstance, UserInfo } from '../src/context.js'
+import type {
+  Allowed,
+  AllowedForInstance,
+  RemultContext,
+  UserInfo,
+} from '../src/context.js'
 import { Remult, RemultAsyncLocalStorage, withRemult } from '../src/context.js'
 import type { DataApiRequest, DataApiResponse } from '../src/data-api.js'
 import { DataApi, serializeError } from '../src/data-api.js'
@@ -43,6 +47,7 @@ import { remultStatic } from '../src/remult-static.js'
 import remultAdminHtml, { buildEntityInfo } from './remult-admin.js'
 import { isOfType } from '../src/isOfType.js'
 import { initDataProviderOrJson } from './initDataProviderOrJson.js'
+import { modulesFlatAndOrdered, type Module } from './module.js'
 
 export interface RemultServerOptions<RequestType> {
   /**Entities to use for the api */
@@ -141,6 +146,32 @@ export interface RemultServerOptions<RequestType> {
     responseBody: any
     sendError: (httpStatusCode: number, body: any) => void
   }) => Promise<void> | undefined
+
+  /**
+   * Modules are here to group code by feature.
+   *
+   * @example
+   * import { Module } from 'remult/server'
+   *
+   * // create an analytics module
+   * const analytics = () => new Module({
+   *   key: 'analytics',
+   *   priority: 11, // Default: 0, Prioritized by ascending order.
+   *   entities: [AnalyticsEvent],
+   *   controllers: [AnalyticsController],
+   *   initApi: () => console.log('analytics module initialized'),
+   *   initRequest: () => {},
+   *   modules: [] // You can nest modules
+   * })
+   *
+   * // use the module in the remultApi
+   * remultApi({
+   *   modules: [
+   *     analytics(),
+   *   ]
+   * })
+   */
+  modules?: Module<RequestType>[]
 }
 
 export interface InitRequestOptions {
@@ -237,6 +268,11 @@ export type SpecificRoute<RequestType> = {
     handler: GenericRequestHandler<RequestType>,
   ): SpecificRoute<RequestType>
 }
+
+export interface GenericRequest {
+  headers: Headers
+}
+
 export interface GenericRequestInfo {
   url?: string //optional for next
   method?: any
@@ -257,6 +293,9 @@ export class RemultServerImplementation<RequestType>
   implements RemultServer<RequestType>
 {
   liveQueryStorage: LiveQueryStorage = new InMemoryLiveQueryStorage()
+  modulesSorted: Module<RequestType>[] = []
+  entities: ClassType<any>[] = []
+  controllers: ClassType<any>[] = []
   constructor(
     public queue: inProcessQueueHandler,
     public options: RemultServerOptions<any>,
@@ -268,6 +307,19 @@ export class RemultServerImplementation<RequestType>
     if (options.subscriptionServer)
       this.subscriptionServer = options.subscriptionServer
     const entitiesMetaData: EntityMetadata[] = []
+    const modules = options.modules ?? []
+    modules.push({
+      key: 'default',
+      priority: 0,
+      entities: options.entities ?? [],
+      controllers: options.controllers ?? [],
+      initApi: options.initApi,
+      initRequest: options.initRequest,
+      modules: [],
+    })
+    this.modulesSorted = modulesFlatAndOrdered<RequestType>(modules)
+    this.entities = this.modulesSorted.flatMap((m) => m.entities ?? [])
+    this.controllers = this.modulesSorted.flatMap((m) => m.controllers ?? [])
 
     this.dataProvider = dataProvider.then(async (dp) => {
       await this.runWithRemult(
@@ -280,9 +332,9 @@ export class RemultServerImplementation<RequestType>
               started = true
               console.time('Schema ensured')
             }
-            if (options.entities)
+            if (this.entities)
               entitiesMetaData.push(
-                ...options.entities!.map((e) => remult.repo(e).metadata),
+                ...this.entities.map((e) => remult.repo(e).metadata),
               )
             if (dp.ensureSchema) {
               startConsoleLog()
@@ -299,7 +351,12 @@ export class RemultServerImplementation<RequestType>
             }
             if (started) console.timeEnd('Schema ensured')
           }
-          if (options.initApi) await options.initApi(remult)
+          for (let i = 0; i < this.modulesSorted.length; i++) {
+            const _initApi = this.modulesSorted[i].initApi
+            if (_initApi) {
+              await _initApi(remult)
+            }
+          }
         },
         { skipDataProvider: true },
       )
@@ -326,7 +383,7 @@ export class RemultServerImplementation<RequestType>
   getEntities(): EntityMetadata<any>[] {
     //TODO V2 - consider using entitiesMetaData - but it may require making it all awaitable
     var r = new Remult()
-    return this.options.entities!.map((x) => r.repo(x).metadata)
+    return this.entities.map((x) => r.repo(x).metadata)
   }
 
   runWithSerializedJsonContextData: PerformWithContext = async (
@@ -334,7 +391,7 @@ export class RemultServerImplementation<RequestType>
     entityKey,
     what,
   ) => {
-    for (const e of this.options.entities!) {
+    for (const e of this.entities) {
       let key = getEntityKey(e)
       if (key === entityKey) {
         await this.runWithRemult(async (remult) => {
@@ -391,7 +448,7 @@ export class RemultServerImplementation<RequestType>
     if (this.registeredRouter) throw 'Router already registered'
     this.registeredRouter = true
     {
-      for (const c of this.options.controllers!) {
+      for (const c of this.controllers!) {
         let z = (c as any)[classBackendMethodsArray]
         if (z)
           for (const a of z) {
@@ -440,7 +497,7 @@ export class RemultServerImplementation<RequestType>
                 res.success(
                   buildEntityInfo({
                     remult,
-                    entities: this.options.entities ?? [],
+                    entities: this.entities,
                   }),
                 )
               } else {
@@ -531,7 +588,7 @@ export class RemultServerImplementation<RequestType>
       )
     }
 
-    this.options.entities?.forEach((e) => {
+    this.entities.forEach((e) => {
       this.addEntity(e, getEntityKey(e), r)
     })
   }
@@ -665,7 +722,15 @@ export class RemultServerImplementation<RequestType>
     doNotReuseInitRequest?: boolean,
   ) {
     return async (req: RequestType, origRes: GenericResponse) => {
-      const genReq = req ? this.coreOptions.buildGenericRequestInfo(req) : {}
+      const {
+        internal: genReq,
+        public: genReqPublic,
+      }: {
+        internal: GenericRequestInfo
+        public: GenericRequest
+      } = req
+        ? this.coreOptions.buildGenericRequestInfo(req)
+        : { internal: {}, public: { headers: new Headers() } }
       if (req) {
         if (!genReq.query) {
           genReq.query = (req as any)['_tempQuery']
@@ -695,7 +760,17 @@ export class RemultServerImplementation<RequestType>
         else
           await this.runWithRemult(async (remult) => {
             if (req) {
-              ;(remult.context as { request: any }).request = req
+              ;(remult.context as unknown as { request: any }).request = req
+              remult.context.headers = {
+                get: (key) => genReqPublic.headers.get(key) ?? undefined,
+                getAll: () => {
+                  const result: Record<string, string> = {}
+                  genReqPublic.headers.forEach((value, key) => {
+                    result[key] = value
+                  })
+                  return result
+                },
+              }
               remultStatic.asyncContext.setInInitRequest(true)
               try {
                 let user
@@ -707,16 +782,19 @@ export class RemultServerImplementation<RequestType>
                 }
                 if (user) remult.user = user
 
-                if (this.options.initRequest) {
-                  await this.options.initRequest(req, {
-                    remult,
-                    get liveQueryStorage() {
-                      return remult.liveQueryStorage!
-                    },
-                    set liveQueryStorage(value: LiveQueryStorage) {
-                      remult.liveQueryStorage = value
-                    },
-                  })
+                for (let i = 0; i < this.modulesSorted.length; i++) {
+                  const _initRequest = this.modulesSorted[i].initRequest
+                  if (_initRequest) {
+                    await _initRequest(req, {
+                      remult,
+                      get liveQueryStorage() {
+                        return remult.liveQueryStorage!
+                      },
+                      set liveQueryStorage(value: LiveQueryStorage) {
+                        remult.liveQueryStorage = value
+                      },
+                    })
+                  }
                 }
                 await what(remult, myReq, myRes, genReq, origRes, req)
               } finally {
@@ -1491,7 +1569,7 @@ export class RouteImplementation<RequestType> {
     })
   }
   middleware(origReq: RequestType, res: GenericResponse, next: VoidFunction) {
-    const req = this.coreOptions.buildGenericRequestInfo(origReq)
+    const { internal: req } = this.coreOptions.buildGenericRequestInfo(origReq)
 
     let theUrl: string = req.url?.toString() || ''
     if (theUrl.startsWith('/'))
@@ -1583,7 +1661,10 @@ remultStatic.allEntities.splice(
 )
 
 export interface ServerCoreOptions<RequestType> {
-  buildGenericRequestInfo(req: RequestType): GenericRequestInfo
+  buildGenericRequestInfo(req: RequestType): {
+    internal: GenericRequestInfo
+    public: GenericRequest
+  }
   getRequestBody(req: RequestType): Promise<any>
   ignoreAsyncStorage?: boolean
 }

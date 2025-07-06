@@ -2424,12 +2424,25 @@ export declare class Remult {
   clearAllCache(): any
   /** A helper callback that is called whenever an entity is created. */
   static entityRefInit?: (ref: EntityRef<any>, row: any) => void
-  /** context information that can be used to store custom information that will be disposed as part of the `remult` object */
+  /**
+   * context that can be used to store custom information that will be disposed as part of the `remult` object.
+   *
+   * `remult.context` is pre-filled in a framework-agnostic way with:
+   *   - `headers.get(key: string)` _of request_
+   *   - `headers.getAll()` _of request_
+   *
+   * Check out the [extensibility section](/docs/custom-options#enhancing-field-and-entity-definitions-with-custom-options) for more custom options.
+   */
   readonly context: RemultContext
   /** The api client that will be used by `remult` to perform calls to the `api` */
   apiClient: ApiClient
 }
-export interface RemultContext {}
+export interface RemultContext {
+  headers?: {
+    get: (key: string) => string | undefined
+    getAll: () => Record<string, string>
+  }
+}
 export declare function repo<entityType>(
   entity: ClassType<entityType>,
   dataProvider?: DataProvider,
@@ -3664,6 +3677,27 @@ export declare class JsonEntityFileStorage implements JsonEntityStorage {
 export declare class JsonFileDataProvider extends JsonDataProvider {
   constructor(folderPath: string)
 }
+export declare class Module<RequestType> {
+  key: string
+  priority: number
+  entities?: ClassType<unknown>[]
+  controllers?: ClassType<unknown>[]
+  initApi?: RemultServerOptions<RequestType>["initApi"]
+  initRequest?: RemultServerOptions<RequestType>["initRequest"]
+  modules?: Module<RequestType>[]
+  constructor(options: ModuleInput<RequestType>)
+}
+//[ ] ClassType from TBD is not exported
+export interface ModuleInput<RequestType> {
+  key: string
+  /** @default 0 */
+  priority?: number
+  entities?: ClassType<unknown>[]
+  controllers?: ClassType<unknown>[]
+  initApi?: RemultServerOptions<RequestType>["initApi"]
+  initRequest?: RemultServerOptions<RequestType>["initRequest"]
+  modules?: Module<RequestType>[]
+}
 export interface queuedJobInfo {
   info: queuedJobInfoResponse
   userId: string
@@ -3788,8 +3822,32 @@ export interface RemultServerOptions<RequestType> {
     responseBody: any
     sendError: (httpStatusCode: number, body: any) => void
   }) => Promise<void> | undefined
+  /**
+   * Modules are here to group code by feature.
+   *
+   * @example
+   * import { Module } from 'remult/server'
+   *
+   * // create an analytics module
+   * const analytics = () => new Module({
+   *   key: 'analytics',
+   *   priority: 11, // Default: 0, Prioritized by ascending order.
+   *   entities: [AnalyticsEvent],
+   *   controllers: [AnalyticsController],
+   *   initApi: () => console.log('analytics module initialized'),
+   *   initRequest: () => {},
+   *   modules: [] // You can nest modules
+   * })
+   *
+   * // use the module in the remultApi
+   * remultApi({
+   *   modules: [
+   *     analytics(),
+   *   ]
+   * })
+   */
+  modules?: Module<RequestType>[]
 }
-//[ ] ClassType from TBD is not exported
 //[ ] UserInfo from TBD is not exported
 //[ ] SubscriptionServer from TBD is not exported
 //[ ] Allowed from TBD is not exported
@@ -4001,6 +4059,31 @@ export interface RemultServerOptions<RequestType> {
     responseBody: any
     sendError: (httpStatusCode: number, body: any) => void
   }) => Promise<void> | undefined
+  /**
+   * Modules are here to group code by feature.
+   *
+   * @example
+   * import { Module } from 'remult/server'
+   *
+   * // create an analytics module
+   * const analytics = () => new Module({
+   *   key: 'analytics',
+   *   priority: 11, // Default: 0, Prioritized by ascending order.
+   *   entities: [AnalyticsEvent],
+   *   controllers: [AnalyticsController],
+   *   initApi: () => console.log('analytics module initialized'),
+   *   initRequest: () => {},
+   *   modules: [] // You can nest modules
+   * })
+   *
+   * // use the module in the remultApi
+   * remultApi({
+   *   modules: [
+   *     analytics(),
+   *   ]
+   * })
+   */
+  modules?: Module<RequestType>[]
 }
 //[ ] ClassType from TBD is not exported
 //[ ] UserInfo from TBD is not exported
@@ -4010,6 +4093,7 @@ export interface RemultServerOptions<RequestType> {
 //[ ] LiveQueryStorage from TBD is not exported
 //[ ] Allowed from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
+//[ ] Module from TBD is not exported
 export type SpecificRoute<RequestType> = {
   get(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
   put(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>

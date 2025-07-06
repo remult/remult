@@ -9,6 +9,7 @@ import { vue } from "./frameworks/vue";
 import { angular } from "./frameworks/angular";
 import { nuxt } from "./frameworks/nuxt";
 import type { ComponentInfo } from "./utils/prepareInfoReadmeAndHomepage";
+import { AuthInfo } from "./AUTH.js";
 
 type ColorFunc = (str: string | number) => string;
 export type Framework = {
@@ -25,6 +26,7 @@ export type Framework = {
 };
 
 export type ServerInfo = {
+  name: string;
   doesNotLikeJsFileSuffix?: boolean;
   componentInfo?: ComponentInfo;
 
@@ -35,15 +37,12 @@ export type ServerInfo = {
   devDependencies?: Record<string, string>;
   requiresTwoTerminal?: boolean;
   writeFiles?: (args: WriteFilesArgs) => void;
-  auth?: {
-    dependencies?: Record<string, string>;
-    template?: string;
-  };
+  authImplementedReason?: "not-yet";
 };
 export type WriteFilesArgs = {
   root: string;
   distLocation: string;
-  withAuth: boolean;
+  authInfo: AuthInfo | undefined;
   templatesDir: string;
   framework: Framework;
   server: ServerInfo;
@@ -70,9 +69,10 @@ export const FRAMEWORKS: Framework[] = [
   nuxt,
 ];
 
-export const vite_express_key = "express_vite";
+export const vite_express_key = "express-vite";
 export const Servers = {
   express: {
+    name: "express",
     componentInfo: {
       display: "Express",
       url: "https://expressjs.com/",
@@ -89,18 +89,19 @@ export const Servers = {
     devDependencies: {
       "@types/express": "^4.17.21",
     },
-    auth: {
-      template: "express",
+    // auth: {
+    //   template: "express",
 
-      dependencies: {
-        "@auth/express": "^0.6.1",
-      },
-    },
+    //   dependencies: {
+    //     "@auth/express": "^0.6.1",
+    //   },
+    // },
     writeFiles: (args) => {
       writeExpressIndex(args);
     },
   },
   fastify: {
+    name: "fastify",
     componentInfo: {
       display: "Fastify",
       url: "https://www.fastify.io/",
@@ -118,8 +119,9 @@ export const Servers = {
     devDependencies: {
       "@types/node": "^22.7.7",
     },
-    writeFiles: ({ distLocation, withAuth, root }) => {
-      if (withAuth)
+    authImplementedReason: "not-yet",
+    writeFiles: ({ distLocation, authInfo, root }) => {
+      if (authInfo)
         throw new Error(
           "auth not yet implemented for Fastify. Please use Express for now.",
         );
@@ -152,6 +154,7 @@ app.listen({ port: Number(process.env["PORT"] || 3002) }, () =>
     },
   },
   [vite_express_key]: {
+    name: "express-vite",
     componentInfo: {
       display: "Express vite plugin (experimental)",
       url: "https://expressjs.com/",
@@ -168,19 +171,19 @@ app.listen({ port: Number(process.env["PORT"] || 3002) }, () =>
       "@types/express": "^4.17.21",
       "vite3-plugin-express": "^0.1.10",
     },
-    auth: {
-      template: "express",
-      dependencies: {
-        "@auth/express": "^0.6.1",
-      },
-    },
+    // auth: {
+    //   template: "express",
+    //   dependencies: {
+    //     "@auth/express": "^0.6.1",
+    //   },
+    // },
     writeFiles: (args) => {
       writeExpressIndex({ ...args, vitePlugin: true });
       fs.writeFileSync(
         path.join(args.root, "vite.config.ts"),
         createViteConfig({
           framework: args.framework.name,
-          withAuth: args.withAuth,
+          authInfo: args.authInfo,
           withPlugin: true,
         }),
       );
@@ -189,7 +192,7 @@ app.listen({ port: Number(process.env["PORT"] || 3002) }, () =>
 } satisfies Record<string, ServerInfo>;
 function writeExpressIndex({
   distLocation,
-  withAuth,
+  authInfo,
   root,
   vitePlugin,
 }: WriteFilesArgs & { vitePlugin?: boolean }) {
@@ -208,25 +211,38 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"));`;
 }`;
   }
 
+  const getAuthImportPart = () => {
+    if (authInfo?.name === "auth.js") {
+      return `import { auth } from "../demo/auth/server/auth.js";
+`;
+    } else if (authInfo?.name === "better-auth") {
+      return `import { auth } from "../demo/auth/server/auth.js";
+import { toNodeHandler } from "better-auth/node";
+`;
+    }
+    return ``;
+  };
+
+  const getAuthCodePart = () => {
+    if (authInfo?.name === "auth.js") {
+      return `app.set("trust proxy", true);
+app.use("/auth/*", auth);
+`;
+    } else if (authInfo?.name === "better-auth") {
+      return `app.all("/api/auth/*", toNodeHandler(auth));
+`;
+    }
+    return ``;
+  };
+
   fs.writeFileSync(
     path.join(root, "src/server/index.ts"),
     `import express from "express";
-${
-  withAuth
-    ? `import { auth } from "./auth.js";
-`
-    : ``
-}import { api } from "./api.js";
+${getAuthImportPart()}import { api } from "./api.js";
 
 ${vitePlugin ? "export " : ""}const app = express();
 
-${
-  withAuth
-    ? `app.set("trust proxy", true);
-app.use("/auth/*", auth);
-`
-    : ``
-}app.use(api);
+${getAuthCodePart()}app.use(api);
 
 ` + serveExpress,
   );

@@ -23,13 +23,14 @@ export function remultApi(
 ): RemultHapiServer {
   const api = createRemultServer(options, {
     buildGenericRequestInfo: (req) => ({
-      method: req.method,
-      params: req.params,
-      query: req.query,
-      url: req.url.pathname,
-      on: (e: 'close', do1: VoidFunction) => {
-        req.raw.req.on('close', do1)
+      internal: {
+        ...req,
+        url: req.url.pathname,
+        on: (e: 'close', do1: VoidFunction) => {
+          req.raw.req.on('close', do1)
+        },
       },
+      public: { headers: new Headers(req.headers) },
     }),
     getRequestBody: async (req) => req.payload,
   })
@@ -80,7 +81,7 @@ export function remultApi(
                   })
                 },
               })
-              handler(request as any, r, () => { })
+              handler(request as any, r, () => {})
             } catch (err) {
               rej(err)
             }
