@@ -4,10 +4,11 @@ import { Import } from "./utils/writeImports.js";
 
 export type AuthInfo = {
   name: string;
-  componentInfo?: ComponentInfo;
+  componentInfo: ComponentInfo;
 
-  dependencies?: (server: string) => Record<string, string>;
+  scripts?: Record<string, string>;
   devDependencies?: (server: string) => Record<string, string>;
+  dependencies?: (server: string) => Record<string, string>;
 
   apiFiles?: {
     imports: Import[];
@@ -18,16 +19,54 @@ export type AuthInfo = {
 };
 
 export const Auths: Record<string, AuthInfo | undefined> = {
-  // ["better-auth"]: {
-  //   name: "better-auth",
-  //   componentInfo: {
-  //     display: "Better-Auth",
-  //     url: "https://www.better-auth.com/",
-  //     description:
-  //       "The most comprehensive authentication framework for TypeScript.",
-  //     emoji: "🔒",
-  //   },
-  // },
+  ["better-auth"]: {
+    name: "better-auth",
+    componentInfo: {
+      display: "Better-Auth",
+      url: "https://www.better-auth.com/",
+      description:
+        "The most comprehensive authentication framework for TypeScript.",
+      emoji: "🔒",
+    },
+
+    scripts: {
+      "auth:generate":
+        "pnpx @better-auth/cli@latest generate --config ./src/demo/auth/server/auth.ts --output ./src/demo/auth/authEntities.ts -y",
+    },
+    devDependencies: () => {
+      const d: Record<string, string> = {
+        "@nerdfolio/remult-better-auth": "0.2.25",
+        "better-auth": "^1.2.12",
+      };
+      return d;
+    },
+
+    apiFiles: {
+      imports: [
+        {
+          from: "../demo/auth/server/index.js",
+          imports: ["auth"],
+        },
+      ],
+      serverArguments: [`modules: [auth()]`],
+    },
+
+    envVariables: [
+      {
+        key: `BETTER_AUTH_SECRET`,
+        value: generateSecret(),
+        comment:
+          "Secret key for authentication. (You can use Online UUID generator: https://www.uuidgenerator.net)",
+      },
+      {
+        key: "GITHUB_CLIENT_ID",
+        comment:
+          "Github OAuth App ID & Secret see https://www.better-auth.com/docs/authentication/github",
+        optional: true,
+      },
+      { key: "GITHUB_CLIENT_SECRET", optional: true },
+    ],
+  },
   ["auth.js"]: {
     name: "auth.js",
     componentInfo: {
@@ -37,7 +76,7 @@ export const Auths: Record<string, AuthInfo | undefined> = {
       emoji: "🔒",
     },
 
-    dependencies: (server) => {
+    devDependencies: (server) => {
       const d: Record<string, string> = {
         bcryptjs: "^3.0.2",
       };
@@ -47,10 +86,6 @@ export const Auths: Record<string, AuthInfo | undefined> = {
       else if (server === "express") d["@auth/express"] = "^0.6.1";
       else if (server === "express-vite") d["@auth/express"] = "^0.6.1";
 
-      return d;
-    },
-    devDependencies: () => {
-      const d: Record<string, string> = {};
       return d;
     },
 
