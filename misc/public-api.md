@@ -4422,6 +4422,57 @@ export declare class DuckDBDataProvider extends SqliteCoreDataProvider {
 //[ ] FieldMetadata from ./index.js is not exported
 ```
 
+## ./remult-d1.js
+
+```ts
+export declare function createD1DataProvider(d1: D1Database): SqlDatabase
+//[ ] D1Database from TBD is not exported
+export declare class D1BindingClient implements D1Client {
+  private d1
+  /**
+   * Simple d1 client that wraps the d1 binding directly
+   *
+   * const d1 = new D1BindingClient(env.DB)
+   */
+  constructor(d1: D1Database)
+  execute(sql: string, params?: unknown[]): Promise<D1RowObject[]>
+}
+export interface D1Client {
+  execute(sql: string, params?: unknown[]): Promise<D1RowObject[]>
+}
+export declare class D1DataProvider extends SqliteCoreDataProvider {
+  private d1
+  /**
+   * For production or local d1 using binding
+   *
+   * const dataProvider = new SqlDatabase(new D1DataProvider(new D1BindingClient(d1)))
+   */
+  constructor(d1: D1Client)
+  transaction(action: (sql: SqlImplementation) => Promise<void>): Promise<void>
+}
+export type D1RowObject = Record<string, unknown>
+```
+
+## ./remult-d1-http.js
+
+```ts
+export declare function createD1HttpDataProvider(
+  creds: D1Credentials,
+): SqlDatabase
+type D1Credentials = {
+  accountId: string
+  apiToken: string
+  databaseId: string
+}
+export declare class D1HttpClient implements D1Client {
+  private d1
+  private accountId
+  private databaseId
+  constructor({ accountId, databaseId, apiToken }: D1Credentials)
+  execute(sql: string, params?: unknown[]): Promise<D1RowObject[]>
+}
+```
+
 ## ./remult-bun-sqlite.js
 
 ```ts

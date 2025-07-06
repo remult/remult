@@ -36,6 +36,8 @@
   },
   "private": true,
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250613.0",
+    "@duckdb/node-api": "^1.2.2-alpha.18",
     "@fastify/express": "^2.0.1",
     "@fastify/middie": "^8.0.0",
     "@fastify/swagger-ui": "^1.8.1",
@@ -45,7 +47,7 @@
     "@libsql/client": "^0.5.6",
     "@microsoft/fetch-event-source": "^2.0.1",
     "@paralleldrive/cuid2": "^2.2.1",
-    "@solidjs/start": "^1.0.0-rc.0",
+    "@solidjs/start": "^1.1.4",
     "@sveltejs/kit": "^2.20.6",
     "@types/better-sqlite3": "^7.6.11",
     "@types/compression": "0.0.36",
@@ -70,11 +72,11 @@
     "axios": "^0.28.0",
     "better-sqlite3": "^9.1.1",
     "class-validator": "^0.14.0",
+    "cloudflare": "^4.4.1",
     "concurrently": "^7.2.2",
     "copyfiles": "^2.4.1",
     "dependency-cruiser": "^13.1.5",
     "dotenv": "^8.1.0",
-    "@duckdb/node-api": "^1.2.2-alpha.18",
     "eslint": "^8.56.0",
     "eslint-plugin-file-extension-in-import-ts": "^1.0.2",
     "eventsource": "^2.0.2",
@@ -112,7 +114,8 @@
     "typescript": "^5.5.3",
     "uuid": "^8.3.2",
     "vitest": "3.1.2",
-    "webdriverio": "^9.15.0"
+    "webdriverio": "^9.15.0",
+    "wrangler": "^4.20.0"
   },
   "browser": {
     "jsonwebtoken": false,
