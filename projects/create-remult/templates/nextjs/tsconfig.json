@@ -13,6 +13,7 @@
     "jsx": "preserve",
     "incremental": true,
     "experimentalDecorators": true,
+    "target": "ES2022",
     "plugins": [
       {
         "name": "next"
