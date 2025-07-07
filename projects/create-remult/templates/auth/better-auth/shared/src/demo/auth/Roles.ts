@@ -1,4 +1,4 @@
-import { Role_Auth } from "./authEntities";
+import { Role_Auth } from "./authEntities.js";
 
 /**
  * Your central place to manage ALL ROLES of your application.

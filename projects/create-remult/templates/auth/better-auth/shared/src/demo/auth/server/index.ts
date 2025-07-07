@@ -1,9 +1,9 @@
 import { Module } from "remult/server";
-import { authEntities, User } from "../authEntities";
-import { auth as authConfig } from "./auth";
+import { authEntities, User } from "../authEntities.js";
+import { auth as authConfig } from "./auth.js";
 import { remult, repo } from "remult";
-import { Role } from "../Roles";
-import { addRolesToUser } from "./authHelpers";
+import { Role } from "../Roles.js";
+import { addRolesToUser } from "./authHelpers.js";
 
 export const auth = (o?: { SUPER_ADMIN_EMAILS?: string }) =>
   new Module({

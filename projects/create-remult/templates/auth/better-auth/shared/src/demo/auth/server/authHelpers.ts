@@ -1,5 +1,5 @@
 import { repo } from "remult";
-import { User } from "../authEntities";
+import { User } from "../authEntities.js";
 
 export const addRolesToUser = async (emails: string[], roles: string[]) => {
   const users = await repo(User).find({
