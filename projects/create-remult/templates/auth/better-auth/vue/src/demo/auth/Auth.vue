@@ -60,9 +60,6 @@ const name = ref("");
 const email = ref("");
 const password = ref("");
 
-// Use Better Auth client for session management
-const session = authClient.useSession();
-
 const authenticated = computed(() => remult.authenticated());
 
 const userRoles = computed(() => {
