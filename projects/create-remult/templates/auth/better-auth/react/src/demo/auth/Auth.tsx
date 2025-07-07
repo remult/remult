@@ -36,16 +36,19 @@ export default function Auth() {
     });
     setMessageError(res.error?.message ?? "");
     await remult.initUser();
+    window.location.reload();
   };
 
   const handleSignIn = async () => {
     await authClient.signIn.email({ email, password });
     await remult.initUser();
+    window.location.reload();
   };
 
   const handleSignOut = async () => {
     await authClient.signOut();
     remult.user = undefined;
+    window.location.reload();
   };
 
   let content: JSX.Element | string = <></>;
