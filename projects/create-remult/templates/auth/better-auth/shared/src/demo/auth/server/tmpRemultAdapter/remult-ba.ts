@@ -14,9 +14,9 @@ import {
   SqlDatabase,
   withRemult,
 } from "remult";
-import { transformSchema } from "./transform-model";
-import { transformWhereClause } from "./transform-where";
-import { RemultBetterAuthError } from "./utils";
+import { transformSchema } from "./transform-model.js";
+import { transformWhereClause } from "./transform-where.js";
+import { RemultBetterAuthError } from "./utils.js";
 
 const DEFAULT_CREATE_SCHEMA_OUTPUT = "./auth-schema.ts" as const;
 

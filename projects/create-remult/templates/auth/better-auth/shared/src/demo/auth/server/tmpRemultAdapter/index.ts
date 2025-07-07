@@ -1,1 +1,1 @@
-export * from "./remult-ba"
+export * from "./remult-ba.js";
