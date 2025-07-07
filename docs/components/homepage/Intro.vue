@@ -164,6 +164,8 @@ onUnmounted(() => {
       <Icon tech="turso" link="/docs/installation/database/turso" />
       <Icon tech="duckdb" link="/docs/installation/database/duckdb" />
       <Icon tech="oracle" link="/docs/installation/database/oracle" />
+      <Icon tech="d1" link="/docs/installation/database/d1" />
+      <Icon tech="json files" link="/docs/installation/database/json" />
     </div>
     <div class="intro-logos-claim">Works with your favorite stack</div>
   </div>

@@ -260,6 +260,10 @@ const sidebar = tutorials.reduce(
                 link: '/docs/installation/database/oracle',
               },
               {
+                text: 'D1',
+                link: '/docs/installation/database/d1',
+              },
+              {
                 text: 'Json files',
                 link: '/docs/installation/database/json',
               },
