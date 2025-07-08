@@ -2,7 +2,7 @@ import { Module } from "remult/server";
 import { authEntities } from "../authEntities.js";
 import { auth as authConfig } from "./auth.js";
 import { remult } from "remult";
-import { Role } from "../Roles.js";
+import { Roles } from "../Roles.js";
 import { addRolesToUser } from "./authHelpers.js";
 
 export const auth = (o?: { SUPER_ADMIN_EMAILS?: string }) =>
@@ -17,7 +17,7 @@ export const auth = (o?: { SUPER_ADMIN_EMAILS?: string }) =>
         .split(",")
         .map((c) => c.trim())
         .filter(Boolean);
-      await addRolesToUser(emails, Object.values(Role));
+      await addRolesToUser(emails, Object.values(Roles));
     },
 
     initRequest: async () => {
