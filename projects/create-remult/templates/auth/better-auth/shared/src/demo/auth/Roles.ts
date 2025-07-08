@@ -1,23 +1,7 @@
-import { Role_Auth } from "./authEntities.js";
+import { Roles_Auth } from "./authEntities.js";
 
-/**
- * Your central place to manage ALL ROLES of your application.
- * Import each modules roles here.
- *
- * @example
- * // Follow the convention below:
- * export const Role_ModuleX = {
- *   ModuleX_Admin: "modulex.admin",
- *   // ModuleX_Read_Stuff: "modulex.read-stuff",
- * } as const;
- *
- * // Add use it like this:
- * export const Role = {
- *   Admin: "admin",
- *   ...Role_ModuleX,
- * } as const;
- */
-export const Role = {
+/** ALL ROLES of your application. */
+export const Roles = {
   Admin: "admin",
-  ...Role_Auth,
+  ...Roles_Auth,
 } as const;

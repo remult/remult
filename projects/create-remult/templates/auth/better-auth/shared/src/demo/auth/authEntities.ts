@@ -1,14 +1,13 @@
 import { Allow, Entity, Fields, Relations, Validators } from "remult";
 
 // Following remult module convention.
-export const Role_Auth = {
-  Auth_Admin: "auth.admin",
-  // Auth_Read_Stuff: "auth.read-stuff",
+export const Roles_Auth = {
+  Auth_Admin: "Auth.Admin",
 } as const;
 
 @Entity<User>("users", {
   // Admin can do anything
-  allowApiCrud: Role_Auth.Auth_Admin,
+  allowApiCrud: Roles_Auth.Auth_Admin,
   // Any one authenticated can read
   allowApiRead: Allow.authenticated,
 })
@@ -60,7 +59,7 @@ export class User {
   roles: string[] = [];
 }
 
-@Entity<Session>("sessions", { allowApiCrud: Role_Auth.Auth_Admin })
+@Entity<Session>("sessions", { allowApiCrud: Roles_Auth.Auth_Admin })
 export class Session {
   @Fields.string({
     required: true,
@@ -95,7 +94,7 @@ export class Session {
   user!: User;
 }
 
-@Entity<Account>("accounts", { allowApiCrud: Role_Auth.Auth_Admin })
+@Entity<Account>("accounts", { allowApiCrud: Roles_Auth.Auth_Admin })
 export class Account {
   @Fields.string({
     required: true,
@@ -145,7 +144,7 @@ export class Account {
   updatedAt!: Date;
 }
 
-@Entity<Verification>("verifications", { allowApiCrud: Role_Auth.Auth_Admin })
+@Entity<Verification>("verifications", { allowApiCrud: Roles_Auth.Auth_Admin })
 export class Verification {
   @Fields.string({
     required: true,
