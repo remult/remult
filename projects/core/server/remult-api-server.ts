@@ -148,7 +148,7 @@ export interface RemultServerOptions<RequestType> {
   }) => Promise<void> | undefined
 
   /**
-   * Modules are here to group code by feature.
+   * Modules are here to group code by feature. [Module Guide](https://remult.dev/docs/modules)
    *
    * @example
    * import { Module } from 'remult/server'

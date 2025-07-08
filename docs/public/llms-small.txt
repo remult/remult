@@ -6254,6 +6254,49 @@ This video showcases the key features and functionality of the Remult Admin UI, 
 
 
 
+# Guides - Modules
+
+# Modules
+
+The module system arrived in `remult@3.0.6`, the idea is to pack features in a single place.
+Like this, it will be possible to share features between projects in a more convinient way.
+
+Here is the [definition](/docs/ref_remultserveroptions#modules).
+
+## Some conventions on modules
+
+The first level of folder is for the client, and we have a server folder for the server side code. Like this:
+
+```ts
+|- modules
+	|- myModule
+		|- index.ts                 // client side code (Role_MyModule, ...)
+		|- myModuleEntities.ts      // entities
+		|- myModuleController.ts    // controllers
+		|- server
+			|- index.ts             // server side code
+   |- ...
+|- ...
+```
+
+
+
+# Modules - Community modules
+
+# Community modules
+
+This page showcases a list of recommended community made modules.
+We encourage you to create any missing modules and maybe get added to the list!
+
+| Name                                                     | Description                                                                                                                                                          |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Better-Auth                                              | Using [@nerdfolio/remult-better-auth](https://github.com/nerdfolio/remult-better-auth) adapter. The easiest way to get the module is to do `npm init remult@latest`. |
+| [ChangeLog](https://firstly.fun/docs/modules/changelog/) | A `firstly` module to help keeping track of changes in your entities by who and when.                                                                                |
+| [Cron](https://firstly.fun/docs/modules/cron/)           | A `firstly` module based on [cron](https://www.npmjs.com/package/cron). Loging status of each job into a cron entity.                                                |
+| [Mail](https://firstly.fun/docs/modules/mail/)           | A `firstly` module based on [nodemailer](https://www.npmjs.com/package/nodemailer). Easy setup, default mail structure, loging mail status.                          |
+
+
+
 # Escape Hatches - Custom/SQL Filters
 
 # Leveraging Custom Filters for Enhanced Data Filtering
