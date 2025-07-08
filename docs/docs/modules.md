@@ -73,20 +73,24 @@ import { myModule } from '$module/myModule/server'
 
 To manage well [Access Control](/docs/access-control) of our app, we use a lot `remult.user.roles` that contains the list of roles of the user.
 
+In the end, `roles` is just an array of strings, but as we want to have a better DX, we use a `Roles` object to manage them. Like this, no typo, no missing role, etc.
+
 Based on that, it's recommended to have a `Roles.ts` having the list of all the roles of the app _(including all modules roles)_.
 
 ```ts
 // Roles.ts
 export const Roles = {
   // app roles
-  admin: 'admin',
-  canStrartProcess_007: 'canStrartProcess_007',
+  Admin: 'admin',
+  CanStrartProcess_007: 'canStrartProcess_007',
 
   // modules roles
   ...Roles_Auth,
   // ...
 } as const
 ```
+
+To be use like `Roles.Admin`, `Roles.CanStrartProcess_007`, `Roles.MyModule_Admin`, etc.
 
 In a module, you will also have a file `Roles_MyModule.ts` _(client side)_ having the list of all the roles of the module.
 
