@@ -1477,10 +1477,6 @@ export class Contact {
 
 # Entities - Relations
 
----
-outline: [2, 3]
----
-
 # Relations Between Entities
 
 ::: tip **Interactive Learning Available! 🚀**
@@ -2322,7 +2318,6 @@ Utilizing an intermediate table for managing many-to-many relationships in Remul
 ---
 
 In this guide, we've explored the essential concepts of managing entity relations within the Remult library. From one-to-one to many-to-many relationships, we've covered the declaration, customization, and querying of these relations. By understanding the nuances of entity relations, users can harness the full potential of Remult to build robust TypeScript applications with ease.
-
 
 
 # Relations - Filtering and Relations
@@ -3325,6 +3320,7 @@ Mutable controllers and backend methods provide a powerful mechanism for managin
 	<Icon tech="turso" sizeIco=100 link="/docs/installation/database/turso" />
 	<Icon tech="duckdb" sizeIco=100 link="/docs/installation/database/duckdb" />
 	<Icon tech="oracle" sizeIco=100 link="/docs/installation/database/oracle" />
+	<Icon tech="d1" sizeIco=100 link="/docs/installation/database/d1" />
 	<Icon tech="json files" sizeIco=100 link="/docs/installation/database/json" />
 </div>
 
@@ -4947,6 +4943,7 @@ By default, if no database provider is specified, Remult will use a simple JSON 
 	<Icon tech="turso" sizeIco=100 link="/docs/installation/database/turso" />
 	<Icon tech="duckdb" sizeIco=100 link="/docs/installation/database/duckdb" />
 	<Icon tech="oracle" sizeIco=100 link="/docs/installation/database/oracle" />
+	<Icon tech="d1" sizeIco=100 link="/docs/installation/database/d1" />
 	<Icon tech="json files" sizeIco=100 link="/docs/installation/database/json" />
 </div>
 
@@ -5557,6 +5554,68 @@ app.listen(3000, () => console.log('Server is running on port 3000'))
 - **Existing knex provider**: If you already have a `knex` instance, it can be reused directly with Remult.
 
 This setup integrates Oracle into your Remult-based application.
+
+
+
+# Database - D1
+
+## Cloudflare D1
+
+To use D1 as the database provider in your Remult-based application meant for deployment on Cloudflare, you'll need
+to setup the remult-d1 data provider.
+
+### Step 1: Install the `cloudflare` package
+
+Run the following command to install the necessary `cloudflare`
+
+```sh
+npm i cloudflare
+```
+
+### Step 2: Set the `dataProvider` Property
+
+In your `index.ts` or whichever server file in your framework where you define the remult api, `dataProvider` can be configured by:
+
+```ts
+import { createD1DataProvider } from 'remult/remult-d1'
+
+// Consult your specific framework and wrangler.jsonc
+// for how to obtain D1_BINDING.
+// Cloudflare typically provides it via server environment variables
+const dataProvider = createD1DataProvider(D1_BINDING)
+
+// If you're using d1-http instead,
+// then create the database provider by providing the appropriate credentials
+const dataProviderHttp = createD1HttpDataProvider(){
+  accountId: "--cloudflare--account--id",
+  apiToken: "--cloudflare--api--token",
+  //get this from wrangler.jsonc or cloudflare dashboard
+  databaseId: "--the--uuid--of--this--database"
+}
+```
+
+### Example in the framework SolidStart
+
+```ts
+// api.ts
+import { remultApi as solidStartRemultApi } from "remult/remult-solid-start"
+import { createD1DataProvider } from "remult/remult-d1"
+
+function getServerEnv() {
+  "user server"
+
+  const event = getRequestEvent()
+	return event.nativeEvent.context.cloudflare?.env as Env
+}
+
+// assumption: you have MY_D1 defined for your cloudflare project in wrangler.jsonc
+export const remultApi = solidStartRemultApi({
+	entities: [...],
+	controllers: [...],
+	dataProvider: createD1DataProvider(getServerEnv.MY_D1),
+})
+
+```
 
 
 
@@ -6736,14 +6795,6 @@ Accessing the underlying database directly in Remult provides the flexibility to
 
 # Escape Hatches - Using in Non-Remult Routes
 
----
-keywords:
-  [
-    Error: remult object was requested outside of a valid context,
-    try running it within initApi or a remult request cycle,
-  ]
----
-
 # Using Remult in Non-Remult Routes
 
 When using the CRUD api or [BackendMethods](./backendMethods.md), `remult` is automatically available. Still, there are many use cases where you may want to user remult in your own routes or other code without using `BackendMethods` but would still want to take advantage of `Remult` as an ORM and use it to check for user validity, etc...
@@ -6994,7 +7045,6 @@ import { remultApi } from 'remult/remult-hapi'
 :::
 
 
-
 # Escape Hatches - Avoiding Decorators
 
 # Working without decorators
@@ -7077,18 +7127,6 @@ This is the same backend method that is detailed in the [Backend methods of the 
 
 
 # Escape Hatches - Extensibility
-
----
-tags:
-  - options
-  - bespoke options
-  - customizing options
-  - type augmentation
-  - module augmentation
-  - UserInfo
-  - RemultContext
-  - context
----
 
 # Extensibility
 
@@ -7239,7 +7277,6 @@ or in an entity's saving event:
 ```
 
 By leveraging module augmentation, you can tailor Remult to your specific needs, adding custom options and extending interfaces to suit your application's requirements.
-
 
 
 # Integrations - Open API
@@ -9390,14 +9427,6 @@ remultApi({
 
 # API Reference - EntityFilter
 
----
-tags:
-  - Where
-  - Filter
-  - Entity Where
-  - Entity Filter
----
-
 # EntityFilter
 
 Used to filter the desired result set
@@ -9536,7 +9565,6 @@ where: {
   }
 }
 ```
-
 
 
 # API Reference - EntityMetadata
@@ -10845,13 +10873,7 @@ Arguments:
 
 
 
-# Remult Blog - Introducing Remult
-
----
-title: "Introducing Remult: The Backend to Frontend Framework You Always Wanted"
-sidebar: false
-editLink: false
----
+# Introducing Remult: The Backend to Frontend Framework You Always Wanted
 
 > March 14, 2023 | Noam Honig
 
@@ -10926,7 +10948,6 @@ So we open sourced the framework, to enable other lazy developers like us to be 
 Check out [Remult](https://remult.dev), and if you like it, give it a star.  Let us know what you’d like to see next, and also feel free to contribute to the project.
 
 In our next post, we’ll do a roundup of tools in the ecosystem looking to solve similar challenges though different approaches, and unpack where Remult fits in, and what it’s optimized for.
-
 
 
 # SvelteKit - Tutorial - Go further / Extra

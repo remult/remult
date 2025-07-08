@@ -17,5 +17,6 @@ By default, if no database provider is specified, Remult will use a simple JSON 
 	<Icon tech="turso" sizeIco=100 link="/docs/installation/database/turso" />
 	<Icon tech="duckdb" sizeIco=100 link="/docs/installation/database/duckdb" />
 	<Icon tech="oracle" sizeIco=100 link="/docs/installation/database/oracle" />
+	<Icon tech="d1" sizeIco=100 link="/docs/installation/database/d1" />
 	<Icon tech="json files" sizeIco=100 link="/docs/installation/database/json" />
 </div>

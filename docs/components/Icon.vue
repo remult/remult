@@ -31,6 +31,7 @@ import Koa from './icons/koa.vue'
 import Nest from './icons/nest.vue'
 import Duckdb from './icons/duckdb.vue'
 import Oracle from './icons/oracle.vue'
+import D1 from './icons/d1.vue'
 import Sqljs from './icons/sqljs.vue'
 import Turso from './icons/turso.vue'
 
@@ -67,6 +68,7 @@ const props = defineProps<{
     | 'nest'
     | 'duckdb'
     | 'oracle'
+    | 'd1'
     | 'sqljs'
     | 'turso'
   link?: string | boolean
@@ -139,6 +141,8 @@ const getIcon = (tech: string) => {
       return Duckdb
     case 'oracle':
       return Oracle
+    case 'd1':
+      return D1
     case 'sqljs':
       return Sqljs
     case 'turso':
