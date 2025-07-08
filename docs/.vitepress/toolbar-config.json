@@ -9,6 +9,10 @@
     ],
     "socialLinks": [
       {
+        "icon": "bluesky",
+        "link": "https://bsky.app/profile/remult.dev"
+      },
+      {
         "icon": "x",
         "link": "https://twitter.com/RemultJs"
       },

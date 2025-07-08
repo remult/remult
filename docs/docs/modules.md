@@ -4,8 +4,29 @@ The module system arrived in `remult@3.0.6`, the idea is to pack features in a s
 Like this, it will be possible to share features between projects in a more convinient way.
 
 Here is the [definition](/docs/ref_remultserveroptions#modules).
+::: info
+Come on Discord to share your ideas around modules!
+:::
 
-## Some conventions on modules
+## Styles
+
+### Local modules
+
+Essentially, a local module is a way to organize your own code into a single place. You still have the full control of the code, and you can use the full power of `remult` in it.
+
+You can also move this folder to a different project without many hassle!
+
+### Library modules
+
+Here, you use a module via a library, you install it and enjoy it. This library will probably allow you some configuration & you can tweak things.
+
+When you have a great improvement idea, you should report it to the library author and follow the process.
+
+### Cloned modules
+
+It's a bit of a mix of the two previous styles. You clone a module from a repository and use it in your project, now you "own" it. Like this, you can tweak it to your needs.
+
+## Some conventions
 
 ### Folder structure
 
