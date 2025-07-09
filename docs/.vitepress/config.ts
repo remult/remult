@@ -295,6 +295,17 @@ const sidebar = tutorials.reduce(
             text: 'Admin UI',
             link: '/docs/admin-ui',
           },
+          {
+            text: 'Modules',
+            link: '/docs/modules',
+            collapsed: true,
+            items: [
+              {
+                text: 'Community modules',
+                link: '/docs/modules-community',
+              },
+            ],
+          },
         ],
       },
       {
