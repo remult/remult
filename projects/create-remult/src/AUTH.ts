@@ -35,8 +35,8 @@ export const Auths: Record<string, AuthInfo | undefined> = {
     },
     devDependencies: () => {
       const d: Record<string, string> = {
-        "@nerdfolio/remult-better-auth": "0.2.25",
-        "better-auth": "^1.2.12",
+        "@nerdfolio/remult-better-auth": "0.3.1",
+        "better-auth": "1.2.12",
       };
       return d;
     },

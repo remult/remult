@@ -1,6 +1,5 @@
 import { betterAuth } from "better-auth";
-// import { remultAdapter } from "@nerdfolio/remult-better-auth";
-import { remultAdapter } from "./tmpRemultAdapter/index.js"; // TODO: change to from "@nerdfolio/remult-better-auth" once it's published
+import { remultAdapter } from "@nerdfolio/remult-better-auth";
 import { authEntities } from "../authEntities.js";
 
 export const auth = betterAuth({
