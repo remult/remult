@@ -1,14 +1,14 @@
 import { Allow, Entity, Fields, Relations, Validators } from "remult";
 
-export const Role_Auth = {
-  Auth__Admin: "auth__admin",
-  // Auth__Read_Stuff: "auth__read_stuff",
+// Following remult module convention.
+export const Roles_Auth = {
+  Auth_Admin: "Auth.Admin",
 } as const;
 
 @Entity<User>("users", {
-  // admin can do anything
-  allowApiCrud: Role_Auth.Auth__Admin,
-  // Any one can read
+  // Admin can do anything
+  allowApiCrud: Roles_Auth.Auth_Admin,
+  // Any one authenticated can read
   allowApiRead: Allow.authenticated,
 })
 export class User {
@@ -27,14 +27,14 @@ export class User {
   @Fields.string({
     required: true,
     validate: [Validators.unique(), Validators.email()],
-    includeInApi: Role_Auth.Auth__Admin,
+    includeInApi: false,
   })
   email = "";
 
   @Fields.boolean({
     required: true,
     defaultValue: () => false,
-    includeInApi: Role_Auth.Auth__Admin,
+    includeInApi: false,
   })
   emailVerified = false;
 
@@ -54,11 +54,12 @@ export class User {
     allowApiUpdate: false,
   })
   updatedAt!: Date;
+
+  @Fields.json()
+  roles: string[] = [];
 }
 
-@Entity<Session>("sessions", {
-  allowApiCrud: Role_Auth.Auth__Admin,
-})
+@Entity<Session>("sessions", { allowApiCrud: Roles_Auth.Auth_Admin })
 export class Session {
   @Fields.string({
     required: true,
@@ -93,9 +94,7 @@ export class Session {
   user!: User;
 }
 
-@Entity<Account>("accounts", {
-  allowApiCrud: Role_Auth.Auth__Admin,
-})
+@Entity<Account>("accounts", { allowApiCrud: Roles_Auth.Auth_Admin })
 export class Account {
   @Fields.string({
     required: true,
@@ -145,9 +144,7 @@ export class Account {
   updatedAt!: Date;
 }
 
-@Entity<Verification>("verifications", {
-  allowApiCrud: Role_Auth.Auth__Admin,
-})
+@Entity<Verification>("verifications", { allowApiCrud: Roles_Auth.Auth_Admin })
 export class Verification {
   @Fields.string({
     required: true,
@@ -182,6 +179,7 @@ export class Verification {
   updatedAt!: Date;
 }
 
+// Nice to have and use it directly in the auth.ts file.
 export const authEntities = {
   User,
   Session,

@@ -12,6 +12,8 @@ export const auth = betterAuth({
     usePlural: true,
   }),
 
+  trustedOrigins: ["http://localhost:5173"],
+
   user: {
     additionalFields: {
       roles: { type: "string[]" },

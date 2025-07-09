@@ -1,6 +1,7 @@
-import { Role_Auth } from "./authEntities.js";
+import { Roles_Auth } from "./authEntities.js";
 
-export const Role = {
+/** ALL ROLES of your application. [Learn more](https://remult.dev/docs/modules#roles) */
+export const Roles = {
   Admin: "admin",
-  ...Role_Auth,
-};
+  ...Roles_Auth,
+} as const;
