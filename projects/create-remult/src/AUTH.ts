@@ -18,7 +18,7 @@ export type AuthInfo = {
   envVariables?: envVariable[];
 };
 
-export const Auths: Record<string, AuthInfo | undefined> = {
+export const Auths: Record<string, AuthInfo | null> = {
   ["better-auth"]: {
     name: "better-auth",
     componentInfo: {
@@ -132,7 +132,8 @@ export const Auths: Record<string, AuthInfo | undefined> = {
       { key: "AUTH_GITHUB_SECRET", optional: true },
     ],
   },
-  none: undefined,
+  // It's not that it's not defined, it's really null.
+  none: null,
 };
 
 function generateSecret() {
