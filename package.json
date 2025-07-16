@@ -112,7 +112,7 @@
     "typedoc": "^0.26.4",
     "typedoc-plugin-markdown": "3.10.4",
     "typescript": "^5.5.3",
-    "uuid": "^8.3.2",
+    "uuid": "^11.1.0",
     "vitest": "3.1.2",
     "webdriverio": "^9.15.0",
     "wrangler": "^4.20.0"
