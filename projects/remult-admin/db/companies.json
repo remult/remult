@@ -14,7 +14,9 @@
     "stateAbbr": "IA",
     "accountManager": "0c078496-ab7d-48ed-8bef-29edc084af2b",
     "createdAt": "2021-01-26T03:18:48.516Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:f20f07c7-9d68-4f4e-869b-5e83333830f5",
+    "companyIdPart2": "part2"
   },
   {
     "id": "21ef1df0-2f2a-430e-8cd5-a85eae47ac5e",
@@ -31,7 +33,9 @@
     "stateAbbr": "VA",
     "accountManager": "55f98c99-5fcd-4584-91ae-9ceb4e448f26",
     "createdAt": "2021-12-02T14:04:11.448Z",
-    "color": "#35db1f"
+    "color": "#35db1f",
+    "companyId": "id:21ef1df0-2f2a-430e-8cd5-a85eae47ac5e",
+    "companyIdPart2": "part2"
   },
   {
     "id": "3d7e7130-7bae-4277-ac9d-c428de634504",
@@ -48,7 +52,9 @@
     "stateAbbr": "TN",
     "accountManager": "3fae6a74-6bc0-427f-a905-efc44f746b4f",
     "createdAt": "2020-12-18T16:33:58.156Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:3d7e7130-7bae-4277-ac9d-c428de634504",
+    "companyIdPart2": "part2"
   },
   {
     "id": "f4258280-8bdc-4fe2-be09-8fd99f4f5e3d",
@@ -65,7 +71,9 @@
     "stateAbbr": "WV",
     "accountManager": "55f98c99-5fcd-4584-91ae-9ceb4e448f26",
     "createdAt": "2021-05-19T06:58:22.711Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:f4258280-8bdc-4fe2-be09-8fd99f4f5e3d",
+    "companyIdPart2": "part2"
   },
   {
     "id": "aa005ce4-4c23-420b-b3d1-bbec27ea64e6",
@@ -82,7 +90,9 @@
     "stateAbbr": "RI",
     "accountManager": "226716e4-7933-44b1-bba3-1fa12392920a",
     "createdAt": "2021-10-25T23:10:35.398Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:aa005ce4-4c23-420b-b3d1-bbec27ea64e6",
+    "companyIdPart2": "part2"
   },
   {
     "id": "dc3e27f2-676b-4ae1-9582-b43076910074",
@@ -99,7 +109,9 @@
     "stateAbbr": "MO",
     "accountManager": "7472fe13-9966-4ce3-b1a6-fba718f2e37e",
     "createdAt": "2021-10-15T21:50:20.062Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:dc3e27f2-676b-4ae1-9582-b43076910074",
+    "companyIdPart2": "part2"
   },
   {
     "id": "fe05ce8b-d229-4d58-9363-f4b4c402f060",
@@ -116,7 +128,9 @@
     "stateAbbr": "DE",
     "accountManager": "59dd3275-47d1-4394-a5e9-b8dea26cce2c",
     "createdAt": "2021-02-23T22:39:03.096Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:fe05ce8b-d229-4d58-9363-f4b4c402f060",
+    "companyIdPart2": "part2"
   },
   {
     "id": "03b17d0b-b746-4486-b478-586eca29cf49",
@@ -133,7 +147,9 @@
     "stateAbbr": "AZ",
     "accountManager": "27d24908-f417-4b0c-b98a-8946d661f0ce",
     "createdAt": "2021-09-14T00:16:56.125Z",
-    "color": "#FFFFFF"
+    "color": "#FFFFFF",
+    "companyId": "id:03b17d0b-b746-4486-b478-586eca29cf49",
+    "companyIdPart2": "part2"
   },
   {
     "id": "96d5ddd5-0054-42e8-8d57-a9a35b756333",
@@ -150,7 +166,9 @@
     "stateAbbr": "LA",
     "accountManager": "3fae6a74-6bc0-427f-a905-efc44f746b4f",
     "createdAt": "2021-10-25T00:49:31.212Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:96d5ddd5-0054-42e8-8d57-a9a35b756333",
+    "companyIdPart2": "part2"
   },
   {
     "id": "6b98d2d1-3ed8-43c5-bc59-0b4a7e4132f1",
@@ -167,7 +185,9 @@
     "stateAbbr": "VA",
     "accountManager": "27d24908-f417-4b0c-b98a-8946d661f0ce",
     "createdAt": "2021-03-14T18:43:29.514Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:6b98d2d1-3ed8-43c5-bc59-0b4a7e4132f1",
+    "companyIdPart2": "part2"
   },
   {
     "id": "0cbfd1dc-6205-4339-a351-6e68ba4b605e",
@@ -184,7 +204,9 @@
     "stateAbbr": "CT",
     "accountManager": "27d24908-f417-4b0c-b98a-8946d661f0ce",
     "createdAt": "2020-12-21T07:31:39.606Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:0cbfd1dc-6205-4339-a351-6e68ba4b605e",
+    "companyIdPart2": "part2"
   },
   {
     "id": "d1a6fc18-88a6-4049-8f27-44f2b9f6ba3c",
@@ -201,7 +223,9 @@
     "stateAbbr": "CA",
     "accountManager": "db2751a2-5a29-4820-84b6-8d4a378bf463",
     "createdAt": "2021-04-22T07:46:31.183Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:d1a6fc18-88a6-4049-8f27-44f2b9f6ba3c",
+    "companyIdPart2": "part2"
   },
   {
     "id": "438583ff-1d87-4982-b42c-291a4b723fc9",
@@ -218,7 +242,9 @@
     "stateAbbr": "VT",
     "accountManager": "d60f6fd8-75c3-43ab-af42-83371413a827",
     "createdAt": "2021-11-12T13:28:16.363Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:438583ff-1d87-4982-b42c-291a4b723fc9",
+    "companyIdPart2": "part2"
   },
   {
     "id": "92d8c5ff-e95e-4d81-9b4e-35d6581da242",
@@ -235,7 +261,9 @@
     "stateAbbr": "OK",
     "accountManager": "a6e9da4b-2ce9-46ac-bb0f-680c1ddc8a5b",
     "createdAt": "2021-09-20T03:31:02.626Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:92d8c5ff-e95e-4d81-9b4e-35d6581da242",
+    "companyIdPart2": "part2"
   },
   {
     "id": "fd1dc0bb-aae2-4c87-8122-f5ab27adccbe",
@@ -252,7 +280,9 @@
     "stateAbbr": "NY",
     "accountManager": "7472fe13-9966-4ce3-b1a6-fba718f2e37e",
     "createdAt": "2021-04-02T10:31:32.705Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:fd1dc0bb-aae2-4c87-8122-f5ab27adccbe",
+    "companyIdPart2": "part2"
   },
   {
     "id": "ecc7f6bc-9d3f-4eb1-9996-9d91eb4edaee",
@@ -269,7 +299,9 @@
     "stateAbbr": "AZ",
     "accountManager": "226716e4-7933-44b1-bba3-1fa12392920a",
     "createdAt": "2021-10-11T13:25:22.244Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:ecc7f6bc-9d3f-4eb1-9996-9d91eb4edaee",
+    "companyIdPart2": "part2"
   },
   {
     "id": "c8926caf-59d4-4802-b5c9-f44f4b01f7d3",
@@ -286,7 +318,9 @@
     "stateAbbr": "VT",
     "accountManager": "d60f6fd8-75c3-43ab-af42-83371413a827",
     "createdAt": "2021-10-10T07:40:10.858Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:c8926caf-59d4-4802-b5c9-f44f4b01f7d3",
+    "companyIdPart2": "part2"
   },
   {
     "id": "5011abf3-3fad-40ac-949f-bb561e0071e2",
@@ -303,7 +337,9 @@
     "stateAbbr": "KY",
     "accountManager": "d60f6fd8-75c3-43ab-af42-83371413a827",
     "createdAt": "2021-09-12T19:23:15.612Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:5011abf3-3fad-40ac-949f-bb561e0071e2",
+    "companyIdPart2": "part2"
   },
   {
     "id": "019852ad-2f41-4bcb-902c-35b9f9c908c2",
@@ -320,7 +356,9 @@
     "stateAbbr": "FL",
     "accountManager": "226716e4-7933-44b1-bba3-1fa12392920a",
     "createdAt": "2022-01-14T08:57:49.759Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:019852ad-2f41-4bcb-902c-35b9f9c908c2",
+    "companyIdPart2": "part2"
   },
   {
     "id": "7bfdbb48-0690-4ea4-b1fa-3b14da2b98ea",
@@ -337,7 +375,9 @@
     "stateAbbr": "MS",
     "accountManager": "0c078496-ab7d-48ed-8bef-29edc084af2b",
     "createdAt": "2021-08-02T10:36:15.628Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:7bfdbb48-0690-4ea4-b1fa-3b14da2b98ea",
+    "companyIdPart2": "part2"
   },
   {
     "id": "72a6e761-ccea-4077-ab9b-2b2cdc8957d1",
@@ -354,7 +394,9 @@
     "stateAbbr": "AZ",
     "accountManager": "a6e9da4b-2ce9-46ac-bb0f-680c1ddc8a5b",
     "createdAt": "2021-08-04T11:14:39.415Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:72a6e761-ccea-4077-ab9b-2b2cdc8957d1",
+    "companyIdPart2": "part2"
   },
   {
     "id": "cf0c51fa-3188-4396-af51-66171eed505d",
@@ -371,7 +413,9 @@
     "stateAbbr": "CT",
     "accountManager": "3fae6a74-6bc0-427f-a905-efc44f746b4f",
     "createdAt": "2021-07-03T08:48:46.362Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:cf0c51fa-3188-4396-af51-66171eed505d",
+    "companyIdPart2": "part2"
   },
   {
     "id": "a0bfee87-492b-4377-80b2-ca232774e0a3",
@@ -388,7 +432,9 @@
     "stateAbbr": "ME",
     "accountManager": "db2751a2-5a29-4820-84b6-8d4a378bf463",
     "createdAt": "2021-01-01T06:13:22.544Z",
-    "color": "#ff0000"
+    "color": "#ff0000",
+    "companyId": "id:a0bfee87-492b-4377-80b2-ca232774e0a3",
+    "companyIdPart2": "part2"
   },
   {
     "id": "1c5bb9c0-c20e-40a9-bb98-65cd96a99898",
@@ -405,7 +451,9 @@
     "stateAbbr": "GA",
     "accountManager": "55f98c99-5fcd-4584-91ae-9ceb4e448f26",
     "createdAt": "2021-09-19T16:29:17.113Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:1c5bb9c0-c20e-40a9-bb98-65cd96a99898",
+    "companyIdPart2": "part2"
   },
   {
     "id": "d6fa200d-491a-4c92-be00-083c3335bad5",
@@ -422,7 +470,9 @@
     "stateAbbr": "NH",
     "accountManager": "0c078496-ab7d-48ed-8bef-29edc084af2b",
     "createdAt": "2021-02-25T06:50:05.715Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:d6fa200d-491a-4c92-be00-083c3335bad5",
+    "companyIdPart2": "part2"
   },
   {
     "id": "19f040e3-ae7f-4fa9-826a-3452c8debcad",
@@ -439,7 +489,9 @@
     "stateAbbr": "SC",
     "accountManager": "27d24908-f417-4b0c-b98a-8946d661f0ce",
     "createdAt": "2021-04-05T14:45:48.803Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:19f040e3-ae7f-4fa9-826a-3452c8debcad",
+    "companyIdPart2": "part2"
   },
   {
     "id": "0f3ef591-099b-45f6-9765-c219e7289524",
@@ -456,7 +508,9 @@
     "stateAbbr": "TX",
     "accountManager": "27d24908-f417-4b0c-b98a-8946d661f0ce",
     "createdAt": "2020-10-15T02:00:42.829Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:0f3ef591-099b-45f6-9765-c219e7289524",
+    "companyIdPart2": "part2"
   },
   {
     "id": "b83cd748-c7d4-4467-a6e8-397396a69ef0",
@@ -473,7 +527,9 @@
     "stateAbbr": "MA",
     "accountManager": "0c078496-ab7d-48ed-8bef-29edc084af2b",
     "createdAt": "2022-01-06T07:57:55.693Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:b83cd748-c7d4-4467-a6e8-397396a69ef0",
+    "companyIdPart2": "part2"
   },
   {
     "id": "c68881d8-8f77-4a10-bd02-6d1c709b5e12",
@@ -490,7 +546,9 @@
     "stateAbbr": "FL",
     "accountManager": "27d24908-f417-4b0c-b98a-8946d661f0ce",
     "createdAt": "2020-10-01T15:29:26.347Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:c68881d8-8f77-4a10-bd02-6d1c709b5e12",
+    "companyIdPart2": "part2"
   },
   {
     "id": "3ee3f822-09bc-4fd6-8ba7-1aafe10d3939",
@@ -507,7 +565,9 @@
     "stateAbbr": "LA",
     "accountManager": "d60f6fd8-75c3-43ab-af42-83371413a827",
     "createdAt": "2020-10-21T17:11:45.331Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:3ee3f822-09bc-4fd6-8ba7-1aafe10d3939",
+    "companyIdPart2": "part2"
   },
   {
     "id": "95b3b834-43d9-49f2-937b-604ef112b73c",
@@ -524,7 +584,9 @@
     "stateAbbr": "WV",
     "accountManager": "a6e9da4b-2ce9-46ac-bb0f-680c1ddc8a5b",
     "createdAt": "2021-05-25T08:15:36.505Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:95b3b834-43d9-49f2-937b-604ef112b73c",
+    "companyIdPart2": "part2"
   },
   {
     "id": "266e337e-5dee-44ab-818f-ad9aa6f3891f",
@@ -541,7 +603,9 @@
     "stateAbbr": "ID",
     "accountManager": "a6e9da4b-2ce9-46ac-bb0f-680c1ddc8a5b",
     "createdAt": "2022-01-22T17:18:00.026Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:266e337e-5dee-44ab-818f-ad9aa6f3891f",
+    "companyIdPart2": "part2"
   },
   {
     "id": "a5012943-6fa3-4eaf-b607-33adac904c8a",
@@ -558,7 +622,9 @@
     "stateAbbr": "IN",
     "accountManager": "55f98c99-5fcd-4584-91ae-9ceb4e448f26",
     "createdAt": "2021-06-17T16:09:36.594Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:a5012943-6fa3-4eaf-b607-33adac904c8a",
+    "companyIdPart2": "part2"
   },
   {
     "id": "5f745664-c425-4017-baad-757b3f097586",
@@ -575,7 +641,9 @@
     "stateAbbr": "NY",
     "accountManager": "a6e9da4b-2ce9-46ac-bb0f-680c1ddc8a5b",
     "createdAt": "2021-04-28T04:26:28.577Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:5f745664-c425-4017-baad-757b3f097586",
+    "companyIdPart2": "part2"
   },
   {
     "id": "f64dfee8-2788-457d-9782-32103e54cce2",
@@ -592,7 +660,9 @@
     "stateAbbr": "MD",
     "accountManager": "27d24908-f417-4b0c-b98a-8946d661f0ce",
     "createdAt": "2021-09-18T12:57:17.583Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:f64dfee8-2788-457d-9782-32103e54cce2",
+    "companyIdPart2": "part2"
   },
   {
     "id": "480dd5fd-5c21-4575-b847-e9ed067641d3",
@@ -609,7 +679,9 @@
     "stateAbbr": "WV",
     "accountManager": "27d24908-f417-4b0c-b98a-8946d661f0ce",
     "createdAt": "2021-04-16T06:59:47.639Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:480dd5fd-5c21-4575-b847-e9ed067641d3",
+    "companyIdPart2": "part2"
   },
   {
     "id": "fb772f4e-500c-4b1f-8d49-862f29b2de3a",
@@ -626,7 +698,9 @@
     "stateAbbr": "CT",
     "accountManager": "7472fe13-9966-4ce3-b1a6-fba718f2e37e",
     "createdAt": "2021-04-23T20:49:43.132Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:fb772f4e-500c-4b1f-8d49-862f29b2de3a",
+    "companyIdPart2": "part2"
   },
   {
     "id": "4a07a486-4bb0-42f2-aa49-9998c116fe78",
@@ -643,7 +717,9 @@
     "stateAbbr": "NJ",
     "accountManager": "59dd3275-47d1-4394-a5e9-b8dea26cce2c",
     "createdAt": "2021-09-03T14:19:46.866Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:4a07a486-4bb0-42f2-aa49-9998c116fe78",
+    "companyIdPart2": "part2"
   },
   {
     "id": "22c3ded8-68e8-42a6-85c7-4661631fe4b8",
@@ -660,7 +736,9 @@
     "stateAbbr": "WY",
     "accountManager": "226716e4-7933-44b1-bba3-1fa12392920a",
     "createdAt": "2020-10-05T12:36:46.754Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:22c3ded8-68e8-42a6-85c7-4661631fe4b8",
+    "companyIdPart2": "part2"
   },
   {
     "id": "0e43f73b-81f6-4e8c-bf46-c4e515438b0a",
@@ -677,7 +755,9 @@
     "stateAbbr": "MN",
     "accountManager": "7472fe13-9966-4ce3-b1a6-fba718f2e37e",
     "createdAt": "2021-06-06T04:00:58.327Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:0e43f73b-81f6-4e8c-bf46-c4e515438b0a",
+    "companyIdPart2": "part2"
   },
   {
     "id": "8d04332e-fb93-4c88-bc79-97f0bd87438a",
@@ -694,7 +774,9 @@
     "stateAbbr": "CO",
     "accountManager": "3fae6a74-6bc0-427f-a905-efc44f746b4f",
     "createdAt": "2021-09-30T04:50:00.021Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:8d04332e-fb93-4c88-bc79-97f0bd87438a",
+    "companyIdPart2": "part2"
   },
   {
     "id": "16169ab2-d757-44c3-a6d5-dfd9e1e9c583",
@@ -711,7 +793,9 @@
     "stateAbbr": "IA",
     "accountManager": "db2751a2-5a29-4820-84b6-8d4a378bf463",
     "createdAt": "2020-12-06T08:27:50.135Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:16169ab2-d757-44c3-a6d5-dfd9e1e9c583",
+    "companyIdPart2": "part2"
   },
   {
     "id": "9ba19334-2dd5-4237-8eca-fe33c5a7bcfd",
@@ -728,7 +812,9 @@
     "stateAbbr": "RI",
     "accountManager": "3fae6a74-6bc0-427f-a905-efc44f746b4f",
     "createdAt": "2021-03-16T13:56:46.165Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:9ba19334-2dd5-4237-8eca-fe33c5a7bcfd",
+    "companyIdPart2": "part2"
   },
   {
     "id": "3ce420b6-4eac-4796-a932-94e3441356ca",
@@ -745,7 +831,9 @@
     "stateAbbr": "NV",
     "accountManager": "a6e9da4b-2ce9-46ac-bb0f-680c1ddc8a5b",
     "createdAt": "2021-09-01T23:08:00.861Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:3ce420b6-4eac-4796-a932-94e3441356ca",
+    "companyIdPart2": "part2"
   },
   {
     "id": "8ede57d3-b241-4506-b8be-bd1b9e068e26",
@@ -762,7 +850,9 @@
     "stateAbbr": "KY",
     "accountManager": "db2751a2-5a29-4820-84b6-8d4a378bf463",
     "createdAt": "2021-05-19T18:11:03.594Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:8ede57d3-b241-4506-b8be-bd1b9e068e26",
+    "companyIdPart2": "part2"
   },
   {
     "id": "d905eaf5-b250-4658-9b42-966ea655de83",
@@ -779,7 +869,9 @@
     "stateAbbr": "NE",
     "accountManager": "3fae6a74-6bc0-427f-a905-efc44f746b4f",
     "createdAt": "2021-10-16T22:14:44.575Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:d905eaf5-b250-4658-9b42-966ea655de83",
+    "companyIdPart2": "part2"
   },
   {
     "id": "414f596c-6b31-4389-98da-2108c55f8318",
@@ -796,7 +888,9 @@
     "stateAbbr": "SC",
     "accountManager": "59dd3275-47d1-4394-a5e9-b8dea26cce2c",
     "createdAt": "2021-07-04T08:18:44.959Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:414f596c-6b31-4389-98da-2108c55f8318",
+    "companyIdPart2": "part2"
   },
   {
     "id": "44032390-853a-4567-86c7-e9addfb5db70",
@@ -813,7 +907,9 @@
     "stateAbbr": "CA",
     "accountManager": "0c078496-ab7d-48ed-8bef-29edc084af2b",
     "createdAt": "2021-09-16T04:30:41.940Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:44032390-853a-4567-86c7-e9addfb5db70",
+    "companyIdPart2": "part2"
   },
   {
     "id": "298e3c9f-0394-44ba-9a3a-eedbfbe252e5",
@@ -830,7 +926,9 @@
     "stateAbbr": "NY",
     "accountManager": "d60f6fd8-75c3-43ab-af42-83371413a827",
     "createdAt": "2021-01-25T09:35:55.912Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:298e3c9f-0394-44ba-9a3a-eedbfbe252e5",
+    "companyIdPart2": "part2"
   },
   {
     "id": "a12aef9d-8f85-4cdd-9c4d-017129f7513c",
@@ -847,7 +945,9 @@
     "stateAbbr": "WY",
     "accountManager": "226716e4-7933-44b1-bba3-1fa12392920a",
     "createdAt": "2021-04-09T20:37:51.356Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:a12aef9d-8f85-4cdd-9c4d-017129f7513c",
+    "companyIdPart2": "part2"
   },
   {
     "id": "92ddb351-5d3b-4b9c-a627-2066535a3cc0",
@@ -864,7 +964,9 @@
     "stateAbbr": "RI",
     "accountManager": "d60f6fd8-75c3-43ab-af42-83371413a827",
     "createdAt": "2021-02-03T15:05:08.668Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:92ddb351-5d3b-4b9c-a627-2066535a3cc0",
+    "companyIdPart2": "part2"
   },
   {
     "id": "8d4e2cee-54a8-4f0a-98a5-3f9ccc999ec6",
@@ -881,7 +983,9 @@
     "stateAbbr": "SD",
     "accountManager": "27d24908-f417-4b0c-b98a-8946d661f0ce",
     "createdAt": "2021-12-02T14:51:37.736Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:8d4e2cee-54a8-4f0a-98a5-3f9ccc999ec6",
+    "companyIdPart2": "part2"
   },
   {
     "id": "c524aa23-aa77-440c-84be-b5d415bdad25",
@@ -898,7 +1002,9 @@
     "stateAbbr": "OH",
     "accountManager": "59dd3275-47d1-4394-a5e9-b8dea26cce2c",
     "createdAt": "2021-08-15T15:51:55.487Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:c524aa23-aa77-440c-84be-b5d415bdad25",
+    "companyIdPart2": "part2"
   },
   {
     "id": "6fb19dfd-304e-4ad8-aa6b-a8d28cd9846a",
@@ -915,7 +1021,9 @@
     "stateAbbr": "FL",
     "accountManager": "59dd3275-47d1-4394-a5e9-b8dea26cce2c",
     "createdAt": "2020-11-03T17:41:25.303Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:6fb19dfd-304e-4ad8-aa6b-a8d28cd9846a",
+    "companyIdPart2": "part2"
   },
   {
     "id": "e95d0cfb-d12c-4f7d-b6d0-2d4afc9bcb9e",
@@ -932,7 +1040,9 @@
     "stateAbbr": "NV",
     "accountManager": "db2751a2-5a29-4820-84b6-8d4a378bf463",
     "createdAt": "2020-09-16T22:05:37.613Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:e95d0cfb-d12c-4f7d-b6d0-2d4afc9bcb9e",
+    "companyIdPart2": "part2"
   },
   {
     "id": "6ecdd58b-a167-4e92-9cf9-11e925dcad59",
@@ -949,7 +1059,9 @@
     "stateAbbr": "TX",
     "accountManager": "226716e4-7933-44b1-bba3-1fa12392920a",
     "createdAt": "2021-11-07T10:02:21.136Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:6ecdd58b-a167-4e92-9cf9-11e925dcad59",
+    "companyIdPart2": "part2"
   },
   {
     "id": "cea95afd-a085-44ae-baad-427db4fb2406",
@@ -966,7 +1078,9 @@
     "stateAbbr": "NM",
     "accountManager": "3fae6a74-6bc0-427f-a905-efc44f746b4f",
     "createdAt": "2021-06-01T09:47:02.926Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:cea95afd-a085-44ae-baad-427db4fb2406",
+    "companyIdPart2": "part2"
   },
   {
     "id": "44dc1ecd-32ce-4852-9d9e-6c00df5f95ff",
@@ -983,7 +1097,9 @@
     "stateAbbr": "MN",
     "accountManager": "d60f6fd8-75c3-43ab-af42-83371413a827",
     "createdAt": "2021-03-12T18:22:01.739Z",
-    "color": "#ffffff"
+    "color": "#ffffff",
+    "companyId": "id:44dc1ecd-32ce-4852-9d9e-6c00df5f95ff",
+    "companyIdPart2": "part2"
   },
   {
     "id": "a59a2e67-94ae-4e46-9a69-fb611e5cec15",
@@ -1000,7 +1116,9 @@
     "stateAbbr": "MI",
     "accountManager": "a6e9da4b-2ce9-46ac-bb0f-680c1ddc8a5b",
     "createdAt": "2021-12-09T13:27:41.731Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:a59a2e67-94ae-4e46-9a69-fb611e5cec15",
+    "companyIdPart2": "part2"
   },
   {
     "id": "f3b87e29-fef4-46aa-a20e-84db4b5534ab",
@@ -1017,7 +1135,9 @@
     "stateAbbr": "OH",
     "accountManager": "db2751a2-5a29-4820-84b6-8d4a378bf463",
     "createdAt": "2021-01-20T14:04:29.173Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:f3b87e29-fef4-46aa-a20e-84db4b5534ab",
+    "companyIdPart2": "part2"
   },
   {
     "id": "13fc148c-ee1b-4ca3-8171-8c45fa2ac0a9",
@@ -1034,7 +1154,9 @@
     "stateAbbr": "HI",
     "accountManager": "db2751a2-5a29-4820-84b6-8d4a378bf463",
     "createdAt": "2021-07-15T22:31:42.250Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:13fc148c-ee1b-4ca3-8171-8c45fa2ac0a9",
+    "companyIdPart2": "part2"
   },
   {
     "id": "7143475c-2515-4b19-a12f-bb9f8b400532",
@@ -1051,7 +1173,9 @@
     "stateAbbr": "ND",
     "accountManager": "59dd3275-47d1-4394-a5e9-b8dea26cce2c",
     "createdAt": "2021-02-05T20:35:35.520Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:7143475c-2515-4b19-a12f-bb9f8b400532",
+    "companyIdPart2": "part2"
   },
   {
     "id": "53184554-491d-4f8d-b750-808019b7b629",
@@ -1068,7 +1192,9 @@
     "stateAbbr": "NY",
     "accountManager": "59dd3275-47d1-4394-a5e9-b8dea26cce2c",
     "createdAt": "2022-01-07T06:03:12.979Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:53184554-491d-4f8d-b750-808019b7b629",
+    "companyIdPart2": "part2"
   },
   {
     "id": "49f584ed-93ad-4821-af1a-b8bf0fab0576",
@@ -1085,7 +1211,9 @@
     "stateAbbr": "MN",
     "accountManager": "27d24908-f417-4b0c-b98a-8946d661f0ce",
     "createdAt": "2022-01-05T20:30:16.479Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:49f584ed-93ad-4821-af1a-b8bf0fab0576",
+    "companyIdPart2": "part2"
   },
   {
     "id": "18c20af1-f172-43e7-9e84-9acc0e8eee94",
@@ -1102,7 +1230,9 @@
     "stateAbbr": "WV",
     "accountManager": "a6e9da4b-2ce9-46ac-bb0f-680c1ddc8a5b",
     "createdAt": "2021-03-23T02:02:44.645Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:18c20af1-f172-43e7-9e84-9acc0e8eee94",
+    "companyIdPart2": "part2"
   },
   {
     "id": "cfbd3fbc-2125-45a6-9a6d-48a1ebb8037e",
@@ -1119,7 +1249,9 @@
     "stateAbbr": "HI",
     "accountManager": "59dd3275-47d1-4394-a5e9-b8dea26cce2c",
     "createdAt": "2020-11-26T04:45:23.459Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:cfbd3fbc-2125-45a6-9a6d-48a1ebb8037e",
+    "companyIdPart2": "part2"
   },
   {
     "id": "6f152354-db68-4aa9-8f9e-b77d8f634851",
@@ -1136,7 +1268,9 @@
     "stateAbbr": "VT",
     "accountManager": "d60f6fd8-75c3-43ab-af42-83371413a827",
     "createdAt": "2021-05-11T14:34:06.588Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:6f152354-db68-4aa9-8f9e-b77d8f634851",
+    "companyIdPart2": "part2"
   },
   {
     "id": "6fa0d834-55e3-410d-8426-443630991f43",
@@ -1153,7 +1287,9 @@
     "stateAbbr": "VT",
     "accountManager": "3fae6a74-6bc0-427f-a905-efc44f746b4f",
     "createdAt": "2021-04-11T17:53:13.334Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:6fa0d834-55e3-410d-8426-443630991f43",
+    "companyIdPart2": "part2"
   },
   {
     "id": "23f77624-c0ad-44aa-a08b-7eb4fd8c2d98",
@@ -1170,7 +1306,9 @@
     "stateAbbr": "OH",
     "accountManager": "db2751a2-5a29-4820-84b6-8d4a378bf463",
     "createdAt": "2022-01-09T19:00:10.913Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:23f77624-c0ad-44aa-a08b-7eb4fd8c2d98",
+    "companyIdPart2": "part2"
   },
   {
     "id": "44bd9380-d4af-42f0-91af-2aa8be0f848e",
@@ -1187,7 +1325,9 @@
     "stateAbbr": "IN",
     "accountManager": "27d24908-f417-4b0c-b98a-8946d661f0ce",
     "createdAt": "2021-02-22T02:16:42.986Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:44bd9380-d4af-42f0-91af-2aa8be0f848e",
+    "companyIdPart2": "part2"
   },
   {
     "id": "b6c6e25b-29d5-4dfd-b0b6-0ade3ab0063f",
@@ -1204,7 +1344,9 @@
     "stateAbbr": "TN",
     "accountManager": "7472fe13-9966-4ce3-b1a6-fba718f2e37e",
     "createdAt": "2021-05-27T21:38:34.440Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:b6c6e25b-29d5-4dfd-b0b6-0ade3ab0063f",
+    "companyIdPart2": "part2"
   },
   {
     "id": "d2549f7b-131f-4683-8f85-ee95ffa6fd6d",
@@ -1221,7 +1363,9 @@
     "stateAbbr": "WY",
     "accountManager": "d60f6fd8-75c3-43ab-af42-83371413a827",
     "createdAt": "2021-11-04T21:07:40.819Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:d2549f7b-131f-4683-8f85-ee95ffa6fd6d",
+    "companyIdPart2": "part2"
   },
   {
     "id": "6454b3c2-f6bd-429a-9b0c-ca734d002003",
@@ -1238,7 +1382,9 @@
     "stateAbbr": "NE",
     "accountManager": "7472fe13-9966-4ce3-b1a6-fba718f2e37e",
     "createdAt": "2021-06-04T11:23:07.930Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:6454b3c2-f6bd-429a-9b0c-ca734d002003",
+    "companyIdPart2": "part2"
   },
   {
     "id": "e5911bcf-5e4c-4bca-ad1c-1e66d503a9df",
@@ -1255,7 +1401,9 @@
     "stateAbbr": "MD",
     "accountManager": "7472fe13-9966-4ce3-b1a6-fba718f2e37e",
     "createdAt": "2021-05-21T20:24:31.786Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:e5911bcf-5e4c-4bca-ad1c-1e66d503a9df",
+    "companyIdPart2": "part2"
   },
   {
     "id": "3617ea7a-2b87-4547-beca-889be31fdc5f",
@@ -1272,7 +1420,9 @@
     "stateAbbr": "MI",
     "accountManager": "27d24908-f417-4b0c-b98a-8946d661f0ce",
     "createdAt": "2021-09-10T07:12:04.914Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:3617ea7a-2b87-4547-beca-889be31fdc5f",
+    "companyIdPart2": "part2"
   },
   {
     "id": "2e91f807-bdde-425a-92e5-8aa8c61d05b3",
@@ -1289,7 +1439,9 @@
     "stateAbbr": "AR",
     "accountManager": "55f98c99-5fcd-4584-91ae-9ceb4e448f26",
     "createdAt": "2021-03-10T11:31:03.099Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:2e91f807-bdde-425a-92e5-8aa8c61d05b3",
+    "companyIdPart2": "part2"
   },
   {
     "id": "5811e50e-4c46-47af-97ef-66837e12b701",
@@ -1306,7 +1458,9 @@
     "stateAbbr": "VT",
     "accountManager": "a6e9da4b-2ce9-46ac-bb0f-680c1ddc8a5b",
     "createdAt": "2022-01-26T00:53:53.825Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:5811e50e-4c46-47af-97ef-66837e12b701",
+    "companyIdPart2": "part2"
   },
   {
     "id": "bea4e13e-8afd-442e-a716-914f67870709",
@@ -1323,7 +1477,9 @@
     "stateAbbr": "RI",
     "accountManager": "db2751a2-5a29-4820-84b6-8d4a378bf463",
     "createdAt": "2020-12-16T09:18:44.839Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:bea4e13e-8afd-442e-a716-914f67870709",
+    "companyIdPart2": "part2"
   },
   {
     "id": "82c60815-df3f-4915-9eb1-989878498ae1",
@@ -1340,7 +1496,9 @@
     "stateAbbr": "AK",
     "accountManager": "226716e4-7933-44b1-bba3-1fa12392920a",
     "createdAt": "2021-09-10T21:33:38.090Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:82c60815-df3f-4915-9eb1-989878498ae1",
+    "companyIdPart2": "part2"
   },
   {
     "id": "788edeea-05a9-4644-9b1e-e203a200dbc0",
@@ -1357,7 +1515,9 @@
     "stateAbbr": "VT",
     "accountManager": "db2751a2-5a29-4820-84b6-8d4a378bf463",
     "createdAt": "2020-11-22T03:18:50.217Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:788edeea-05a9-4644-9b1e-e203a200dbc0",
+    "companyIdPart2": "part2"
   },
   {
     "id": "04c199c2-3b26-4bae-a11f-4db019abd99b",
@@ -1374,7 +1534,9 @@
     "stateAbbr": "UT",
     "accountManager": "27d24908-f417-4b0c-b98a-8946d661f0ce",
     "createdAt": "2020-11-27T03:27:40.414Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:04c199c2-3b26-4bae-a11f-4db019abd99b",
+    "companyIdPart2": "part2"
   },
   {
     "id": "b9f7d1a4-134d-4e75-8a9d-a358a3fe06d7",
@@ -1391,7 +1553,9 @@
     "stateAbbr": "MD",
     "accountManager": "db2751a2-5a29-4820-84b6-8d4a378bf463",
     "createdAt": "2022-01-02T18:00:36.159Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:b9f7d1a4-134d-4e75-8a9d-a358a3fe06d7",
+    "companyIdPart2": "part2"
   },
   {
     "id": "50b99b7d-66ba-44b3-bdaf-1de1f6869554",
@@ -1408,7 +1572,9 @@
     "stateAbbr": "ND",
     "accountManager": "3fae6a74-6bc0-427f-a905-efc44f746b4f",
     "createdAt": "2021-08-17T04:46:51.925Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:50b99b7d-66ba-44b3-bdaf-1de1f6869554",
+    "companyIdPart2": "part2"
   },
   {
     "id": "55693d39-5e59-4654-8726-e5c89a037a7b",
@@ -1425,7 +1591,9 @@
     "stateAbbr": "CA",
     "accountManager": "55f98c99-5fcd-4584-91ae-9ceb4e448f26",
     "createdAt": "2021-10-26T16:22:27.214Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:55693d39-5e59-4654-8726-e5c89a037a7b",
+    "companyIdPart2": "part2"
   },
   {
     "id": "0a229cb6-d727-4269-a2f6-2bd96604eeda",
@@ -1442,7 +1610,9 @@
     "stateAbbr": "NM",
     "accountManager": "55f98c99-5fcd-4584-91ae-9ceb4e448f26",
     "createdAt": "2021-09-23T03:25:05.999Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:0a229cb6-d727-4269-a2f6-2bd96604eeda",
+    "companyIdPart2": "part2"
   },
   {
     "id": "b2270f52-ff80-4921-b31f-fcd1e906d4ac",
@@ -1459,7 +1629,9 @@
     "stateAbbr": "KY",
     "accountManager": "d60f6fd8-75c3-43ab-af42-83371413a827",
     "createdAt": "2021-12-08T00:00:10.458Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:b2270f52-ff80-4921-b31f-fcd1e906d4ac",
+    "companyIdPart2": "part2"
   },
   {
     "id": "e653764e-9601-4967-87f7-0a871030b66a",
@@ -1476,7 +1648,9 @@
     "stateAbbr": "TX",
     "accountManager": "3fae6a74-6bc0-427f-a905-efc44f746b4f",
     "createdAt": "2021-06-11T09:20:40.928Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:e653764e-9601-4967-87f7-0a871030b66a",
+    "companyIdPart2": "part2"
   },
   {
     "id": "113af1d5-70cc-4066-9c9f-1a6c303b945c",
@@ -1493,7 +1667,9 @@
     "stateAbbr": "MN",
     "accountManager": "a6e9da4b-2ce9-46ac-bb0f-680c1ddc8a5b",
     "createdAt": "2022-01-02T06:37:35.191Z",
-    "color": "#ffffff"
+    "color": "#ffffff",
+    "companyId": "id:113af1d5-70cc-4066-9c9f-1a6c303b945c",
+    "companyIdPart2": "part2"
   },
   {
     "id": "20507cb1-56c8-4a12-99a0-8a867a289884",
@@ -1510,7 +1686,9 @@
     "stateAbbr": "CO",
     "accountManager": "27d24908-f417-4b0c-b98a-8946d661f0ce",
     "createdAt": "2021-07-31T16:30:53.783Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:20507cb1-56c8-4a12-99a0-8a867a289884",
+    "companyIdPart2": "part2"
   },
   {
     "id": "f1a105ff-df73-448f-9a17-bdfca6961f76",
@@ -1527,7 +1705,9 @@
     "stateAbbr": "MI",
     "accountManager": "55f98c99-5fcd-4584-91ae-9ceb4e448f26",
     "createdAt": "2021-11-26T00:59:37.422Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:f1a105ff-df73-448f-9a17-bdfca6961f76",
+    "companyIdPart2": "part2"
   },
   {
     "id": "d44e83c8-cfd0-46ea-92bb-7c7cacea4fcb",
@@ -1544,7 +1724,9 @@
     "stateAbbr": "VA",
     "accountManager": "d60f6fd8-75c3-43ab-af42-83371413a827",
     "createdAt": "2020-11-18T22:25:15.425Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:d44e83c8-cfd0-46ea-92bb-7c7cacea4fcb",
+    "companyIdPart2": "part2"
   },
   {
     "id": "6e4973e9-6d96-4be4-89d9-0a53393a384c",
@@ -1561,7 +1743,9 @@
     "stateAbbr": "ID",
     "accountManager": "a6e9da4b-2ce9-46ac-bb0f-680c1ddc8a5b",
     "createdAt": "2021-07-18T22:11:17.779Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:6e4973e9-6d96-4be4-89d9-0a53393a384c",
+    "companyIdPart2": "part2"
   },
   {
     "id": "e6116890-d37d-4ad2-bde8-e21bc1887601",
@@ -1578,7 +1762,9 @@
     "stateAbbr": "OH",
     "accountManager": "3fae6a74-6bc0-427f-a905-efc44f746b4f",
     "createdAt": "2021-07-02T14:52:47.830Z",
-    "color": "#ff0000"
+    "color": "#ff0000",
+    "companyId": "id:e6116890-d37d-4ad2-bde8-e21bc1887601",
+    "companyIdPart2": "part2"
   },
   {
     "id": "9bd153d5-3d35-4272-9bf4-163798052f1a",
@@ -1595,7 +1781,9 @@
     "stateAbbr": "AK",
     "accountManager": "3fae6a74-6bc0-427f-a905-efc44f746b4f",
     "createdAt": "2021-07-07T21:12:44.344Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:9bd153d5-3d35-4272-9bf4-163798052f1a",
+    "companyIdPart2": "part2"
   },
   {
     "id": "a0a9f605-b907-473c-a9ee-339885b9af85",
@@ -1612,7 +1800,9 @@
     "stateAbbr": "AK",
     "accountManager": "59dd3275-47d1-4394-a5e9-b8dea26cce2c",
     "createdAt": "2021-11-23T00:57:55.724Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:a0a9f605-b907-473c-a9ee-339885b9af85",
+    "companyIdPart2": "part2"
   },
   {
     "id": "767372ce-0029-43ba-b759-0c67da43c38f",
@@ -1629,7 +1819,9 @@
     "stateAbbr": "RI",
     "accountManager": "7472fe13-9966-4ce3-b1a6-fba718f2e37e",
     "createdAt": "2021-07-13T14:34:36.551Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:767372ce-0029-43ba-b759-0c67da43c38f",
+    "companyIdPart2": "part2"
   },
   {
     "id": "820e23e1-ba66-4520-b78f-ea6579fb8414",
@@ -1645,7 +1837,9 @@
     "city": "North Giashire",
     "stateAbbr": "GA",
     "createdAt": "2020-10-07T04:10:02.545Z",
-    "color": "#318ce7"
+    "color": "#318ce7",
+    "companyId": "id:820e23e1-ba66-4520-b78f-ea6579fb8414",
+    "companyIdPart2": "part2"
   },
   {
     "id": "3edb92ed-eaa8-4142-b21d-306e0a3f6150",
@@ -1662,7 +1856,9 @@
     "stateAbbr": "AZ",
     "accountManager": "db2751a2-5a29-4820-84b6-8d4a378bf463",
     "createdAt": "2020-09-30T08:19:48.285Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:3edb92ed-eaa8-4142-b21d-306e0a3f6150",
+    "companyIdPart2": "part2"
   },
   {
     "id": "86275f7a-7803-46aa-a9ad-f7a28bf8ab6d",
@@ -1679,7 +1875,9 @@
     "stateAbbr": "OH",
     "accountManager": "a6e9da4b-2ce9-46ac-bb0f-680c1ddc8a5b",
     "createdAt": "2020-11-19T07:08:44.208Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:86275f7a-7803-46aa-a9ad-f7a28bf8ab6d",
+    "companyIdPart2": "part2"
   },
   {
     "id": "3cdf5917-d00a-4ee3-8027-859873620dab",
@@ -1696,7 +1894,9 @@
     "stateAbbr": "IN",
     "accountManager": "a6e9da4b-2ce9-46ac-bb0f-680c1ddc8a5b",
     "createdAt": "2021-03-15T20:26:19.644Z",
-    "color": "#ff0000"
+    "color": "#ff0000",
+    "companyId": "id:3cdf5917-d00a-4ee3-8027-859873620dab",
+    "companyIdPart2": "part2"
   },
   {
     "id": "aea8a603-86a8-4082-8763-6da2a7e2de3a",
@@ -1713,6 +1913,8 @@
     "stateAbbr": "",
     "accountManager": "",
     "createdAt": "2024-06-26T10:17:10.368Z",
-    "color": "#0099FF"
+    "color": "#0099FF",
+    "companyId": "id:aea8a603-86a8-4082-8763-6da2a7e2de3a",
+    "companyIdPart2": "part2"
   }
 ]
