@@ -22,7 +22,7 @@ export function remultApi(
           }
         },
       },
-      public: { headers: event.request.headers },
+      public: { headers: event.request.headers, url: event.url },
     }),
     getRequestBody: (event) => event.request.json(),
   })

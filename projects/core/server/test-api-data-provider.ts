@@ -16,6 +16,7 @@ import {
 import { remultStatic } from '../src/remult-static.js'
 import { RemultAsyncLocalStorage } from '../src/context.js'
 import { initDataProvider } from './initDataProvider.js'
+import { getURL } from '../urlBuilder.js'
 
 export function TestApiDataProvider(
   options?: Pick<RemultServerOptions<unknown>, 'ensureSchema' | 'dataProvider'>,
@@ -32,7 +33,7 @@ export function TestApiDataProvider(
       getRequestBody: async (req) => req.body,
       buildGenericRequestInfo: (req) => ({
         internal: req,
-        public: { headers: new Headers() },
+        public: { headers: new Headers(), url: getURL() },
       }),
       ignoreAsyncStorage: true,
     },

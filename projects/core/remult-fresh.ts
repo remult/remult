@@ -1,3 +1,4 @@
+import { getURL } from './urlBuilder.js'
 import {} from './server/core.js'
 import type {
   RemultServerCore,
@@ -13,7 +14,7 @@ export function remultApi(
     buildGenericRequestInfo: (r) => ({
       // @ts-ignore
       internal: { ...r, on: r.on },
-      public: { headers: (r as any).headers },
+      public: { headers: (r as any).headers, url: getURL(r.url) },
     }),
     getRequestBody: (req) => req.json(),
   })
