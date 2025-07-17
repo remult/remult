@@ -11,6 +11,8 @@ import {
   type GenericResponse,
 } from './server/index.js'
 import type { ResponseRequiredForSSE } from './SseSubscriptionServer.js'
+import { getURL } from './urlBuilder.js'
+
 export function remultApi(
   options: RemultServerOptions<Context<Env, '', BlankInput>>,
 ): RemultHonoServer {
@@ -33,7 +35,10 @@ export function remultApi(
             ;(c as any)['_tempOnClose'](() => do1())
           },
         },
-        public: { headers: new Headers(c.req.header()) },
+        public: {
+          headers: new Headers(c.req.header()),
+          url: getURL(c.req.url),
+        },
       }
     },
     getRequestBody: async (c) => {

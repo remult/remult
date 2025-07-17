@@ -7,6 +7,7 @@ import type {
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
 import type { APIEvent } from '@solidjs/start/server' // don't remove - augments requestEvent
+import { getURL } from './urlBuilder.js'
 
 export function remultApi(
   options: RemultServerOptions<RequestEvent>,
@@ -22,7 +23,10 @@ export function remultApi(
           }
         },
       },
-      public: { headers: new Headers(event.request.headers) },
+      public: {
+        headers: new Headers(event.request.headers),
+        url: getURL(event.request.url),
+      },
     }),
     getRequestBody: (event) => event.request.json(),
   })

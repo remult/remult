@@ -10,6 +10,7 @@ import {
 } from './remult-api-server.js'
 import { initAsyncHooks } from './initAsyncHooks.js'
 import { cast } from '../src/isOfType.js'
+import { getURL } from '../urlBuilder.js'
 export { SseSubscriptionServer } from '../SseSubscriptionServer.js'
 export { DataProviderLiveQueryStorage } from '../live-query/data-provider-live-query-storage.js'
 export {
@@ -42,7 +43,10 @@ export function createRemultServer<RequestType>(
     serverCoreOptions || {
       buildGenericRequestInfo: (req) => ({
         internal: cast<GenericRequestInfo>(req, 'method'),
-        public: { headers: new Headers((req as any).headers) },
+        public: {
+          headers: new Headers((req as any).headers),
+          url: getURL((req as any).url),
+        },
       }),
       getRequestBody: async (req) => (req as any).body,
     },

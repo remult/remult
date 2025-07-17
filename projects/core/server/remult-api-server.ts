@@ -48,6 +48,7 @@ import remultAdminHtml, { buildEntityInfo } from './remult-admin.js'
 import { isOfType } from '../src/isOfType.js'
 import { initDataProviderOrJson } from './initDataProviderOrJson.js'
 import { modulesFlatAndOrdered, type Module } from './module.js'
+import { getURL } from '../urlBuilder.js'
 
 export interface RemultServerOptions<RequestType> {
   /**Entities to use for the api */
@@ -702,13 +703,7 @@ export class RemultServerImplementation<RequestType>
               {
                 res: origRes,
                 req: {
-                  url: genReq.url
-                    ? new URL(
-                        genReq.url,
-                        // TODO ROUTER: improve buildGenericRequestInfo implem to get this ?
-                        'http://localhost',
-                      )
-                    : new URL('http://localhost'),
+                  url: getURL(genReq.url),
                   headers: new Headers(),
                 },
               },

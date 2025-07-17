@@ -5,7 +5,6 @@ import { TasksController } from '../../../shared/TasksController'
 import { remult } from 'remult'
 import { remultApi } from 'remult/remult-sveltekit'
 import { Module } from 'remult/server'
-import { someRoutes } from '../../../../../shared/modules/someRoutes/server.js'
 
 const initRequestModule = new Module({
   key: 'init-request-module-next',
@@ -13,6 +12,21 @@ const initRequestModule = new Module({
     if (remult.context.headers?.getAll()['remult-test-crash-ctx'] === 'yes-c') {
       throw new Error('test crash')
     }
+  },
+})
+
+const someRoutes = new Module({
+  key: 'some-routes',
+  routes: {
+    '/new-route': async ({ res, req }) => {
+      res.json({ Soooooo: 'Cool! A new new-route!' })
+    },
+
+    '/new-route-2': {
+      GET: async ({ res, req }) => {
+        res.json({ 'new-route-2': req.url?.searchParams.get('param') })
+      },
+    },
   },
 })
 

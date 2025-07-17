@@ -3,11 +3,15 @@ import {
   type GenericRequestInfo,
   RouteImplementation,
 } from '../../core/server/remult-api-server'
+import { getURL } from '../../core/urlBuilder.js'
 describe('test router impl', async () => {
   it('test a', async () => {
     const r = new RouteImplementation<GenericRequestInfo>({
       buildGenericRequestInfo: (req) => {
-        return { internal: req, public: { headers: new Headers() } }
+        return {
+          internal: req,
+          public: { headers: new Headers(), url: getURL(req.url) },
+        }
       },
       getRequestBody: (req) => {
         return undefined!
@@ -57,7 +61,10 @@ describe('test router impl', async () => {
   it('test b', async () => {
     const r = new RouteImplementation<GenericRequestInfo>({
       buildGenericRequestInfo: (req) => {
-        return { internal: req, public: { headers: new Headers() } }
+        return {
+          internal: req,
+          public: { headers: new Headers(), url: getURL(req.url) },
+        }
       },
       getRequestBody: (req) => {
         return undefined!
@@ -112,7 +119,10 @@ describe('test router impl', async () => {
   it('test *', async () => {
     const r = new RouteImplementation<GenericRequestInfo>({
       buildGenericRequestInfo: (req) => {
-        return { internal: req, public: { headers: new Headers() } }
+        return {
+          internal: req,
+          public: { headers: new Headers(), url: getURL(req.url) },
+        }
       },
       getRequestBody: (req) => {
         return undefined!

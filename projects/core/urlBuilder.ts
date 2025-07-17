@@ -13,3 +13,20 @@ export class UrlBuilder {
       }
   }
 }
+
+export function getURL(input?: string | undefined | URL) {
+  if (input) {
+    if (input instanceof URL) return input
+    try {
+      return new URL(input)
+    } catch (error) {
+      // URL is invalid, use fallback base
+      try {
+        return new URL(input, 'http://fallback-url-remult-base')
+      } catch (error) {
+        // URL is invalid, use fallback
+      }
+    }
+  }
+  return new URL('http://fallback-url-remult')
+}

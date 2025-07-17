@@ -7,6 +7,7 @@ import type {
   RemultServerOptions,
 } from './server/remult-api-server.js'
 import { createRemultServer } from './server/index.js'
+import { getURL } from './urlBuilder.js'
 
 export function remultApi(
   options?: RemultServerOptions<express.Request> & {
@@ -31,7 +32,10 @@ export function remultApi(
   const server = createRemultServer<express.Request>(options, {
     buildGenericRequestInfo: (req) => ({
       internal: { ...req, on: req.on },
-      public: { headers: new Headers(req.headers as Record<string, string>) },
+      public: {
+        headers: new Headers(req.headers as Record<string, string>),
+        url: getURL(req.url),
+      },
     }),
     getRequestBody: async (req) => req.body,
   }) as RemultServerImplementation<express.Request>
