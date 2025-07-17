@@ -596,6 +596,50 @@ export function allServerTests(
         }),
       )
     })
+
+    describe('routes', () => {
+      describe('GET', () => {
+        it(
+          'should get a 404',
+          withRemultForTest(async () => {
+            try {
+              await axios.get(remult.apiClient.url + '/nothing')
+              expect('should never').toBe('be here')
+            } catch (error) {
+              expect(error).toMatchInlineSnapshot(
+                `[AxiosError: Request failed with status code 404]`,
+              )
+            }
+          }),
+        )
+
+        it(
+          'should get json',
+          withRemultForTest(async () => {
+            const result = await axios.get(remult.apiClient.url + '/new-route')
+            expect(result.data).toMatchInlineSnapshot(`
+            {
+              "Soooooo": "Cool! A new new-route!",
+            }
+          `)
+          }),
+        )
+
+        it(
+          'should get json (with GET level key & param)',
+          withRemultForTest(async () => {
+            const result = await axios.get(
+              remult.apiClient.url + '/new-route-2?param=7',
+            )
+            expect(result.data).toMatchInlineSnapshot(`
+              {
+                "new-route-2": "7",
+              }
+            `)
+          }),
+        )
+      })
+    })
   })
 
   async function create3Tasks() {

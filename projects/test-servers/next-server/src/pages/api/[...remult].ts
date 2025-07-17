@@ -12,8 +12,23 @@ const initRequestModule = new Module({
   },
 })
 
+const someRoutes = new Module({
+  key: 'some-routes',
+  routes: {
+    '/new-route': async ({ res, req }) => {
+      res.json({ Soooooo: 'Cool! A new new-route!' })
+    },
+
+    '/new-route-2': {
+      GET: async ({ res, req }) => {
+        res.json({ 'new-route-2': req.url?.searchParams.get('param') })
+      },
+    },
+  },
+})
+
 export default remultNext({
   entities: [Task],
   admin: true,
-  modules: [initRequestModule],
+  modules: [initRequestModule, someRoutes],
 })

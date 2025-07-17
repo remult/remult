@@ -1,21 +1,20 @@
 import express from 'express'
-import { type remultApiServer, remultApi } from '../../core/remult-express.js'
+import { remultApi } from '../../core/remult-express.js'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { Task, test_compound_id } from '../../test-servers/shared/Task.js'
 import {
   InMemoryDataProvider,
-  Remult,
   remult,
   repo,
   withRemult,
   type ErrorInfo,
 } from '../../core'
 import { RemultAsyncLocalStorage } from '../../core/src/context.js'
-import { allServerTests, testAsExpressMW } from './all-server-tests.js'
+import { testAsExpressMW } from './all-server-tests.js'
 import { initAsyncHooks } from '../../core/server/initAsyncHooks.js'
 import type { RemultServerOptions } from '../../core/server/index.js'
-import axios from 'axios'
 import { initRequestModule } from '../../test-servers/shared/modules/initRequest/server.js'
+import { someRoutes } from '../../test-servers/shared/modules/someRoutes/server.js'
 
 describe('test express server', async () => {
   let throwExceptionOnGetUser = false
@@ -42,7 +41,7 @@ describe('test express server', async () => {
         } satisfies ErrorInfo
       return undefined
     },
-    modules: [initRequestModule],
+    modules: [initRequestModule, someRoutes],
   })
   const app = express.Router()
   app.use(api)
