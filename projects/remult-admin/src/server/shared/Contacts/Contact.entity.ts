@@ -27,6 +27,9 @@ import { Tag } from './Tag.entity'
   defaultOrderBy: {
     lastName: 'asc',
   },
+  saving: (item) => {
+    item.comp_p2 = 'part2'
+  },
 })
 export class Contact {
   @Fields.uuid()
@@ -49,7 +52,17 @@ export class Contact {
   gender = genderOptions
   @Fields.string()
   title = ''
-  @Relations.toOne(() => Company, { defaultIncluded: true })
+  @Fields.string()
+  companyId = ''
+  @Fields.string()
+  comp_p2 = ''
+  @Relations.toOne<Contact, Company>(() => Company, {
+    defaultIncluded: true,
+    fields: {
+      companyId: 'companyId',
+      // companyIdPart2: 'comp_p2'
+    },
+  })
   company?: Company
   @Fields.string()
   phoneNumber1 = ''

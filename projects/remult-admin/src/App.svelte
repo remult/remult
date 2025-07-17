@@ -118,7 +118,7 @@
     $SSContext.settings.bearerAuth === ''
   ) {
     dialog.show({
-      config: { title: 'Remult Settings' },
+      config: { title: 'Settings' },
       component: DialogSettings,
       props: {
         onlySession: true,
@@ -130,11 +130,11 @@
 <div class="app-holder">
   <div class="main-navigation">
     <div class="main-navigation__title">
-      Remult Admin
+      Admin
       <button
         on:click={() =>
           dialog.show({
-            config: { title: 'Remult Settings' },
+            config: { title: 'Settings' },
             component: DialogSettings,
           })}
         class="icon-button"

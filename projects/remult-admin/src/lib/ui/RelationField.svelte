@@ -21,16 +21,16 @@
     dispatch('change', { _data })
   }
 
-  $:  getDisplayValue(value)
+  $: getDisplayValue(value)
 
   const getDisplayValue = async (_value) => {
-    if(_value === null) {
+    if (_value === null) {
       displayValue = '- Unset -'
     } else {
       displayValue =
         relationsToOneValues[info.valFieldKey] &&
         relationsToOneValues[info.valFieldKey].get(value)
-    if (displayValue === undefined) {
+      if (displayValue === undefined) {
         displayValue = await $godStore.displayValueFor(info, value)
       }
     }
