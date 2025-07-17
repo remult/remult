@@ -148,6 +148,32 @@ export interface RemultServerOptions<RequestType> {
   }) => Promise<void> | undefined
 
   /**
+   * Adding some extra routes to your api.
+   *
+   * Note: this is primarily meant for module developers.
+   * As a user you should first make use of [Entities](https://remult.dev/docs/ref_entity) and [Backend Methods](https://remult.dev/docs/backendMethods)
+   *
+   * @example
+   * ```
+   * routes: {
+   *   '/new-route': async ({ res }) => {
+   *     res.json({ Soooooo: 'Cool! A new new-route!' })
+   *   },
+   * }
+   * ```
+   *
+   * This will add the route `/api/new-route` to the api.
+   */
+  routes?: Record<
+    /** It will automatically add the `rootPath` _(default: `/api`)_ to the route. */
+    `/${string}`,
+    | RouteInfoFn<RequestType>
+    | {
+        GET: RouteInfoFn<RequestType>
+      }
+  >
+
+  /**
    * Modules are here to group code by feature. [Module Guide](https://remult.dev/docs/modules)
    *
    * @example
@@ -172,6 +198,15 @@ export interface RemultServerOptions<RequestType> {
    * })
    */
   modules?: Module<RequestType>[]
+}
+
+export interface RouteInfoFn<RequestType> {
+  (gri: GenericRouteInfo, req: RequestType): void
+}
+
+export interface GenericRouteInfo {
+  req: GenericRequest
+  res: GenericResponse
 }
 
 export interface InitRequestOptions {
@@ -271,6 +306,7 @@ export type SpecificRoute<RequestType> = {
 
 export interface GenericRequest {
   headers: Headers
+  url: URL
 }
 
 export interface GenericRequestInfo {
@@ -591,6 +627,29 @@ export class RemultServerImplementation<RequestType>
     this.entities.forEach((e) => {
       this.addEntity(e, getEntityKey(e), r)
     })
+
+    this.modulesSorted
+      .map((m) => m.routes)
+      .forEach((routes) => {
+        if (routes) {
+          const objRoutes = Object.entries(routes)
+          objRoutes.forEach(([subPathKey, handler]) => {
+            const handlerGET = isOfType<{
+              GET: any
+            }>(handler, 'GET')
+              ? handler.GET
+              : handler
+
+            this.add({
+              key: subPathKey.substring(1), // removing the first / (that is mandatory)
+              dataApiFactory: undefined!,
+              r,
+              isExtraRoute: true,
+              handlerGET,
+            })
+          })
+        }
+      })
   }
   __addEntityForTesting(e: EntityMetadata) {
     this.addEntity(e.entityType, e.key, this.getRouteImpl())
@@ -601,13 +660,13 @@ export class RemultServerImplementation<RequestType>
     r: GenericRouter<RequestType>,
   ) {
     if (key != undefined)
-      this.add(
+      this.add({
         key,
-        (c) => {
+        dataApiFactory: (c) => {
           return new DataApi(c.repo(e), c)
         },
         r,
-      )
+      })
   }
 
   async serializeContext(remult: Remult) {
@@ -621,65 +680,99 @@ export class RemultServerImplementation<RequestType>
     return result
   }
 
-  add(
-    key: string,
-    dataApiFactory: (req: Remult) => DataApi,
-    r: GenericRouter<RequestType>,
-  ) {
-    let myRoute = this.options.rootPath + '/' + key
-    if (this.options.logApiEndPoints) console.info('[remult] ' + myRoute)
+  add(options: {
+    key: string
+    dataApiFactory: (req: Remult) => DataApi
+    r: GenericRouter<RequestType>
+    isExtraRoute?: boolean
+    handlerGET?: RouteInfoFn<RequestType>
+  }) {
+    let myRoute = this.options.rootPath + '/' + options.key
+    if (this.options.logApiEndPoints) {
+      const suffix = options.isExtraRoute ? ' (!)' : ''
+      console.info('[remult] ' + myRoute + suffix)
+    }
 
-    r.route(myRoute)
+    options.r
+      .route(myRoute)
       .get(
-        this.process(async (c, req, res, orig) =>
-          dataApiFactory(c).httpGet(res, req, () => this.serializeContext(c)),
-        ),
+        this.process(async (c, req, res, genReq, origRes, origReq) => {
+          if (options.handlerGET) {
+            return options.handlerGET(
+              {
+                res: origRes,
+                req: {
+                  url: genReq.url
+                    ? new URL(
+                        genReq.url,
+                        // TODO ROUTER: improve buildGenericRequestInfo implem to get this ?
+                        'http://localhost',
+                      )
+                    : new URL('http://localhost'),
+                  headers: new Headers(),
+                },
+              },
+              origReq,
+            )
+          } else {
+            return options
+              .dataApiFactory(c)
+              .httpGet(res, req, () => this.serializeContext(c))
+          }
+        }),
       )
       .put(
         this.process(async (c, req, res, _, __, orig) =>
-          dataApiFactory(c).updateManyThroughPutRequest(
-            res,
-            req,
-            await this.coreOptions.getRequestBody(orig),
-          ),
+          options
+            .dataApiFactory(c)
+            .updateManyThroughPutRequest(
+              res,
+              req,
+              await this.coreOptions.getRequestBody(orig),
+            ),
         ),
       )
       .delete(
         this.process(async (c, req, res, _, __, orig) =>
-          dataApiFactory(c).deleteMany(res, req, undefined),
+          options.dataApiFactory(c).deleteMany(res, req, undefined),
         ),
       )
       .post(
         this.process(async (c, req, res, _, __, orig) =>
-          dataApiFactory(c).httpPost(
-            res,
-            req,
-            await this.coreOptions.getRequestBody(orig),
-            () => this.serializeContext(c),
-          ),
+          options
+            .dataApiFactory(c)
+            .httpPost(
+              res,
+              req,
+              await this.coreOptions.getRequestBody(orig),
+              () => this.serializeContext(c),
+            ),
         ),
       )
-    r.route(myRoute + '/:id')
+    options.r
+      .route(myRoute + '/:id')
       //@ts-ignore
       .get(
         this.process(async (c, req, res, orig) =>
-          dataApiFactory(c).get(res, orig.params.id),
+          options.dataApiFactory(c).get(res, orig.params.id),
         ),
       )
       //@ts-ignore
       .put(
         this.process(async (c, req, res, reqInfo, _, orig) =>
-          dataApiFactory(c).put(
-            res,
-            reqInfo.params.id,
-            await this.coreOptions.getRequestBody(orig),
-          ),
+          options
+            .dataApiFactory(c)
+            .put(
+              res,
+              reqInfo.params.id,
+              await this.coreOptions.getRequestBody(orig),
+            ),
         ),
       )
       //@ts-ignore
       .delete(
         this.process(async (c, req, res, orig) =>
-          dataApiFactory(c).delete(res, orig.params.id),
+          options.dataApiFactory(c).delete(res, orig.params.id),
         ),
       )
   }
@@ -730,7 +823,13 @@ export class RemultServerImplementation<RequestType>
         public: GenericRequest
       } = req
         ? this.coreOptions.buildGenericRequestInfo(req)
-        : { internal: {}, public: { headers: new Headers() } }
+        : {
+            internal: {},
+            public: {
+              headers: new Headers(),
+              url: new URL('http://localhost'),
+            },
+          }
       if (req) {
         if (!genReq.query) {
           genReq.query = (req as any)['_tempQuery']
