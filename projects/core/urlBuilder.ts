@@ -19,11 +19,11 @@ export function getURL(input?: string | undefined | URL) {
     if (input instanceof URL) return input
     try {
       return new URL(input)
-    } catch (error) {
+    } catch (e1) {
       // URL is invalid, use fallback base
       try {
         return new URL(input, 'http://fallback-url-remult-base')
-      } catch (error) {
+      } catch (e2) {
         // URL is invalid, use fallback
       }
     }

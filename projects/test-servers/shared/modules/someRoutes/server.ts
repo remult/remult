@@ -17,7 +17,13 @@ export const someRoutes = new Module({
 
     '/new-route-2': {
       GET: async ({ res, req }) => {
-        res.json({ 'new-route-2': req.url?.searchParams.get('param') })
+        res.json({ 'new-route-2': req.url.searchParams.get('param') })
+      },
+    },
+
+    '/new-route-host': {
+      GET: async ({ res, req }) => {
+        res.json({ host: req.url.host })
       },
     },
   },

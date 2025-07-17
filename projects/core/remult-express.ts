@@ -34,7 +34,7 @@ export function remultApi(
       internal: { ...req, on: req.on },
       public: {
         headers: new Headers(req.headers as Record<string, string>),
-        url: getURL(req.url),
+        url: getURL(req.protocol + '://' + req.hostname + req.url),
       },
     }),
     getRequestBody: async (req) => req.body,

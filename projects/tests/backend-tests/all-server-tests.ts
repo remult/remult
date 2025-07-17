@@ -638,6 +638,18 @@ export function allServerTests(
             `)
           }),
         )
+
+        it.todo(
+          'should get json (host info)',
+          withRemultForTest(async () => {
+            const result = await axios.get(
+              remult.apiClient.url + '/new-route-host',
+            )
+
+            expect(result.data.host).not.toBe('fallback-url-remult')
+            expect(result.data.host).not.toBe('fallback-url-remult-base')
+          }),
+        )
       })
     })
   })
