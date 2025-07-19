@@ -57,13 +57,13 @@ const fieldTypes = [
     description: 'Timestamp when updated',
   },
   { value: 'literal', label: 'Literal', description: 'String literals union' },
+  { value: 'json', label: 'JSON', description: 'JSON object field' },
+  { value: 'object', label: 'Object', description: 'Serialized object' },
   {
     value: 'list',
     label: 'Value List',
     description: 'ValueListFieldType class',
   },
-  { value: 'json', label: 'JSON', description: 'JSON object field' },
-  { value: 'object', label: 'Object', description: 'Serialized object' },
 ]
 
 // Available options based on field type
@@ -127,12 +127,28 @@ const availableOptions = computed(() => {
       },
     ],
     boolean: [
-      {
-        key: 'defaultValue',
-        type: 'boolean',
-        label: 'Default Value',
-        description: 'Default boolean value',
-      },
+      // Boolean default value is always false, not customizable
+    ],
+    date: [
+      // Date default value is always new Date(), not customizable
+    ],
+    dateOnly: [
+      // DateOnly default value is always new Date(), not customizable
+    ],
+    cuid: [
+      // CUID should have no options
+    ],
+    uuid: [
+      // UUID should have no options
+    ],
+    autoIncrement: [
+      // Auto Increment should have no options
+    ],
+    createdAt: [
+      // Only label is customizable for createdAt
+    ],
+    updatedAt: [
+      // Only label is customizable for updatedAt
     ],
     literal: [
       {
@@ -142,11 +158,34 @@ const availableOptions = computed(() => {
         description:
           'Comma-separated literal values (e.g. open,closed,pending)',
       },
+      // Removed constName option - do like value list
+    ],
+    json: [
       {
-        key: 'constName',
+        key: 'defaultValue',
         type: 'string',
-        label: 'Const Name',
-        description: 'Name for the const array (e.g. statuses)',
+        label: 'Default Value',
+        description: 'Default JSON object (e.g. { foo?: string })',
+      },
+      {
+        key: 'type',
+        type: 'string',
+        label: 'Type',
+        description: 'TypeScript type definition (e.g. { foo?: string })',
+      },
+    ],
+    object: [
+      {
+        key: 'defaultValue',
+        type: 'string',
+        label: 'Default Value',
+        description: 'Default object value (e.g. { foo?: string })',
+      },
+      {
+        key: 'type',
+        type: 'string',
+        label: 'Type',
+        description: 'TypeScript type definition (e.g. { foo?: string })',
       },
     ],
     list: [
@@ -155,9 +194,29 @@ const availableOptions = computed(() => {
         type: 'string',
         label: 'Items',
         description:
-          'Format: id:label,id:label (e.g. low:🔽 Low,medium:⚡ Medium,high:🔥 High)',
+          'Format: id:label,id:label (e.g. low:🔽 Low Priority,high:🔥 High Priority)',
       },
     ],
+  }
+
+  // For createdAt and updatedAt, only allow label option from baseOptions
+  if (props.field.type === 'createdAt' || props.field.type === 'updatedAt') {
+    return [baseOptions.find((opt) => opt.key === 'label')!]
+  }
+
+  // For fields with no options (cuid, uuid, autoIncrement), return empty array
+  if (['cuid', 'uuid', 'autoIncrement'].includes(props.field.type)) {
+    return []
+  }
+
+  // For date and dateOnly, only return base options (no default value)
+  if (['date', 'dateOnly'].includes(props.field.type)) {
+    return baseOptions
+  }
+
+  // For boolean, only return base options (no default value)
+  if (props.field.type === 'boolean') {
+    return baseOptions
   }
 
   return [...baseOptions, ...(typeSpecificOptions[props.field.type] || [])]
@@ -173,7 +232,27 @@ const updateFieldName = (name: string) => {
 
 const updateFieldType = (type: string) => {
   // Clear options when changing type to avoid conflicts
-  updateField({ type, options: {} })
+  const newOptions: Record<string, any> = {}
+  let newName = props.field.name
+
+  // Pre-populate list fields with example items using lowercase IDs
+  if (type === 'list') {
+    newOptions.items = 'low:🔽 Low Priority,high:🔥 High Priority'
+  }
+
+  // Auto-set field names for createdAt/updatedAt if currently fieldX
+  if (type === 'createdAt' && props.field.name.startsWith('field')) {
+    newName = 'createdAt'
+  } else if (type === 'updatedAt' && props.field.name.startsWith('field')) {
+    newName = 'updatedAt'
+  }
+
+  // Set default type for JSON and Object fields
+  if (type === 'json' || type === 'object') {
+    newOptions.type = '{ foo?: string }'
+  }
+
+  updateField({ type, name: newName, options: newOptions })
 }
 
 const updateOption = (key: string, value: any) => {

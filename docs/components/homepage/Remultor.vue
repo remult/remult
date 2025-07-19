@@ -99,7 +99,10 @@ const generatedCode = computed(() => {
 
     // Handle special cases for literal and list
     if (field.type === 'literal' && field.options.literalValues) {
-      const constName = field.options.constName || `${field.name}Options`
+      // Auto-generate const name like value list (Pascal case of field name + 'Options')
+      const constName = `${
+        field.name.charAt(0).toUpperCase() + field.name.slice(1)
+      }Options`
       const literals = field.options.literalValues
         .split(',')
         .map((v: string) => `'${v.trim()}'`)
@@ -119,7 +122,8 @@ const generatedCode = computed(() => {
       // Auto-generate class name from field name in Pascal case
       const className = field.name.charAt(0).toUpperCase() + field.name.slice(1)
       const items =
-        field.options.items || 'low:🔽 Low,medium:⚡ Medium,high:🔥 High'
+        field.options.items ||
+        'low:🔽 Low Priority,medium:⚡ Medium Priority,high:🔥 High Priority'
 
       // Generate ValueListFieldType class
       preClassLines.push(`@ValueListFieldType()`)
@@ -129,8 +133,10 @@ const generatedCode = computed(() => {
       items.split(',').forEach((item: string) => {
         const [id, label] = item.split(':').map((s: string) => s.trim())
         if (id && label) {
+          // Use the original ID for static property name and capitalize it for constructor
+          const capitalizedId = id.toUpperCase()
           preClassLines.push(
-            `  static ${id} = new ${className}('${id}', '${label}')`,
+            `  static ${id} = new ${className}('${capitalizedId}', '${label}')`,
           )
         }
       })
@@ -183,7 +189,8 @@ const generatedCode = computed(() => {
         break
       case 'json':
       case 'object':
-        tsType = 'any'
+        // Use custom type if provided, otherwise default to any
+        tsType = field.options.type || 'any'
         break
     }
 
@@ -195,10 +202,23 @@ const generatedCode = computed(() => {
 
     // Determine property syntax
     let propertyDeclaration = ''
-    if (hasDefaultValue) {
-      // When there's a default value, use it and let TypeScript infer the type
+
+    // Handle fields with automatic default values first
+    if (field.type === 'boolean') {
+      // Boolean fields always default to false
+      propertyDeclaration = `  ${field.name} = false`
+    } else if (
+      ['date', 'dateOnly', 'createdAt', 'updatedAt'].includes(field.type)
+    ) {
+      // Date fields always default to new Date()
+      propertyDeclaration = `  ${field.name} = new Date()`
+    } else if (hasDefaultValue) {
+      // When there's a custom default value, use it and let TypeScript infer the type
       let defaultVal = field.options.defaultValue
-      if (typeof defaultVal === 'string') {
+      if (
+        typeof defaultVal === 'string' &&
+        !['json', 'object'].includes(field.type)
+      ) {
         defaultVal = `'${defaultVal}'`
       }
       propertyDeclaration = `  ${field.name} = ${defaultVal}`
@@ -208,18 +228,18 @@ const generatedCode = computed(() => {
       propertyDeclaration = `  ${field.name}: ${tsType} = '${firstValue}'`
     } else if (field.type === 'list' && field.options.items) {
       // For list types, use the first item as default
-      const firstItem = field.options.items.split(',')[0]?.split(':')[0]?.trim()
+      const firstItemId = field.options.items
+        .split(',')[0]
+        ?.split(':')[0]
+        ?.trim()
+      const staticName = firstItemId || 'default'
       const className = field.name.charAt(0).toUpperCase() + field.name.slice(1)
-      propertyDeclaration = `  ${field.name}: ${tsType} = ${className}.${firstItem}`
+      propertyDeclaration = `  ${field.name}: ${tsType} = ${className}.${staticName}`
     } else {
       // Special fields that don't need explicit types or defaults
-      const skipTypeAndDefault = [
-        'createdAt',
-        'updatedAt',
-        'cuid',
-        'uuid',
-        'autoIncrement',
-      ].includes(field.type)
+      const skipTypeAndDefault = ['cuid', 'uuid', 'autoIncrement'].includes(
+        field.type,
+      )
       if (skipTypeAndDefault) {
         propertyDeclaration = `  ${field.name}${
           isRequired ? '!' : '?'
@@ -253,12 +273,14 @@ const addField = () => {
   const newId = (
     Math.max(...fields.value.map((f) => parseInt(f.id)), 0) + 1
   ).toString()
-  fields.value.push({
+  const newField: RemultField = {
     id: newId,
     name: `field${newId}`,
     type: 'string',
     options: {},
-  })
+  }
+
+  fields.value.push(newField)
 }
 
 const removeField = (fieldId: string) => {
@@ -434,9 +456,38 @@ const updateField = (fieldId: string, updates: Partial<RemultField>) => {
 .editor-code {
   padding: 0;
   height: 100%;
-  overflow: scroll;
+  overflow: auto;
   border-radius: 12px;
-  overflow: hidden;
+  position: relative;
+}
+
+.editor-code :deep(.code-block) {
+  position: relative;
+}
+
+.editor-code :deep(.copy-button) {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.25rem;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+  color: white;
+  z-index: 10;
+}
+
+.editor-code :deep(.copy-button:hover) {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.8);
 }
 
 @media (max-width: 768px) {
