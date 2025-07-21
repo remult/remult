@@ -240,10 +240,10 @@ const updateFieldType = (type: string) => {
     newOptions.items = 'low:🔽 Low Priority,high:🔥 High Priority'
   }
 
-  // Auto-set field names for createdAt/updatedAt if currently fieldX
-  if (type === 'createdAt' && props.field.name.startsWith('field')) {
+  // Always set field name to 'createdAt' or 'updatedAt' when type is those values
+  if (type === 'createdAt') {
     newName = 'createdAt'
-  } else if (type === 'updatedAt' && props.field.name.startsWith('field')) {
+  } else if (type === 'updatedAt') {
     newName = 'updatedAt'
   }
 
