@@ -390,7 +390,8 @@ const hasOptions = computed(() => availableOptions.value.length > 0)
           :placeholder="option.description"
         />
 
-        <div class="option-description">{{ option.description }}</div>
+        <!-- Remove or comment out the description below input -->
+        <!-- <div class="option-description">{{ option.description }}</div> -->
       </div>
     </div>
   </div>
@@ -530,6 +531,11 @@ const hasOptions = computed(() => availableOptions.value.length > 0)
 .option-input:focus {
   outline: none;
   border-color: var(--vp-c-brand-1);
+}
+
+.option-input::placeholder {
+  opacity: 0.5;
+  color: var(--vp-c-text-3);
 }
 
 .option-checkbox {
