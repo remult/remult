@@ -19,7 +19,9 @@ import Faq from './components/homepage/Faq.vue'
   align-items: center;
   flex-direction: column;
 
-  h1, h2, h3 {
+  h1,
+  h2,
+  h3 {
     border: none;
     padding-top: 0;
   }

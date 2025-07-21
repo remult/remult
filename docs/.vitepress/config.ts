@@ -96,6 +96,7 @@ const sidebar = tutorials.reduce(
       },
       {
         text: 'Entities',
+        link: '/docs/entities',
         items: [
           { text: 'Fields', link: '/docs/field-types' },
           {
