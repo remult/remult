@@ -4,6 +4,6 @@
 
 # 🧙‍♂️ Remultor
 
-Interactive Remult entity class builder. Try it out and copy the code to your project!
+Real-time Remult entity class buildor. Try it out and copy the code to your project!
 
 <Remultor />

@@ -293,6 +293,16 @@ const updateField = (fieldId: string, updates: Partial<RemultField>) => {
     fields.value[index] = { ...fields.value[index], ...updates }
   }
 }
+
+// Copy to clipboard functionality for generated code
+const copyGeneratedCode = async () => {
+  try {
+    await navigator.clipboard.writeText(generatedCode.value)
+    // Optionally, show a success message or visual feedback
+  } catch (e) {
+    // Optionally, handle error (e.g., fallback or error message)
+  }
+}
 </script>
 
 <template>
@@ -336,6 +346,28 @@ const updateField = (fieldId: string, updates: Partial<RemultField>) => {
       <div class="remultor-output">
         <div class="output-header">
           <h3>Generated Code</h3>
+          <button
+            class="copy-button"
+            @click="copyGeneratedCode"
+            title="Copy code"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path
+                d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+              ></path>
+            </svg>
+          </button>
         </div>
         <div class="editor-code">
           <Code :code="generatedCode" language="typescript" />
@@ -434,11 +466,40 @@ const updateField = (fieldId: string, updates: Partial<RemultField>) => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+  position: relative;
 }
 
 .output-header h3 {
   margin: 0;
   color: var(--vp-c-text-1);
+}
+
+.output-header .copy-button {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+  color: white;
+  font-size: 1.1rem;
+  margin-left: 0.5rem;
+  position: static;
+}
+
+.output-header .copy-button:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.8);
+}
+
+/* Remove the copy button from inside the code block area */
+.editor-code :deep(.copy-button) {
+  display: none !important;
 }
 
 /* Copy functionality is handled by the Code component itself */

@@ -73,7 +73,7 @@ const availableOptions = computed(() => {
       key: 'required',
       type: 'boolean',
       label: 'Required',
-      description: 'Field is required (default: true)',
+      description: 'Field is required',
     },
     {
       key: 'allowNull',
