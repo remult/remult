@@ -389,7 +389,7 @@ const selectedFieldType = computed(() =>
 .field-builder {
   background: var(--vp-c-bg);
   border: 1px solid var(--vp-c-border);
-  border-radius: 8px;
+  border-radius: 0;
   padding: 1rem;
   transition: border-color 0.2s;
 }
@@ -413,7 +413,7 @@ const selectedFieldType = computed(() =>
   flex: 1;
   padding: 0.5rem;
   border: 1px solid var(--vp-c-border);
-  border-radius: 4px;
+  border-radius: 0;
   background: var(--vp-c-bg);
   color: var(--vp-c-text-1);
   font-size: 0.875rem;
@@ -428,7 +428,7 @@ const selectedFieldType = computed(() =>
   flex: 1;
   padding: 0.5rem;
   border: 1px solid var(--vp-c-border);
-  border-radius: 4px;
+  border-radius: 0;
   background: var(--vp-c-bg);
   color: var(--vp-c-text-1);
   font-size: 0.875rem;
@@ -444,7 +444,7 @@ const selectedFieldType = computed(() =>
   padding: 0.5rem;
   background: none;
   border: 1px solid var(--vp-c-border);
-  border-radius: 4px;
+  border-radius: 0;
   cursor: pointer;
   font-size: 0.875rem;
   transition: all 0.2s;
@@ -460,7 +460,7 @@ const selectedFieldType = computed(() =>
   padding: 0.5rem;
   background: none;
   border: 1px solid var(--vp-c-border);
-  border-radius: 4px;
+  border-radius: 0;
   cursor: pointer;
   color: var(--vp-c-danger-1);
   transition: all 0.2s;
@@ -502,7 +502,7 @@ const selectedFieldType = computed(() =>
 .option-input {
   padding: 0.375rem;
   border: 1px solid var(--vp-c-border);
-  border-radius: 4px;
+  border-radius: 0;
   background: var(--vp-c-bg);
   color: var(--vp-c-text-1);
   font-size: 0.75rem;
@@ -539,6 +539,10 @@ const selectedFieldType = computed(() =>
   .option-description {
     grid-column: 1;
     margin-top: 0.25rem;
+  }
+
+  .field-builder {
+    padding: 0.4rem;
   }
 }
 </style>

@@ -296,16 +296,8 @@ const updateField = (fieldId: string, updates: Partial<RemultField>) => {
 </script>
 
 <template>
-  <div class="remultor l-home">
-    <div class="remultor-intro l-home__title">
-      <h2>🧙‍♂️ Remultor</h2>
-      <p>
-        Interactive Remult entity class builder. Configure your entity and see
-        the generated code in real-time!
-      </p>
-    </div>
-
-    <div class="remultor-content l-home__content">
+  <div class="remultor">
+    <div class="remultor-content">
       <div class="remultor-builder">
         <div class="remultor-settings">
           <div class="setting-group">
@@ -355,7 +347,7 @@ const updateField = (fieldId: string, updates: Partial<RemultField>) => {
 
 <style scoped>
 .remultor {
-  margin: 4rem 0;
+  margin: 2rem 0;
 }
 
 .remultor-content {
@@ -367,8 +359,8 @@ const updateField = (fieldId: string, updates: Partial<RemultField>) => {
 
 .remultor-builder {
   background: var(--vp-c-bg-soft);
-  border-radius: 12px;
-  padding: 1.5rem;
+  border-radius: 0;
+  padding: 1rem;
   border: 1px solid var(--vp-c-border);
 }
 
@@ -392,7 +384,7 @@ const updateField = (fieldId: string, updates: Partial<RemultField>) => {
   width: 100%;
   padding: 0.75rem;
   border: 1px solid var(--vp-c-border);
-  border-radius: 6px;
+  border-radius: 0;
   background: var(--vp-c-bg);
   color: var(--vp-c-text-1);
   font-size: 1rem;
@@ -421,7 +413,7 @@ const updateField = (fieldId: string, updates: Partial<RemultField>) => {
   background: var(--vp-c-brand-1);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 0;
   cursor: pointer;
   font-size: 0.875rem;
   transition: background-color 0.2s;
@@ -455,7 +447,7 @@ const updateField = (fieldId: string, updates: Partial<RemultField>) => {
   padding: 0;
   height: 100%;
   overflow: auto;
-  border-radius: 12px;
+  border-radius: 0;
   position: relative;
 }
 
@@ -470,7 +462,7 @@ const updateField = (fieldId: string, updates: Partial<RemultField>) => {
   padding: 0.25rem;
   background: rgba(0, 0, 0, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
+  border-radius: 0;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -496,6 +488,14 @@ const updateField = (fieldId: string, updates: Partial<RemultField>) => {
 
   .remultor-output {
     position: static;
+  }
+
+  .remultor {
+    margin: 1.5rem 0;
+  }
+
+  .remultor-builder {
+    padding: 1rem;
   }
 }
 </style>
