@@ -272,6 +272,9 @@ const removeField = () => {
 const selectedFieldType = computed(() =>
   fieldTypes.find((ft) => ft.value === props.field.type),
 )
+
+// Add computed property to check if there are options
+const hasOptions = computed(() => availableOptions.value.length > 0)
 </script>
 
 <template>
@@ -303,6 +306,8 @@ const selectedFieldType = computed(() =>
           @click="showOptions = !showOptions"
           class="options-toggle"
           :class="{ active: showOptions }"
+          :disabled="!hasOptions"
+          :title="!hasOptions ? 'No options available' : 'Show field options'"
         >
           ⚙️
         </button>
@@ -417,6 +422,7 @@ const selectedFieldType = computed(() =>
   background: var(--vp-c-bg);
   color: var(--vp-c-text-1);
   font-size: 0.875rem;
+  max-width: 120px;
 }
 
 .field-name-input:focus {
@@ -454,6 +460,13 @@ const selectedFieldType = computed(() =>
 .options-toggle.active {
   background: var(--vp-c-bg-soft);
   border-color: var(--vp-c-brand-1);
+}
+
+.options-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--vp-c-bg);
+  border-color: var(--vp-c-border);
 }
 
 .remove-btn {

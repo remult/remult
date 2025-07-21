@@ -449,6 +449,7 @@ const updateField = (fieldId: string, updates: Partial<RemultField>) => {
   overflow: auto;
   border-radius: 0;
   position: relative;
+  font-size: 0.86rem;
 }
 
 .editor-code :deep(.code-block) {
@@ -472,7 +473,7 @@ const updateField = (fieldId: string, updates: Partial<RemultField>) => {
   opacity: 0.7;
   transition: all 0.2s ease;
   color: white;
-  z-index: 10;
+  z-index: 20;
 }
 
 .editor-code :deep(.copy-button:hover) {
