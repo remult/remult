@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import FieldBuilder from './FieldBuilder.vue'
-import Code from './Code.vue'
+import Code from '../../components/homepage/Code.vue'
 
 interface RemultField {
   id: string
@@ -293,13 +293,11 @@ const updateField = (fieldId: string, updates: Partial<RemultField>) => {
     fields.value[index] = { ...fields.value[index], ...updates }
   }
 }
-
-// Copy functionality is handled by the Code component itself
 </script>
 
 <template>
   <div class="remultor l-home">
-    <div class="remultor-intro l-home__title fade-in">
+    <div class="remultor-intro l-home__title">
       <h2>🧙‍♂️ Remultor</h2>
       <p>
         Interactive Remult entity class builder. Configure your entity and see
@@ -307,7 +305,7 @@ const updateField = (fieldId: string, updates: Partial<RemultField>) => {
       </p>
     </div>
 
-    <div class="remultor-content l-home__content fade-in">
+    <div class="remultor-content l-home__content">
       <div class="remultor-builder">
         <div class="remultor-settings">
           <div class="setting-group">

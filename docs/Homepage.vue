@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import Intro from './components/homepage/Intro.vue'
 import Examples from './components/homepage/Examples.vue'
-import Remultor from './components/homepage/Remultor.vue'
 import Faq from './components/homepage/Faq.vue'
 </script>
 
@@ -9,7 +8,6 @@ import Faq from './components/homepage/Faq.vue'
   <div class="homepage vp-doc">
     <Intro />
     <Examples />
-    <Remultor />
     <Faq />
   </div>
 </template>
