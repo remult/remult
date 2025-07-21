@@ -73,13 +73,13 @@ const availableOptions = computed(() => {
       key: 'required',
       type: 'boolean',
       label: 'Required',
-      description: 'Field is required',
+      // description: 'Field is required',
     },
     {
       key: 'allowNull',
       type: 'boolean',
       label: 'Allow Null',
-      description: 'Allow null values',
+      // description: 'Allow null values',
     },
     {
       key: 'label',
@@ -257,7 +257,13 @@ const updateFieldType = (type: string) => {
 
 const updateOption = (key: string, value: any) => {
   const newOptions = { ...props.field.options }
-  if (value === '' || value === null || value === undefined) {
+  // Remove the key if value is false (for booleans), or '', null, or undefined
+  if (
+    value === '' ||
+    value === null ||
+    value === undefined ||
+    (typeof value === 'boolean' && value === false)
+  ) {
     delete newOptions[key]
   } else {
     newOptions[key] = value
@@ -342,7 +348,7 @@ const hasOptions = computed(() => availableOptions.value.length > 0)
           v-if="option.type === 'boolean'"
           :id="`${field.id}-${option.key}`"
           type="checkbox"
-          :checked="field.options[option.key] || false"
+          :checked="field.options[option.key] === true"
           @change="
             updateOption(
               option.key,
@@ -502,7 +508,7 @@ const hasOptions = computed(() => availableOptions.value.length > 0)
   display: grid;
   grid-template-columns: 1fr 2fr;
   gap: 0.5rem;
-  align-items: start;
+  align-items: center;
 }
 
 .option-label {
