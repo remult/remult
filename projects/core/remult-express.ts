@@ -22,6 +22,9 @@ export function remultApi(
   if (options.bodySizeLimit === undefined) {
     options.bodySizeLimit = '10mb'
   }
+
+  const expressVersion = typeof (app as any).del === 'function' ? 4 : 5
+
   if (options?.bodyParser !== false) {
     app.use(express.json({ limit: options.bodySizeLimit }))
     app.use(
@@ -29,10 +32,19 @@ export function remultApi(
     )
   }
   const server = createRemultServer<express.Request>(options, {
-    buildGenericRequestInfo: (req) => ({
-      internal: { ...req, on: req.on },
-      public: { headers: new Headers(req.headers as Record<string, string>) },
-    }),
+    buildGenericRequestInfo: (req) => {
+      const internal = { ...req, on: req.on }
+      if (expressVersion === 5) {
+        if (!internal.query) {
+          internal.query = req.query
+        }
+      }
+
+      return {
+        internal,
+        public: { headers: new Headers(req.headers as Record<string, string>) },
+      }
+    },
     getRequestBody: async (req) => req.body,
   }) as RemultServerImplementation<express.Request>
   server.registerRouter(app)

@@ -69,6 +69,15 @@ export const FRAMEWORKS: Framework[] = [
   nuxt,
 ];
 
+const expressVersions = {
+  dependencies: {
+    express: "^5.1.0",
+  },
+  devDependencies: {
+    "@types/express": "^5.0.3",
+  },
+};
+
 export const vite_express_key = "express-vite";
 export const Servers = {
   express: {
@@ -84,18 +93,11 @@ export const Servers = {
     remultServerFunction: "remultApi",
     requiresTwoTerminal: true,
     dependencies: {
-      express: "^4.21.0",
+      ...expressVersions.dependencies,
     },
     devDependencies: {
-      "@types/express": "^4.17.21",
+      ...expressVersions.devDependencies,
     },
-    // auth: {
-    //   template: "express",
-
-    //   dependencies: {
-    //     "@auth/express": "^0.6.1",
-    //   },
-    // },
     writeFiles: (args) => {
       writeExpressIndex(args);
     },
@@ -165,18 +167,12 @@ app.listen({ port: Number(process.env["PORT"] || 3002) }, () =>
     import: "remult-express",
     remultServerFunction: "remultApi",
     dependencies: {
-      express: "^4.21.0",
+      ...expressVersions.dependencies,
     },
     devDependencies: {
-      "@types/express": "^4.17.21",
+      ...expressVersions.devDependencies,
       "vite3-plugin-express": "^0.1.10",
     },
-    // auth: {
-    //   template: "express",
-    //   dependencies: {
-    //     "@auth/express": "^0.6.1",
-    //   },
-    // },
     writeFiles: (args) => {
       writeExpressIndex({ ...args, vitePlugin: true });
       fs.writeFileSync(
@@ -199,7 +195,7 @@ function writeExpressIndex({
   let serveExpress = `// This code is responsible for serving the frontend files.
 const frontendFiles = process.cwd() + "/${distLocation}";
 app.use(express.static(frontendFiles));
-app.get("/*", (_, res) => {
+app.get("/*splat", (_, res) => {
   res.sendFile(frontendFiles + "/index.html");
 });
 // end of frontend serving code
@@ -229,7 +225,7 @@ import { toNodeHandler } from "better-auth/node";
 app.use("/auth/*", auth);
 `;
     } else if (authInfo?.name === "better-auth") {
-      return `app.all("/api/auth/*", toNodeHandler(auth));
+      return `app.all("/api/auth/*splat", toNodeHandler(auth));
 `;
     }
     return ``;
