@@ -3823,7 +3823,7 @@ export interface RemultServerOptions<RequestType> {
     sendError: (httpStatusCode: number, body: any) => void
   }) => Promise<void> | undefined
   /**
-   * Modules are here to group code by feature.
+   * Modules are here to group code by feature. [Module Guide](https://remult.dev/docs/modules)
    *
    * @example
    * import { Module } from 'remult/server'
@@ -4060,7 +4060,7 @@ export interface RemultServerOptions<RequestType> {
     sendError: (httpStatusCode: number, body: any) => void
   }) => Promise<void> | undefined
   /**
-   * Modules are here to group code by feature.
+   * Modules are here to group code by feature. [Module Guide](https://remult.dev/docs/modules)
    *
    * @example
    * import { Module } from 'remult/server'
