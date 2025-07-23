@@ -12,7 +12,7 @@ describe('test next server', async () => {
   await app.prepare()
 
   const mw = express.Router()
-  mw.all('*', (req, res) => {
+  mw.all('*splat', (req, res) => {
     return handle(req, res)
   })
 
