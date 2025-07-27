@@ -4,7 +4,7 @@ import {
   FieldRelationToOneInfo,
   FieldUIInfo,
 } from '../../core/server/remult-admin'
-import { Repository } from '../../core/src/remult3/remult3'
+import { FindOptions, Repository } from '../../core/src/remult3/remult3'
 import { Fields } from '../../core/src/remult3/Fields'
 import { Entity } from '../../core/src/remult3/entity'
 import { TLSContext } from './lib/stores/LSContext.js'
@@ -50,7 +50,8 @@ export class God {
 
     return {
       items: items.map((x) => ({
-        id: x[relation.idField],
+        // TODO: manage multiple fields relations! check for "companyIdPart2: 'comp_p2'", it's all prepared!
+        id: x[Object.keys(relation.fields)[0]],
         caption: x[relation.captionField],
       })),
       $count: agg,
@@ -62,7 +63,11 @@ export class God {
     const t = this.tables.find((t) => t.key == relations.entityKey)
     if (!t) return 'Forbidden - ' + value
 
-    const item = await t.repo.findId(value)
+    // TODO: manage multiple fields relations! check for "companyIdPart2: 'comp_p2'", it's all prepared!
+    const res = await t.repo.find({
+      where: { [Object.keys(relations.fields)[0]]: value },
+    })
+    const item = res && res.length > 0 ? res[0] : undefined
 
     if (!item) {
       if (value !== undefined) {
@@ -90,11 +95,28 @@ export class God {
         ),
       }
 
-    const items = await t.repo.find({
-      where: {
-        [relations.idField]: { $in: values.map((x) => x[field.valFieldKey]) },
-      },
-    })
+    // one key optimized with $in
+    let o: FindOptions<any> = {}
+    if (Object.keys(relations.fields).length === 1) {
+      const key = Object.keys(relations.fields)[0]
+      o = { where: { [key]: values.map((x) => x[field.valFieldKey]) } }
+    } else {
+      o = {
+        where: {
+          $or: values.map((x) => {
+            return {
+              $and: Object.entries(relations.fields).map(([key, value]) => {
+                return {
+                  [key]: x[value],
+                }
+              }),
+            }
+          }),
+        },
+      }
+    }
+
+    const items = await t.repo.find(o)
 
     if (!items || items.length == 0) {
       return {

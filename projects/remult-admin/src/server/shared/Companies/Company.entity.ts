@@ -4,17 +4,25 @@ import { CompanySize } from './CompanySize'
 import { Contact } from '../Contacts/Contact.entity'
 import { Deal } from '../Deals/Deal.entity'
 
-@Entity('companies', {
+@Entity<Company>('companies', {
   // allowApiCrud: Allow.authenticated,
   allowApiCrud: true,
   allowApiDelete: false,
   defaultOrderBy: { name: 'asc' },
+  saving: (item) => {
+    item.companyId = 'id:' + item.id
+    item.companyIdPart2 = 'part2'
+  },
 })
 export class Company {
   @Fields.uuid()
   id?: string
   @Fields.string()
   name = ''
+  @Fields.string()
+  companyId = ''
+  @Fields.string()
+  companyIdPart2 = ''
   @Fields.string()
   logo = ''
   @Fields.string()

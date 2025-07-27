@@ -41,6 +41,7 @@ export interface FieldUIInfo {
 }
 export interface FieldRelationToOneInfo extends RelationFields {
   entityKey: string
+  // TODO: remove in favor of fields ?
   idField: string
   captionField: string
   where?: any
