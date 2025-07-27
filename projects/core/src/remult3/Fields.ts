@@ -23,7 +23,6 @@ import { remultStatic } from '../remult-static.js'
 import { addValidator } from './addValidator.js'
 import { isOfType } from '../isOfType.js'
 import { InputTypes } from '../../inputTypes.js'
-import { randomUUID } from 'crypto'
 
 const validateNumber = createValueValidator((x: number) => {
   return !isNaN(x) && isFinite(x)
@@ -175,7 +174,7 @@ export class Fields {
     idFactory: () => string
     fieldTypeInDb?: string
   } = {
-    idFactory: randomUUID,
+    idFactory: crypto.randomUUID,
   }
   /**
    * Defines a field that will be used as the id of the entity.

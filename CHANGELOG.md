@@ -2,7 +2,7 @@ All notable changes to this project will be documented in this file.
 
 ## [3.1.0] 2025-7-x
 
-- [BREAKING] Changed `@Fields.uuid()` to `@Fields.id()` // uuid is the default id factory
+- [BREAKING] Changed `@Fields.uuid()` to `@Fields.id()` _(uuid is the default id factory)_
 - [BREAKING] Removed `@Fields.cuid()` - use `@Fields.id()` instead and change the `idFactory` to your preferred id algorithm.
 
 You can do it globally:
