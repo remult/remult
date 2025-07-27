@@ -1,5 +1,3 @@
-import { createId } from '@paralleldrive/cuid2'
-import { v4 as uuid } from 'uuid'
 import type { ClassType } from '../../classType.js'
 import type { FieldOptions, ValueConverter } from '../column-interfaces.js'
 import type { Remult } from '../context.js'
@@ -25,6 +23,7 @@ import { remultStatic } from '../remult-static.js'
 import { addValidator } from './addValidator.js'
 import { isOfType } from '../isOfType.js'
 import { InputTypes } from '../../inputTypes.js'
+import { randomUUID } from 'crypto'
 
 const validateNumber = createValueValidator((x: number) => {
   return !isNaN(x) && isFinite(x)
@@ -172,61 +171,58 @@ export class Fields {
     )
   }
 
-  static uuid<entityType = unknown>(
-    ...options: (
-      | FieldOptions<entityType, string>
-      | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
-    )[]
-  ): ClassFieldDecorator<entityType, string | undefined> {
-    return Field(
-      () => String as any,
-      {
-        allowApiUpdate: false,
-        defaultValue: () => uuid(),
-        saving: (_, r) => {
-          if (!r.value) r.value = uuid()
-        },
-      },
-      ...options,
-    )
+  static defaultIdOptions: {
+    idFactory: () => string
+    fieldTypeInDb?: string
+  } = {
+    idFactory: randomUUID,
   }
   /**
-   * A CUID (Collision Resistant Unique Identifier) field.
-   * This id value is determined on the backend on insert, and can't be updated through the API.
-   * The CUID is generated using the `@paralleldrive/cuid2` npm package.
+   * Defines a field that will be used as the id of the entity.
+   * By default it will use `crypto.randomUUID` to generate the id.
+   *
+   * You can change the algorithm used to generate the id by setting the `Fields.defaultIdFactory`
+   * to a different function like:
+   *
+   * ```ts
+   * import { createId } from '@paralleldrive/cuid2'
+   * Fields.defaultIdOptions = { idFactory: () => createId() }
+   * ```
+   *
+   * You can also pass an id factory as an option to the `@Fields.id` to have a different value locally.
+   * @example
+   * ```ts
+   * import { createId } from '@paralleldrive/cuid2'
+   * // import { v4 as uuid } from 'uuid'
+   *
+   * class MyEntity {
+   *   \@Fields.id({
+   *     idFactory: () => createId()
+   *     // idFactory: () => uuid()
+   *   })
+   *   id: string = '';
+   * }
+   * ```
    */
-
-  static cuid<entityType = unknown>(
-    ...options: (
-      | FieldOptions<entityType, string>
-      | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
-    )[]
+  static id<entityType = unknown>(
+    options?: FieldOptions<entityType, string> & { idFactory?: () => string },
   ): ClassFieldDecorator<entityType, string | undefined> {
-    return Field(
-      () => String as any,
-      {
-        allowApiUpdate: false,
-        defaultValue: () => createId(),
-        saving: (_, r) => {
-          if (!r.value) r.value = createId()
-        },
+    let idFactory = options?.idFactory ?? Fields.defaultIdOptions.idFactory
+    return Field(() => String, {
+      allowApiUpdate: false,
+      defaultValue: () => (options?.allowNull ? null : idFactory()),
+      saving: (_, r) => {
+        if (!r.value && !options?.allowNull) r.value = idFactory()
       },
-      ...options,
-    )
+      ...(Fields.defaultIdOptions.fieldTypeInDb !== undefined
+        ? {
+            valueConverter: {
+              fieldTypeInDb: Fields.defaultIdOptions.fieldTypeInDb,
+            },
+          }
+        : {}),
+    })
   }
-
-  // static id<entityType = unknown>(
-  //   options?: FieldOptions<entityType, string> & { idFactory?: () => string },
-  // ): ClassFieldDecorator<entityType, string | undefined> {
-  //   let buildId = options?.idFactory ?? createId
-  //   return Field(() => String, {
-  //     allowApiUpdate: false,
-  //     defaultValue: () => buildId(),
-  //     saving: (_, r) => {
-  //       if (!r.value) r.value = buildId()
-  //     },
-  //   })
-  // }
 
   /**
  * Defines a field that can hold a value from a specified set of string literals.
