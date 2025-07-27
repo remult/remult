@@ -20,12 +20,12 @@ export function fieldsIdTests({ createEntity }: DbTestProps) {
     it('fixed value id, should be the same', async () => {
       @Entity('idTest', { allowApiCrud: true })
       class idTest {
-        @Fields.id({ idFactory: () => '123' })
+        @Fields.id({ idFactory: () => '628729d4-2a33-4ae9-8219-8aab0af9d440' })
         id = ''
       }
       const repoIdTest = await createEntity(idTest)
       const res = await repoIdTest.insert({})
-      expect(res.id).toBe('123')
+      expect(res.id).toBe('628729d4-2a33-4ae9-8219-8aab0af9d440')
     })
 
     it('cuid', async () => {
@@ -53,8 +53,10 @@ export function fieldsIdTests({ createEntity }: DbTestProps) {
   })
 
   describe('global idFactory', () => {
-    it('default id factory should have 5 parts (uuid)', async () => {
-      Fields.defaultIdOptions.idFactory = () => 'hello'
+    it('Fields.defaultIdOptions.idFactory', async () => {
+      const old = Fields.defaultIdOptions.idFactory
+      Fields.defaultIdOptions.idFactory = () =>
+        '6f321686-b484-422b-8050-3fa10248caca'
 
       @Entity('idTest', { allowApiCrud: true })
       class idTest {
@@ -63,10 +65,12 @@ export function fieldsIdTests({ createEntity }: DbTestProps) {
       }
       const repoIdTest = await createEntity(idTest)
       const res = await repoIdTest.insert({})
-      expect(res.id).toBe('hello')
+      expect(res.id).toBe('6f321686-b484-422b-8050-3fa10248caca')
+      Fields.defaultIdOptions.idFactory = old
     })
 
-    it('default id factory should have 5 parts (uuid)', async () => {
+    it('Fields.defaultIdOptions.fieldTypeInDb', async () => {
+      const old = Fields.defaultIdOptions.fieldTypeInDb
       Fields.defaultIdOptions.fieldTypeInDb = 'uuid'
 
       @Entity('idTest', { allowApiCrud: true })
@@ -78,6 +82,7 @@ export function fieldsIdTests({ createEntity }: DbTestProps) {
       expect(repoIdTest.metadata.fields.id.valueConverter.fieldTypeInDb).toBe(
         'uuid',
       )
+      Fields.defaultIdOptions.fieldTypeInDb = old
     })
   })
 }
