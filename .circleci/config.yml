@@ -6,9 +6,35 @@ orbs:
   codecov: codecov/codecov@3.1.1
   node: circleci/node@7.1.0
   browser-tools: circleci/browser-tools@1.2.5
+
+# Define executors for different Node.js versions
+executors:
+  node-22:
+    docker:
+      - image: cimg/node:22.12
+    environment:
+      # Install Python distutils for node-gyp
+      PYTHONPATH: /usr/lib/python3/dist-packages
+
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
+  build:
+    executor: node-22
+    steps:
+      - checkout
+      - run:
+          name: Install Python distutils
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y python3-distutils python3-setuptools
+      - node/install-packages:
+          cache-path: node_modules
+          override-ci-command: npm ci
+      - run:
+          name: Build
+          command: npm run build
+
   test-remult:
     docker:
       - image: cimg/node:22.12
@@ -33,6 +59,11 @@ jobs:
       TEST_MYSQL2: true
     steps:
       - checkout
+      - run:
+          name: Install Python distutils
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y python3-distutils python3-setuptools
       - node/install-packages
       - run:
           name: Setup Test Servers
@@ -52,7 +83,5 @@ jobs:
 workflows:
   build:
     jobs:
-      - node/run:
-          name: build
-          npm-run: build
+      - build
       - test-remult
