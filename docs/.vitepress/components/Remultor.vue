@@ -65,6 +65,8 @@ const generatedCode = computed(() => {
     } else if (field.type === 'list') {
       imports.add('Field')
       imports.add('ValueListFieldType')
+    } else if (field.type === 'toOne' || field.type === 'toMany') {
+      imports.add('Relations')
     }
   })
 
@@ -149,6 +151,50 @@ const generatedCode = computed(() => {
       preClassLines.push('')
 
       optionsStr = `(() => ${className})`
+    } else if (field.type === 'toOne') {
+      // Handle toOne relation
+      const entityName =
+        field.options.entity ||
+        detectEntityFromFieldName(field.name) ||
+        'Entity'
+      const foreignKey = field.options.foreignKey
+
+      // Build options object for the relation
+      const relationOptions: string[] = []
+
+      // Only add field option and foreign key field if foreign key is explicitly set
+      if (foreignKey) {
+        relationOptions.push(`field: '${foreignKey}'`)
+
+        // Add the foreign key field before the relation
+        fieldLines.push(`  @Fields.string()`)
+        fieldLines.push(`  ${foreignKey} = ''`)
+        fieldLines.push('')
+      }
+
+      if (field.options.label) {
+        relationOptions.push(`label: '${field.options.label}'`)
+      }
+
+      if (field.options.defaultIncluded === true) {
+        relationOptions.push(`defaultIncluded: true`)
+      }
+
+      // Generate options string
+      if (relationOptions.length > 0) {
+        optionsStr = `(() => ${entityName}, { ${relationOptions.join(', ')} })`
+      } else {
+        optionsStr = `(() => ${entityName})`
+      }
+    } else if (field.type === 'toMany') {
+      // Handle toMany relation
+      const entityName =
+        field.options.entity ||
+        detectEntityFromFieldName(field.name) ||
+        'Entity'
+      const foreignKey =
+        field.options.foreignKey || `${className.value.toLowerCase()}Id`
+      optionsStr = `(() => ${entityName}, { field: '${foreignKey}' })`
     }
 
     // Always add parentheses if no options
@@ -156,8 +202,17 @@ const generatedCode = computed(() => {
       optionsStr = '()'
     }
 
-    // Use Field decorator for list type, Fields for others
-    const decorator = field.type === 'list' ? 'Field' : `Fields.${field.type}`
+    // Use appropriate decorator based on field type
+    let decorator = ''
+    if (field.type === 'list') {
+      decorator = 'Field'
+    } else if (field.type === 'toOne') {
+      decorator = 'Relations.toOne'
+    } else if (field.type === 'toMany') {
+      decorator = 'Relations.toMany'
+    } else {
+      decorator = `Fields.${field.type}`
+    }
     fieldLines.push(`  @${decorator}${optionsStr}`)
 
     // Determine TypeScript type
@@ -186,6 +241,14 @@ const generatedCode = computed(() => {
       case 'list':
         // Use the auto-generated class name (Pascal case of field name)
         tsType = field.name.charAt(0).toUpperCase() + field.name.slice(1)
+        break
+      case 'toOne':
+        // Use the related entity name
+        tsType = field.options.entity || 'any'
+        break
+      case 'toMany':
+        // Use array of related entity name
+        tsType = `${field.options.entity || 'any'}[]`
         break
       case 'json':
       case 'object':
@@ -235,6 +298,12 @@ const generatedCode = computed(() => {
       const staticName = firstItemId || 'default'
       const className = field.name.charAt(0).toUpperCase() + field.name.slice(1)
       propertyDeclaration = `  ${field.name}: ${tsType} = ${className}.${staticName}`
+    } else if (field.type === 'toOne') {
+      // For toOne relations, use undefined as default
+      propertyDeclaration = `  ${field.name}?: ${tsType}`
+    } else if (field.type === 'toMany') {
+      // For toMany relations, use empty array as default
+      propertyDeclaration = `  ${field.name}: ${tsType} = []`
     } else {
       // Special fields that don't need explicit types or defaults
       const skipTypeAndDefault = ['cuid', 'uuid', 'autoIncrement'].includes(
@@ -285,6 +354,17 @@ const addField = () => {
 
 const removeField = (fieldId: string) => {
   fields.value = fields.value.filter((f) => f.id !== fieldId)
+}
+
+// Function to detect entity name from field name (e.g., "fieldX" -> "X")
+const detectEntityFromFieldName = (fieldName: string) => {
+  // Check if field name follows pattern "fieldX" (not "field_X")
+  if (fieldName.startsWith('field') && fieldName.length > 5) {
+    const entityPart = fieldName.substring(5) // Remove "field"
+    // Capitalize first letter
+    return entityPart.charAt(0).toUpperCase() + entityPart.slice(1)
+  }
+  return null
 }
 
 const updateField = (fieldId: string, updates: Partial<RemultField>) => {

@@ -64,6 +64,16 @@ const fieldTypes = [
     label: 'Value List',
     description: 'ValueListFieldType class',
   },
+  {
+    value: 'toOne',
+    label: 'Relations toOne',
+    description: 'One-to-one or many-to-one relationship',
+  },
+  {
+    value: 'toMany',
+    label: 'Relations toMany',
+    description: 'One-to-many or many-to-many relationship',
+  },
 ]
 
 // Available options based on field type
@@ -197,6 +207,46 @@ const availableOptions = computed(() => {
           'Format: id:label,id:label (e.g. low:🔽 Low Priority,high:🔥 High Priority)',
       },
     ],
+    toOne: [
+      {
+        key: 'entity',
+        type: 'string',
+        label: 'Entity',
+        description: 'Related entity class name (e.g. User, Category)',
+      },
+      {
+        key: 'foreignKey',
+        type: 'string',
+        label: 'Foreign Key',
+        description: 'Foreign key field name (e.g. userId, categoryId)',
+      },
+      {
+        key: 'label',
+        type: 'string',
+        label: 'Label',
+        description: 'Display label for the relation (e.g. The Customer)',
+      },
+      {
+        key: 'defaultIncluded',
+        type: 'boolean',
+        label: 'Default Included',
+        description: 'Include this relation by default in queries',
+      },
+    ],
+    toMany: [
+      {
+        key: 'entity',
+        type: 'string',
+        label: 'Entity',
+        description: 'Related entity class name (e.g. User, Category)',
+      },
+      {
+        key: 'foreignKey',
+        type: 'string',
+        label: 'Foreign Key',
+        description: 'Foreign key field name in related entity (e.g. taskId)',
+      },
+    ],
   }
 
   // For createdAt and updatedAt, only allow label option from baseOptions
@@ -207,6 +257,11 @@ const availableOptions = computed(() => {
   // For fields with no options (cuid, uuid, autoIncrement), return empty array
   if (['cuid', 'uuid', 'autoIncrement'].includes(props.field.type)) {
     return []
+  }
+
+  // For relation fields, only return type-specific options (no base options)
+  if (['toOne', 'toMany'].includes(props.field.type)) {
+    return typeSpecificOptions[props.field.type] || []
   }
 
   // For date and dateOnly, only return base options (no default value)
@@ -240,11 +295,26 @@ const updateFieldType = (type: string) => {
     newOptions.items = 'low:🔽 Low Priority,high:🔥 High Priority'
   }
 
+  // Pre-populate relation fields with example values
+  if (type === 'toOne') {
+    newOptions.entity = 'Category'
+    newOptions.foreignKey = 'categoryId'
+  }
+
+  if (type === 'toMany') {
+    newOptions.entity = 'Comment'
+    newOptions.foreignKey = 'taskId'
+  }
+
   // Always set field name to 'createdAt' or 'updatedAt' when type is those values
   if (type === 'createdAt') {
     newName = 'createdAt'
   } else if (type === 'updatedAt') {
     newName = 'updatedAt'
+  } else if (type === 'list') {
+    newName = 'priority'
+  } else if (type === 'toOne') {
+    newName = 'category'
   }
 
   // Set default type for JSON and Object fields
