@@ -19,7 +19,7 @@ export default {
   allowApiCrud: true,
 })
 export class Task {
-  @Fields.cuid()
+  @Fields.id()
   id!: string
 
   @Fields.string({ 
