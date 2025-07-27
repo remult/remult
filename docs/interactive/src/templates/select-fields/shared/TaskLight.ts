@@ -4,7 +4,7 @@ import { Entity, Fields } from 'remult'
   sqlExpression: 'tasks',
 })
 export class TaskLight {
-  @Fields.uuid()
+  @Fields.id()
   id = ''
 
   @Fields.string()

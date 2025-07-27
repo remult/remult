@@ -8,7 +8,7 @@ import { Task } from './Task'
     sqlRelationsFilter(TimeEntry).task.some(Task.allowedTasks()),
 })
 export class TimeEntry {
-  @Fields.uuid()
+  @Fields.id()
   id = ''
 
   @Fields.string({ required: true })

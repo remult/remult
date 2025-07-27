@@ -13,7 +13,7 @@ import { TestDataProvider } from '../../dbs/TestDataProviderWithStats'
 
 @Entity('customers')
 export class Customer {
-  @Fields.uuid()
+  @Fields.id()
   id?: string
   @Fields.string()
   name = ''

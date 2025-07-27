@@ -11,7 +11,7 @@ import { Task } from './Task'
   },
 })
 export class TimeEntry {
-  @Fields.uuid()
+  @Fields.id()
   id = ''
 
   @Fields.string({ required: true })

@@ -17,7 +17,7 @@ Let's extend the existing `unique` validation to check that no two tasks exist w
 
 ```typescript title="shared/Task.ts" add={6-8}
 export class Task {
-  @Fields.uuid()
+  @Fields.id()
   id = ''
 
   @Fields.string<Task>({

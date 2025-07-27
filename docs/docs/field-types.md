@@ -89,7 +89,7 @@ tags: string[] = []
 This id value is determined on the backend on insert, and can't be updated through the API.
 
 ```ts
-@Fields.uuid()
+@Fields.id()
 id:string
 ```
 

@@ -838,7 +838,7 @@ import { Entity, Fields } from 'remult'
   allowApiDelete: 'admin',
 })
 export class Product {
-  @Fields.uuid()
+  @Fields.id()
   id!: string
 
   @Fields.string()
@@ -1138,7 +1138,7 @@ tags: string[] = []
 This id value is determined on the backend on insert, and can't be updated through the API.
 
 ```ts
-@Fields.uuid()
+@Fields.id()
 id:string
 ```
 
@@ -7356,7 +7356,7 @@ For adding custom options to `FieldOptions` or `EntityOptions`, such as `placeho
 
    @Entity('tasks', { allowApiCrud: true })
    export class Task {
-     @Fields.uuid()
+     @Fields.id()
      id!: string
 
      @Fields.string({
@@ -7663,7 +7663,7 @@ import  { Entity, Fields } from "remult";
    allowApiCrud: true
 })
 export class Task {
-   @Fields.uuid()
+   @Fields.id()
    id!: string;
    @Fields.string()
    title = '';
@@ -12416,7 +12416,7 @@ import { Allow, Entity, Fields, Validators } from "remult"
   allowApiDelete: "admin"
 })
 export class Task {
-  @Fields.uuid()
+  @Fields.id()
   id!: string
 
   @Fields.string({
@@ -13940,7 +13940,7 @@ import { Allow, Entity, Fields, Validators } from "remult"
   allowApiDelete: "admin"
 })
 export class Task {
-  @Fields.uuid()
+  @Fields.id()
   id!: string
 
   @Fields.string({
@@ -15458,7 +15458,7 @@ import { Allow, Entity, Fields, Validators } from "remult"
   allowApiDelete: "admin"
 })
 export class Task {
-  @Fields.uuid()
+  @Fields.id()
   id!: string
 
   @Fields.string({
@@ -18766,7 +18766,7 @@ import { Allow, Entity, Fields } from "remult"
   allowApiDelete: "admin"
 })
 export class Task {
-  @Fields.uuid()
+  @Fields.id()
   id!: string
 
   @Fields.string({
@@ -20298,7 +20298,7 @@ import { Allow, Entity, Fields } from "remult"
   allowApiDelete: "admin"
 })
 export class Task {
-  @Fields.uuid()
+  @Fields.id()
   id!: string
 
   @Fields.string({
@@ -20582,7 +20582,7 @@ import { Entity, Fields } from 'remult'
   allowApiCrud: true,
 })
 export class Task {
-  @Fields.uuid()
+  @Fields.id()
   id = ''
 
   @Fields.string()
@@ -20599,7 +20599,7 @@ export class Task {
 ### Code Explanation
 
 - `@Entity('tasks', { allowApiCrud: true })` defines the `Task` entity and configures it to allow all CRUD operations - later we'll restrict that using authorization.
-- `@Fields.uuid()` generates a unique ID for each task.
+- `@Fields.id()` generates a unique ID for each task.
 - `@Fields.string()` and `@Fields.boolean()` define the `title` and `completed` fields, respectively.
 - `@Fields.createdAt()` automatically sets the creation date.
 
@@ -21156,7 +21156,7 @@ Adjust the `title` field to be `required`:
 
 ```ts title="shared/Task.ts" add={5-7}
 export class Task {
-  @Fields.uuid()
+  @Fields.id()
   id = ''
 
   @Fields.string({
@@ -21250,7 +21250,7 @@ For example, let's use the `minLength` validation:
 
 ```ts title="shared/Task.ts" add={5-7}
 export class Task {
-  @Fields.uuid()
+  @Fields.id()
   id = ''
 
   @Fields.string<Task>({
@@ -21273,7 +21273,7 @@ You can also chain multiple validators:
 
 ```ts title="shared/Task.ts" add={5-7}
 export class Task {
-  @Fields.uuid()
+  @Fields.id()
   id = ''
 
   @Fields.string<Task>({
@@ -21296,7 +21296,7 @@ You can also customize the validation message:
 
 ```ts title="shared/Task.ts" add={5-10}
 export class Task {
-  @Fields.uuid()
+  @Fields.id()
   id = ''
 
   @Fields.string<Task>({
@@ -21336,7 +21336,7 @@ You can also define custom validation logic for your fields. Let's add a custom 
 
 ```ts title="shared/Task.ts" add={5-7}
 export class Task {
-  @Fields.uuid()
+  @Fields.id()
   id = ''
 
   @Fields.string<Task>({
@@ -24176,7 +24176,7 @@ Let's extend the existing `unique` validation to check that no two tasks exist w
 
 ```typescript title="shared/Task.ts" add={6-8}
 export class Task {
-  @Fields.uuid()
+  @Fields.id()
   id = ''
 
   @Fields.string<Task>({

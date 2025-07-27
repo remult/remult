@@ -712,7 +712,7 @@ import { Entity, Fields } from 'remult'
   allowApiDelete: 'admin',
 })
 export class Product {
-  @Fields.uuid()
+  @Fields.id()
   id!: string
 
   @Fields.string()

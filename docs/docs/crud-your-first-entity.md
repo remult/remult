@@ -13,7 +13,7 @@ import { Entity, Fields } from 'remult'
   allowApiCrud: true,
 })
 export class Product {
-  @Fields.uuid()
+  @Fields.id()
   id!: string
 
   @Fields.string()

@@ -838,7 +838,7 @@ import { Entity, Fields } from 'remult'
   allowApiDelete: 'admin',
 })
 export class Product {
-  @Fields.uuid()
+  @Fields.id()
   id!: string
 
   @Fields.string()
@@ -1138,7 +1138,7 @@ tags: string[] = []
 This id value is determined on the backend on insert, and can't be updated through the API.
 
 ```ts
-@Fields.uuid()
+@Fields.id()
 id:string
 ```
 
@@ -7356,7 +7356,7 @@ For adding custom options to `FieldOptions` or `EntityOptions`, such as `placeho
 
    @Entity('tasks', { allowApiCrud: true })
    export class Task {
-     @Fields.uuid()
+     @Fields.id()
      id!: string
 
      @Fields.string({
@@ -7663,7 +7663,7 @@ import  { Entity, Fields } from "remult";
    allowApiCrud: true
 })
 export class Task {
-   @Fields.uuid()
+   @Fields.id()
    id!: string;
    @Fields.string()
    title = '';

@@ -5,7 +5,7 @@ import { Entity, Fields } from 'remult'
   allowApiDelete: 'admin',
 })
 export class Task {
-  @Fields.uuid()
+  @Fields.id()
   id = ''
 
   @Fields.string({

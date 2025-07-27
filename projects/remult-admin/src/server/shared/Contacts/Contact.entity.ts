@@ -32,7 +32,7 @@ import { Tag } from './Tag.entity'
   },
 })
 export class Contact {
-  @Fields.uuid()
+  @Fields.id()
   id?: string
   @Fields.string<Contact>({
     validate: (task) => {

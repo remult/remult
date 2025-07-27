@@ -14,7 +14,7 @@ For example, let's use the `minLength` validation:
 
 ```ts title="shared/Task.ts" add={5-7}
 export class Task {
-  @Fields.uuid()
+  @Fields.id()
   id = ''
 
   @Fields.string<Task>({
@@ -37,7 +37,7 @@ You can also chain multiple validators:
 
 ```ts title="shared/Task.ts" add={5-7}
 export class Task {
-  @Fields.uuid()
+  @Fields.id()
   id = ''
 
   @Fields.string<Task>({
@@ -60,7 +60,7 @@ You can also customize the validation message:
 
 ```ts title="shared/Task.ts" add={5-10}
 export class Task {
-  @Fields.uuid()
+  @Fields.id()
   id = ''
 
   @Fields.string<Task>({

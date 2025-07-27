@@ -4,7 +4,7 @@ import { Entity, Fields, remult } from 'remult'
   allowApiCrud: remult.authenticated,
 })
 export class Task {
-  @Fields.uuid()
+  @Fields.id()
   id = ''
 
   @Fields.string({

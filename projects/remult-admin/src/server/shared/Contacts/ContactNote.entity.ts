@@ -33,7 +33,7 @@ import { Status } from './Status'
     Contact.updateLastSeen((await relations.contact.findOne())!),
 })
 export class ContactNote {
-  @Fields.uuid()
+  @Fields.id()
   id?: string
   @Fields.string({ dbName: 'contact' })
   contactId = ''

@@ -17,7 +17,7 @@ import { Contact } from '../Contacts/Contact.entity'
   allowApiCrud: true,
 })
 export class Deal {
-  @Fields.uuid()
+  @Fields.id()
   id?: string
   @Fields.string()
   name = ''
@@ -44,7 +44,7 @@ export class Deal {
   @Fields.json()
   items = [{ id: 1, quantity: 5 }]
   @Fields.json()
-  itemsNumbers: number[] = [];
+  itemsNumbers: number[] = []
 
   @BackendMethod({ allowed: Allow.authenticated })
   static async DealDroppedOnKanban(
@@ -115,10 +115,10 @@ export class Deal {
     const existingContacts = isNew
       ? []
       : await dealContactRepo.find({
-        include: {
-          contact: false,
-        },
-      })
+          include: {
+            contact: false,
+          },
+        })
     const contactsToDelete = existingContacts.filter(
       (c) => !contacts.includes(c.contactId),
     )
