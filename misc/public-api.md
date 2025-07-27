@@ -1278,22 +1278,41 @@ export declare class Fields {
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, Date | undefined>
-  static uuid<entityType = unknown>(
-    ...options: (
-      | FieldOptions<entityType, string>
-      | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
-    )[]
-  ): ClassFieldDecorator<entityType, string | undefined>
+  static defaultIdOptions: {
+    idFactory: () => string
+    fieldTypeInDb?: string
+  }
   /**
-   * A CUID (Collision Resistant Unique Identifier) field.
-   * This id value is determined on the backend on insert, and can't be updated through the API.
-   * The CUID is generated using the `@paralleldrive/cuid2` npm package.
+   * Defines a field that will be used as the id of the entity.
+   * By default it will use `crypto.randomUUID` to generate the id.
+   *
+   * You can change the algorithm used to generate the id by setting the `Fields.defaultIdFactory`
+   * to a different function like:
+   *
+   * ```ts
+   * import { createId } from '@paralleldrive/cuid2'
+   * Fields.defaultIdOptions = { idFactory: () => createId() }
+   * ```
+   *
+   * You can also pass an id factory as an option to the `@Fields.id` to have a different value locally.
+   * @example
+   * ```ts
+   * import { createId } from '@paralleldrive/cuid2'
+   * // import { v4 as uuid } from 'uuid'
+   *
+   * class MyEntity {
+   *   \@Fields.id({
+   *     idFactory: () => createId()
+   *     // idFactory: () => uuid()
+   *   })
+   *   id: string = '';
+   * }
+   * ```
    */
-  static cuid<entityType = unknown>(
-    ...options: (
-      | FieldOptions<entityType, string>
-      | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
-    )[]
+  static id<entityType = unknown>(
+    options?: FieldOptions<entityType, string> & {
+      idFactory?: () => string
+    },
   ): ClassFieldDecorator<entityType, string | undefined>
   /**
    * Defines a field that can hold a value from a specified set of string literals.
@@ -3823,7 +3842,7 @@ export interface RemultServerOptions<RequestType> {
     sendError: (httpStatusCode: number, body: any) => void
   }) => Promise<void> | undefined
   /**
-   * Modules are here to group code by feature.
+   * Modules are here to group code by feature. [Module Guide](https://remult.dev/docs/modules)
    *
    * @example
    * import { Module } from 'remult/server'
@@ -4060,7 +4079,7 @@ export interface RemultServerOptions<RequestType> {
     sendError: (httpStatusCode: number, body: any) => void
   }) => Promise<void> | undefined
   /**
-   * Modules are here to group code by feature.
+   * Modules are here to group code by feature. [Module Guide](https://remult.dev/docs/modules)
    *
    * @example
    * import { Module } from 'remult/server'
