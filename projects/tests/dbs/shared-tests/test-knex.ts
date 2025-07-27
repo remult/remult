@@ -7,14 +7,16 @@ import { KnexDataProvider, KnexSchemaBuilder } from '../../../core/remult-knex'
 import { entityWithValidations } from './entityWithValidations'
 import { DbTestProps } from './db-tests-props'
 import { SqlDbTests } from './sql-db-tests'
+import { DbTestOptions } from './db-tests.js'
 KnexSchemaBuilder.logToConsole = false
 export function knexTests(
   knex: Knex.Knex,
   otherTests?: (props: DbTestProps) => void,
+  options?: DbTestOptions,
 ) {
   var db: KnexDataProvider
   let remult: Remult
-  beforeAll(async () => { })
+  beforeAll(async () => {})
   beforeEach(() => {
     db = new KnexDataProvider(knex)
     remult = new Remult(db)
@@ -26,15 +28,18 @@ export function knexTests(
     await db.ensureSchema([repo.metadata])
     return repo
   }
-  allDbTests({
-    getDb() {
-      return db
+  allDbTests(
+    {
+      getDb() {
+        return db
+      },
+      getRemult() {
+        return remult
+      },
+      createEntity,
     },
-    getRemult() {
-      return remult
-    },
-    createEntity,
-  })
+    options,
+  )
   SqlDbTests({
     doesNotSupportDdlTransactions:
       knex.client.config.client.startsWith('mysql'),

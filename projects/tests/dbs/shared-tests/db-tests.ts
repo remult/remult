@@ -58,6 +58,7 @@ export interface DbTestOptions {
   excludeTransactions?: boolean
   excludeLiveQuery?: boolean
   excludeJsonStorage?: boolean
+  fieldTypeInDb?: string
 }
 
 export function commonDbTests(

@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { Entity, EntityBase, Fields, repo } from '../../../core'
-import { describeClass } from '../../../core/src/remult3/classDescribers'
+import { Entity, Fields } from '../../../core'
 import type { DbTestProps } from './db-tests-props'
 import { createId } from '@paralleldrive/cuid2'
+import { DbTestOptions } from './db-tests.js'
 
-export function fieldsIdTests({ createEntity }: DbTestProps) {
+export function fieldsIdTests(
+  { createEntity }: DbTestProps,
+  options?: DbTestOptions,
+) {
   describe('local idFactory', () => {
     it('default id factory should have 5 parts (uuid)', async () => {
       @Entity('idTest', { allowApiCrud: true })
@@ -71,7 +74,7 @@ export function fieldsIdTests({ createEntity }: DbTestProps) {
 
     it('Fields.defaultIdOptions.fieldTypeInDb', async () => {
       const old = Fields.defaultIdOptions.fieldTypeInDb
-      Fields.defaultIdOptions.fieldTypeInDb = 'uuid'
+      Fields.defaultIdOptions.fieldTypeInDb = options?.fieldTypeInDb || 'uuid'
 
       @Entity('idTest', { allowApiCrud: true })
       class idTest {
