@@ -38,6 +38,7 @@ const entityKey = computed(() => {
 // Generate the complete Remult class code
 const generatedCode = computed(() => {
   const imports = new Set<string>()
+  const entityImports = new Set<string>()
   const fieldLines: string[] = []
   const preClassLines: string[] = []
 
@@ -67,6 +68,12 @@ const generatedCode = computed(() => {
       imports.add('ValueListFieldType')
     } else if (field.type === 'toOne' || field.type === 'toMany') {
       imports.add('Relations')
+      // Add entity import for relations
+      const entityName =
+        field.options.entity || detectEntityFromFieldName(field.name)
+      if (entityName && entityName !== 'Entity') {
+        entityImports.add(entityName)
+      }
     }
   })
 
@@ -192,9 +199,30 @@ const generatedCode = computed(() => {
         field.options.entity ||
         detectEntityFromFieldName(field.name) ||
         'Entity'
-      const foreignKey =
-        field.options.foreignKey || `${className.value.toLowerCase()}Id`
-      optionsStr = `(() => ${entityName}, { field: '${foreignKey}' })`
+      const foreignKey = field.options.foreignKey
+
+      // Build options object for the relation
+      const relationOptions: string[] = []
+
+      // Only add field option if foreign key is explicitly set
+      if (foreignKey) {
+        relationOptions.push(`field: '${foreignKey}'`)
+      }
+
+      if (field.options.label) {
+        relationOptions.push(`label: '${field.options.label}'`)
+      }
+
+      if (field.options.defaultIncluded === true) {
+        relationOptions.push(`defaultIncluded: true`)
+      }
+
+      // Generate options string
+      if (relationOptions.length > 0) {
+        optionsStr = `(() => ${entityName}, { ${relationOptions.join(', ')} })`
+      } else {
+        optionsStr = `(() => ${entityName})`
+      }
     }
 
     // Always add parentheses if no options
@@ -328,7 +356,17 @@ const generatedCode = computed(() => {
   const preClassContent =
     preClassLines.length > 0 ? preClassLines.join('\n') + '\n' : ''
 
-  return `import { ${Array.from(imports).join(', ')} } from 'remult'
+  // Build entity imports string
+  const entityImportsStr =
+    entityImports.size > 0
+      ? `\n${Array.from(entityImports)
+          .map((entity) => `import { ${entity} } from './${entity}'`)
+          .join('\n')}`
+      : ''
+
+  return `import { ${Array.from(imports).join(
+    ', ',
+  )} } from 'remult'${entityImportsStr}
 
 ${preClassContent}@Entity('${entityKey.value}')
 export class ${className.value} {

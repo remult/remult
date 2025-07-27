@@ -246,6 +246,18 @@ const availableOptions = computed(() => {
         label: 'Foreign Key',
         description: 'Foreign key field name in related entity (e.g. taskId)',
       },
+      {
+        key: 'label',
+        type: 'string',
+        label: 'Label',
+        description: 'Display label for the relation (e.g. The Comments)',
+      },
+      {
+        key: 'defaultIncluded',
+        type: 'boolean',
+        label: 'Default Included',
+        description: 'Include this relation by default in queries',
+      },
     ],
   }
 
@@ -303,7 +315,7 @@ const updateFieldType = (type: string) => {
 
   if (type === 'toMany') {
     newOptions.entity = 'Comment'
-    newOptions.foreignKey = 'taskId'
+    // Don't set foreignKey by default - let user specify if needed
   }
 
   // Always set field name to 'createdAt' or 'updatedAt' when type is those values
@@ -315,6 +327,8 @@ const updateFieldType = (type: string) => {
     newName = 'priority'
   } else if (type === 'toOne') {
     newName = 'category'
+  } else if (type === 'toMany') {
+    newName = 'comments'
   }
 
   // Set default type for JSON and Object fields
