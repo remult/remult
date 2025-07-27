@@ -511,6 +511,7 @@ const copyGeneratedCode = async () => {
   border-radius: 0;
   position: relative;
   font-size: 0.86rem;
+  background-color: var(--vp-c-bg-soft);
 }
 
 .editor-code :deep(.code-block) {
