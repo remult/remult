@@ -80,7 +80,7 @@
     "eslint": "^8.56.0",
     "eslint-plugin-file-extension-in-import-ts": "^1.0.2",
     "eventsource": "^2.0.2",
-    "express": "^4.20.0",
+    "express": "^4.21.2",
     "fastify": "^4.10.2",
     "fastify-plugin": "^4.0.0",
     "graphql": "^15.8.0",
