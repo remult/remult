@@ -174,7 +174,7 @@ export class Fields {
     idFactory: () => string
     fieldTypeInDb?: string
   } = {
-    idFactory: crypto.randomUUID,
+    idFactory: () => crypto.randomUUID(),
   }
   /**
    * Defines a field that will be used as the id of the entity.
