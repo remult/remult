@@ -53,7 +53,6 @@ workflows:
   build:
     jobs:
       - node/run:
-          version: '22.12'
           name: build
           npm-run: build
       - test-remult
