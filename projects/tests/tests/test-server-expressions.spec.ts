@@ -6,6 +6,7 @@ import { Remult } from '../../core/src/context'
 import { dbNamesOf } from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
 import { remult } from '../../core/src/remult-proxy'
 import { actionInfo } from '../../core/internals'
+import { createId } from '@paralleldrive/cuid2'
 
 describe('test server expression value', () => {
   beforeEach(() => {
@@ -79,7 +80,7 @@ describe('test server expression value', () => {
       num = 0
     }
     describeClass(e, Entity('x'), {
-      id: Fields.uuid(),
+      id: Fields.id(),
       num: Fields.number(),
     })
     const repo = new Remult(new InMemoryDataProvider()).repo(e)
@@ -94,7 +95,7 @@ describe('test server expression value', () => {
       num = 0
     }
     describeClass(e, Entity('x'), {
-      id: Fields.cuid(),
+      id: Fields.id({ idFactory: () => createId() }),
       num: Fields.number(),
     })
     const repo = new Remult(new InMemoryDataProvider()).repo(e)
