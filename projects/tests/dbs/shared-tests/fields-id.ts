@@ -21,14 +21,15 @@ export function fieldsIdTests(
     })
 
     it('fixed value id, should be the same', async () => {
+      const val = '628729d4-2a33-4ae9-8219-8aab0af9d440'
       @Entity('idTest', { allowApiCrud: true })
       class idTest {
-        @Fields.id({ idFactory: () => '628729d4-2a33-4ae9-8219-8aab0af9d440' })
+        @Fields.id({ idFactory: () => val })
         id = ''
       }
       const repoIdTest = await createEntity(idTest)
       const res = await repoIdTest.insert({})
-      expect(res.id).toBe('628729d4-2a33-4ae9-8219-8aab0af9d440')
+      expect(res.id).toBe(val)
     })
 
     it('cuid', async () => {
@@ -58,8 +59,8 @@ export function fieldsIdTests(
   describe('global idFactory', () => {
     it('Fields.defaultIdOptions.idFactory', async () => {
       const old = Fields.defaultIdOptions.idFactory
-      Fields.defaultIdOptions.idFactory = () =>
-        '6f321686-b484-422b-8050-3fa10248caca'
+      const val = '6f321686-b484-422b-8050-3fa10248caca'
+      Fields.defaultIdOptions.idFactory = () => val
 
       @Entity('idTest', { allowApiCrud: true })
       class idTest {
@@ -68,13 +69,14 @@ export function fieldsIdTests(
       }
       const repoIdTest = await createEntity(idTest)
       const res = await repoIdTest.insert({})
-      expect(res.id).toBe('6f321686-b484-422b-8050-3fa10248caca')
+      expect(res.id).toBe(val)
       Fields.defaultIdOptions.idFactory = old
     })
 
     it('Fields.defaultIdOptions.fieldTypeInDb', async () => {
       const old = Fields.defaultIdOptions.fieldTypeInDb
-      Fields.defaultIdOptions.fieldTypeInDb = options?.fieldTypeInDb || 'uuid'
+      const val = options?.fieldTypeInDb || 'uuid'
+      Fields.defaultIdOptions.fieldTypeInDb = val
 
       @Entity('idTest', { allowApiCrud: true })
       class idTest {
@@ -83,7 +85,7 @@ export function fieldsIdTests(
       }
       const repoIdTest = await createEntity(idTest)
       expect(repoIdTest.metadata.fields.id.valueConverter.fieldTypeInDb).toBe(
-        'uuid',
+        val,
       )
       Fields.defaultIdOptions.fieldTypeInDb = old
     })
