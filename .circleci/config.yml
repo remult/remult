@@ -9,6 +9,13 @@ orbs:
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
+  build:
+    docker:
+      - image: cimg/node:20.9
+    steps:
+      - checkout
+      - node/install-packages
+      - run: npm run build
   test-remult:
     docker:
       - image: cimg/node:20.9
@@ -52,8 +59,5 @@ jobs:
 workflows:
   build:
     jobs:
-      - node/run:
-          version: '20.9'
-          name: build
-          npm-run: build
+      - build
       - test-remult
