@@ -11,7 +11,7 @@ orbs:
 jobs:
   test-remult:
     docker:
-      - image: cimg/node:18.18
+      - image: cimg/node:20.9
       - image: cimg/postgres:14.0
         environment:
           POSTGRES_USER: postgres
