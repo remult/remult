@@ -132,7 +132,7 @@ export class LiveQuerySubscriber<entityType> {
 
   defaultQueryState: entityType[] = []
   listeners: SubscriptionListener<LiveQueryChangeInfo<entityType>>[] = []
-  id = crypto.randomUUID()
+  id = String(crypto.randomUUID())
   constructor(
     private repo: Repository<entityType>,
     private query: SubscribeToQueryArgs<entityType>,
