@@ -1,5 +1,9 @@
 All notable changes to this project will be documented in this file.
 
+## [3.0.7] 2025-7-27
+
+- Added support for `express 5`
+
 ## [3.0.6] 2025-7-6
 
 - Added a `label` option for field and entity that'll gradually replace `caption`
