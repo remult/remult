@@ -53,7 +53,7 @@ export function fieldsIdTests({ createEntity }: DbTestProps) {
   })
 
   describe('global idFactory', () => {
-    it('Fields.defaultIdOptions.idFactory', async () => {
+    it('Fields.defaultIdFactory', async () => {
       const old = Fields.defaultIdFactory
       const val = '6f321686-b484-422b-8050-3fa10248caca'
       Fields.defaultIdFactory = () => val

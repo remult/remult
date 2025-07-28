@@ -183,7 +183,8 @@ export class Fields {
     })
   }
 
-  static defaultIdFactory: () => string = () => crypto.randomUUID()
+  static defaultIdFactory: () => string
+
   /**
    * Defines a field that will be used as the id of the entity.
    * By default it will use `crypto.randomUUID` to generate the id.
@@ -216,7 +217,7 @@ export class Fields {
   static id<entityType = unknown>(
     options?: FieldOptions<entityType, string> & { idFactory?: () => string },
   ): ClassFieldDecorator<entityType, string | undefined> {
-    let idFactory = options?.idFactory ?? Fields.defaultIdFactory
+    let idFactory = options?.idFactory ?? remultStatic.defaultIdFactory
 
     return Field(() => String as any, {
       allowApiUpdate: false,
