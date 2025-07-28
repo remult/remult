@@ -4,7 +4,10 @@ All notable changes to this project will be documented in this file.
 
 - Added support for `express 5`
 - Added support for `nuxt 4`
-- removed `reflect-metadata` from dependencies
+- removed remult dependencies:
+  - `reflect-metadata`
+  - `uuid`
+  - `@paralleldrive/cuid2`
 - Minimum node version is now `18` (with `--experimental-global-webcrypto` flag) or `20` (without flag)
 - We are introducing `@Fields.id()` field (using `crypto.randomUUID()` under the hood)
   - `@Fields.uuid()` is now deprecated, use `@Fields.id()` instead _(uuid is the default id factory)_
