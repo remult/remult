@@ -2,27 +2,58 @@ All notable changes to this project will be documented in this file.
 
 ## [3.1.0] 2025-7-x
 
-- [BREAKING] Changed `@Fields.uuid()` to `@Fields.id()` _(uuid is the default id factory)_
+- Added support for `express 5`
+
+## `uuid` & `cuid` Fields go native with `crypto.randomUUID()`
+
+- Let's introduce the new `@Fields.id()` field (using `crypto.randomUUID()` under the hood)
+
+- `@Fields.uuid()` is now deprecated, use `@Fields.id()` instead _(uuid is the default id factory)_
 - [BREAKING] Removed `@Fields.cuid()` - use `@Fields.id()` instead and change the `idFactory` to your preferred id algorithm.
 
-You can do it globally:
+If you are using `@Fields.cuid()` in your code, you have 2 options:
+
+A/ Update globally `@Fields.id()` to use `cuid` algorithm
+
+First, install the `@paralleldrive/cuid2` package:
+
+```bash
+npm install @paralleldrive/cuid2
+```
+
+Then, globally, in a shared code file:
 
 ```ts
 import { createId } from '@paralleldrive/cuid2'
 import { Fields } from 'remult'
 
-Fields.defaultIdOptions = { idFactory: () => createId() }
+Fields.defaultIdFactory = createId()
 ```
 
-Or per field:
+Finally, replace `@Fields.cuid()` with `@Fields.id()`
+
+B/ Create your own `cuid` Field
+
+First, install the `@paralleldrive/cuid2` package:
+
+```bash
+npm install @paralleldrive/cuid2
+```
+
+Then, create your own `cuid` Field:
 
 ```ts
 import { createId } from '@paralleldrive/cuid2'
+import { Fields } from 'remult'
 
-// ...
-  @Fields.id({ idFactory: () => createId() })
-  id = ''
+export function MyFields_cuid<entityType = any>(
+  ...options: FieldOptions<entityType, string>[]
+) {
+  return Fields.id<entityType>({ idFactory: createId }, ...options)
+}
 ```
+
+Finally, replace `@Fields.cuid()` with `MyFields_cuid()`
 
 ## [3.0.6] 2025-7-6
 
