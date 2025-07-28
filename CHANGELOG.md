@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file.
 ## [3.0.7] 2025-7-27
 
 - Added support for `express 5`
+- removed `reflect-metadata` from dependencies
 
 ## [3.0.6] 2025-7-6
 
