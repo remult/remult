@@ -108,22 +108,27 @@ You can also pass an id factory as an option to the `@Fields.id` to have a diffe
 ```ts
 import { createId } from '@paralleldrive/cuid2'
 // import { v4 as uuid } from 'uuid'
+// import { nanoid } from 'nanoid'
+// import { ulid } from 'ulid'
 
 class MyEntity {
   @Fields.id({
     idFactory: () => createId(),
     // idFactory: () => uuid()
+    // idFactory: () => nanoid()
+    // idFactory: () => ulid()
   })
   id: string = ''
 }
 ```
 
-So, you can select what you prefer:
+So, you can select the algorithm you prefer:
 
 - `cuid`: `import { createId } from '@paralleldrive/cuid2'`
 - `uuid`: `import { v4 as uuid } from 'uuid'`
 - `nanoid`: `import { nanoid } from 'nanoid'`
 - `ulid`: `import { ulid } from 'ulid'`
+- and any other function that returns a string! Let us know what's your favorite!
 
 ### @Fields.autoIncrement
 

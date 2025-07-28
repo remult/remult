@@ -2,12 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { Entity, Fields } from '../../../core'
 import type { DbTestProps } from './db-tests-props'
 import { createId } from '@paralleldrive/cuid2'
-import { DbTestOptions } from './db-tests.js'
 
-export function fieldsIdTests(
-  { createEntity }: DbTestProps,
-  options?: DbTestOptions,
-) {
+export function fieldsIdTests({ createEntity }: DbTestProps) {
   describe('local idFactory', () => {
     it('default id factory should have 5 parts (uuid)', async () => {
       @Entity('idTest', { allowApiCrud: true })
@@ -58,9 +54,9 @@ export function fieldsIdTests(
 
   describe('global idFactory', () => {
     it('Fields.defaultIdOptions.idFactory', async () => {
-      const old = Fields.defaultIdOptions.idFactory
+      const old = Fields.defaultIdFactory
       const val = '6f321686-b484-422b-8050-3fa10248caca'
-      Fields.defaultIdOptions.idFactory = () => val
+      Fields.defaultIdFactory = () => val
 
       @Entity('idTest', { allowApiCrud: true })
       class idTest {
@@ -70,24 +66,7 @@ export function fieldsIdTests(
       const repoIdTest = await createEntity(idTest)
       const res = await repoIdTest.insert({})
       expect(res.id).toBe(val)
-      Fields.defaultIdOptions.idFactory = old
-    })
-
-    it('Fields.defaultIdOptions.fieldTypeInDb', async () => {
-      const old = Fields.defaultIdOptions.fieldTypeInDb
-      const val = options?.fieldTypeInDb || 'uuid'
-      Fields.defaultIdOptions.fieldTypeInDb = val
-
-      @Entity('idTest', { allowApiCrud: true })
-      class idTest {
-        @Fields.id()
-        id = ''
-      }
-      const repoIdTest = await createEntity(idTest)
-      expect(repoIdTest.metadata.fields.id.valueConverter.fieldTypeInDb).toBe(
-        val,
-      )
-      Fields.defaultIdOptions.fieldTypeInDb = old
+      Fields.defaultIdFactory = old
     })
   })
 }

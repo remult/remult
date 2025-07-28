@@ -1278,10 +1278,7 @@ export declare class Fields {
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, Date | undefined>
-  static defaultIdOptions: {
-    idFactory: () => string
-    fieldTypeInDb?: string
-  }
+  static defaultIdFactory: () => string
   /**
    * Defines a field that will be used as the id of the entity.
    * By default it will use `crypto.randomUUID` to generate the id.
@@ -1291,7 +1288,7 @@ export declare class Fields {
    *
    * ```ts
    * import { createId } from '@paralleldrive/cuid2'
-   * Fields.defaultIdOptions = { idFactory: () => createId() }
+   * Fields.defaultIdFactory = () => createId()
    * ```
    *
    * You can also pass an id factory as an option to the `@Fields.id` to have a different value locally.

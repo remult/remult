@@ -35,7 +35,6 @@ describe.skipIf(!process.env['TEST_MYSQL'])('mysql', () => {
         `)
       })
     },
-    { fieldTypeInDb: 'CHAR(36)' },
   )
 })
 
@@ -89,6 +88,5 @@ describe.skipIf(!process.env['TEST_MYSQL2'])('mysql2', () => {
         `)
       })
     },
-    { fieldTypeInDb: 'CHAR(36)' },
   )
 })

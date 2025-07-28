@@ -170,12 +170,7 @@ export class Fields {
     )
   }
 
-  static defaultIdOptions: {
-    idFactory: () => string
-    fieldTypeInDb?: string
-  } = {
-    idFactory: () => crypto.randomUUID(),
-  }
+  static defaultIdFactory: () => string = () => crypto.randomUUID()
   /**
    * Defines a field that will be used as the id of the entity.
    * By default it will use `crypto.randomUUID` to generate the id.
@@ -185,7 +180,7 @@ export class Fields {
    *
    * ```ts
    * import { createId } from '@paralleldrive/cuid2'
-   * Fields.defaultIdOptions = { idFactory: () => createId() }
+   * Fields.defaultIdFactory = () => createId()
    * ```
    *
    * You can also pass an id factory as an option to the `@Fields.id` to have a different value locally.
@@ -206,20 +201,13 @@ export class Fields {
   static id<entityType = unknown>(
     options?: FieldOptions<entityType, string> & { idFactory?: () => string },
   ): ClassFieldDecorator<entityType, string | undefined> {
-    let idFactory = options?.idFactory ?? Fields.defaultIdOptions.idFactory
+    let idFactory = options?.idFactory ?? Fields.defaultIdFactory
     return Field(() => String, {
       allowApiUpdate: false,
       defaultValue: () => (options?.allowNull ? null : idFactory()),
       saving: (_, r) => {
         if (!r.value && !options?.allowNull) r.value = idFactory()
       },
-      ...(Fields.defaultIdOptions.fieldTypeInDb !== undefined
-        ? {
-            valueConverter: {
-              fieldTypeInDb: Fields.defaultIdOptions.fieldTypeInDb,
-            },
-          }
-        : {}),
     })
   }
 
