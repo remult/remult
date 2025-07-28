@@ -9,7 +9,7 @@ import { Entity, Fields, remult, ForbiddenError } from 'remult'
   allowApiCrud: true,
 })
 export class Task {
-  @Fields.uuid()
+  @Fields.id()
   id = ''
 
   @Fields.string({

@@ -76,7 +76,7 @@ import { Entity, Fields } from 'remult'
   allowApiCrud: true,
 })
 export class Product {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
 
   @Fields.string()
@@ -166,7 +166,7 @@ import { Entity, Fields, Validators } from 'remult'
   allowApiCrud: true,
 })
 export class Product {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
 
   @Fields.string({

@@ -1,5 +1,5 @@
 # initAsyncHooks
-Initializes async context tracking for the server.
+Initializes and enables async context tracking for the server.
 
 This should be called before handling any incoming requests or calling `withRemult()`.
 
@@ -13,8 +13,8 @@ import { Task } from './entities/Task.js';
 
 initAsyncHooks();
 
-// Thx to the `initAsyncHooks` above, 
-// we have isolated async contexts with multiple `withRemult()`, 
+// Thx to the `initAsyncHooks` above,
+// we have isolated async contexts with multiple `withRemult()`,
 // without needing to initialize a `remultApi` all the time!
 withRemult(async () => {
     remult.user = { id: '42' };

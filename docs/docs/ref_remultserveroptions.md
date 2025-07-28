@@ -74,7 +74,7 @@ export const api = remultApi({
 })
 ```
 ## modules
-Modules are here to group code by feature.
+Modules are here to group code by feature. [Module Guide](https://remult.dev/docs/modules)
 
 
 #### example:

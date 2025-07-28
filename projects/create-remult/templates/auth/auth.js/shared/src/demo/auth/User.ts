@@ -17,7 +17,7 @@ import bcrypt from "bcryptjs";
   },
 })
 export class User {
-  @Fields.cuid()
+  @Fields.id()
   id = "";
 
   @Fields.string({ required: true, validate: Validators.unique() }) // User's name, required field and must be unique

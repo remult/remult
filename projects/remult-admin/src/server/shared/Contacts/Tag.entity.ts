@@ -12,7 +12,7 @@ import {
   allowApiCrud: true,
 })
 export class Tag {
-  @Fields.uuid()
+  @Fields.id()
   id?: string
   @Fields.string()
   tag = ''

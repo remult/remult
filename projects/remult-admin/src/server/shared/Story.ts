@@ -7,7 +7,7 @@ import { Entity, Fields, getEntityRef, remult } from '../../../../core/index.js'
   },
 })
 export class Story {
-  @Fields.cuid()
+  @Fields.id()
   id!: string
 
   @Fields.string<Story>({

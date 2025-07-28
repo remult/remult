@@ -87,7 +87,7 @@ For adding custom options to `FieldOptions` or `EntityOptions`, such as `placeho
 
    @Entity('tasks', { allowApiCrud: true })
    export class Task {
-     @Fields.uuid()
+     @Fields.id()
      id!: string
 
      @Fields.string({

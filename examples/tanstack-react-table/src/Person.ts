@@ -1,29 +1,29 @@
-import { faker } from "@faker-js/faker";
-import { Entity, Fields, InMemoryDataProvider, remult, repo } from "remult";
+import { faker } from '@faker-js/faker'
+import { Entity, Fields, InMemoryDataProvider, remult, repo } from 'remult'
 
-export const statusOptions = ["relationship", "complicated", "single"];
-type Status = (typeof statusOptions)[number];
+export const statusOptions = ['relationship', 'complicated', 'single']
+type Status = (typeof statusOptions)[number]
 
-@Entity("people")
+@Entity('people')
 export class Person {
-  @Fields.cuid()
-  id = "";
+  @Fields.id()
+  id = ''
   @Fields.string()
-  firstName = "";
+  firstName = ''
   @Fields.string()
-  lastName = "";
+  lastName = ''
   @Fields.integer()
-  age = 0;
+  age = 0
   @Fields.integer()
-  visits = 0;
+  visits = 0
   @Fields.integer()
-  progress = 0;
+  progress = 0
   @Fields.literal(() => statusOptions)
-  status: Status = "single";
+  status: Status = 'single'
 }
 
 // setup remult locally in the browser with test data - this is not needed in a real app
-remult.dataProvider = new InMemoryDataProvider();
+remult.dataProvider = new InMemoryDataProvider()
 if (!(await repo(Person).count())) {
   for (let index = 0; index < 1000; index++) {
     await repo(Person).insert({
@@ -33,6 +33,6 @@ if (!(await repo(Person).count())) {
       visits: faker.number.int(1000),
       progress: faker.number.int(100),
       status: faker.helpers.shuffle(statusOptions)[0]!,
-    });
+    })
   }
 }

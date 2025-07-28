@@ -20,7 +20,7 @@ Adjust the `title` field to be `required`:
 
 ```ts title="shared/Task.ts" add={5-7}
 export class Task {
-  @Fields.uuid()
+  @Fields.id()
   id = ''
 
   @Fields.string({

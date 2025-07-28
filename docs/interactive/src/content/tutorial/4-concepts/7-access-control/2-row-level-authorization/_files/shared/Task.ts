@@ -8,7 +8,7 @@ import { Entity, Fields, remult, getEntityRef } from 'remult'
     remult.isAllowed('admin') || task.ownerId === remult.user?.id,
 })
 export class Task {
-  @Fields.uuid()
+  @Fields.id()
   id = ''
 
   @Fields.string({

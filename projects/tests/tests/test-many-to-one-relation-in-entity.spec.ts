@@ -974,14 +974,14 @@ it('test set uuid', async () => {
 
 @Entity('contact')
 class Contact {
-  @Fields.uuid()
+  @Fields.id()
   id!: string
   @Fields.string()
   name = ''
 }
 @Entity('tag')
 class Tags {
-  @Fields.uuid()
+  @Fields.id()
   id!: string
   @Field(() => Contact)
   contact!: Contact

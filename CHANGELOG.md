@@ -1,9 +1,60 @@
 All notable changes to this project will be documented in this file.
 
-## [3.0.7] 2025-7-27
+## [3.1.0] 2025-7-x
 
 - Added support for `express 5`
+- Added support for `nuxt 4`
 - removed `reflect-metadata` from dependencies
+- Minimum node version is now `18` (with `--experimental-global-webcrypto` flag) or `20` (without flag)
+- We are introducing `@Fields.id()` field (using `crypto.randomUUID()` under the hood)
+  - `@Fields.uuid()` is now deprecated, use `@Fields.id()` instead _(uuid is the default id factory)_
+  - [BREAKING] Removed `@Fields.cuid()` - use `@Fields.id()` instead and change the `idFactory` to your preferred id algorithm.
+
+### How to migrate from `@Fields.cuid()` to `@Fields.id()`
+
+You have 2 options:
+
+#### A/ Update globally `@Fields.id()` to use `cuid` algorithm
+
+First, install the `@paralleldrive/cuid2` package:
+
+```bash
+npm install @paralleldrive/cuid2
+```
+
+Then, globally, in a shared code file:
+
+```ts
+import { createId } from '@paralleldrive/cuid2'
+import { Fields } from 'remult'
+
+Fields.defaultIdFactory = createId()
+```
+
+Finally, replace `@Fields.cuid()` with `@Fields.id()`
+
+#### B/ Create your own `cuid` Field
+
+First, install the `@paralleldrive/cuid2` package:
+
+```bash
+npm install @paralleldrive/cuid2
+```
+
+Then, create your own `cuid` Field:
+
+```ts
+import { createId } from '@paralleldrive/cuid2'
+import { Fields } from 'remult'
+
+export function MyFields_cuid<entityType = any>(
+  ...options: FieldOptions<entityType, string>[]
+) {
+  return Fields.id<entityType>({ idFactory: createId }, ...options)
+}
+```
+
+Finally, replace `@Fields.cuid()` with `MyFields_cuid()`
 
 ## [3.0.6] 2025-7-6
 

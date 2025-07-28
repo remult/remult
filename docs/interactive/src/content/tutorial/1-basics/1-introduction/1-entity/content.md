@@ -18,7 +18,7 @@ import { Entity, Fields } from 'remult'
   allowApiCrud: true,
 })
 export class Task {
-  @Fields.uuid()
+  @Fields.id()
   id = ''
 
   @Fields.string()
@@ -35,7 +35,7 @@ export class Task {
 ### Code Explanation
 
 - `@Entity('tasks', { allowApiCrud: true })` defines the `Task` entity and configures it to allow all CRUD operations - later we'll restrict that using authorization.
-- `@Fields.uuid()` generates a unique ID for each task.
+- `@Fields.id()` generates a unique ID for each task.
 - `@Fields.string()` and `@Fields.boolean()` define the `title` and `completed` fields, respectively.
 - `@Fields.createdAt()` automatically sets the creation date.
 

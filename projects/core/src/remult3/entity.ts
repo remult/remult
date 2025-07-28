@@ -19,7 +19,7 @@ import { remultStatic } from '../remult-static.js'
  *    allowApiCrud: true
  * })
  * export class Task {
- *    @Fields.uuid()
+ *    @Fields.id()
  *    id!: string;
  *    @Fields.string()
  *    title = '';

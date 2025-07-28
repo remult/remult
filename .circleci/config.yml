@@ -4,14 +4,21 @@ version: 2.1
 
 orbs:
   codecov: codecov/codecov@3.1.1
-  node: circleci/node@5.0.0
+  node: circleci/node@7.1.0
   browser-tools: circleci/browser-tools@1.2.5
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
+  build:
+    docker:
+      - image: cimg/node:20.9
+    steps:
+      - checkout
+      - node/install-packages
+      - run: npm run build
   test-remult:
     docker:
-      - image: cimg/node:18.18
+      - image: cimg/node:20.9
       - image: cimg/postgres:14.0
         environment:
           POSTGRES_USER: postgres
@@ -52,8 +59,5 @@ jobs:
 workflows:
   build:
     jobs:
-      - node/run:
-          version: '18.18'
-          name: build
-          npm-run: build
+      - build
       - test-remult

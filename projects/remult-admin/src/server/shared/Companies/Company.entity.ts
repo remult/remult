@@ -15,7 +15,7 @@ import { Deal } from '../Deals/Deal.entity'
   },
 })
 export class Company {
-  @Fields.uuid()
+  @Fields.id()
   id?: string
   @Fields.string()
   name = ''
