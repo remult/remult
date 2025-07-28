@@ -1,4 +1,3 @@
-import 'reflect-metadata'
 import type { packedRowInfo } from './__EntityValueProvider.js'
 import { buildRestDataProvider } from './buildRestDataProvider.js'
 import type { FieldOptions } from './column-interfaces.js'
@@ -250,10 +249,11 @@ export function BackendMethod<type = unknown>(
     let result = originalMethod
     checkTarget(target)
     function getTypes() {
-      var types: any[] =
-        typeof Reflect.getMetadata == 'function'
-          ? Reflect.getMetadata('design:paramtypes', target, key)
-          : []
+      // removing import 'reflect-metadata' from server-action.ts, so we return an empty array
+      var types: any[] = []
+      // typeof Reflect.getMetadata == 'function'
+      //   ? Reflect.getMetadata('design:paramtypes', target, key)
+      //   : []
       if (options.paramTypes)
         types =
           typeof options.paramTypes === 'function'

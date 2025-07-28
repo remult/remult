@@ -22,7 +22,6 @@
   "dependencies": {
     "@paralleldrive/cuid2": "^2.2.1",
     "uuid": "^8.3.2",
-    "reflect-metadata": "^0.1.13",
     "tslib": "^2.3.1"
   },
   "exports": {
