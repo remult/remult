@@ -53,6 +53,7 @@ workflows:
   build:
     jobs:
       - node/run:
+          version: '20.9'
           name: build
           npm-run: build
       - test-remult
