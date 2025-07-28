@@ -1,22 +1,22 @@
-import { Allow, Entity, Fields } from 'remult';
+import { Allow, Entity, Fields } from 'remult'
 
 @Entity('tasks', {
   allowApiCrud: true,
 })
 export class Task {
-  @Fields.cuid()
-  id = '';
+  @Fields.id()
+  id = ''
 
   @Fields.string<Task>({
     validate: (task) => {
-      if (task.title.length < 3) throw 'Too Short';
+      if (task.title.length < 3) throw 'Too Short'
     },
   })
-  title = '';
+  title = ''
 
   @Fields.boolean()
-  completed = false;
+  completed = false
 
   @Fields.createdAt()
-  createdAt?: Date;
+  createdAt?: Date
 }

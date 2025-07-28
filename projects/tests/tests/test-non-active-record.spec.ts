@@ -7,7 +7,7 @@ import { Validators } from '../../core/src/validators'
 
 @Entity('nonActiveRecord', {})
 class taskNonActiveRecord {
-  @Fields.uuid()
+  @Fields.id()
   id!: string
   @Fields.string({
     validate: Validators.required,

@@ -51,6 +51,7 @@ import { ValueConverters } from '../../../core/src/valueConverters'
 import { it, vi, test, describe, beforeEach, beforeAll } from 'vitest'
 import { expect } from 'vitest'
 import { entity } from '../../tests/dynamic-classes.js'
+import { createId } from '@paralleldrive/cuid2'
 
 export interface DbTestOptions {
   skipAutoIncrement?: boolean
@@ -1382,7 +1383,7 @@ export function commonDbTests(
       category,
       Entity('rel_ID_string_categories1', { allowApiCrud: true }),
       {
-        id: Fields.cuid(),
+        id: Fields.id({ idFactory: () => createId() }),
         name: Fields.string(),
       },
     )

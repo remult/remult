@@ -84,24 +84,51 @@ tags: string[] = []
 
 ## Auto Generated Id Field Types
 
-### @Fields.uuid
+### @Fields.id
 
 This id value is determined on the backend on insert, and can't be updated through the API.
 
 ```ts
-@Fields.uuid()
+@Fields.id()
 id:string
 ```
 
-### @Fields.cuid
+By default it uses `crypto.randomUUID` to generate the id.
 
-This id value is determined on the backend on insert, and can't be updated through the API.
-Uses the [@paralleldrive/cuid2](https://www.npmjs.com/package/@paralleldrive/cuid2) package
+You can change the algorithm used to generate the id by setting the `Fields.defaultIdFactory`
+to a different function like:
 
 ```ts
-@Fields.cuid()
-id:string
+import { createId } from '@paralleldrive/cuid2'
+Fields.defaultIdOptions = { idFactory: () => createId() }
 ```
+
+You can also pass an id factory as an option to the `@Fields.id` to have a different value locally.
+
+```ts
+import { createId } from '@paralleldrive/cuid2'
+// import { v4 as uuid } from 'uuid'
+// import { nanoid } from 'nanoid'
+// import { ulid } from 'ulid'
+
+class MyEntity {
+  @Fields.id({
+    idFactory: () => createId(),
+    // idFactory: () => uuid()
+    // idFactory: () => nanoid()
+    // idFactory: () => ulid()
+  })
+  id: string = ''
+}
+```
+
+So, you can select the algorithm you prefer:
+
+- `cuid`: `import { createId } from '@paralleldrive/cuid2'`
+- `uuid`: `import { v4 as uuid } from 'uuid'`
+- `nanoid`: `import { nanoid } from 'nanoid'`
+- `ulid`: `import { ulid } from 'ulid'`
+- and any other function that returns a string! Let us know what's your favorite!
 
 ### @Fields.autoIncrement
 

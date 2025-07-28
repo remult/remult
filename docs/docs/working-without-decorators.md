@@ -21,7 +21,7 @@ describeEntity(
     allowApiCrud: true,
   },
   {
-    id: Fields.uuid(),
+    id: Fields.id(),
     title: Fields.string(),
     completed: Fields.boolean(),
   },
@@ -43,7 +43,7 @@ describeEntity(
     allowApiCrud: true,
   },
   {
-    id: Fields.uuid(),
+    id: Fields.id(),
     title: Fields.string(),
     completed: Fields.boolean(),
   },

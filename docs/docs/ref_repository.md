@@ -636,7 +636,7 @@ Provides information about the fields of the Repository's entity
 
 #### example:
 ```ts
-console.log(repo.fields.title.caption) // displays the caption of a specific field
+console.log(repo.fields.title.label) // displays the label of a specific field
 console.log(repo.fields.title.options)// writes the options that were defined for this field
 ```
 ## metadata

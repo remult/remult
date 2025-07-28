@@ -5,7 +5,7 @@ import { TaskPriorities, type TaskPriority } from './TaskPriority'
   allowApiCrud: true,
 })
 export class Task {
-  @Fields.uuid()
+  @Fields.id()
   id = ''
 
   @Fields.string({

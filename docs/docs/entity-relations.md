@@ -31,7 +31,7 @@ import { Entity, Fields } from 'remult'
 
 @Entity('customers')
 export class Customer {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
   @Fields.string()
   name = ''
@@ -51,7 +51,7 @@ import { Entity, Fields } from 'remult'
 
 @Entity('orders')
 export class Order {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
   @Fields.string()
   customer = ''
@@ -80,7 +80,7 @@ import { Customer } from '../customer.js'
 
 @Entity('orders')
 export class Order {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
   @Fields.string() // [!code --]
   customer = '' // [!code --]
@@ -210,7 +210,7 @@ In your entity definition, define a custom field that will hold the identifier o
 ```typescript{5-8}
 @Entity("orders")
 export class Order {
-  @Fields.cuid()
+  @Fields.id()
   id = "";
   @Fields.string() // [!code ++]
   customerId = ""; // Custom field to hold the related entity's identifier // [!code ++]
@@ -231,7 +231,7 @@ Use the `@Relations.toOne` decorator to define the relation, specifying the type
 ```typescript
 @Entity('orders')
 export class Order {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
   @Fields.string()
   customerId = '' // Custom field to hold the related entity's identifier
@@ -259,7 +259,7 @@ When defining the custom field in your entity, use the `dbName` option to specif
 ```typescript
 @Entity('orders')
 export class Order {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
   @Fields.string({ dbName: 'customer' }) // Use dbName to match existing data // [!code ++]
   customerId = ''
@@ -302,7 +302,7 @@ Let's consider a scenario where both `Order` and `Customer` entities belong to s
 ```typescript{0}
 @Entity('customers')
 export class Customer {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
   @Fields.number() // [!code ++]
   branchId = 0 // [!code ++]
@@ -314,7 +314,7 @@ export class Customer {
 
 @Entity('orders')
 export class Order {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
   @Fields.number() // [!code ++]
   branchId = 0 // [!code ++]
@@ -368,7 +368,7 @@ First, let's define the `Customer` and `Order` entities with a basic `toOne` rel
 ```typescript{9-10}
 @Entity("customers")
 export class Customer {
-  @Fields.cuid()
+  @Fields.id()
   id = "";
   @Fields.string()
   name = "";
@@ -378,7 +378,7 @@ export class Customer {
 
 @Entity("orders")
 export class Order {
-  @Fields.cuid()
+  @Fields.id()
   id = "";
   @Relations.toOne(() => Customer)
   customer?: Customer;
@@ -398,7 +398,7 @@ Now, let's enhance this setup to include a `toMany` relation that allows you to 
 ```typescript
 @Entity('customers')
 export class Customer {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
   @Fields.string()
   name = ''
@@ -693,7 +693,7 @@ To illustrate this concept, let's consider two entities: `Customer` and `Tag`. I
 ```ts
 @Entity('customers')
 export class Customer {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
   @Fields.string()
   name = ''
@@ -703,7 +703,7 @@ export class Customer {
 
 @Entity('tags')
 export class Tag {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
   @Fields.string()
   name = ''
@@ -740,7 +740,7 @@ Now, let's enhance our customer entity with a toMany relationship, enabling us t
 ```ts
 @Entity('customers')
 export class Customer {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
   @Fields.string()
   name = ''

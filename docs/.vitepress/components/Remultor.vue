@@ -15,7 +15,7 @@ const fields = ref<RemultField[]>([
   {
     id: '1',
     name: 'id',
-    type: 'cuid',
+    type: 'id',
     options: {},
   },
   {
@@ -44,7 +44,7 @@ const generatedCode = computed(() => {
 
   // Analyze fields to determine needed imports
   fields.value.forEach((field) => {
-    if (['cuid', 'uuid', 'createdAt', 'updatedAt'].includes(field.type)) {
+    if (['id', 'createdAt', 'updatedAt'].includes(field.type)) {
       imports.add('Fields')
     } else if (field.type === 'autoIncrement') {
       imports.add('Fields')
@@ -81,6 +81,9 @@ const generatedCode = computed(() => {
 
   // Generate field decorators and properties
   fields.value.forEach((field) => {
+    // Determine if field is required based on the checkbox value
+    const isRequired = field.options.required === true
+
     // Format options for better readability, excluding required:false and defaultValue
     let optionsStr = ''
     const filteredOptions = Object.entries(field.options).filter(
@@ -285,8 +288,6 @@ const generatedCode = computed(() => {
         break
     }
 
-    // Determine if field is required (default is required unless explicitly set to false)
-    const isRequired = field.options.required !== false
     const hasDefaultValue =
       field.options.defaultValue !== undefined &&
       field.options.defaultValue !== ''
@@ -294,8 +295,14 @@ const generatedCode = computed(() => {
     // Determine property syntax
     let propertyDeclaration = ''
 
-    // Handle fields with automatic default values first
-    if (field.type === 'boolean') {
+    // Handle ID fields
+    if (field.type === 'id') {
+      if (field.options.allowNull === true) {
+        propertyDeclaration = `  ${field.name}: string | null = null`
+      } else {
+        propertyDeclaration = `  ${field.name} = ''`
+      }
+    } else if (field.type === 'boolean') {
       // Boolean fields always default to false
       propertyDeclaration = `  ${field.name} = false`
     } else if (
@@ -332,20 +339,30 @@ const generatedCode = computed(() => {
     } else if (field.type === 'toMany') {
       // For toMany relations, use empty array as default
       propertyDeclaration = `  ${field.name}: ${tsType} = []`
+    } else if (field.type === 'autoIncrement') {
+      // Auto increment fields
+      propertyDeclaration = `  ${field.name}${
+        isRequired ? '!' : '?'
+      }: ${tsType}`
     } else {
-      // Special fields that don't need explicit types or defaults
-      const skipTypeAndDefault = ['cuid', 'uuid', 'autoIncrement'].includes(
-        field.type,
-      )
-      if (skipTypeAndDefault) {
-        propertyDeclaration = `  ${field.name}${
-          isRequired ? '!' : '?'
-        }: ${tsType}`
+      // Regular fields - handle allowNull and required cases
+      if (field.options.allowNull === true) {
+        // If allowNull is true, use nullable type with null default
+        propertyDeclaration = `  ${field.name}: ${tsType} | null = null`
+      } else if (isRequired) {
+        // If required, use definite assignment assertion
+        propertyDeclaration = `  ${field.name}!: ${tsType}`
       } else {
-        // Regular fields with explicit types
-        propertyDeclaration = `  ${field.name}${
-          isRequired ? '!' : '?'
-        }: ${tsType}`
+        // If not required, use default value
+        if (tsType === 'string') {
+          propertyDeclaration = `  ${field.name} = ''`
+        } else if (tsType === 'number') {
+          propertyDeclaration = `  ${field.name} = 0`
+        } else if (tsType === 'boolean') {
+          propertyDeclaration = `  ${field.name} = false`
+        } else {
+          propertyDeclaration = `  ${field.name}: ${tsType}`
+        }
       }
     }
 

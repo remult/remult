@@ -5,12 +5,13 @@ import { describe, expect, it } from 'vitest'
 import { Entity, Fields, Relations, repo } from '../../core'
 import { Remult } from '../../core/src/context'
 import { InputTypes } from '../../core/inputTypes.js'
+import { createId } from '@paralleldrive/cuid2'
 
 describe('remult-admin', () => {
   it('should get entities', async () => {
     @Entity('accounts')
     class Account {
-      @Fields.cuid()
+      @Fields.id()
       id!: string
       @Fields.string()
       name!: string
@@ -422,7 +423,7 @@ describe('remult-admin', () => {
       rootPath: '/api',
       head: '<title>Test Admin</title>',
       requireAuthToken: false,
-      disableLiveQuery: false
+      disableLiveQuery: false,
     })
 
     expect(res).includes('html')
@@ -445,7 +446,7 @@ describe('remult-admin', () => {
       rootPath: '/api',
       head: '<title>Test Admin</title>',
       requireAuthToken: false,
-      disableLiveQuery: true
+      disableLiveQuery: true,
     })
 
     expect(res).includes('html')
@@ -456,7 +457,7 @@ describe('remult-admin', () => {
   it('should correctly set valueType for json fields', () => {
     @Entity('test-json-types')
     class JsonTypeTest {
-      @Fields.cuid()
+      @Fields.id({ idFactory: () => createId() })
       id!: string
 
       @Fields.json()

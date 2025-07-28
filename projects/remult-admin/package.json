@@ -35,7 +35,6 @@
     "vite-plugin-singlefile": "^0.13.5"
   },
   "dependencies": {
-    "@paralleldrive/cuid2": "^2.2.2",
     "reactflow": "^11.11.3",
     "reflect-metadata": "^0.1.14",
     "tslib": "^2.6.3",

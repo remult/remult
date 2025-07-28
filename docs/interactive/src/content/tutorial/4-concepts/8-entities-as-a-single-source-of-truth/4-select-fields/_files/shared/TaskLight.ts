@@ -8,7 +8,7 @@ SqlDatabase.LogToConsole = 'oneLiner'
   allowApiCrud: false,
 })
 export class TaskLight {
-  @Fields.uuid()
+  @Fields.id()
   id = ''
 
   @Fields.string()

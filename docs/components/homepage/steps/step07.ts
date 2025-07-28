@@ -30,7 +30,7 @@ export default {
   }// [!code ++]
 })
 export class Task {
-  @Fields.cuid()
+  @Fields.id()
   id!: string
 
   @Fields.string({

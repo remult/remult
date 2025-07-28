@@ -6,7 +6,7 @@ import { Allow, Entity, Fields } from 'remult'
   allowApiDelete: 'admin',
 })
 export class Task {
-  @Fields.cuid()
+  @Fields.id()
   id!: string
 
   @Fields.string<Task>({

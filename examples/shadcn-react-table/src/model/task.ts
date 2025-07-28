@@ -16,7 +16,7 @@ import { priorityOptions, type Priority } from './priority.ts'
   // },
 })
 export class Task {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
 
   @Fields.string<Task>({

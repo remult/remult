@@ -2538,7 +2538,7 @@ export const LabelTransformer: {
     entityMetaData: EntityMetadata<any>,
   ) => string
   /**
-   * @obsolete use LabelTransformer.transformLabel instead
+   * @deprecated use LabelTransformer.transformLabel instead
    */
   transformCaption: (
     remult: Remult,

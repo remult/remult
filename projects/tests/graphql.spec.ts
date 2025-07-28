@@ -12,12 +12,13 @@ import {
 } from '../core'
 import { remultGraphql, translateWhereToRestBody } from '../core/graphql'
 import { entity } from './tests/dynamic-classes'
+import { createId } from '@paralleldrive/cuid2'
 
 @Entity('categoriesmore', {
   allowApiCrud: true,
 })
 class CategoryMore {
-  @Fields.cuid()
+  @Fields.id({ idFactory: () => createId() })
   id!: string
 
   @Fields.string()

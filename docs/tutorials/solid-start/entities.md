@@ -25,7 +25,7 @@ import { Entity, Fields } from 'remult'
   allowApiCrud: true,
 })
 export class Task {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
 
   @Fields.string()
@@ -56,7 +56,7 @@ The [@Entity](../../docs/ref_entity.md) decorator tells Remult this class is an 
 
 To initially allow all CRUD operations for tasks, we set the option [allowApiCrud](../../docs/ref_entity.md#allowapicrud) to `true`.
 
-The [@Fields.cuid](../../docs/field-types.md#fields-cuid) decorator tells Remult to automatically generate a short random id using the [cuid](https://github.com/paralleldrive/cuid) library. This value can't be changed after the entity is created.
+The [@Fields.id](../../docs/field-types.md#fields-id) decorator tells Remult to automatically generate a unique id using `crypto.randomUUID()`. This value can't be changed after the entity is created.
 
 The [@Fields.string](../../docs/field-types.md#fields-string) decorator tells Remult the `title` property is an entity data field of type `String`. This decorator is also used to define field-related properties and operations, discussed in the next sections of this tutorial and the same goes for `@Fields.boolean` and the `completed` property.
 

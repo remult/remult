@@ -5,12 +5,14 @@ import { remult } from '../../core/src/remult-proxy.js'
 import { InMemoryDataProvider } from '../../core/src/data-providers/in-memory-database.js'
 import { TestApiDataProvider } from '../../core/server/index.js'
 import { repo } from '../../core/index.js'
+import { createId } from '@paralleldrive/cuid2'
 
 @Entity('a', {
   allowApiCrud: true,
 })
 export class aEntity {
-  @Fields.cuid({
+  @Fields.id({
+    idFactory: () => createId(),
     allowApiUpdate: false,
     required: true,
     caption: 'Database ID',
@@ -21,7 +23,7 @@ export class aEntity {
   allowApiCrud: true,
 })
 export class bEntity {
-  @Fields.cuid()
+  @Fields.id({ idFactory: () => createId() })
   id!: string
 }
 
@@ -29,7 +31,7 @@ export class bEntity {
   allowApiCrud: true,
 })
 export class cEntity {
-  @Fields.cuid()
+  @Fields.id({ idFactory: () => createId() })
   id!: string
 
   @Relations.toOne(() => aEntity)

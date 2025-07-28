@@ -839,7 +839,7 @@ import { Entity, Fields } from 'remult'
   allowApiDelete: 'admin',
 })
 export class Product {
-  @Fields.uuid()
+  @Fields.id()
   id!: string
 
   @Fields.string()
@@ -1148,24 +1148,51 @@ tags: string[] = []
 
 ## Auto Generated Id Field Types
 
-### @Fields.uuid
+### @Fields.id
 
 This id value is determined on the backend on insert, and can't be updated through the API.
 
 ```ts
-@Fields.uuid()
+@Fields.id()
 id:string
 ```
 
-### @Fields.cuid
+By default it uses `crypto.randomUUID` to generate the id.
 
-This id value is determined on the backend on insert, and can't be updated through the API.
-Uses the [@paralleldrive/cuid2](https://www.npmjs.com/package/@paralleldrive/cuid2) package
+You can change the algorithm used to generate the id by setting the `Fields.defaultIdFactory`
+to a different function like:
 
 ```ts
-@Fields.cuid()
-id:string
+import { createId } from '@paralleldrive/cuid2'
+Fields.defaultIdOptions = { idFactory: () => createId() }
 ```
+
+You can also pass an id factory as an option to the `@Fields.id` to have a different value locally.
+
+```ts
+import { createId } from '@paralleldrive/cuid2'
+// import { v4 as uuid } from 'uuid'
+// import { nanoid } from 'nanoid'
+// import { ulid } from 'ulid'
+
+class MyEntity {
+  @Fields.id({
+    idFactory: () => createId(),
+    // idFactory: () => uuid()
+    // idFactory: () => nanoid()
+    // idFactory: () => ulid()
+  })
+  id: string = ''
+}
+```
+
+So, you can select the algorithm you prefer:
+
+- `cuid`: `import { createId } from '@paralleldrive/cuid2'`
+- `uuid`: `import { v4 as uuid } from 'uuid'`
+- `nanoid`: `import { nanoid } from 'nanoid'`
+- `ulid`: `import { ulid } from 'ulid'`
+- and any other function that returns a string! Let us know what's your favorite!
 
 ### @Fields.autoIncrement
 
@@ -1521,7 +1548,7 @@ import { Entity, Fields } from 'remult'
 
 @Entity('customers')
 export class Customer {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
   @Fields.string()
   name = ''
@@ -1541,7 +1568,7 @@ import { Entity, Fields } from 'remult'
 
 @Entity('orders')
 export class Order {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
   @Fields.string()
   customer = ''
@@ -1570,7 +1597,7 @@ import { Customer } from '../customer.js'
 
 @Entity('orders')
 export class Order {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
   @Fields.string() // [!code --]
   customer = '' // [!code --]
@@ -1700,7 +1727,7 @@ In your entity definition, define a custom field that will hold the identifier o
 ```typescript{5-8}
 @Entity("orders")
 export class Order {
-  @Fields.cuid()
+  @Fields.id()
   id = "";
   @Fields.string() // [!code ++]
   customerId = ""; // Custom field to hold the related entity's identifier // [!code ++]
@@ -1721,7 +1748,7 @@ Use the `@Relations.toOne` decorator to define the relation, specifying the type
 ```typescript
 @Entity('orders')
 export class Order {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
   @Fields.string()
   customerId = '' // Custom field to hold the related entity's identifier
@@ -1749,7 +1776,7 @@ When defining the custom field in your entity, use the `dbName` option to specif
 ```typescript
 @Entity('orders')
 export class Order {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
   @Fields.string({ dbName: 'customer' }) // Use dbName to match existing data // [!code ++]
   customerId = ''
@@ -1792,7 +1819,7 @@ Let's consider a scenario where both `Order` and `Customer` entities belong to s
 ```typescript{0}
 @Entity('customers')
 export class Customer {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
   @Fields.number() // [!code ++]
   branchId = 0 // [!code ++]
@@ -1804,7 +1831,7 @@ export class Customer {
 
 @Entity('orders')
 export class Order {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
   @Fields.number() // [!code ++]
   branchId = 0 // [!code ++]
@@ -1858,7 +1885,7 @@ First, let's define the `Customer` and `Order` entities with a basic `toOne` rel
 ```typescript{9-10}
 @Entity("customers")
 export class Customer {
-  @Fields.cuid()
+  @Fields.id()
   id = "";
   @Fields.string()
   name = "";
@@ -1868,7 +1895,7 @@ export class Customer {
 
 @Entity("orders")
 export class Order {
-  @Fields.cuid()
+  @Fields.id()
   id = "";
   @Relations.toOne(() => Customer)
   customer?: Customer;
@@ -1888,7 +1915,7 @@ Now, let's enhance this setup to include a `toMany` relation that allows you to 
 ```typescript
 @Entity('customers')
 export class Customer {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
   @Fields.string()
   name = ''
@@ -2183,7 +2210,7 @@ To illustrate this concept, let's consider two entities: `Customer` and `Tag`. I
 ```ts
 @Entity('customers')
 export class Customer {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
   @Fields.string()
   name = ''
@@ -2193,7 +2220,7 @@ export class Customer {
 
 @Entity('tags')
 export class Tag {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
   @Fields.string()
   name = ''
@@ -2230,7 +2257,7 @@ Now, let's enhance our customer entity with a toMany relationship, enabling us t
 ```ts
 @Entity('customers')
 export class Customer {
-  @Fields.cuid()
+  @Fields.id()
   id = ''
   @Fields.string()
   name = ''
@@ -7210,7 +7237,7 @@ describeEntity(
     allowApiCrud: true,
   },
   {
-    id: Fields.uuid(),
+    id: Fields.id(),
     title: Fields.string(),
     completed: Fields.boolean(),
   },
@@ -7232,7 +7259,7 @@ describeEntity(
     allowApiCrud: true,
   },
   {
-    id: Fields.uuid(),
+    id: Fields.id(),
     title: Fields.string(),
     completed: Fields.boolean(),
   },
@@ -7345,7 +7372,7 @@ For adding custom options to `FieldOptions` or `EntityOptions`, such as `placeho
 
    @Entity('tasks', { allowApiCrud: true })
    export class Task {
-     @Fields.uuid()
+     @Fields.id()
      id!: string
 
      @Fields.string({
@@ -7651,7 +7678,7 @@ import  { Entity, Fields } from "remult";
    allowApiCrud: true
 })
 export class Task {
-   @Fields.uuid()
+   @Fields.id()
    id!: string;
    @Fields.string()
    title = '';
@@ -7679,6 +7706,14 @@ EntityOptions can be set in two ways:
 ```
 ## caption
 A human readable name for the entity
+## label
+A human readable label for the entity. Can be used to achieve a consistent label for a field throughout the app
+
+
+#### example:
+```ts
+<h1>Create a new item in {taskRepo.metadata.label}</h1>
+```
 ## allowApiRead
 Determines if this Entity is available for get requests using Rest Api
 
@@ -7958,14 +7993,34 @@ A human readable name for the field. Can be used to achieve a consistent caption
 ```ts
 <input placeholder={taskRepo.metadata.fields.title.caption}/>
 ```
+## label
+A human readable name for the field. Can be used to achieve a consistent label for a field throughout the app
+
+
+#### example:
+```ts
+<input placeholder={taskRepo.metadata.fields.title.label}/>
+```
 ## allowNull
-If it can store null in the database
+If it can store `null` in the database.
+
+
+#### default:
+```ts
+false
+```
 ## required
 If a value is required. Short-cut to say `validate: Validators.required`.
 
 
+#### default:
+```ts
+false
+```
+
+
 #### see:
- - option [validate](https://remult.dev/docs/ref_field#validate) below
+ - option [validate](https://remult.dev/docs/ref_field#validate)
  - validator [required](https://remult.dev/docs/ref_validators#required)
 
 ## includeInApi
@@ -9437,7 +9492,7 @@ Provides information about the fields of the Repository's entity
 
 #### example:
 ```ts
-console.log(repo.fields.title.caption) // displays the caption of a specific field
+console.log(repo.fields.title.label) // displays the label of a specific field
 console.log(repo.fields.title.options)// writes the options that were defined for this field
 ```
 ## metadata
@@ -9537,7 +9592,7 @@ export const api = remultApi({
 })
 ```
 ## modules
-Modules are here to group code by feature.
+Modules are here to group code by feature. [Module Guide](https://remult.dev/docs/modules)
 
 
 #### example:
@@ -9729,6 +9784,18 @@ A human readable caption for the entity. Can be used to achieve a consistent cap
 
 #### see:
 EntityOptions.caption
+## label
+A human readable label for the entity. Can be used to achieve a consistent label for a field throughout the app
+
+
+#### example:
+```ts
+<h1>Create a new item in {taskRepo.metadata.label}</h1>
+```
+
+
+#### see:
+EntityOptions.label
 ## dbName
 The name of the table in the database that holds the data for this entity.
 If no name is set in the entity options, the `key` will be used instead.
@@ -9838,6 +9905,18 @@ A human readable caption for the field. Can be used to achieve a consistent capt
 
 #### see:
 FieldOptions#caption for configuration details
+## label
+A human readable label for the field. Can be used to achieve a consistent label for a field throughout the app
+
+
+#### example:
+```ts
+<input placeholder={taskRepo.metadata.fields.title.label}/>
+```
+
+
+#### see:
+FieldOptions.label for configuration details
 ## dbName
 The name of the column in the database that holds the data for this field. If no name is set, the key will be used instead.
 
@@ -10716,7 +10795,7 @@ Arguments:
 # API Reference - Async Hooks
 
 # initAsyncHooks
-Initializes async context tracking for the server.
+Initializes and enables async context tracking for the server.
 
 This should be called before handling any incoming requests or calling `withRemult()`.
 
@@ -10730,8 +10809,8 @@ import { Task } from './entities/Task.js';
 
 initAsyncHooks();
 
-// Thx to the `initAsyncHooks` above, 
-// we have isolated async contexts with multiple `withRemult()`, 
+// Thx to the `initAsyncHooks` above,
+// we have isolated async contexts with multiple `withRemult()`,
 // without needing to initialize a `remultApi` all the time!
 withRemult(async () => {
     remult.user = { id: '42' };

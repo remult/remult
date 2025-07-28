@@ -6,6 +6,7 @@ import {
   InMemoryDataProvider,
   Remult,
 } from '../../core/index.js'
+import { createId } from '@paralleldrive/cuid2'
 
 describe('test-saved-id', () => {
   it('test-saved-id', async () => {
@@ -28,7 +29,7 @@ describe('test-saved-id', () => {
     const e = entity(
       'test-saved-id',
       {
-        a: Fields.cuid(),
+        a: Fields.id({ idFactory: () => createId() }),
         b: Fields.integer(),
       },
       {
@@ -47,7 +48,7 @@ describe('test-saved-id', () => {
       },
     })
     class Task {
-      @Fields.cuid()
+      @Fields.id({ idFactory: () => createId() })
       id = ''
 
       @Fields.string()

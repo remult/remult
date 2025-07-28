@@ -36,11 +36,10 @@ const fieldTypes = [
   { value: 'date', label: 'Date', description: 'Date and time' },
   { value: 'dateOnly', label: 'Date Only', description: 'Date without time' },
   {
-    value: 'cuid',
-    label: 'CUID',
-    description: 'Collision-resistant unique ID',
+    value: 'id',
+    label: 'ID',
+    description: 'Auto-generated unique identifier',
   },
-  { value: 'uuid', label: 'UUID', description: 'UUID v4 identifier' },
   {
     value: 'autoIncrement',
     label: 'Auto Increment',
@@ -145,11 +144,8 @@ const availableOptions = computed(() => {
     dateOnly: [
       // DateOnly default value is always new Date(), not customizable
     ],
-    cuid: [
-      // CUID should have no options
-    ],
-    uuid: [
-      // UUID should have no options
+    id: [
+      // ID should have no options
     ],
     autoIncrement: [
       // Auto Increment should have no options
@@ -266,8 +262,13 @@ const availableOptions = computed(() => {
     return [baseOptions.find((opt) => opt.key === 'label')!]
   }
 
-  // For fields with no options (cuid, uuid, autoIncrement), return empty array
-  if (['cuid', 'uuid', 'autoIncrement'].includes(props.field.type)) {
+  // For ID fields, allow label and allowNull options (no required option)
+  if (props.field.type === 'id') {
+    return baseOptions.filter((opt) => opt.key !== 'required')
+  }
+
+  // For fields with no options (autoIncrement), return empty array
+  if (['autoIncrement'].includes(props.field.type)) {
     return []
   }
 

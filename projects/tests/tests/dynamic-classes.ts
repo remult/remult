@@ -1,3 +1,4 @@
+import { createId } from '@paralleldrive/cuid2'
 import {
   describeClass,
   Entity,
@@ -37,13 +38,13 @@ export function entity<T>(
 
 function test() {
   const Category = entity('c', {
-    id: Fields.cuid(),
+    id: Fields.id({ idFactory: () => createId() }),
     name: Fields.string(),
   })
   const Task = entity(
     'c',
     {
-      id: Fields.cuid(),
+      id: Fields.id({ idFactory: () => createId() }),
       title: Fields.string(),
     },
     {

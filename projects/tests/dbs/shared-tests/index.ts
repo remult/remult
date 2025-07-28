@@ -4,6 +4,7 @@ import { customIdTests } from './test-custom-id-column'
 import { testSpecialValues } from './test-special-value'
 import { testUpdateWithNull } from './test-update-with-null'
 import { aggregateTest } from './test-aggregate.js'
+import { fieldsIdTests } from './fields-id.js'
 
 export function allDbTests(props: DbTestProps, options?: DbTestOptions) {
   aggregateTest(props, options)
@@ -11,4 +12,5 @@ export function allDbTests(props: DbTestProps, options?: DbTestOptions) {
   customIdTests(props)
   testUpdateWithNull(props)
   testSpecialValues(props)
+  fieldsIdTests(props)
 }

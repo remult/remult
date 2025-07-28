@@ -26,6 +26,7 @@ let x = {
   },
   fieldOptionsEnricher: undefined as unknown as any,
   labelTransformer: undefined as unknown as any,
+  defaultIdFactory: undefined as unknown as () => string,
   defaultDataProvider: () =>
     undefined as unknown as Promise<DataProvider | undefined>,
 }

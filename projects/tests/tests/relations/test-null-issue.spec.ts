@@ -10,10 +10,11 @@ import {
   SqlDatabase,
 } from '../../../core'
 import { TestDataProvider } from '../../dbs/TestDataProviderWithStats'
+import { createId } from '@paralleldrive/cuid2'
 
 @Entity('customers')
 export class Customer {
-  @Fields.uuid()
+  @Fields.id()
   id?: string
   @Fields.string()
   name = ''
@@ -23,7 +24,7 @@ export class Customer {
 
 @Entity('orders')
 export class Order {
-  @Fields.cuid()
+  @Fields.id({ idFactory: () => createId() })
   id?: string
   @Fields.string({ allowNull: true, dbName: '"customerId"' })
   customerId?: string | null = null

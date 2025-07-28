@@ -18,11 +18,12 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
    * <input placeholder={taskRepo.metadata.fields.title.label}/>
    */
   label?: string
-  /** If it can store null in the database */
+  /** If it can store `null` in the database. @default false */
   allowNull?: boolean
   /** If a value is required. Short-cut to say `validate: Validators.required`.
-      @see option [validate](https://remult.dev/docs/ref_field#validate) below
-      @see validator [required](https://remult.dev/docs/ref_validators#required)
+   * @default false
+   * @see option [validate](https://remult.dev/docs/ref_field#validate)
+   * @see validator [required](https://remult.dev/docs/ref_validators#required)
    */
   required?: boolean
   /**

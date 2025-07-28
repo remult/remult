@@ -4,7 +4,7 @@ import { BackendMethod, Entity, Fields, Remult, Validators } from 'remult'
   allowApiCrud: true,
 })
 export class Task {
-  @Fields.uuid()
+  @Fields.id()
   id!: string
 
   @Fields.string({
