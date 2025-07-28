@@ -13,6 +13,7 @@ import type {
   RemultServerOptions,
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
+import { getURL } from './urlBuilder.js'
 
 export function remultNext(
   options: RemultServerOptions<NextApiRequest>,
@@ -20,7 +21,10 @@ export function remultNext(
   let result = createRemultServer(options, {
     buildGenericRequestInfo: (req) => ({
       internal: { ...req, on: req.on },
-      public: { headers: new Headers(req.headers as Record<string, string>) },
+      public: {
+        headers: new Headers(req.headers as Record<string, string>),
+        url: getURL(req.url),
+      },
     }),
     getRequestBody: async (req) => req.body,
   })
@@ -100,7 +104,7 @@ export function remultApi(
           }
         },
       },
-      public: { headers: req.headers },
+      public: { headers: req.headers, url: getURL(req.url) },
     }),
   })
   const handler = async (req: Request) => {

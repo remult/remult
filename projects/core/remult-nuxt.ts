@@ -8,6 +8,7 @@ import type {
   RemultServer,
 } from './server/index.js'
 import { createRemultServer } from './server/index.js'
+import { getURL } from './urlBuilder.js'
 
 export function remultApi(
   options: RemultServerOptions<H3Event>,
@@ -24,6 +25,7 @@ export function remultApi(
       },
       public: {
         headers: new Headers(event.node.req.headers as Record<string, string>),
+        url: getURL(event.node.req.url),
       },
     }),
     getRequestBody: async (event) => await readBody(event),

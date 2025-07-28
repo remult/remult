@@ -15,6 +15,7 @@ import type {
   RemultServer,
 } from './server/remult-api-server.js'
 import { createRemultServer } from './server/index.js'
+import { getURL } from './urlBuilder.js'
 
 export function remultApi(
   options: RemultServerOptions<FastifyRequest>,
@@ -59,7 +60,10 @@ export function remultApi(
         // @ts-ignore
         on: req.on,
       },
-      public: { headers: new Headers(req.headers as any) },
+      public: {
+        headers: new Headers(req.headers as any),
+        url: getURL(`${req.protocol}://${req.hostname}${req.originalUrl}`),
+      },
     }),
     getRequestBody: async (req) => req.body,
   })
