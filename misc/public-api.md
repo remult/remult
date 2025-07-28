@@ -1278,6 +1278,13 @@ export declare class Fields {
       | ((options: FieldOptions<entityType, Date>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, Date | undefined>
+  /** @deprecated use `@Fields.id()` instead */
+  static uuid<entityType = unknown>(
+    ...options: (
+      | FieldOptions<entityType, string>
+      | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
+    )[]
+  ): ClassFieldDecorator<entityType, string | undefined>
   static defaultIdFactory: () => string
   /**
    * Defines a field that will be used as the id of the entity.
@@ -1285,6 +1292,8 @@ export declare class Fields {
    *
    * You can change the algorithm used to generate the id by setting the `Fields.defaultIdFactory`
    * to a different function like:
+   *
+   * This needs to be done in a shared file to be accessible frontend and backend.
    *
    * ```ts
    * import { createId } from '@paralleldrive/cuid2'

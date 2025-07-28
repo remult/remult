@@ -170,6 +170,19 @@ export class Fields {
     )
   }
 
+  /** @deprecated use `@Fields.id()` instead */
+  static uuid<entityType = unknown>(
+    ...options: (
+      | FieldOptions<entityType, string>
+      | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
+    )[]
+  ): ClassFieldDecorator<entityType, string | undefined> {
+    return Fields.id({
+      idFactory: () => crypto.randomUUID(),
+      ...options,
+    })
+  }
+
   static defaultIdFactory: () => string = () => crypto.randomUUID()
   /**
    * Defines a field that will be used as the id of the entity.
@@ -177,6 +190,8 @@ export class Fields {
    *
    * You can change the algorithm used to generate the id by setting the `Fields.defaultIdFactory`
    * to a different function like:
+   *
+   * This needs to be done in a shared file to be accessible frontend and backend.
    *
    * ```ts
    * import { createId } from '@paralleldrive/cuid2'
@@ -202,12 +217,14 @@ export class Fields {
     options?: FieldOptions<entityType, string> & { idFactory?: () => string },
   ): ClassFieldDecorator<entityType, string | undefined> {
     let idFactory = options?.idFactory ?? Fields.defaultIdFactory
-    return Field(() => String, {
+
+    return Field(() => String as any, {
       allowApiUpdate: false,
-      defaultValue: () => (options?.allowNull ? null : idFactory()),
+      defaultValue: () => (options?.allowNull ? null! : idFactory()),
       saving: (_, r) => {
         if (!r.value && !options?.allowNull) r.value = idFactory()
       },
+      ...options,
     })
   }
 
