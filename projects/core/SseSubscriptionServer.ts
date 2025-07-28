@@ -1,4 +1,3 @@
-import { v4 as uuid } from 'uuid'
 import type { GenericRequestInfo, GenericResponse } from './server/index.js'
 import type { Remult } from './src/context.js'
 import type { DataApiResponse } from './src/data-api.js'
@@ -113,7 +112,7 @@ export class clientConnection {
     this.response.write(event + '\ndata:' + eventData + '\n\n')
     if (this.response.flush) this.response.flush()
   }
-  connectionId = uuid()
+  connectionId = crypto.randomUUID()
   constructor(public response: GenericResponse & ResponseRequiredForSSE) {
     this.write(this.connectionId, 'connectionId')
     this.sendLiveMessage()

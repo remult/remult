@@ -1,4 +1,3 @@
-import { v4 as uuid } from 'uuid'
 import type { Remult } from '../context.js'
 import { Sort } from '../sort.js'
 import { remult as defaultRemult } from '../remult-proxy.js'
@@ -133,7 +132,7 @@ export class LiveQuerySubscriber<entityType> {
 
   defaultQueryState: entityType[] = []
   listeners: SubscriptionListener<LiveQueryChangeInfo<entityType>>[] = []
-  id = uuid()
+  id = String(crypto.randomUUID())
   constructor(
     private repo: Repository<entityType>,
     private query: SubscribeToQueryArgs<entityType>,
