@@ -602,10 +602,12 @@ export function Field<entityType = unknown, valueType = unknown>(
       if (!r.dbName) r.dbName = r.key
       let type = r.valueType
       if (!type) {
-        type =
-          typeof Reflect.getMetadata == 'function'
-            ? Reflect.getMetadata('design:type', target, key)
-            : []
+        // removing import 'reflect-metadata' from server-action.ts, so we return an empty array
+        type = undefined
+        // type =
+        //   typeof Reflect.getMetadata == 'function'
+        //     ? Reflect.getMetadata('design:type', target, key)
+        //     : []
         r.valueType = type
       }
       if (!r.target) r.target = target
