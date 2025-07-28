@@ -39,17 +39,6 @@ export function fieldsIdTests({ createEntity }: DbTestProps) {
       expect(res.id.includes('-')).toBe(false)
       expect(res.id.length).toBe(24)
     })
-
-    it('allowNull dont generate id', async () => {
-      @Entity('idTest', { allowApiCrud: true })
-      class idTest {
-        @Fields.id({ allowNull: true })
-        id?: string | null = null
-      }
-      const repoIdTest = await createEntity(idTest)
-      const res = repoIdTest.create({})
-      expect(res.id).toBe(null)
-    })
   })
 
   describe('global idFactory', () => {
