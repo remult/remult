@@ -183,7 +183,16 @@ export class Fields {
     })
   }
 
-  static defaultIdFactory: () => string
+  private static _defaultIdFactory: () => string = () => crypto.randomUUID()
+
+  static get defaultIdFactory(): () => string {
+    return this._defaultIdFactory
+  }
+
+  static set defaultIdFactory(value: () => string) {
+    this._defaultIdFactory = value
+    remultStatic.defaultIdFactory = value
+  }
 
   /**
    * Defines a field that will be used as the id of the entity.
@@ -338,6 +347,10 @@ export class Fields {
     return Field(() => Boolean as any, ...options)
   }
 }
+
+// Initialize remultStatic.defaultIdFactory with the default value
+remultStatic.defaultIdFactory = Fields.defaultIdFactory
+
 export class Relations {
   /**
    * Define a to-one relation between entities, indicating a one-to-one relationship.

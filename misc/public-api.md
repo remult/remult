@@ -1285,7 +1285,9 @@ export declare class Fields {
       | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, string | undefined>
-  static defaultIdFactory: () => string
+  private static _defaultIdFactory
+  static get defaultIdFactory(): () => string
+  static set defaultIdFactory(value: () => string)
   /**
    * Defines a field that will be used as the id of the entity.
    * By default it will use `crypto.randomUUID` to generate the id.
