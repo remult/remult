@@ -99,5 +99,6 @@
     "allowapicrud"
   ],
   "typescript.preferences.importModuleSpecifierEnding": "js",
-  "javascript.preferences.autoImportFileExcludePatterns": ["node:test"]
+  "javascript.preferences.autoImportFileExcludePatterns": ["node:test"],
+  "angular.enable-strict-mode-prompt": false
 }
