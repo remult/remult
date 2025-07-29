@@ -1,15 +1,13 @@
-import type { ClassType } from '../../index.js'
+import type { ClassType, MembersOnly } from '../../index.js'
 import { repo } from '../../index.js'
 import type { StandardSchemaV1 } from './StandardSchemaV1.js'
-import type { EntityError } from '../../index.js'
 
-// Step 1: Define the schema interface
 interface RemultEnititySchema<entityType>
   extends StandardSchemaV1<Partial<entityType>, Partial<entityType>> {}
 
-// Step 2: Implement the schema interface
-export function v<entityType>(
-  e: ClassType<entityType>,
+export function std<entityType>(
+  entity: ClassType<entityType>,
+  ...fields: Extract<keyof MembersOnly<entityType>, string>[]
 ): RemultEnititySchema<entityType> {
   return {
     '~standard': {
@@ -18,7 +16,7 @@ export function v<entityType>(
       async validate(value) {
         try {
           const item = value as Partial<entityType>
-          const error = await repo(e).validate(item)
+          const error = await repo(entity).validate(item, ...fields)
           if (error) {
             // Extract field-specific errors from modelState
             const issues: Array<{
