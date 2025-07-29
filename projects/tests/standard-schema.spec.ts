@@ -91,10 +91,12 @@ describe('standard-schema', () => {
     const nok_mail = { email: 'j@tt.fr' }
 
     const result = await schema['~standard'].validate(nok_mail)
-    if ('value' in result) {
-      expect(result.value.email).toEqual('j@tt.fr')
-    } else {
+
+    if (result.issues) {
+      // manage the issue
       expect('to never').toBe('here')
+    } else {
+      expect(result.value.email).toEqual('j@tt.fr')
     }
   })
 })
