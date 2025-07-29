@@ -42,6 +42,16 @@ EntityOptions can be set in two ways:
 
 A human readable name for the entity
 
+## label
+
+A human readable label for the entity. Can be used to achieve a consistent label for a field throughout the app
+
+#### example:
+
+```ts
+<h1>Create a new item in {taskRepo.metadata.label}</h1>
+```
+
 ## allowApiRead
 
 Determines if this Entity is available for get requests using Rest Api

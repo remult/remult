@@ -29,14 +29,34 @@ A human readable name for the field. Can be used to achieve a consistent caption
 ```ts
 <input placeholder={taskRepo.metadata.fields.title.caption}/>
 ```
+## label
+A human readable name for the field. Can be used to achieve a consistent label for a field throughout the app
+
+
+#### example:
+```ts
+<input placeholder={taskRepo.metadata.fields.title.label}/>
+```
 ## allowNull
-If it can store null in the database
+If it can store `null` in the database.
+
+
+#### default:
+```ts
+false
+```
 ## required
 If a value is required. Short-cut to say `validate: Validators.required`.
 
 
+#### default:
+```ts
+false
+```
+
+
 #### see:
- - option [validate](https://remult.dev/docs/ref_field#validate) below
+ - option [validate](https://remult.dev/docs/ref_field#validate)
  - validator [required](https://remult.dev/docs/ref_validators#required)
 
 ## includeInApi

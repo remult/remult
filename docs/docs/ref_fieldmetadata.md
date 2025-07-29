@@ -23,6 +23,18 @@ A human readable caption for the field. Can be used to achieve a consistent capt
 
 #### see:
 FieldOptions#caption for configuration details
+## label
+A human readable label for the field. Can be used to achieve a consistent label for a field throughout the app
+
+
+#### example:
+```ts
+<input placeholder={taskRepo.metadata.fields.title.label}/>
+```
+
+
+#### see:
+FieldOptions.label for configuration details
 ## dbName
 The name of the column in the database that holds the data for this field. If no name is set, the key will be used instead.
 

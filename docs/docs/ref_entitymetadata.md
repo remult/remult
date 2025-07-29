@@ -18,6 +18,18 @@ A human readable caption for the entity. Can be used to achieve a consistent cap
 
 #### see:
 EntityOptions.caption
+## label
+A human readable label for the entity. Can be used to achieve a consistent label for a field throughout the app
+
+
+#### example:
+```ts
+<h1>Create a new item in {taskRepo.metadata.label}</h1>
+```
+
+
+#### see:
+EntityOptions.label
 ## dbName
 The name of the table in the database that holds the data for this entity.
 If no name is set in the entity options, the `key` will be used instead.
