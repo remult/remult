@@ -1,6 +1,6 @@
 All notable changes to this project will be documented in this file.
 
-## [3.1.0] 2025-7-x
+## [3.1.0] 2025-7-29
 
 - Fix by @LazyShpee for `initAsyncHooks` without `remultApi`
 - Added support for `express 5`
@@ -32,7 +32,7 @@ Then, globally, in a shared code file:
 import { createId } from '@paralleldrive/cuid2'
 import { Fields } from 'remult'
 
-Fields.defaultIdFactory = createId()
+Fields.defaultIdFactory = () => createId()
 ```
 
 Finally, replace `@Fields.cuid()` with `@Fields.id()`
