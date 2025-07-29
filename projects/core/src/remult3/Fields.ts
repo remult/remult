@@ -183,41 +183,63 @@ export class Fields {
     })
   }
 
-  private static _defaultIdFactory: () => string = () => crypto.randomUUID()
-
+  /**
+   * ### cuid
+   * @example
+   * ```ts
+   * import { Fields } from 'remult'
+   * import { createId } from '@paralleldrive/cuid2'
+   * Fields.defaultIdFactory = () => createId()
+   * ```
+   *
+   * ### nanoid
+   * @example
+   * ```ts
+   * import { Fields } from 'remult'
+   * import { nanoid } from 'nanoid'
+   * Fields.defaultIdFactory = () => nanoid()
+   * ```
+   *
+   */
   static get defaultIdFactory(): () => string {
-    return this._defaultIdFactory
+    return (
+      remultStatic.defaultIdFactory ??
+      (remultStatic.defaultIdFactory = () => crypto.randomUUID())
+    )
   }
-
   static set defaultIdFactory(value: () => string) {
-    this._defaultIdFactory = value
     remultStatic.defaultIdFactory = value
   }
 
   /**
+   * ### Default
    * Defines a field that will be used as the id of the entity.
    * By default it will use `crypto.randomUUID` to generate the id.
    *
-   * You can change the algorithm used to generate the id by setting the `Fields.defaultIdFactory`
-   * to a different function like:
-   *
-   * This needs to be done in a shared file to be accessible frontend and backend.
+   * ---
+   * ### Global `IdFactory`
+   * You can change the algorithm used to generate the id by setting `Fields.defaultIdFactory`
+   * globally. This code needs to be in a shared file to be accessible frontend and backend.
    *
    * ```ts
    * import { createId } from '@paralleldrive/cuid2'
    * Fields.defaultIdFactory = () => createId()
    * ```
    *
-   * You can also pass an id factory as an option to the `@Fields.id` to have a different value locally.
+   * ---
+   * ### Local `IdFactory`
+   * You can also pass an `idFactory` as an option to the `@Fields.id` to have a different value on this field.
    * @example
    * ```ts
    * import { createId } from '@paralleldrive/cuid2'
    * // import { v4 as uuid } from 'uuid'
+   * // import { nanoid } from 'nanoid'
    *
    * class MyEntity {
    *   \@Fields.id({
    *     idFactory: () => createId()
    *     // idFactory: () => uuid()
+   *     // idFactory: () => nanoid()
    *   })
    *   id: string = '';
    * }
@@ -226,13 +248,17 @@ export class Fields {
   static id<entityType = unknown>(
     options?: FieldOptions<entityType, string> & { idFactory?: () => string },
   ): ClassFieldDecorator<entityType, string | undefined> {
-    let idFactory = options?.idFactory ?? remultStatic.defaultIdFactory
-
     return Field(() => String as any, {
       allowApiUpdate: false,
-      defaultValue: () => idFactory(),
+      defaultValue: () => {
+        let idFactory = options?.idFactory ?? Fields.defaultIdFactory
+        return idFactory()
+      },
       saving: (_, r) => {
-        if (!r.value) r.value = idFactory()
+        if (!r.value) {
+          let idFactory = options?.idFactory ?? Fields.defaultIdFactory
+          r.value = idFactory()
+        }
       },
       ...options,
     })
@@ -347,9 +373,6 @@ export class Fields {
     return Field(() => Boolean as any, ...options)
   }
 }
-
-// Initialize remultStatic.defaultIdFactory with the default value
-remultStatic.defaultIdFactory = Fields.defaultIdFactory
 
 export class Relations {
   /**
