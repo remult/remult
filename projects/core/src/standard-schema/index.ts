@@ -2,13 +2,24 @@ import type { ClassType, MembersOnly } from '../../index.js'
 import { repo } from '../../index.js'
 import type { StandardSchemaV1 } from './StandardSchemaV1.js'
 
-interface RemultEntitySchema<entityType>
-  extends StandardSchemaV1<Partial<entityType>, Partial<entityType>> {}
+// Conditional type for output based on whether fields are provided
+type OutputType<entityType, fields extends string[]> = fields extends []
+  ? Partial<entityType>
+  : Pick<entityType, Extract<keyof entityType, fields[number]>>
 
-export function std<entityType>(
+interface RemultEntitySchema<entityType, fields extends string[] = []>
+  extends StandardSchemaV1<
+    Partial<entityType>,
+    OutputType<entityType, fields>
+  > {}
+
+export function std<
+  entityType,
+  fields extends Extract<keyof MembersOnly<entityType>, string>[] = [],
+>(
   entity: ClassType<entityType>,
-  ...fields: Extract<keyof MembersOnly<entityType>, string>[]
-): RemultEntitySchema<entityType> {
+  ...fields: fields
+): RemultEntitySchema<entityType, fields> {
   return {
     '~standard': {
       version: 1,
@@ -35,7 +46,9 @@ export function std<entityType>(
 
             return { issues }
           }
-          return { value: item }
+
+          // Return the item with proper type assertion
+          return { value: item as OutputType<entityType, fields> }
         } catch (e) {
           let errorMessage = 'Validation error occurred'
           return { issues: [{ message: errorMessage, path: [] }] }

@@ -61,7 +61,7 @@ describe('standard-schema', () => {
     })
   })
 
-  it('mail', async () => {
+  it('mail not ok', async () => {
     @Entity('UserMail')
     class UserMail {
       @Fields.string({ validate: [Validators.email] })
@@ -75,5 +75,26 @@ describe('standard-schema', () => {
     expect(result).toEqual({
       issues: [{ message: 'Invalid Email', path: ['email'] }],
     })
+  })
+
+  it('mail ok', async () => {
+    @Entity('UserMail')
+    class UserMail {
+      @Fields.string({ validate: [Validators.email] })
+      email!: string
+
+      @Fields.string()
+      job = ''
+    }
+
+    const schema = std(UserMail, 'email')
+    const nok_mail = { email: 'j@tt.fr' }
+
+    const result = await schema['~standard'].validate(nok_mail)
+    if ('value' in result) {
+      expect(result.value.email).toEqual('j@tt.fr')
+    } else {
+      expect('to never').toBe('here')
+    }
   })
 })
