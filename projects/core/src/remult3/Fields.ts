@@ -202,7 +202,10 @@ export class Fields {
    *
    */
   static get defaultIdFactory(): () => string {
-    return remultStatic.defaultIdFactory || (() => crypto.randomUUID())
+    return (
+      remultStatic.defaultIdFactory ??
+      (remultStatic.defaultIdFactory = () => crypto.randomUUID())
+    )
   }
   static set defaultIdFactory(value: () => string) {
     remultStatic.defaultIdFactory = value
@@ -248,12 +251,12 @@ export class Fields {
     return Field(() => String as any, {
       allowApiUpdate: false,
       defaultValue: () => {
-        let idFactory = options?.idFactory ?? remultStatic.defaultIdFactory
+        let idFactory = options?.idFactory ?? Fields.defaultIdFactory
         return idFactory()
       },
       saving: (_, r) => {
         if (!r.value) {
-          let idFactory = options?.idFactory ?? remultStatic.defaultIdFactory
+          let idFactory = options?.idFactory ?? Fields.defaultIdFactory
           r.value = idFactory()
         }
       },
@@ -370,9 +373,6 @@ export class Fields {
     return Field(() => Boolean as any, ...options)
   }
 }
-
-// Initialize remultStatic.defaultIdFactory with the default value
-remultStatic.defaultIdFactory = Fields.defaultIdFactory
 
 export class Relations {
   /**
