@@ -51,7 +51,7 @@ describe('standard-schema', () => {
     expect(result).toEqual({ value: ok_age })
   })
 
-  it('age with wrong type', async () => {
+  it('age - wrong type', async () => {
     const schema = std(User, 'age')
     const nok_age = { age: 'aAa' }
 
@@ -61,7 +61,7 @@ describe('standard-schema', () => {
     })
   })
 
-  it('mail not ok', async () => {
+  it('mail - not ok', async () => {
     @Entity('UserMail')
     class UserMail {
       @Fields.string({ validate: [Validators.email] })
@@ -77,7 +77,7 @@ describe('standard-schema', () => {
     })
   })
 
-  it('mail ok', async () => {
+  it('mail - ok', async () => {
     @Entity('UserMail')
     class UserMail {
       @Fields.string({ validate: [Validators.email] })
