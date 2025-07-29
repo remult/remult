@@ -230,9 +230,9 @@ export class Fields {
 
     return Field(() => String as any, {
       allowApiUpdate: false,
-      defaultValue: () => (options?.allowNull ? null! : idFactory()),
+      defaultValue: () => idFactory(),
       saving: (_, r) => {
-        if (!r.value && !options?.allowNull) r.value = idFactory()
+        if (!r.value) r.value = idFactory()
       },
       ...options,
     })
