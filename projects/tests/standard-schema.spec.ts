@@ -99,4 +99,24 @@ describe('standard-schema', () => {
       expect(result.value.email).toEqual('j@tt.fr')
     }
   })
+
+  it('mail - not ok', async () => {
+    @Entity('UserMail')
+    class UserMail {
+      @Fields.string({
+        validate: (v) => {
+          throw new Error('test')
+        },
+      })
+      email!: string
+    }
+
+    const schema = std(UserMail, 'email')
+    const nok_mail = { email: 'aAa' }
+
+    const result = await schema['~standard'].validate(nok_mail)
+    expect(result).toEqual({
+      issues: [{ message: 'test', path: ['email'] }],
+    })
+  })
 })
