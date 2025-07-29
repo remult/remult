@@ -27,21 +27,14 @@ export function std<
       async validate(value) {
         const item = value as Partial<entityType>
         const error = await repo(entity).validate(item, ...fields)
-        if (error) {
-          const issues: Array<StandardSchemaV1.Issue> = []
-
-          if (error.modelState) {
-            for (const [key, message] of Object.entries(error.modelState)) {
-              issues.push({
-                message: message as string,
-                path: [key],
-              })
-            }
+        if (error && error.modelState) {
+          return {
+            issues: Object.entries(error.modelState).map(([key, message]) => ({
+              message: message as string,
+              path: [key],
+            })),
           }
-
-          return { issues }
         }
-
         return { value: item as OutputType<entityType, fieldsType> }
       },
     },
