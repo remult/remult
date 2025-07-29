@@ -4,6 +4,9 @@ import { Entity, Field, Fields, repo, Validators } from '../core/index.js'
 
 @Entity('User')
 class User {
+  @Fields.id()
+  id!: string
+
   @Fields.string({ required: true })
   name!: string
 
@@ -55,6 +58,22 @@ describe('standard-schema', () => {
     const result = await schema['~standard'].validate(nok_age)
     expect(result).toEqual({
       issues: [{ message: 'Invalid value', path: ['age'] }],
+    })
+  })
+
+  it('mail', async () => {
+    @Entity('UserMail')
+    class UserMail {
+      @Fields.string({ validate: [Validators.email] })
+      email!: string
+    }
+
+    const schema = std(UserMail, 'email')
+    const nok_mail = { email: 'aAa' }
+
+    const result = await schema['~standard'].validate(nok_mail)
+    expect(result).toEqual({
+      issues: [{ message: 'Invalid Email', path: ['email'] }],
     })
   })
 })
