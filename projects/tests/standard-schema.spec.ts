@@ -37,7 +37,7 @@ describe('standard-schema', () => {
     const result = await schema['~standard'].validate(invalidUser)
 
     expect(result).toEqual({
-      issues: [{ message: 'Invalid', path: [] }],
+      issues: [{ message: 'Should not be empty', path: ['name'] }],
     })
   })
 
@@ -53,7 +53,7 @@ describe('standard-schema', () => {
     const result = await schema['~standard'].validate(invalidUser)
 
     expect(result).toEqual({
-      issues: [{ message: 'Invalid', path: [] }],
+      issues: [{ message: 'Should not be empty', path: ['name'] }],
     })
   })
 
