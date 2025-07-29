@@ -1286,33 +1286,55 @@ export declare class Fields {
       | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, string | undefined>
-  private static _defaultIdFactory
+  /**
+   * ### cuid
+   * @example
+   * ```ts
+   * import { Fields } from 'remult'
+   * import { createId } from '@paralleldrive/cuid2'
+   * Fields.defaultIdFactory = () => createId()
+   * ```
+   *
+   * ### nanoid
+   * @example
+   * ```ts
+   * import { Fields } from 'remult'
+   * import { nanoid } from 'nanoid'
+   * Fields.defaultIdFactory = () => nanoid()
+   * ```
+   *
+   */
   static get defaultIdFactory(): () => string
   static set defaultIdFactory(value: () => string)
   /**
+   * ### Default
    * Defines a field that will be used as the id of the entity.
    * By default it will use `crypto.randomUUID` to generate the id.
    *
-   * You can change the algorithm used to generate the id by setting the `Fields.defaultIdFactory`
-   * to a different function like:
-   *
-   * This needs to be done in a shared file to be accessible frontend and backend.
+   * ---
+   * ### Global `IdFactory`
+   * You can change the algorithm used to generate the id by setting `Fields.defaultIdFactory`
+   * globally. This code needs to be in a shared file to be accessible frontend and backend.
    *
    * ```ts
    * import { createId } from '@paralleldrive/cuid2'
    * Fields.defaultIdFactory = () => createId()
    * ```
    *
-   * You can also pass an id factory as an option to the `@Fields.id` to have a different value locally.
+   * ---
+   * ### Local `IdFactory`
+   * You can also pass an `idFactory` as an option to the `@Fields.id` to have a different value on this field.
    * @example
    * ```ts
    * import { createId } from '@paralleldrive/cuid2'
    * // import { v4 as uuid } from 'uuid'
+   * // import { nanoid } from 'nanoid'
    *
    * class MyEntity {
    *   \@Fields.id({
    *     idFactory: () => createId()
    *     // idFactory: () => uuid()
+   *     // idFactory: () => nanoid()
    *   })
    *   id: string = '';
    * }
