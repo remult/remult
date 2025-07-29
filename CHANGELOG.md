@@ -1,6 +1,6 @@
 All notable changes to this project will be documented in this file.
 
-## [3.1.0] 2025-7-x
+## [3.1.0] 2025-7-29
 
 - Fix by @LazyShpee for `initAsyncHooks` without `remultApi`
 - Added support for `express 5`
