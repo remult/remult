@@ -1,5 +1,8 @@
 All notable changes to this project will be documented in this file.
 
+## [3.1.2] 2025-7-30
+- Fix documentation on the integration with Sveltekit and Railway App
+
 ## [3.1.1] 2025-7-30
 
 - Add `standardSchema` implementing the [Standard Schema](https://standardschema.dev/) specification. Check [Remult Standard Schema](https://remult.dev/docs/standard-schema) for more details.
