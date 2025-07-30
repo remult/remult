@@ -380,3 +380,33 @@ const logout = async () => {
   }
 }
 ```
+
+## Remote Functions
+
+This is an exciting new feature of SvelteKit xxx, and you can make full use of it with Remult!
+
+Here is the default doc example:
+
+```ts
+import z from 'zod'
+import { query } from '$app/server'
+import * as db from '$lib/server/db'
+
+export const getLikes = query(z.string(), async (id) => {
+  const [row] = await db.sql`select likes from item where id = ${id}`
+  return row.likes
+})
+```
+
+And with remult
+
+```ts [src/lib/server/functions.ts]
+import { std, repo } from 'remult'
+import { query } from '$app/server'
+import { Item } from '$lib/entities'
+
+export const getLikes = query(std(Item, 'id'), async (id) => {
+  const item = await repo(Item).findId(id)
+  return item.likes
+})
+```
