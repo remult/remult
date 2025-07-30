@@ -335,6 +335,7 @@ const sidebar = tutorials.reduce(
         items: [
           { text: 'Open API', link: '/docs/adding-swagger' },
           { text: 'GraphQL', link: '/docs/adding-graphql' },
+          { text: 'Standard Schema', link: '/docs/standard-schema' },
           { text: 'LLMs', link: '/docs/llms' },
         ],
       },
