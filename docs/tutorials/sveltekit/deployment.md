@@ -98,11 +98,12 @@ Due to a bug in the way the default Railway builds, the first time you use the `
 
 9. Go to the `railway` project's site and click on the project
 10. Switch to the `settings` tab
-11. Under `Build` change the build from the default `Nixpacks` to the `Railpack`
-12. Switch to the `variables` tab
-13. Click on `+ New Variable`, and in the `VARIABLE_NAME` click `Add Reference` and select `DATABASE_URL`
-14. Add another variable called `AUTH_SECRET` and set it to a random string, you can use an [online UUID generator](https://www.uuidgenerator.net/)
-15. Wait for railway to finish deploying your changes and Click on the newly generated url to open the app in the browser and you'll see the app live in production. (it may take a few minutes to go live)
+11. Under `Environment` click on `Generate Domain`
+12. Under `Build` change the build from the default `Nixpacks` to the `Railpack`
+13. Switch to the `variables` tab
+14. Click on `+ New Variable`, and in the `VARIABLE_NAME` click `Add Reference` and select `DATABASE_URL`
+15. Add another variable called `AUTH_SECRET` and set it to a random string, you can use an [online UUID generator](https://www.uuidgenerator.net/)
+16. Wait for railway to finish deploying your changes and Click on the newly generated url to open the app in the browser and you'll see the app live in production. (it may take a few minutes to go live)
 
 ::: warning Note
 If you run into trouble deploying the app to Railway, try using Railway's [documentation](https://docs.railway.app/deploy/deployments).
