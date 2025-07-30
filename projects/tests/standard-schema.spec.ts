@@ -119,4 +119,61 @@ describe('standard-schema', () => {
       issues: [{ message: 'test', path: ['email'] }],
     })
   })
+
+  describe('entity validation', () => {
+    @Entity<ETask>('EntVal', {
+      validation(item, ref) {
+        const pattern = 'user:'
+        if (item.userId && !item.userId.startsWith(pattern)) {
+          throw new Error(
+            `Task ${item.title} must be assigned with someone starting with [${pattern}]`,
+          )
+        }
+      },
+    })
+    class ETask {
+      @Fields.string()
+      title = ''
+      @Fields.string({ required: true })
+      userId = ''
+    }
+
+    it('error wrong userId format', async () => {
+      const schema = std(ETask)
+      const nok = { title: 'aAa', userId: '123' }
+
+      const result = await schema['~standard'].validate(nok)
+      expect(result.issues).toEqual([
+        {
+          message:
+            'Task aAa must be assigned with someone starting with [user:]',
+          path: [],
+        },
+      ])
+    })
+
+    it('good userId format', async () => {
+      const schema = std(ETask)
+      const ok = { title: 'aAa', userId: 'user:123' }
+
+      const result = await schema['~standard'].validate(ok)
+      expect(result).toEqual({ value: ok })
+    })
+
+    it('should check only userId', async () => {
+      const schema = std(ETask, 'userId')
+      const nok = { title: 'aAa', userId: '123' }
+
+      const result = await schema['~standard'].validate(nok)
+      if (result.issues) {
+        expect('to never').toBe('here')
+      } else {
+        expect(result.value).toMatchInlineSnapshot(`
+          {
+            "userId": "123",
+          }
+        `)
+      }
+    })
+  })
 })

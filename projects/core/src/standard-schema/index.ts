@@ -1,5 +1,5 @@
 import type { ClassType, MembersOnly } from '../../index.js'
-import { repo } from '../../index.js'
+import { EntityError, repo } from '../../index.js'
 import type { StandardSchemaV1 } from './StandardSchemaV1.js'
 
 // Conditional type for output based on whether fields are provided
@@ -26,13 +26,21 @@ export function std<
       vendor: 'remult',
       async validate(value) {
         const item = value as Partial<entityType>
-        const error = await repo(entity).validate(item, ...fields)
-        if (error && error.modelState) {
-          return {
-            issues: Object.entries(error.modelState).map(([key, message]) => ({
-              message: message as string,
-              path: [key],
-            })),
+        try {
+          const error = await repo(entity).validate(item, ...fields)
+          if (error && error.modelState) {
+            return {
+              issues: Object.entries(error.modelState).map(
+                ([key, message]) => ({
+                  message: message as string,
+                  path: [key],
+                }),
+              ),
+            }
+          }
+        } catch (err) {
+          if (err instanceof Error) {
+            return { issues: [{ message: err.message, path: [] }] }
           }
         }
         return { value: item as OutputType<entityType, fieldsType> }
