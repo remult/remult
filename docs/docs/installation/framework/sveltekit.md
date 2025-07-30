@@ -381,16 +381,16 @@ const logout = async () => {
 }
 ```
 
-## Remote Functions
+## Extra - Remote Functions
 
-This is an exciting new feature of SvelteKit xxx, and you can make full use of it with Remult!
+SvelteKit is introducing a new feature called [Remote Functions](https://github.com/sveltejs/kit/discussions/13897). It's early, but we want to see how it integrates with Remult.
 
-Here is the default doc example:
+Here is the default doc example (zod & drizzle or valibot & prisma, ...):
 
 ```ts
-import z from 'zod'
+import z from 'zod' // or valibot, ... any standard schema library
 import { query } from '$app/server'
-import * as db from '$lib/server/db'
+import * as db from '$lib/server/db' // with drizzle, prisma, pg, ... any database library
 
 export const getLikes = query(z.string(), async (id) => {
   const [row] = await db.sql`select likes from item where id = ${id}`
@@ -398,11 +398,16 @@ export const getLikes = query(z.string(), async (id) => {
 })
 ```
 
-And with remult
+With remult library, you have both:
+
+- the database layer
+- the standard schema layer
+
+So you can replace the previous code with this:
 
 ```ts [src/lib/server/functions.ts]
-import { std, repo } from 'remult'
 import { query } from '$app/server'
+import { std, repo } from 'remult'
 import { Item } from '$lib/entities'
 
 export const getLikes = query(std(Item, 'id'), async (id) => {
@@ -410,3 +415,5 @@ export const getLikes = query(std(Item, 'id'), async (id) => {
   return item.likes
 })
 ```
+
+We are excited to see how you will use it 🚀
