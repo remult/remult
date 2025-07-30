@@ -90,7 +90,7 @@ export class Session {
 
   @Fields.string({ required: true })
   userId = "";
-  @Relations.toOne<Session, User>(() => User, "id")
+  @Relations.toOne<Session, User>(() => User, "userId")
   user!: User;
 }
 
@@ -113,7 +113,7 @@ export class Account {
 
   @Fields.string({ required: true })
   userId = "";
-  @Relations.toOne<Account, User>(() => User, "id")
+  @Relations.toOne<Account, User>(() => User, "userId")
   user!: User;
 
   @Fields.string({ required: false })
