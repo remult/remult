@@ -1,11 +1,11 @@
 # Validation
 
-Validation is a key part of any application, and you will see that it's builtin Remult ! Let's dive into it...
+Validation is a key part of any application, and you will see that it's builtin Remult !
 
 First of all, some props brings automatic validation, for example `required` and `minLength` for strings :
 
 ```ts
-@Fields.string({ minLength: 5 })
+@Fields.string({ required: true, minLength: 5 })
 title = ''
 ```
 
@@ -91,3 +91,7 @@ If you want to customize the error message, you can do it globally :
 ```ts
 Validators.unique.defaultMessage = 'Existe déjà!'
 ```
+
+::: tip
+Remult entities can also be used as [Standard Schema](./standard-schema.md) compatible validators, making them interoperable with other validation libraries.
+:::

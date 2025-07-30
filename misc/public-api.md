@@ -3137,6 +3137,14 @@ export interface SqlResult {
   rows: any[]
   getColumnKeyInResultForIndexInSelect(index: number): string
 }
+export declare function standardSchema<
+  entityType,
+  fieldsType extends Extract<keyof MembersOnly<entityType>, string>[] = [],
+>(
+  repo: Repository<entityType>,
+  ...fields: fieldsType
+): RemultEntitySchema<entityType, fieldsType>
+//[ ] RemultEntitySchema from TBD is not exported
 export interface StoredQuery {
   entityKey: string
   id: string

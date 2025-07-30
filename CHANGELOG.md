@@ -1,5 +1,9 @@
 All notable changes to this project will be documented in this file.
 
+## [3.1.1] 2025-7-30
+
+- Add `standardSchema` implementing the [Standard Schema](https://standardschema.dev/) specification. Check [Remult Standard Schema](https://remult.dev/docs/standard-schema) for more details.
+
 ## [3.1.0] 2025-7-29
 
 - Fix by @LazyShpee for `initAsyncHooks` without `remultApi`
@@ -32,7 +36,7 @@ Then, globally, in a shared code file:
 import { createId } from '@paralleldrive/cuid2'
 import { Fields } from 'remult'
 
-Fields.defaultIdFactory = createId()
+Fields.defaultIdFactory = () => createId()
 ```
 
 Finally, replace `@Fields.cuid()` with `@Fields.id()`
