@@ -12,6 +12,21 @@ interface RemultEntitySchema<entityType, fields extends string[] = []>
     OutputType<entityType, fields>
   > {}
 
+/**
+ * Implementation of the [Standard Schema](https://standardschema.dev/) specification
+ *
+ * @usage
+ * ```ts
+ * // The schema for the entire entity
+ * const schema = standardSchema(repo(User))
+ *
+ * // The schema for a specific field
+ * const schema = standardSchema(repo(User), 'id')
+ *
+ * // The schema for multiple fields
+ * const schema = standardSchema(repo(User), 'name', 'age')
+ * ```
+ */
 export function standardSchema<
   entityType,
   fieldsType extends Extract<keyof MembersOnly<entityType>, string>[] = [],
