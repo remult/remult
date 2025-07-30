@@ -407,10 +407,10 @@ So you can replace the previous code with this:
 
 ```ts [src/lib/server/functions.ts]
 import { query } from '$app/server'
-import { std, repo } from 'remult'
+import { standardSchema, repo } from 'remult'
 import { Item } from '$lib/entities'
 
-export const getLikes = query(std(Item, 'id'), async (id) => {
+export const getLikes = query(standardSchema(repo(Item), 'id'), async (id) => {
   const item = await repo(Item).findId(id)
   return item.likes
 })

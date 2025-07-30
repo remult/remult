@@ -1,5 +1,4 @@
-import type { ClassType, MembersOnly } from '../../index.js'
-import { EntityError, repo } from '../../index.js'
+import type { MembersOnly, Repository } from '../../index.js'
 import type { StandardSchemaV1 } from './StandardSchemaV1.js'
 
 // Conditional type for output based on whether fields are provided
@@ -13,11 +12,11 @@ interface RemultEntitySchema<entityType, fields extends string[] = []>
     OutputType<entityType, fields>
   > {}
 
-export function std<
+export function standardSchema<
   entityType,
   fieldsType extends Extract<keyof MembersOnly<entityType>, string>[] = [],
 >(
-  entity: ClassType<entityType>,
+  repo: Repository<entityType>,
   ...fields: fieldsType
 ): RemultEntitySchema<entityType, fieldsType> {
   return {
@@ -27,7 +26,7 @@ export function std<
       async validate(value) {
         const item = value as Partial<entityType>
         try {
-          const error = await repo(entity).validate(item, ...fields)
+          const error = await repo.validate(item, ...fields)
           if (error && error.modelState) {
             return {
               issues: Object.entries(error.modelState).map(

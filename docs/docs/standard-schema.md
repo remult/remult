@@ -13,7 +13,7 @@ Beside the `remult` ORM part, you don't need to add zod, valibot, ArkType, Effec
 Import the `std` function from Remult and use it to create a Standard Schema compatible validator from any entity:
 
 ```ts
-import { std, Entity, Fields } from 'remult'
+import { standardSchema, Entity, Fields, repo } from 'remult'
 
 @Entity('User')
 class User {
@@ -28,7 +28,7 @@ class User {
 }
 
 // Create a Standard Schema validator for the entire entity
-const userSchema = std(User)
+const userSchema = standardSchema(repo(User))
 
 // Validate data with any Standard Schema library
 const result = await validateWithAnyLibrary(userSchema, {
@@ -49,13 +49,13 @@ You can create validators that only check specific fields by passing field names
 
 ```ts
 // Validate only the age field
-const ageSchema = std(User, 'age')
+const ageSchema = standardSchema(repo(User), 'age')
 
 const result = await validateWithAnyLibrary(ageSchema, { age: 30 })
 // Returns: { value: { age: 30 } }
 
 // Validate multiple specific fields
-const nameAndAgeSchema = std(User, 'name', 'age')
+const nameAndAgeSchema = standardSchema(repo(User), 'name', 'age')
 
 const result = await validateWithAnyLibrary(nameAndAgeSchema, {
   name: 'John Doe',
@@ -82,7 +82,7 @@ class UserMail {
 }
 
 // Email validation will be enforced
-const emailSchema = std(UserMail, 'email')
+const emailSchema = standardSchema(repo(UserMail), 'email')
 
 const result = await validateWithAnyLibrary(emailSchema, {
   email: 'invalid-email',
@@ -117,7 +117,7 @@ class Task {
   userId = ''
 }
 
-const taskSchema = std(Task)
+const taskSchema = standardSchema(repo(Task))
 
 const result = await validateWithAnyLibrary(taskSchema, {
   title: 'My Task',

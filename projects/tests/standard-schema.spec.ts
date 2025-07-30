@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { std } from '../core/src/standard-schema/index.js'
+import { standardSchema } from '../core/src/standard-schema/index.js'
 import { Entity, Field, Fields, repo, Validators } from '../core/index.js'
 
 @Entity('User')
@@ -16,7 +16,7 @@ class User {
 
 describe('standard-schema', () => {
   it('should validate valid entity data', async () => {
-    const schema = std(User)
+    const schema = standardSchema(repo(User))
     const ok = { name: 'John Doe', age: 30 }
 
     const result = await schema['~standard'].validate(ok)
@@ -24,7 +24,7 @@ describe('standard-schema', () => {
   })
 
   it('should reject invalid entity data', async () => {
-    const schema = std(User)
+    const schema = standardSchema(repo(User))
     const nok = { name: '', age: 30 }
 
     const result = await schema['~standard'].validate(nok)
@@ -34,7 +34,7 @@ describe('standard-schema', () => {
   })
 
   it('should handle missing required fields', async () => {
-    const schema = std(User)
+    const schema = standardSchema(repo(User))
     const nok = {}
 
     const result = await schema['~standard'].validate(nok)
@@ -44,7 +44,7 @@ describe('standard-schema', () => {
   })
 
   it('only checking age', async () => {
-    const schema = std(User, 'age')
+    const schema = standardSchema(repo(User), 'age')
     const ok_age = { age: 30 }
 
     const result = await schema['~standard'].validate(ok_age)
@@ -52,7 +52,7 @@ describe('standard-schema', () => {
   })
 
   it('age - wrong type', async () => {
-    const schema = std(User, 'age')
+    const schema = standardSchema(repo(User), 'age')
     const nok_age = { age: 'aAa' }
 
     const result = await schema['~standard'].validate(nok_age)
@@ -70,7 +70,7 @@ describe('standard-schema', () => {
       job = ''
     }
     it('not ok', async () => {
-      const schema = std(UserMail, 'email')
+      const schema = standardSchema(repo(UserMail), 'email')
       const nok_mail = { email: 'aAa' }
 
       const result = await schema['~standard'].validate(nok_mail)
@@ -80,7 +80,7 @@ describe('standard-schema', () => {
     })
 
     it('ok', async () => {
-      const schema = std(UserMail, 'email')
+      const schema = standardSchema(repo(UserMail), 'email')
       const nok_mail = { email: 'j@tt.fr' }
 
       const result = await schema['~standard'].validate(nok_mail)
@@ -105,7 +105,7 @@ describe('standard-schema', () => {
       email!: string
     }
 
-    const schema = std(UserMail, 'email')
+    const schema = standardSchema(repo(UserMail), 'email')
     const nok_mail = { email: 'aAa' }
 
     const result = await schema['~standard'].validate(nok_mail)
@@ -133,7 +133,7 @@ describe('standard-schema', () => {
     }
 
     it('error wrong userId format', async () => {
-      const schema = std(ETask)
+      const schema = standardSchema(repo(ETask))
       const nok = { title: 'aAa', userId: '123' }
 
       const result = await schema['~standard'].validate(nok)
@@ -147,7 +147,7 @@ describe('standard-schema', () => {
     })
 
     it('good userId format', async () => {
-      const schema = std(ETask)
+      const schema = standardSchema(repo(ETask))
       const ok = { title: 'aAa', userId: 'user:123' }
 
       const result = await schema['~standard'].validate(ok)
@@ -155,7 +155,7 @@ describe('standard-schema', () => {
     })
 
     it('should check only userId (even if entity validation is NOT OK)', async () => {
-      const schema = std(ETask, 'userId')
+      const schema = standardSchema(repo(ETask), 'userId')
       const nok = { title: 'aAa', userId: '123' }
 
       const result = await schema['~standard'].validate(nok)
