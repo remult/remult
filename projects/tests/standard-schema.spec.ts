@@ -61,46 +61,40 @@ describe('standard-schema', () => {
     })
   })
 
-  it('mail - not ok', async () => {
+  describe('mail', () => {
     @Entity('UserMail')
     class UserMail {
       @Fields.string({ validate: [Validators.email] })
       email!: string
-    }
-
-    const schema = std(UserMail, 'email')
-    const nok_mail = { email: 'aAa' }
-
-    const result = await schema['~standard'].validate(nok_mail)
-    expect(result).toEqual({
-      issues: [{ message: 'Invalid Email', path: ['email'] }],
-    })
-  })
-
-  it('mail - ok', async () => {
-    @Entity('UserMail')
-    class UserMail {
-      @Fields.string({ validate: [Validators.email] })
-      email!: string
-
       @Fields.string()
       job = ''
     }
+    it('not ok', async () => {
+      const schema = std(UserMail, 'email')
+      const nok_mail = { email: 'aAa' }
 
-    const schema = std(UserMail, 'email')
-    const nok_mail = { email: 'j@tt.fr' }
+      const result = await schema['~standard'].validate(nok_mail)
+      expect(result).toEqual({
+        issues: [{ message: 'Invalid Email', path: ['email'] }],
+      })
+    })
 
-    const result = await schema['~standard'].validate(nok_mail)
+    it('ok', async () => {
+      const schema = std(UserMail, 'email')
+      const nok_mail = { email: 'j@tt.fr' }
 
-    if (result.issues) {
-      // manage the issue
-      expect('to never').toBe('here')
-    } else {
-      expect(result.value.email).toEqual('j@tt.fr')
-    }
+      const result = await schema['~standard'].validate(nok_mail)
+
+      if (result.issues) {
+        // manage the issue
+        expect('to never').toBe('here')
+      } else {
+        expect(result.value.email).toEqual('j@tt.fr')
+      }
+    })
   })
 
-  it('mail - not ok', async () => {
+  it('field throw', async () => {
     @Entity('UserMail')
     class UserMail {
       @Fields.string({
@@ -160,7 +154,7 @@ describe('standard-schema', () => {
       expect(result).toEqual({ value: ok })
     })
 
-    it('should check only userId', async () => {
+    it('should check only userId (even if entity validation is NOT OK)', async () => {
       const schema = std(ETask, 'userId')
       const nok = { title: 'aAa', userId: '123' }
 

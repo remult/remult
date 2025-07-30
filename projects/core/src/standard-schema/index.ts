@@ -43,6 +43,16 @@ export function std<
             return { issues: [{ message: err.message, path: [] }] }
           }
         }
+
+        if (fields.length > 0) {
+          const filteredItem = {}
+          for (const field of fields) {
+            if (field in item) {
+              filteredItem[field] = item[field] as any
+            }
+          }
+          return { value: filteredItem as OutputType<entityType, fieldsType> }
+        }
         return { value: item as OutputType<entityType, fieldsType> }
       },
     },
