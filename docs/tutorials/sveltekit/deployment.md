@@ -20,7 +20,43 @@ npm i @sveltejs/adapter-node --save-dev
 import adapter from '@sveltejs/adapter-auto' // [!code --]
 import adapter from '@sveltejs/adapter-node' // [!code ++]
 ```
+::: 
 
+You also need to change the dataProvider on the remult initilizer a little bit. By default Sveltekit will try to access your database when running the `npm run build` command, but on railway, the postgres database is not accessible at this time, and it will make your deployment fail.
+
+To solve this, we need to make Sveltekit use the default JSON database when building, and use Postgres only in production.
+
+Make the following changes on your `server/api.ts` file:
+
+::: code-group
+```ts [src/server/api.ts]
+import { remultApi } from 'remult/remult-sveltekit'
+import { Task } from './shared/Task'
+import { TasksController } from './shared/TasksController'
+import { createPostgresDataProvider } from 'remult/postgres' 
+import { DATABASE_URL } from '$env/static/private'
+import { building } from '$app/environment'; // [!code ++]
+
+export const api = remultApi({
+  entities: [Task],
+  controllers: [TasksController],
+  dataProvider: DATABASE_URL // [!code --]
+    ? createPostgresDataProvider({ connectionString: DATABASE_URL }) // [!code --]
+    : undefined, // [!code --]
+   dataProvider: async () => { // [!code ++]
+		if (DATABASE_URL && !building) { // [!code ++]
+			return createPostgresDataProvider({ // [!code ++]
+				connectionString: DATABASE_URL // [!code ++]
+			}); // [!code ++]
+		} // [!code ++]
+		return undefined; // [!code ++]
+	}, // [!code ++]
+  getUser: async (event) => {
+    const auth = await event?.locals?.auth()
+    return auth?.user as UserInfo
+  },
+})
+```
 :::
 
 In order to deploy the todo app to [railway](https://railway.app/) you'll need a `railway` account. You'll also need [Railway CLI](https://docs.railway.app/develop/cli#npm) installed, and you'll need to login to railway from the cli, using `railway login`.
@@ -42,18 +78,30 @@ Click enter multiple times to answer all its questions with the default answer
    railway add
    ```
 5. Select `postgressql` as the database.
-6. Once that's done run the following command to upload the project to railway:
+6. You need to modify your package.json file and tell the railway to use the correct version of NodeJS, like this:
+   ```jsonc [package.json]
+	"type": "module",
+   "engines": { // [!code ++]
+		"node": ">=20.19" // [!code ++]
+	}, // [!code ++]
+   "scripts": {
+		// ... your scripts
+	},
+   ```
+8. Once that's done run the following command to upload the project to railway:
    ```sh
    railway up
    ```
-7. got to the `railway` project's site and click on the project
-8. Switch to the `settings` tab
-9. Under `Environment` click on `Generate Domain`
-10. Copy the `generated url`, you'll need it for [NEXTAUTH_URL](https://next-auth.js.org/configuration/options#nextauth_url) on step 14
-11. Switch to the `variables` tab
-12. Click on `+ New Variable`, and in the `VARIABLE_NAME` click `Add Reference` and select `DATABASE_URL`
-13. Add another variable called `AUTH_SECRET` and set it to a random string, you can use an [online UUID generator](https://www.uuidgenerator.net/)
-14. Add another variable called `NEXTAUTH_URL` and set it to the `generated url` which was created on step 10.
+::: warning Note
+Due to a bug in the way the default Railway builds, the first time you use the `railway up` command, it will fail to deploy. Continue to follow the steps to fix it
+:::
+
+9. Go to the `railway` project's site and click on the project
+10. Switch to the `settings` tab
+11. Under `Build` change the build from the default `Nixpacks` to the `Railpack`
+12. Switch to the `variables` tab
+13. Click on `+ New Variable`, and in the `VARIABLE_NAME` click `Add Reference` and select `DATABASE_URL`
+14. Add another variable called `AUTH_SECRET` and set it to a random string, you can use an [online UUID generator](https://www.uuidgenerator.net/)
 15. Wait for railway to finish deploying your changes and Click on the newly generated url to open the app in the browser and you'll see the app live in production. (it may take a few minutes to go live)
 
 ::: warning Note
