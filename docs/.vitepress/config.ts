@@ -435,7 +435,7 @@ const sidebar = tutorials.reduce(
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  base: '/remult/',
+  // base: '/remult/',
   srcExclude: ['interactive'],
   title: toolbarConfig.title,
   description:
