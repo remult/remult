@@ -12,11 +12,38 @@ interface RemultField {
 
 const className = ref('Task')
 const entityHooks = ref({
+  validation: false,
   saving: false,
   saved: false,
   deleting: false,
   deleted: false,
 })
+const entityPermissions = ref({
+  allowApiRead: null,
+  allowApiInsert: null,
+  allowApiUpdate: null,
+  allowApiDelete: null,
+  allowApiCrud: null
+})
+
+// Permission options for the dropdown
+const permissionOptions = [
+  { value: true, label: 'Allow everyone', icon: '✓', color: 'green' },
+  { value: false, label: 'Deny everyone', icon: '✗', color: 'red' },
+  { value: 'Allow.authenticated', label: 'Authenticated users only', icon: '🔐', color: 'blue' },
+  { value: 'admin', label: 'Users with role "admin"', icon: '👑', color: 'purple' },
+  { value: 'user', label: 'Users with role "user"', icon: '👤', color: 'gray' },
+  { value: 'currentUser', label: 'Current user only', icon: '🏠', color: 'orange' }
+]
+
+const availablePermissions = [
+  { key: 'allowApiRead', label: 'Read' },
+  { key: 'allowApiInsert', label: 'Insert' },
+  { key: 'allowApiUpdate', label: 'Update' },
+  { key: 'allowApiDelete', label: 'Delete' },
+  { key: 'allowApiCrud', label: 'CRUD (all)' }
+]
+const showEntityOptions = ref(false)
 const fields = ref<RemultField[]>([
   {
     id: '1',
@@ -395,16 +422,40 @@ const generatedCode = computed(() => {
     imports.add('EntityOptions')
   }
 
-  // Generate entity decorator
-  let entityDecorator = `@Entity<${className.value}>('${entityKey.value}'`
-
+  // Generate entity decorator options
+  const entityOptions = []
+  
+  // Add permissions
+  const activePermissions = Object.entries(entityPermissions.value)
+    .filter(([_, value]) => value !== null)
+    .map(([key, value]) => {
+      let permValue = value
+      if (value === 'currentUser') {
+        permValue = 'remult.user && item.userId === remult.user?.id'
+      } else if (typeof value === 'string' && !value.startsWith('Allow.')) {
+        permValue = `'${value}'`
+      }
+      return `  ${key}: ${permValue}`
+    })
+  
+  if (activePermissions.length > 0) {
+    entityOptions.push(...activePermissions)
+  }
+  
+  // Add hooks
   if (selectedHooks.length > 0) {
     const hookMethods = selectedHooks
       .map(
         (hook) => `  ${hook}: () => { /* TODO: implement ${hook} hook */ }`,
       )
-      .join(',\n')
-    entityDecorator += `, {\n${hookMethods}\n}`
+    entityOptions.push(...hookMethods)
+  }
+  
+  // Generate entity decorator
+  let entityDecorator = `@Entity<${className.value}>('${entityKey.value}'`
+  
+  if (entityOptions.length > 0) {
+    entityDecorator += `, {\n${entityOptions.join(',\n')}\n}`
   }
   
   entityDecorator += ')'
@@ -500,6 +551,7 @@ const updateUrlFromState = () => {
     className: className.value,
     fields: fields.value,
     hooks: entityHooks.value,
+    permissions: entityPermissions.value,
   }
 
   const encoded = btoa(JSON.stringify(state))
@@ -520,6 +572,7 @@ const loadStateFromUrl = () => {
       if (state.className) className.value = state.className
       if (state.fields) fields.value = state.fields
       if (state.hooks) entityHooks.value = state.hooks
+      if (state.permissions) entityPermissions.value = state.permissions
     } catch (e) {
       console.warn('Failed to load state from URL:', e)
     }
@@ -536,6 +589,50 @@ const shareUrl = async () => {
   }
 }
 
+// Permission builder functions
+const setPermission = (operation: string, value: any) => {
+  entityPermissions.value[operation] = value
+}
+
+const removePermission = (operation: string) => {
+  entityPermissions.value[operation] = null
+}
+
+const getPermissionDisplay = (operation: string) => {
+  const value = entityPermissions.value[operation]
+  if (value === null) return null
+  
+  const option = permissionOptions.find(opt => opt.value === value)
+  return option ? option.label : 'Custom'
+}
+
+const getPermissionIcon = (operation: string) => {
+  const value = entityPermissions.value[operation]
+  if (value === null) return null
+  
+  const option = permissionOptions.find(opt => opt.value === value)
+  return option?.icon || '⚙️'
+}
+
+const addPermission = () => {
+  // Find first unused permission and add it with default value
+  const unused = availablePermissions.find(perm => 
+    entityPermissions.value[perm.key] === null
+  )
+  if (unused) {
+    entityPermissions.value[unused.key] = true // Default to "allow everyone"
+  }
+}
+
+const changePermissionType = (oldKey: string, newKey: string) => {
+  if (oldKey !== newKey) {
+    // Move the permission value to the new key
+    const value = entityPermissions.value[oldKey]
+    entityPermissions.value[newKey] = value
+    entityPermissions.value[oldKey] = null
+  }
+}
+
 // Copy to clipboard functionality for generated code
 const copyGeneratedCode = async () => {
   try {
@@ -548,7 +645,7 @@ const copyGeneratedCode = async () => {
 
 // Watch for changes and update URL
 watch(
-  [className, fields, entityHooks],
+  [className, fields, entityHooks, entityPermissions],
   () => {
     updateUrlFromState()
   },
@@ -568,34 +665,125 @@ onMounted(() => {
         <div class="remultor-settings">
           <div class="setting-group">
             <label for="className">Entity definition</label>
-            <input
-              id="className"
-              v-model="className"
-              type="text"
-              placeholder="MyEntity"
-              class="class-name-input"
-            />
+            
+            <!-- Entity basic info - similar to field layout -->
+            <div class="entity-basic">
+              <input
+                id="className"
+                v-model="className"
+                type="text"
+                placeholder="MyEntity"
+                class="class-name-input"
+              />
+              
+              <button
+                @click="showEntityOptions = !showEntityOptions"
+                class="entity-options-toggle"
+                :class="{ active: showEntityOptions }"
+                title="Show entity options"
+              >
+                ⚙️
+              </button>
+            </div>
 
-            <!-- Hooks checkboxes -->
-            <div class="hooks-section">
-              <label class="section-label">Lifecycle Hooks</label>
-              <div class="hooks-grid">
-                <label class="hook-checkbox">
-                  <input type="checkbox" v-model="entityHooks.saving" />
-                  <span>saving</span>
-                </label>
-                <label class="hook-checkbox">
-                  <input type="checkbox" v-model="entityHooks.saved" />
-                  <span>saved</span>
-                </label>
-                <label class="hook-checkbox">
-                  <input type="checkbox" v-model="entityHooks.deleting" />
-                  <span>deleting</span>
-                </label>
-                <label class="hook-checkbox">
-                  <input type="checkbox" v-model="entityHooks.deleted" />
-                  <span>deleted</span>
-                </label>
+            <!-- Entity options - collapsible like field options -->
+            <div v-if="showEntityOptions" class="entity-options">
+              <!-- Permissions section -->
+              <div class="option-section">
+                <div class="section-header">
+                  <h4 class="option-section-title">API Permissions</h4>
+                  <button 
+                    @click="addPermission"
+                    class="add-permission-btn"
+                    :disabled="!availablePermissions.some(p => entityPermissions[p.key] === null)"
+                    title="Add permission"
+                  >
+                    + Add
+                  </button>
+                </div>
+                
+                
+                <div class="permissions-list">
+                  <div 
+                    v-for="(value, key) in entityPermissions"
+                    v-show="value !== null"
+                    :key="key"
+                    class="permission-item"
+                  >
+                    <!-- Permission type selector -->
+                    <select 
+                      :value="key"
+                      @change="changePermissionType(key, ($event.target as HTMLSelectElement).value)"
+                      class="permission-selector"
+                    >
+                      <option 
+                        v-for="perm in availablePermissions" 
+                        :key="perm.key" 
+                        :value="perm.key"
+                        :disabled="entityPermissions[perm.key] !== null && perm.key !== key"
+                      >
+                        {{ perm.label }}
+                      </option>
+                    </select>
+                    
+                    <!-- Permission level selector -->
+                    <select 
+                      v-model="entityPermissions[key]"
+                      class="permission-selector"
+                    >
+                      <option 
+                        v-for="option in permissionOptions" 
+                        :key="option.value" 
+                        :value="option.value"
+                      >
+                        {{ option.icon }} {{ option.label }}
+                      </option>
+                    </select>
+                    
+                    <!-- Remove button -->
+                    <button
+                      @click="removePermission(key)"
+                      class="remove-permission-btn"
+                      title="Remove permission"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  
+                </div>
+              </div>
+              
+              <!-- Hooks section -->
+              <div class="option-section">
+                <h4 class="option-section-title">Lifecycle Hooks</h4>
+                
+                <!-- Validation hook in its own row -->
+                <div class="hook-row">
+                  <label class="hook-checkbox">
+                    <input type="checkbox" v-model="entityHooks.validation" />
+                    <span>validation</span>
+                  </label>
+                </div>
+                
+                <!-- CRUD hooks in a 2x2 grid -->
+                <div class="hooks-grid">
+                  <label class="hook-checkbox">
+                    <input type="checkbox" v-model="entityHooks.saving" />
+                    <span>saving</span>
+                  </label>
+                  <label class="hook-checkbox">
+                    <input type="checkbox" v-model="entityHooks.saved" />
+                    <span>saved</span>
+                  </label>
+                  <label class="hook-checkbox">
+                    <input type="checkbox" v-model="entityHooks.deleting" />
+                    <span>deleting</span>
+                  </label>
+                  <label class="hook-checkbox">
+                    <input type="checkbox" v-model="entityHooks.deleted" />
+                    <span>deleted</span>
+                  </label>
+                </div>
               </div>
             </div>
           </div>
@@ -721,20 +909,184 @@ onMounted(() => {
   color: var(--vp-c-text-1);
 }
 
+.entity-basic {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
 .class-name-input {
-  width: 100%;
-  padding: 0.75rem;
+  flex: 1;
+  padding: 0.5rem;
   border: 1px solid var(--vp-c-border);
   border-radius: 0;
   background: var(--vp-c-bg);
   color: var(--vp-c-text-1);
-  font-size: 1rem;
+  font-size: 0.875rem;
+  height: 36px;
+  box-sizing: border-box;
   transition: border-color 0.2s;
 }
 
 .class-name-input:focus {
   outline: none;
   border-color: var(--vp-c-brand-1);
+}
+
+.entity-options-toggle {
+  padding: 0.5rem;
+  background: none;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 0;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  height: 36px;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.entity-options-toggle:hover,
+.entity-options-toggle.active {
+  background: var(--vp-c-bg-soft);
+  border-color: var(--vp-c-brand-1);
+}
+
+.entity-options {
+  border-top: 1px solid var(--vp-c-border);
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.option-section {
+  
+}
+
+.option-section-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+  margin: 0 0 0.5rem 0;
+  border-bottom: 1px solid var(--vp-c-border);
+  padding-bottom: 0.25rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.add-permission-btn {
+  padding: 0.25rem 0.5rem;
+  background: var(--vp-c-brand-1);
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.add-permission-btn:hover {
+  background: var(--vp-c-brand-2);
+}
+
+.add-permission-btn:disabled {
+  background: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-3);
+  cursor: not-allowed;
+}
+
+
+.permissions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.permission-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 4px;
+  background: var(--vp-c-bg-soft);
+}
+
+.permission-selector {
+  flex: 1;
+  padding: 0.375rem;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 3px;
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.permission-selector:focus {
+  outline: none;
+  border-color: var(--vp-c-brand-1);
+}
+
+.permission-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 100px;
+}
+
+.permission-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+}
+
+.permission-value {
+  font-size: 0.65rem;
+  color: var(--vp-c-brand-1);
+  font-weight: 500;
+}
+
+.remove-permission-btn {
+  width: 20px;
+  height: 20px;
+  background: var(--vp-c-danger-1);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.remove-permission-btn:hover {
+  background: var(--vp-c-danger-2);
+  transform: scale(1.1);
+}
+
+.no-permissions {
+  padding: 1rem;
+  text-align: center;
+  color: var(--vp-c-text-2);
+  font-size: 0.875rem;
+  font-style: italic;
+  border: 1px dashed var(--vp-c-border);
+  border-radius: 4px;
 }
 
 .fields-header {
@@ -771,35 +1123,75 @@ onMounted(() => {
 }
 
 .hooks-section {
-  margin-top: 1rem;
+  margin-top: 0.75rem;
+}
+
+.hooks-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
 }
 
 .section-label {
-  display: block;
-  margin-bottom: 0.5rem;
   font-weight: 600;
   color: var(--vp-c-text-1);
   font-size: 0.875rem;
+  margin: 0;
+}
+
+.hooks-toggle {
+  padding: 0.25rem;
+  background: none;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 0;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: all 0.2s;
+  height: 24px;
+  min-width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hooks-toggle:hover,
+.hooks-toggle.active {
+  background: var(--vp-c-bg-soft);
+  border-color: var(--vp-c-brand-1);
+}
+
+.hooks-options {
+  border-top: 1px solid var(--vp-c-border);
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.hook-row {
+  margin-bottom: 0.5rem;
 }
 
 .hooks-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
+  gap: 0.25rem 0.5rem;
 }
 
 .hook-checkbox {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
+  gap: 0.375rem;
+  font-size: 0.75rem;
   cursor: pointer;
   color: var(--vp-c-text-1);
+  padding: 0.125rem 0;
 }
 
 .hook-checkbox input[type='checkbox'] {
   margin: 0;
   cursor: pointer;
+  width: 14px;
+  height: 14px;
 }
 
 .fields-list {
