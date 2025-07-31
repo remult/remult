@@ -713,7 +713,8 @@ const updateUrlFromState = () => {
     permissions: entityPermissions.value,
   }
 
-  const encoded = btoa(JSON.stringify(state))
+  // Use encodeURIComponent to handle Unicode characters before base64 encoding
+  const encoded = btoa(encodeURIComponent(JSON.stringify(state)))
   const url = new URL(window.location.href)
   url.searchParams.set('remultor', encoded)
   window.history.replaceState(null, '', url.toString())
@@ -727,7 +728,8 @@ const loadStateFromUrl = () => {
 
   if (encoded) {
     try {
-      const state = JSON.parse(atob(encoded))
+      // Decode the base64 and then decodeURIComponent to handle Unicode characters
+      const state = JSON.parse(decodeURIComponent(atob(encoded)))
       if (state.className) className.value = state.className
       if (state.entityOptions) entityOptions.value = state.entityOptions
       if (state.fields) fields.value = state.fields
@@ -1318,7 +1320,7 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
   padding-top: 1rem;
   border-top: 1px solid var(--vp-c-border);
   gap: 1rem;
@@ -1327,7 +1329,7 @@ onMounted(() => {
 .checkbox-control {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0;
   cursor: pointer;
   font-size: 0.75rem;
   color: var(--vp-c-text-2);
@@ -1335,6 +1337,13 @@ onMounted(() => {
   letter-spacing: 0.5px;
   font-weight: 400;
   transition: all 0.2s;
+  margin: 0;
+  padding: 0.25rem 0;
+}
+
+.checkbox-control span {
+  margin-left: 0.75rem;
+  line-height: 1;
 }
 
 .checkbox-control:hover {
