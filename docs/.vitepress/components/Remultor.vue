@@ -13,11 +13,11 @@ interface RemultField {
 
 const className = ref('Task')
 const entityHooks = ref({
-  validation: false,
-  saving: false,
-  saved: false,
-  deleting: false,
-  deleted: false,
+  validation: null,
+  saving: null,
+  saved: null,
+  deleting: null,
+  deleted: null,
 })
 const entityPermissions = ref({
   allowApiRead: null,
@@ -43,6 +43,22 @@ const availablePermissions = [
   { key: 'allowApiUpdate', label: 'Update' },
   { key: 'allowApiDelete', label: 'Delete' },
   { key: 'allowApiCrud', label: 'CRUD (all)' }
+]
+
+// Hook options
+const availableHooks = [
+  { key: 'validation', label: 'Validation' },
+  { key: 'saving', label: 'Saving' },
+  { key: 'saved', label: 'Saved' },
+  { key: 'deleting', label: 'Deleting' },
+  { key: 'deleted', label: 'Deleted' }
+]
+
+// Hook implementation types
+const hookImplementations = [
+  { value: 'todo', label: '🚧 TODO (comment)', icon: '🚧' },
+  { value: 'console', label: '📝 Console log', icon: '📝' },
+  { value: 'custom', label: '⚙️ Custom code', icon: '⚙️' }
 ]
 const showEntityOptions = ref(false)
 const fields = ref<RemultField[]>([
@@ -417,8 +433,8 @@ const generatedCode = computed(() => {
 
   // Add lifecycle hook imports if needed
   const selectedHooks = Object.entries(entityHooks.value)
-    .filter(([_, enabled]) => enabled)
-    .map(([hook]) => hook)
+    .filter(([_, value]) => value !== null)
+    .map(([hook, implementation]) => ({ hook, implementation }))
   if (selectedHooks.length > 0) {
     imports.add('EntityOptions')
   }
@@ -446,9 +462,17 @@ const generatedCode = computed(() => {
   // Add hooks
   if (selectedHooks.length > 0) {
     const hookMethods = selectedHooks
-      .map(
-        (hook) => `  ${hook}: () => { /* TODO: implement ${hook} hook */ }`,
-      )
+      .map(({ hook, implementation }) => {
+        let hookCode = ''
+        if (implementation === 'todo') {
+          hookCode = `  ${hook}: () => { /* TODO: implement ${hook} hook */ }`
+        } else if (implementation === 'console') {
+          hookCode = `  ${hook}: () => { console.log('${hook} hook called') }`
+        } else if (implementation === 'custom') {
+          hookCode = `  ${hook}: () => {\n    // Custom ${hook} implementation\n  }`
+        }
+        return hookCode
+      })
     entityOptions.push(...hookMethods)
   }
   
@@ -634,6 +658,30 @@ const changePermissionType = (oldKey: string, newKey: string) => {
   }
 }
 
+// Hook management functions
+const addHook = () => {
+  // Find first unused hook and add it with default value
+  const unused = availableHooks.find(hook => 
+    entityHooks.value[hook.key] === null
+  )
+  if (unused) {
+    entityHooks.value[unused.key] = 'todo' // Default to TODO implementation
+  }
+}
+
+const removeHook = (hookKey: string) => {
+  entityHooks.value[hookKey] = null
+}
+
+const changeHookType = (oldKey: string, newKey: string) => {
+  if (oldKey !== newKey) {
+    // Move the hook value to the new key
+    const value = entityHooks.value[oldKey]
+    entityHooks.value[newKey] = value
+    entityHooks.value[oldKey] = null
+  }
+}
+
 // Copy to clipboard functionality for generated code
 const copyGeneratedCode = async () => {
   try {
@@ -748,34 +796,57 @@ onMounted(() => {
               
               <!-- Hooks section -->
               <div class="option-section">
-                <h4 class="option-section-title">Lifecycle Hooks</h4>
-                
-                <!-- Validation hook in its own row -->
-                <div class="hook-row">
-                  <label class="hook-checkbox">
-                    <input type="checkbox" v-model="entityHooks.validation" />
-                    <span>validation</span>
-                  </label>
+                <div class="section-header">
+                  <h4 class="option-section-title">Lifecycle Hooks</h4>
+                  <button 
+                    @click="addHook"
+                    class="add-permission-btn"
+                    :disabled="!availableHooks.some(h => entityHooks[h.key] === null)"
+                    title="Add hook"
+                  >
+                    + Add
+                  </button>
                 </div>
                 
-                <!-- CRUD hooks in a 2x2 grid -->
-                <div class="hooks-grid">
-                  <label class="hook-checkbox">
-                    <input type="checkbox" v-model="entityHooks.saving" />
-                    <span>saving</span>
-                  </label>
-                  <label class="hook-checkbox">
-                    <input type="checkbox" v-model="entityHooks.saved" />
-                    <span>saved</span>
-                  </label>
-                  <label class="hook-checkbox">
-                    <input type="checkbox" v-model="entityHooks.deleting" />
-                    <span>deleting</span>
-                  </label>
-                  <label class="hook-checkbox">
-                    <input type="checkbox" v-model="entityHooks.deleted" />
-                    <span>deleted</span>
-                  </label>
+                <div class="permissions-list">
+                  <div 
+                    v-for="(value, key) in entityHooks"
+                    v-show="value !== null"
+                    :key="key"
+                    class="permission-item"
+                  >
+                    <!-- Hook type selector -->
+                    <SelectDropdown
+                      :model-value="key"
+                      @update:model-value="(value) => changeHookType(key, value)"
+                      :options="availableHooks.map(hook => ({
+                        value: hook.key,
+                        label: hook.label,
+                        disabled: entityHooks[hook.key] !== null && hook.key !== key
+                      }))"
+                      class="permission-selector small"
+                    />
+                    
+                    <!-- Hook implementation selector -->
+                    <SelectDropdown
+                      v-model="entityHooks[key]"
+                      :options="hookImplementations.map(impl => ({
+                        value: impl.value,
+                        label: impl.label
+                      }))"
+                      class="permission-selector small"
+                    />
+                    
+                    <!-- Remove button -->
+                    <button
+                      @click="removeHook(key)"
+                      class="remove-permission-btn"
+                      title="Remove hook"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  
                 </div>
               </div>
             </div>
