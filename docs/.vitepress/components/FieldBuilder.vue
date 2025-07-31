@@ -24,7 +24,6 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const showOptions = ref(false)
-const showLabelInput = ref(false)
 const fieldNameInput = ref<HTMLInputElement>()
 
 // Available field types from Fields.ts
@@ -267,14 +266,14 @@ const availableOptions = computed(() => {
     ],
   }
 
-  // For createdAt and updatedAt, no options needed since label is now direct
+  // For createdAt and updatedAt, only allow label option from baseOptions
   if (props.field.type === 'createdAt' || props.field.type === 'updatedAt') {
-    return []
+    return [baseOptions.find((opt) => opt.key === 'label')!]
   }
 
-  // For ID fields, allow allowNull option only (no required or label since label is direct)
+  // For ID fields, allow label and allowNull options (no required option)
   if (props.field.type === 'id') {
-    return baseOptions.filter((opt) => opt.key !== 'required' && opt.key !== 'label')
+    return baseOptions.filter((opt) => opt.key !== 'required')
   }
 
   // For fields with no options (autoIncrement), return empty array
@@ -282,22 +281,22 @@ const availableOptions = computed(() => {
     return []
   }
 
-  // For relation fields, return type-specific options but exclude label (now direct)
+  // For relation fields, only return type-specific options (no base options)
   if (['toOne', 'toMany'].includes(props.field.type)) {
-    return (typeSpecificOptions[props.field.type] || []).filter(opt => opt.key !== 'label')
+    return typeSpecificOptions[props.field.type] || []
   }
 
-  // For date and dateOnly, only return base options (no default value) but exclude label
+  // For date and dateOnly, only return base options (no default value)
   if (['date', 'dateOnly'].includes(props.field.type)) {
-    return baseOptions.filter(opt => opt.key !== 'label')
+    return baseOptions
   }
 
-  // For boolean, only return base options (no default value) but exclude label
+  // For boolean, only return base options (no default value)
   if (props.field.type === 'boolean') {
-    return baseOptions.filter(opt => opt.key !== 'label')
+    return baseOptions
   }
 
-  return [...baseOptions.filter(opt => opt.key !== 'label'), ...(typeSpecificOptions[props.field.type] || [])]
+  return [...baseOptions, ...(typeSpecificOptions[props.field.type] || [])]
 })
 
 const updateField = (updates: Partial<RemultField>) => {
@@ -437,24 +436,6 @@ defineExpose({ focusInput })
           ⚙️
         </button>
       </div>
-
-      <!-- Label input directly outside parameters -->
-      <input
-        v-if="field.options.label !== undefined || showLabelInput"
-        :value="field.options.label || ''"
-        @input="updateOption('label', ($event.target as HTMLInputElement).value)"
-        placeholder="Field label (optional)"
-        class="field-label-input"
-        @keydown="handleKeyDown"
-      />
-      <button
-        v-if="!field.options.label && !showLabelInput"
-        @click="showLabelInput = true; $nextTick(() => $el.querySelector('.field-label-input')?.focus())"
-        class="add-label-btn"
-        title="Add label"
-      >
-        + Label
-      </button>
     </div>
 
     <div v-if="showOptions" class="field-options">
@@ -537,7 +518,7 @@ defineExpose({ focusInput })
   background: var(--vp-c-bg);
   border: 1px solid var(--vp-c-border);
   border-radius: 0;
-  padding: 1rem;
+  padding: 0.75rem;
   transition: border-color 0.2s;
   position: relative;
 }
@@ -547,14 +528,14 @@ defineExpose({ focusInput })
 }
 
 .field-header {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .field-basic {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.25rem;
   align-items: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .field-name-input {
@@ -565,7 +546,9 @@ defineExpose({ focusInput })
   background: var(--vp-c-bg);
   color: var(--vp-c-text-1);
   font-size: 0.875rem;
-  max-width: 120px;
+  max-width: 100px;
+  height: 36px;
+  box-sizing: border-box;
 }
 
 .field-name-input:focus {
@@ -582,6 +565,16 @@ defineExpose({ focusInput })
   color: var(--vp-c-text-1);
   font-size: 0.875rem;
   cursor: pointer;
+  max-width: 160px;
+  height: 36px;
+  box-sizing: border-box;
+  line-height: 1.2;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23666' d='M8 11l-5-5h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 12px;
+  padding-right: 2rem;
+  appearance: none;
 }
 
 .field-type-select:focus {
@@ -597,6 +590,11 @@ defineExpose({ focusInput })
   cursor: pointer;
   font-size: 0.875rem;
   transition: all 0.2s;
+  height: 36px;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .options-toggle:hover,
@@ -635,10 +633,10 @@ defineExpose({ focusInput })
 
 .field-options {
   border-top: 1px solid var(--vp-c-border);
-  padding-top: 1rem;
-  margin-top: 1rem;
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
   display: grid;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .option-group {
@@ -686,40 +684,6 @@ defineExpose({ focusInput })
   margin-top: -0.25rem;
 }
 
-.field-label-input {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid var(--vp-c-border);
-  border-radius: 0;
-  background: var(--vp-c-bg-soft);
-  color: var(--vp-c-text-1);
-  font-size: 0.875rem;
-  margin-top: 0.5rem;
-  transition: border-color 0.2s;
-}
-
-.field-label-input:focus {
-  outline: none;
-  border-color: var(--vp-c-brand-1);
-}
-
-.add-label-btn {
-  padding: 0.25rem 0.5rem;
-  background: transparent;
-  border: 1px dashed var(--vp-c-border);
-  border-radius: 0;
-  cursor: pointer;
-  font-size: 0.75rem;
-  color: var(--vp-c-text-2);
-  margin-top: 0.5rem;
-  transition: all 0.2s;
-}
-
-.add-label-btn:hover {
-  background: var(--vp-c-bg-soft);
-  border-color: var(--vp-c-brand-1);
-  color: var(--vp-c-text-1);
-}
 
 .remove-cross {
   position: absolute;

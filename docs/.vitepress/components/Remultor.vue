@@ -15,9 +15,8 @@ const entityHooks = ref({
   saving: false,
   saved: false,
   deleting: false,
-  deleted: false
+  deleted: false,
 })
-const useEntityFunction = ref(false)
 const fields = ref<RemultField[]>([
   {
     id: '1',
@@ -389,36 +388,31 @@ const generatedCode = computed(() => {
       : ''
 
   // Add lifecycle hook imports if needed
-  const selectedHooks = Object.entries(entityHooks.value).filter(([_, enabled]) => enabled).map(([hook]) => hook)
+  const selectedHooks = Object.entries(entityHooks.value)
+    .filter(([_, enabled]) => enabled)
+    .map(([hook]) => hook)
   if (selectedHooks.length > 0) {
     imports.add('EntityOptions')
   }
 
-  // Add entity function import if enabled
-  if (useEntityFunction.value) {
-    entityImportsStr += `\nimport { entity } from 'remult'`
-  }
+  // Generate entity decorator
+  let entityDecorator = `@Entity<${className.value}>('${entityKey.value}'`
 
-  // Generate entity decorator options
-  let entityOptions = `'${entityKey.value}'`
-  const optionsParts = []
-  
   if (selectedHooks.length > 0) {
-    const hookMethods = selectedHooks.map(hook => `    ${hook}: () => { /* TODO: implement ${hook} hook */ }`).join(',\n')
-    optionsParts.push(`{\n  key: '${entityKey.value}',\n${hookMethods}\n  }`)
+    const hookMethods = selectedHooks
+      .map(
+        (hook) => `  ${hook}: () => { /* TODO: implement ${hook} hook */ }`,
+      )
+      .join(',\n')
+    entityDecorator += `, {\n${hookMethods}\n}`
   }
   
-  if (optionsParts.length > 0) {
-    entityOptions = optionsParts.join(', ')
-  }
+  entityDecorator += ')'
 
   // Generate the class
-  let classDefinition = `@Entity(${entityOptions})\nexport class ${className.value} {\n${fieldLines.join('\n').trimEnd()}\n}`
-  
-  // Add entity function if enabled
-  if (useEntityFunction.value) {
-    classDefinition += `\n\nexport const ${className.value.toLowerCase()}Repository = entity(${className.value})`
-  }
+  let classDefinition = `${entityDecorator}\nexport class ${
+    className.value
+  } {\n${fieldLines.join('\n').trimEnd()}\n}`
 
   return `import { ${Array.from(imports).join(
     ', ',
@@ -441,7 +435,7 @@ const addField = async () => {
   }
 
   fields.value.push(newField)
-  
+
   // Auto-focus the new field
   await nextTick()
   const newFieldComponent = document.querySelector(`[data-field-id="${newId}"]`)
@@ -475,7 +469,7 @@ const updateField = (fieldId: string, updates: Partial<RemultField>) => {
 
 // Handle keyboard navigation between fields
 const handleFieldFocusNext = (fieldId: string) => {
-  const currentIndex = fields.value.findIndex(f => f.id === fieldId)
+  const currentIndex = fields.value.findIndex((f) => f.id === fieldId)
   if (currentIndex < fields.value.length - 1) {
     const nextFieldId = fields.value[currentIndex + 1].id
     const nextField = document.querySelector(`[data-field-id="${nextFieldId}"]`)
@@ -487,7 +481,7 @@ const handleFieldFocusNext = (fieldId: string) => {
 }
 
 const handleFieldFocusPrevious = (fieldId: string) => {
-  const currentIndex = fields.value.findIndex(f => f.id === fieldId)
+  const currentIndex = fields.value.findIndex((f) => f.id === fieldId)
   if (currentIndex > 0) {
     const prevFieldId = fields.value[currentIndex - 1].id
     const prevField = document.querySelector(`[data-field-id="${prevFieldId}"]`)
@@ -501,14 +495,13 @@ const handleFieldFocusPrevious = (fieldId: string) => {
 // URL sharing functionality
 const updateUrlFromState = () => {
   if (typeof window === 'undefined') return
-  
+
   const state = {
     className: className.value,
     fields: fields.value,
     hooks: entityHooks.value,
-    useEntity: useEntityFunction.value
   }
-  
+
   const encoded = btoa(JSON.stringify(state))
   const url = new URL(window.location.href)
   url.searchParams.set('remultor', encoded)
@@ -517,17 +510,16 @@ const updateUrlFromState = () => {
 
 const loadStateFromUrl = () => {
   if (typeof window === 'undefined') return
-  
+
   const url = new URL(window.location.href)
   const encoded = url.searchParams.get('remultor')
-  
+
   if (encoded) {
     try {
       const state = JSON.parse(atob(encoded))
       if (state.className) className.value = state.className
       if (state.fields) fields.value = state.fields
       if (state.hooks) entityHooks.value = state.hooks
-      if (state.useEntity !== undefined) useEntityFunction.value = state.useEntity
     } catch (e) {
       console.warn('Failed to load state from URL:', e)
     }
@@ -555,9 +547,13 @@ const copyGeneratedCode = async () => {
 }
 
 // Watch for changes and update URL
-watch([className, fields, entityHooks, useEntityFunction], () => {
-  updateUrlFromState()
-}, { deep: true })
+watch(
+  [className, fields, entityHooks],
+  () => {
+    updateUrlFromState()
+  },
+  { deep: true },
+)
 
 // Load state from URL on mount
 onMounted(() => {
@@ -571,7 +567,7 @@ onMounted(() => {
       <div class="remultor-builder">
         <div class="remultor-settings">
           <div class="setting-group">
-            <label for="className">Class Name</label>
+            <label for="className">Entity definition</label>
             <input
               id="className"
               v-model="className"
@@ -579,7 +575,7 @@ onMounted(() => {
               placeholder="MyEntity"
               class="class-name-input"
             />
-            
+
             <!-- Hooks checkboxes -->
             <div class="hooks-section">
               <label class="section-label">Lifecycle Hooks</label>
@@ -602,14 +598,6 @@ onMounted(() => {
                 </label>
               </div>
             </div>
-            
-            <!-- Entity function checkbox -->
-            <div class="entity-function-section">
-              <label class="hook-checkbox">
-                <input type="checkbox" v-model="useEntityFunction" />
-                <span>Add entity&lt;{{ className }}&gt;() repository</span>
-              </label>
-            </div>
           </div>
 
           <div class="setting-group">
@@ -630,7 +618,7 @@ onMounted(() => {
                 @focus-previous="handleFieldFocusPrevious"
               />
             </div>
-            
+
             <!-- Add field button at bottom -->
             <button @click="addField" class="add-field-btn add-field-bottom">
               + Add Field
@@ -659,11 +647,11 @@ onMounted(() => {
                 stroke-linecap="round"
                 stroke-linejoin="round"
               >
-                <path d="m6 9 6 6 6-6"/>
-                <path d="M10 4v9"/>
-                <circle cx="4" cy="9" r="2"/>
-                <circle cx="20" cy="9" r="2"/>
-                <path d="M14 5a4 4 0 0 0-4 4"/>
+                <path d="m6 9 6 6 6-6" />
+                <path d="M10 4v9" />
+                <circle cx="4" cy="9" r="2" />
+                <circle cx="20" cy="9" r="2" />
+                <path d="M14 5a4 4 0 0 0-4 4" />
               </svg>
             </button>
             <button
@@ -809,15 +797,9 @@ onMounted(() => {
   color: var(--vp-c-text-1);
 }
 
-.hook-checkbox input[type="checkbox"] {
+.hook-checkbox input[type='checkbox'] {
   margin: 0;
   cursor: pointer;
-}
-
-.entity-function-section {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--vp-c-border);
 }
 
 .fields-list {
