@@ -205,24 +205,38 @@ const generatedCode = computed(() => {
       },
     )
 
-    if (filteredOptions.length > 0) {
-      const formattedOptions = filteredOptions.map(([key, value]) => {
-        if (typeof value === 'string') return `${key}: '${value}'`
-        return `${key}: ${value}`
-      })
+    // Build options items array (key-value pairs and comments)
+    const optionsItems: string[] = []
 
-      if (formattedOptions.length > 0) {
-        // Format options based on count or if sqlExpression is present
-        if (formattedOptions.length > 3 || field.options.sqlExpression) {
-          // Multi-line format for more than 3 properties or when sqlExpression is present
-          const indentedOptions = formattedOptions
-            .map((opt) => `    ${opt}`)
-            .join(',\n')
-          optionsStr = `({\n${indentedOptions}\n  })`
-        } else {
-          // Single-line format for 3 or fewer properties
-          optionsStr = `({ ${formattedOptions.join(', ')} })`
-        }
+    // Add key-value pairs
+    filteredOptions.forEach(([key, value]) => {
+      if (typeof value === 'string') {
+        optionsItems.push(`${key}: '${value}'`)
+      } else {
+        optionsItems.push(`${key}: ${value}`)
+      }
+    })
+
+    // Add sqlExpression comment if enabled
+    if (field.options.sqlExpression) {
+      optionsItems.push(
+        `// sqlExpression: () => sqlRelations(${className.value}).user.name`,
+      )
+    }
+
+    // Format based on total character length
+    if (optionsItems.length > 0) {
+      const totalLength = optionsItems.join(', ').length
+
+      if (totalLength > 55 || field.options.sqlExpression) {
+        // Multi-line format for long options
+        const indentedItems = optionsItems
+          .map((item) => `    ${item}`)
+          .join(',\n')
+        optionsStr = `({\n${indentedItems}\n  })`
+      } else {
+        // Single-line format for short options
+        optionsStr = `({ ${optionsItems.join(', ')} })`
       }
     }
 
@@ -359,42 +373,6 @@ const generatedCode = computed(() => {
       decorator = 'Relations.toMany'
     } else {
       decorator = `Fields.${field.type}`
-    }
-
-    // Add sqlExpression comment inside options if enabled
-    if (field.options.sqlExpression) {
-      // Add comment inside the options object before the closing brace
-      if (optionsStr.includes('({')) {
-        // Insert comment before the closing brace
-        const lastBraceIndex = optionsStr.lastIndexOf('})')
-        if (lastBraceIndex !== -1) {
-          // Find the last property line and insert comment after it
-          const lines = optionsStr.split('\n')
-          const lastPropertyLineIndex = lines.findIndex((line) =>
-            line.trim().endsWith(','),
-          )
-
-          if (lastPropertyLineIndex !== -1) {
-            // Insert comment after the last property line
-            lines.splice(
-              lastPropertyLineIndex + 1,
-              0,
-              `    // sqlExpression: () => sqlRelations(${className.value}).user.name`,
-            )
-            optionsStr = lines.join('\n')
-          } else {
-            // Fallback: insert before closing brace
-            const beforeComment = optionsStr.slice(0, lastBraceIndex)
-            optionsStr =
-              beforeComment +
-              `\n    // sqlExpression: () => sqlRelations(${className.value}).user.name\n` +
-              optionsStr.slice(lastBraceIndex)
-          }
-        }
-      } else {
-        // If no options or empty options, create options object with just the comment
-        optionsStr = `({\n    // sqlExpression: () => sqlRelations(${className.value}).user.name\n  })`
-      }
     }
 
     fieldLines.push(`  @${decorator}${optionsStr}`)
@@ -660,12 +638,15 @@ const addField = async () => {
 
   fields.value.push(newField)
 
-  // Auto-focus the new field
+  // Auto-focus the new field and select all text
   await nextTick()
   const newFieldComponent = document.querySelector(`[data-field-id="${newId}"]`)
   if (newFieldComponent) {
-    const input = newFieldComponent.querySelector('input')
-    input?.focus()
+    const input = newFieldComponent.querySelector('input') as HTMLInputElement
+    if (input) {
+      input.focus()
+      input.select()
+    }
   }
 }
 
@@ -950,8 +931,9 @@ onMounted(() => {
                     id="className"
                     v-model="className"
                     type="text"
-                    placeholder="MyEntity"
+                    placeholder="Entity Name"
                     class="class-name-input"
+                    :class="{ error: !className.trim() }"
                   />
 
                   <button
@@ -1236,6 +1218,10 @@ onMounted(() => {
   border-color: var(--vp-c-brand-1);
 }
 
+.class-name-input.error {
+  border-color: var(--vp-c-danger-1);
+}
+
 .entity-options-toggle {
   padding: 0.5rem;
   background: none;
@@ -1272,9 +1258,7 @@ onMounted(() => {
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--vp-c-text-1);
-  margin: 0 0 0.5rem 0;
-  border-bottom: 1px solid var(--vp-c-border);
-  padding-bottom: 0.25rem;
+  margin: 0;
 }
 
 .section-header {

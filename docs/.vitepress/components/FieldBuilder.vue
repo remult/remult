@@ -84,8 +84,15 @@ const fieldTypes = [
 // Available options based on field type
 const availableOptions = computed(() => {
   // Field types that support sqlExpression (everything before 'id' in the list)
-  const sqlExpressionSupportedTypes = ['string', 'number', 'integer', 'boolean', 'date', 'dateOnly']
-  
+  const sqlExpressionSupportedTypes = [
+    'string',
+    'number',
+    'integer',
+    'boolean',
+    'date',
+    'dateOnly',
+  ]
+
   const baseOptions = [
     {
       key: 'required',
@@ -112,16 +119,6 @@ const availableOptions = computed(() => {
       description: 'Database column name',
     },
   ]
-
-  // Add sqlExpression option only for supported field types
-  if (sqlExpressionSupportedTypes.includes(props.field.type)) {
-    baseOptions.push({
-      key: 'sqlExpression',
-      type: 'boolean',
-      label: 'SQL Expression',
-      description: 'Computed from SQL expression',
-    })
-  }
 
   const typeSpecificOptions: Record<string, any[]> = {
     string: [
@@ -304,15 +301,51 @@ const availableOptions = computed(() => {
 
   // For date and dateOnly, only return base options (no default value)
   if (['date', 'dateOnly'].includes(props.field.type)) {
-    return baseOptions
+    let options = [...baseOptions]
+    // Add sqlExpression option at the bottom for supported field types
+    if (sqlExpressionSupportedTypes.includes(props.field.type)) {
+      options.push({
+        key: 'sqlExpression',
+        type: 'boolean',
+        label: 'SQL Expression',
+        description: 'Computed from SQL expression',
+      })
+    }
+    return options
   }
 
   // For boolean, only return base options (no default value)
   if (props.field.type === 'boolean') {
-    return baseOptions
+    let options = [...baseOptions]
+    // Add sqlExpression option at the bottom for supported field types
+    if (sqlExpressionSupportedTypes.includes(props.field.type)) {
+      options.push({
+        key: 'sqlExpression',
+        type: 'boolean',
+        label: 'SQL Expression',
+        description: 'Computed from SQL expression',
+      })
+    }
+    return options
   }
 
-  return [...baseOptions, ...(typeSpecificOptions[props.field.type] || [])]
+  // For all other field types, combine base and type-specific options
+  let options = [
+    ...baseOptions,
+    ...(typeSpecificOptions[props.field.type] || []),
+  ]
+
+  // Add sqlExpression option at the bottom for supported field types
+  if (sqlExpressionSupportedTypes.includes(props.field.type)) {
+    options.push({
+      key: 'sqlExpression',
+      type: 'boolean',
+      label: 'SQL Expression',
+      description: 'Computed from SQL expression',
+    })
+  }
+
+  return options
 })
 
 const updateField = (updates: Partial<RemultField>) => {
@@ -429,6 +462,7 @@ defineExpose({ focusInput })
             @input="updateFieldName(($event.target as HTMLInputElement).value)"
             placeholder="Field name"
             class="field-name-input"
+            :class="{ error: !field.name.trim() }"
             ref="fieldNameInput"
             @keydown="handleKeyDown"
           />
@@ -503,6 +537,10 @@ defineExpose({ focusInput })
 .field-name-input:focus {
   outline: none;
   border-color: var(--vp-c-brand-1);
+}
+
+.field-name-input.error {
+  border-color: var(--vp-c-danger-1);
 }
 
 .field-type-select {
