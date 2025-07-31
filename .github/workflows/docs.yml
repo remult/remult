@@ -2,7 +2,8 @@ name: Deploy docs
 
 on:
   push:
-    branches: ['main']
+    branches: ['remultor']
+    # branches: ['main']
   workflow_dispatch:
 
 permissions:
