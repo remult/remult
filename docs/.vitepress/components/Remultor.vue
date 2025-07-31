@@ -798,25 +798,26 @@ onMounted(() => {
           <div class="setting-group">
             <label for="className">Entity definition</label>
 
-            <!-- Entity basic info - similar to field layout -->
-            <div class="entity-basic">
-              <input
-                id="className"
-                v-model="className"
-                type="text"
-                placeholder="MyEntity"
-                class="class-name-input"
-              />
+            <RemovableFrame :can-remove="false">
+              <!-- Entity basic info - similar to field layout -->
+              <div class="entity-basic">
+                <input
+                  id="className"
+                  v-model="className"
+                  type="text"
+                  placeholder="MyEntity"
+                  class="class-name-input"
+                />
 
-              <button
-                @click="showEntityOptions = !showEntityOptions"
-                class="entity-options-toggle"
-                :class="{ active: showEntityOptions }"
-                title="Show entity options"
-              >
-                ⚙️
-              </button>
-            </div>
+                <button
+                  @click="showEntityOptions = !showEntityOptions"
+                  class="entity-options-toggle"
+                  :class="{ active: showEntityOptions }"
+                  title="Show entity options"
+                >
+                  ⚙️
+                </button>
+              </div>
 
             <!-- Entity options - collapsible like field options -->
             <div v-if="showEntityOptions" class="entity-options">
@@ -942,12 +943,11 @@ onMounted(() => {
                 </div>
               </div>
             </div>
+            </RemovableFrame>
           </div>
 
           <div class="setting-group">
-            <div class="fields-header">
-              <h3>Fields</h3>
-            </div>
+            <label for="fields">Fields</label>
 
             <div class="fields-list">
               <FieldBuilder
@@ -1252,17 +1252,6 @@ onMounted(() => {
   }
 }
 
-.fields-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.fields-header h3 {
-  margin: 0;
-  color: var(--vp-c-text-1);
-}
 
 .add-field-bottom {
   width: 100%;

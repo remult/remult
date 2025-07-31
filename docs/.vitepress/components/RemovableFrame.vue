@@ -10,7 +10,7 @@ interface Emits {
 
 const props = withDefaults(defineProps<Props>(), {
   canRemove: true,
-  removeTitle: 'Remove'
+  removeTitle: 'Remove',
 })
 
 const emit = defineEmits<Emits>()
@@ -23,7 +23,7 @@ const handleRemove = () => {
 <template>
   <div class="removable-frame">
     <slot />
-    
+
     <!-- Cross button for removal positioned at top right of frame -->
     <button
       v-if="canRemove"
@@ -48,7 +48,7 @@ const handleRemove = () => {
 }
 
 .removable-frame:hover {
-  border-color: var(--vp-c-border-hover);
+  border-color: #6b6b8e;
 }
 
 .remove-cross {
