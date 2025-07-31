@@ -321,8 +321,8 @@ const updateFieldType = (type: string) => {
 
   // Pre-populate relation fields with example values
   if (type === 'toOne') {
-    newOptions.entity = 'Category'
-    newOptions.foreignKey = 'categoryId'
+    newOptions.entity = 'User'
+    newOptions.foreignKey = 'userId'
   }
 
   if (type === 'toMany') {
@@ -338,7 +338,7 @@ const updateFieldType = (type: string) => {
   } else if (type === 'list') {
     newName = 'priority'
   } else if (type === 'toOne') {
-    newName = 'category'
+    newName = 'user'
   } else if (type === 'toMany') {
     newName = 'comments'
   }
@@ -402,8 +402,8 @@ defineExpose({ focusInput })
 </script>
 
 <template>
-  <RemovableFrame 
-    :can-remove="canRemove" 
+  <RemovableFrame
+    :can-remove="canRemove"
     remove-title="Remove field"
     @remove="removeField"
   >
@@ -422,7 +422,9 @@ defineExpose({ focusInput })
           <SelectDropdown
             :model-value="field.type"
             @update:model-value="updateFieldType"
-            :options="fieldTypes.map(t => ({ value: t.value, label: t.label }))"
+            :options="
+              fieldTypes.map((t) => ({ value: t.value, label: t.label }))
+            "
             class="field-type-select"
           />
 
@@ -472,7 +474,8 @@ defineExpose({ focusInput })
             @input="
               updateOption(
                 option.key,
-                parseInt(($event.target as HTMLInputElement).value) || undefined,
+                parseInt(($event.target as HTMLInputElement).value) ||
+                  undefined,
               )
             "
             class="option-input"
@@ -498,7 +501,7 @@ defineExpose({ focusInput })
           <!-- Remove or comment out the description below input -->
           <!-- <div class="option-description">{{ option.description }}</div> -->
         </div>
-        
+
         <!-- Field type description at the bottom of parameters -->
         <div v-if="selectedFieldType" class="field-type-description">
           {{ selectedFieldType.description }}
@@ -658,8 +661,6 @@ defineExpose({ focusInput })
   border-top: 1px solid var(--vp-c-border);
   opacity: 0.8;
 }
-
-
 
 @media (max-width: 640px) {
   .field-basic {

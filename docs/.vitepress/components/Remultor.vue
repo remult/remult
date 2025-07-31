@@ -4,6 +4,7 @@ import FieldBuilder from './FieldBuilder.vue'
 import SelectDropdown from './SelectDropdown.vue'
 import RemovableFrame from './RemovableFrame.vue'
 import Code from '../../components/homepage/Code.vue'
+import Button from './Button.vue'
 
 interface RemultField {
   id: string
@@ -54,11 +55,11 @@ const permissionOptions = [
 ]
 
 const availablePermissions = [
-  { key: 'allowApiRead', label: 'Read' },
-  { key: 'allowApiInsert', label: 'Insert' },
+  { key: 'allowApiCrud', label: 'CRUD' },
   { key: 'allowApiUpdate', label: 'Update' },
   { key: 'allowApiDelete', label: 'Delete' },
-  { key: 'allowApiCrud', label: 'CRUD (all)' },
+  { key: 'allowApiInsert', label: 'Insert' },
+  { key: 'allowApiRead', label: 'Read' },
 ]
 
 // Hook options
@@ -76,6 +77,12 @@ const hookImplementations = [
   { value: 'custom', label: 'Custom code', icon: '⚙️' },
 ]
 const showEntityOptions = ref(false)
+// Initialize syncStateWithUrl from localStorage (default false)
+const syncStateWithUrl = ref(
+  typeof window !== 'undefined'
+    ? localStorage.getItem('remultor-sync-url') === 'true'
+    : false,
+)
 const fields = ref<RemultField[]>([
   {
     id: '1',
@@ -659,7 +666,26 @@ const addPermission = () => {
     (perm) => entityPermissions.value[perm.key] === null,
   )
   if (unused) {
-    entityPermissions.value[unused.key] = true // Default to "allow everyone"
+    // Set different defaults based on permission type
+    let defaultValue = true // Default for allowApiRead
+    switch (unused.key) {
+      case 'allowApiCrud':
+        defaultValue = 'admin'
+        break
+      case 'allowApiDelete':
+        defaultValue = false
+        break
+      case 'allowApiInsert':
+        defaultValue = 'Allow.authenticated'
+        break
+      case 'allowApiUpdate':
+        defaultValue = 'currentUser'
+        break
+      case 'allowApiRead':
+        defaultValue = true
+        break
+    }
+    entityPermissions.value[unused.key] = defaultValue
   }
 }
 
@@ -706,14 +732,57 @@ const copyGeneratedCode = async () => {
   }
 }
 
+// Reset form to default state
+const resetForm = () => {
+  className.value = 'Task'
+  fields.value = [
+    {
+      id: '1',
+      name: 'id',
+      type: 'id',
+      options: {},
+    },
+    {
+      id: '2',
+      name: 'title',
+      type: 'string',
+      options: {},
+    },
+  ]
+  // Reset hooks
+  Object.keys(entityHooks.value).forEach((key) => {
+    entityHooks.value[key] = null
+  })
+  // Reset permissions
+  Object.keys(entityPermissions.value).forEach((key) => {
+    entityPermissions.value[key] = null
+  })
+  showEntityOptions.value = false
+}
+
 // Watch for changes and update URL
 watch(
   [className, fields, entityHooks, entityPermissions],
   () => {
-    updateUrlFromState()
+    if (syncStateWithUrl.value) {
+      updateUrlFromState()
+    }
   },
   { deep: true },
 )
+
+// Watch for sync checkbox changes - save to localStorage and sync when checked
+watch(syncStateWithUrl, (newValue) => {
+  // Save preference to localStorage
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('remultor-sync-url', String(newValue))
+  }
+
+  // Immediately sync when checked
+  if (newValue) {
+    updateUrlFromState()
+  }
+})
 
 // Load state from URL on mount
 onMounted(() => {
@@ -755,9 +824,10 @@ onMounted(() => {
               <div class="option-section">
                 <div class="section-header">
                   <h4 class="option-section-title">API Permissions</h4>
-                  <button
+                  <Button
                     @click="addPermission"
-                    class="add-permission-btn"
+                    variant="primary"
+                    size="xs"
                     :disabled="
                       !availablePermissions.some(
                         (p) => entityPermissions[p.key] === null,
@@ -766,7 +836,7 @@ onMounted(() => {
                     title="Add permission"
                   >
                     + Add
-                  </button>
+                  </Button>
                 </div>
 
                 <div class="permissions-list">
@@ -816,16 +886,17 @@ onMounted(() => {
               <div class="option-section">
                 <div class="section-header">
                   <h4 class="option-section-title">Lifecycle Hooks</h4>
-                  <button
+                  <Button
                     @click="addHook"
-                    class="add-permission-btn"
+                    variant="primary"
+                    size="xs"
                     :disabled="
                       !availableHooks.some((h) => entityHooks[h.key] === null)
                     "
                     title="Add hook"
                   >
                     + Add
-                  </button>
+                  </Button>
                 </div>
 
                 <div class="permissions-list">
@@ -893,9 +964,27 @@ onMounted(() => {
             </div>
 
             <!-- Add field button at bottom -->
-            <button @click="addField" class="add-field-btn add-field-bottom">
+            <Button
+              @click="addField"
+              variant="primary"
+              class="add-field-bottom"
+            >
               + Add Field
-            </button>
+            </Button>
+
+            <!-- Form controls -->
+            <div class="form-controls">
+              <label class="checkbox-control">
+                <input
+                  type="checkbox"
+                  v-model="syncStateWithUrl"
+                  class="control-checkbox"
+                />
+                <span>Sync state with URL</span>
+              </label>
+
+              <Button @click="resetForm" variant="danger"> Reset Form </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -904,29 +993,6 @@ onMounted(() => {
         <div class="output-header">
           <h3>Generated Code</h3>
           <div class="output-actions">
-            <button
-              class="copy-button"
-              @click="shareUrl"
-              title="Copy shareable URL"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="m6 9 6 6 6-6" />
-                <path d="M10 4v9" />
-                <circle cx="4" cy="9" r="2" />
-                <circle cx="20" cy="9" r="2" />
-                <path d="M14 5a4 4 0 0 0-4 4" />
-              </svg>
-            </button>
             <button
               class="copy-button"
               @click="copyGeneratedCode"
@@ -1067,28 +1133,6 @@ onMounted(() => {
   margin-bottom: 0.5rem;
 }
 
-.add-permission-btn {
-  padding: 0.25rem 0.5rem;
-  background: var(--vp-c-brand-1);
-  color: white;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  font-size: 0.75rem;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-.add-permission-btn:hover {
-  background: var(--vp-c-brand-2);
-}
-
-.add-permission-btn:disabled {
-  background: var(--vp-c-bg-soft);
-  color: var(--vp-c-text-3);
-  cursor: not-allowed;
-}
-
 .permissions-list {
   display: flex;
   flex-direction: column;
@@ -1135,6 +1179,79 @@ onMounted(() => {
   border-radius: 4px;
 }
 
+.form-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--vp-c-border);
+  gap: 1rem;
+}
+
+.checkbox-control {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: var(--vp-c-text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 400;
+  transition: all 0.2s;
+}
+
+.checkbox-control:hover {
+  color: var(--vp-c-text-1);
+}
+
+.control-checkbox {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  margin: 0;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.control-checkbox:checked {
+  background: var(--vp-c-brand-1);
+  border-color: var(--vp-c-brand-1);
+}
+
+.control-checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 1px;
+  left: 3px;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.control-checkbox:hover {
+  border-color: var(--vp-c-brand-1);
+}
+
+@media (max-width: 640px) {
+  .form-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .checkbox-control {
+    justify-content: center;
+  }
+}
+
 .fields-header {
   display: flex;
   justify-content: space-between;
@@ -1145,21 +1262,6 @@ onMounted(() => {
 .fields-header h3 {
   margin: 0;
   color: var(--vp-c-text-1);
-}
-
-.add-field-btn {
-  padding: 0.5rem 1rem;
-  background: var(--vp-c-brand-1);
-  color: white;
-  border: none;
-  border-radius: 0;
-  cursor: pointer;
-  font-size: 0.875rem;
-  transition: background-color 0.2s;
-}
-
-.add-field-btn:hover {
-  background: var(--vp-c-brand-2);
 }
 
 .add-field-bottom {
