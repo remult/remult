@@ -60,9 +60,10 @@ defineEmits<{
   border-color: var(--vp-c-brand-1);
 }
 
-.btn-primary:hover:not(:disabled) {
+.btn-primary:hover:not(:disabled),
+.btn-primary:focus:not(:disabled) {
   background: var(--vp-c-brand-2);
-  border-color: var(--vp-c-brand-2);
+  border-color: white;
 }
 
 .btn-secondary {
@@ -71,10 +72,11 @@ defineEmits<{
   border-color: var(--vp-c-border);
 }
 
-.btn-secondary:hover:not(:disabled) {
+.btn-secondary:hover:not(:disabled),
+.btn-secondary:focus:not(:disabled) {
   background: var(--vp-c-bg-soft);
   color: var(--vp-c-text-1);
-  border-color: var(--vp-c-brand-1);
+  border-color: white;
 }
 
 .btn-danger {
@@ -83,10 +85,11 @@ defineEmits<{
   border-color: var(--vp-c-border);
 }
 
-.btn-danger:hover:not(:disabled) {
+.btn-danger:hover:not(:disabled),
+.btn-danger:focus:not(:disabled) {
   background: var(--vp-c-danger-soft);
   color: var(--vp-c-danger-1);
-  border-color: var(--vp-c-danger-1);
+  border-color: white;
 }
 
 /* Sizes */
