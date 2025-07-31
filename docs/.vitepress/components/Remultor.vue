@@ -251,7 +251,6 @@ const generatedCode = computed(() => {
         // Add the foreign key field before the relation
         fieldLines.push(`  @Fields.string()`)
         fieldLines.push(`  ${foreignKey} = ''`)
-        fieldLines.push('')
       }
 
       if (field.options.label) {
@@ -439,7 +438,17 @@ const generatedCode = computed(() => {
     }
 
     fieldLines.push(propertyDeclaration)
-    fieldLines.push('')
+    
+    // Don't add empty line if this field is a foreign key for the next relation field
+    const currentIndex = fields.value.findIndex(f => f.id === field.id)
+    const nextField = fields.value[currentIndex + 1]
+    const isFollowedByRelationUsingThisField = nextField && 
+      (nextField.type === 'toOne' || nextField.type === 'toMany') && 
+      nextField.options.foreignKey === field.name
+    
+    if (!isFollowedByRelationUsingThisField) {
+      fieldLines.push('')
+    }
   })
 
   const preClassContent =
