@@ -2,6 +2,7 @@
 import { ref, computed, nextTick, onMounted, watch } from 'vue'
 import FieldBuilder from './FieldBuilder.vue'
 import SelectDropdown from './SelectDropdown.vue'
+import RemovableFrame from './RemovableFrame.vue'
 import Code from '../../components/homepage/Code.vue'
 
 interface RemultField {
@@ -753,43 +754,37 @@ onMounted(() => {
                 
                 
                 <div class="permissions-list">
-                  <div 
+                  <RemovableFrame
                     v-for="(value, key) in entityPermissions"
                     v-show="value !== null"
                     :key="key"
-                    class="permission-item"
+                    remove-title="Remove permission"
+                    @remove="removePermission(key)"
                   >
-                    <!-- Permission type selector -->
-                    <SelectDropdown
-                      :model-value="key"
-                      @update:model-value="(value) => changePermissionType(key, value)"
-                      :options="availablePermissions.map(perm => ({
-                        value: perm.key,
-                        label: perm.label,
-                        disabled: entityPermissions[perm.key] !== null && perm.key !== key
-                      }))"
-                      class="permission-selector small"
-                    />
-                    
-                    <!-- Permission level selector -->
-                    <SelectDropdown
-                      v-model="entityPermissions[key]"
-                      :options="permissionOptions.map(opt => ({
-                        value: opt.value,
-                        label: `${opt.icon} ${opt.label}`
-                      }))"
-                      class="permission-selector small"
-                    />
-                    
-                    <!-- Remove button -->
-                    <button
-                      @click="removePermission(key)"
-                      class="remove-permission-btn"
-                      title="Remove permission"
-                    >
-                      ×
-                    </button>
-                  </div>
+                    <div class="permission-item">
+                      <!-- Permission type selector -->
+                      <SelectDropdown
+                        :model-value="key"
+                        @update:model-value="(value) => changePermissionType(key, value)"
+                        :options="availablePermissions.map(perm => ({
+                          value: perm.key,
+                          label: perm.label,
+                          disabled: entityPermissions[perm.key] !== null && perm.key !== key
+                        }))"
+                        class="permission-selector small"
+                      />
+                      
+                      <!-- Permission level selector -->
+                      <SelectDropdown
+                        v-model="entityPermissions[key]"
+                        :options="permissionOptions.map(opt => ({
+                          value: opt.value,
+                          label: `${opt.icon} ${opt.label}`
+                        }))"
+                        class="permission-selector small"
+                      />
+                    </div>
+                  </RemovableFrame>
                   
                 </div>
               </div>
@@ -809,43 +804,37 @@ onMounted(() => {
                 </div>
                 
                 <div class="permissions-list">
-                  <div 
+                  <RemovableFrame
                     v-for="(value, key) in entityHooks"
                     v-show="value !== null"
                     :key="key"
-                    class="permission-item"
+                    remove-title="Remove hook"
+                    @remove="removeHook(key)"
                   >
-                    <!-- Hook type selector -->
-                    <SelectDropdown
-                      :model-value="key"
-                      @update:model-value="(value) => changeHookType(key, value)"
-                      :options="availableHooks.map(hook => ({
-                        value: hook.key,
-                        label: hook.label,
-                        disabled: entityHooks[hook.key] !== null && hook.key !== key
-                      }))"
-                      class="permission-selector small"
-                    />
-                    
-                    <!-- Hook implementation selector -->
-                    <SelectDropdown
-                      v-model="entityHooks[key]"
-                      :options="hookImplementations.map(impl => ({
-                        value: impl.value,
-                        label: impl.label
-                      }))"
-                      class="permission-selector small"
-                    />
-                    
-                    <!-- Remove button -->
-                    <button
-                      @click="removeHook(key)"
-                      class="remove-permission-btn"
-                      title="Remove hook"
-                    >
-                      ×
-                    </button>
-                  </div>
+                    <div class="permission-item">
+                      <!-- Hook type selector -->
+                      <SelectDropdown
+                        :model-value="key"
+                        @update:model-value="(value) => changeHookType(key, value)"
+                        :options="availableHooks.map(hook => ({
+                          value: hook.key,
+                          label: hook.label,
+                          disabled: entityHooks[hook.key] !== null && hook.key !== key
+                        }))"
+                        class="permission-selector small"
+                      />
+                      
+                      <!-- Hook implementation selector -->
+                      <SelectDropdown
+                        v-model="entityHooks[key]"
+                        :options="hookImplementations.map(impl => ({
+                          value: impl.value,
+                          label: impl.label
+                        }))"
+                        class="permission-selector small"
+                      />
+                    </div>
+                  </RemovableFrame>
                   
                 </div>
               </div>
@@ -1080,10 +1069,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem;
-  border: 1px solid var(--vp-c-border);
-  border-radius: 4px;
-  background: var(--vp-c-bg-soft);
+  /* Padding, border, and background now handled by RemovableFrame */
 }
 
 .permission-selector {
@@ -1109,27 +1095,6 @@ onMounted(() => {
   font-weight: 500;
 }
 
-.remove-permission-btn {
-  width: 20px;
-  height: 20px;
-  background: var(--vp-c-danger-1);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  flex-shrink: 0;
-}
-
-.remove-permission-btn:hover {
-  background: var(--vp-c-danger-2);
-  transform: scale(1.1);
-}
 
 .no-permissions {
   padding: 1rem;

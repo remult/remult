@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, nextTick } from 'vue'
 import SelectDropdown from './SelectDropdown.vue'
+import RemovableFrame from './RemovableFrame.vue'
 
 interface RemultField {
   id: string
@@ -401,124 +402,110 @@ defineExpose({ focusInput })
 </script>
 
 <template>
-  <div class="field-builder">
-    <div class="field-header">
-      <div class="field-basic">
-        <input
-          :value="field.name"
-          @input="updateFieldName(($event.target as HTMLInputElement).value)"
-          placeholder="Field name"
-          class="field-name-input"
-          ref="fieldNameInput"
-          @keydown="handleKeyDown"
-        />
+  <RemovableFrame 
+    :can-remove="canRemove" 
+    remove-title="Remove field"
+    @remove="removeField"
+  >
+    <div class="field-content">
+      <div class="field-header">
+        <div class="field-basic">
+          <input
+            :value="field.name"
+            @input="updateFieldName(($event.target as HTMLInputElement).value)"
+            placeholder="Field name"
+            class="field-name-input"
+            ref="fieldNameInput"
+            @keydown="handleKeyDown"
+          />
 
-        <SelectDropdown
-          :model-value="field.type"
-          @update:model-value="updateFieldType"
-          :options="fieldTypes.map(t => ({ value: t.value, label: t.label }))"
-          class="field-type-select"
-        />
+          <SelectDropdown
+            :model-value="field.type"
+            @update:model-value="updateFieldType"
+            :options="fieldTypes.map(t => ({ value: t.value, label: t.label }))"
+            class="field-type-select"
+          />
 
-        <button
-          @click="showOptions = !showOptions"
-          class="options-toggle"
-          :class="{ active: showOptions }"
-          :disabled="!hasOptions"
-          :title="!hasOptions ? 'No options available' : 'Show field options'"
+          <button
+            @click="showOptions = !showOptions"
+            class="options-toggle"
+            :class="{ active: showOptions }"
+            :disabled="!hasOptions"
+            :title="!hasOptions ? 'No options available' : 'Show field options'"
+          >
+            ⚙️
+          </button>
+        </div>
+      </div>
+
+      <div v-if="showOptions" class="field-options">
+        <div
+          v-for="option in availableOptions"
+          :key="option.key"
+          class="option-group"
         >
-          ⚙️
-        </button>
+          <label :for="`${field.id}-${option.key}`" class="option-label">
+            {{ option.label }}
+          </label>
+
+          <!-- Boolean options -->
+          <input
+            v-if="option.type === 'boolean'"
+            :id="`${field.id}-${option.key}`"
+            type="checkbox"
+            :checked="field.options[option.key] === true"
+            @change="
+              updateOption(
+                option.key,
+                ($event.target as HTMLInputElement).checked,
+              )
+            "
+            class="option-checkbox"
+          />
+
+          <!-- Number options -->
+          <input
+            v-else-if="option.type === 'number'"
+            :id="`${field.id}-${option.key}`"
+            type="number"
+            :value="field.options[option.key] || ''"
+            @input="
+              updateOption(
+                option.key,
+                parseInt(($event.target as HTMLInputElement).value) || undefined,
+              )
+            "
+            class="option-input"
+            :placeholder="option.description"
+          />
+
+          <!-- String options -->
+          <input
+            v-else
+            :id="`${field.id}-${option.key}`"
+            type="text"
+            :value="field.options[option.key] || ''"
+            @input="
+              updateOption(
+                option.key,
+                ($event.target as HTMLInputElement).value || undefined,
+              )
+            "
+            class="option-input"
+            :placeholder="option.description"
+          />
+
+          <!-- Remove or comment out the description below input -->
+          <!-- <div class="option-description">{{ option.description }}</div> -->
+        </div>
       </div>
     </div>
-
-    <div v-if="showOptions" class="field-options">
-      <div
-        v-for="option in availableOptions"
-        :key="option.key"
-        class="option-group"
-      >
-        <label :for="`${field.id}-${option.key}`" class="option-label">
-          {{ option.label }}
-        </label>
-
-        <!-- Boolean options -->
-        <input
-          v-if="option.type === 'boolean'"
-          :id="`${field.id}-${option.key}`"
-          type="checkbox"
-          :checked="field.options[option.key] === true"
-          @change="
-            updateOption(
-              option.key,
-              ($event.target as HTMLInputElement).checked,
-            )
-          "
-          class="option-checkbox"
-        />
-
-        <!-- Number options -->
-        <input
-          v-else-if="option.type === 'number'"
-          :id="`${field.id}-${option.key}`"
-          type="number"
-          :value="field.options[option.key] || ''"
-          @input="
-            updateOption(
-              option.key,
-              parseInt(($event.target as HTMLInputElement).value) || undefined,
-            )
-          "
-          class="option-input"
-          :placeholder="option.description"
-        />
-
-        <!-- String options -->
-        <input
-          v-else
-          :id="`${field.id}-${option.key}`"
-          type="text"
-          :value="field.options[option.key] || ''"
-          @input="
-            updateOption(
-              option.key,
-              ($event.target as HTMLInputElement).value || undefined,
-            )
-          "
-          class="option-input"
-          :placeholder="option.description"
-        />
-
-        <!-- Remove or comment out the description below input -->
-        <!-- <div class="option-description">{{ option.description }}</div> -->
-      </div>
-    </div>
-    
-    <!-- Cross button for removal positioned at top right of entire field frame -->
-    <button
-      v-if="canRemove"
-      @click="removeField"
-      class="remove-cross"
-      title="Remove field"
-      tabindex="-1"
-    >
-      ×
-    </button>
-  </div>
+  </RemovableFrame>
 </template>
 
 <style scoped>
-.field-builder {
-  background: var(--vp-c-bg);
-  border: 1px solid var(--vp-c-border);
-  border-radius: 0;
-  padding: 0.75rem;
-  transition: border-color 0.2s;
-  position: relative;
-}
-
-.field-builder:hover {
-  border-color: var(--vp-c-border-hover);
+.field-content {
+  /* Content styling - no border/padding as that's handled by RemovableFrame */
 }
 
 .field-header {
@@ -657,37 +644,6 @@ defineExpose({ focusInput })
 }
 
 
-.remove-cross {
-  position: absolute;
-  top: -9px;
-  right: -9px;
-  width: 18px;
-  height: 18px;
-  background: var(--vp-c-danger-1);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: bold;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  opacity: 0.7;
-  z-index: 10;
-}
-
-.remove-cross:hover {
-  opacity: 1;
-  background: var(--vp-c-danger-2);
-  transform: scale(1.1);
-}
-
-.remove-cross:focus {
-  outline: none;
-}
 
 @media (max-width: 640px) {
   .field-basic {
