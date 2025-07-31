@@ -498,6 +498,11 @@ defineExpose({ focusInput })
           <!-- Remove or comment out the description below input -->
           <!-- <div class="option-description">{{ option.description }}</div> -->
         </div>
+        
+        <!-- Field type description at the bottom of parameters -->
+        <div v-if="selectedFieldType" class="field-type-description">
+          {{ selectedFieldType.description }}
+        </div>
       </div>
     </div>
   </RemovableFrame>
@@ -641,6 +646,17 @@ defineExpose({ focusInput })
   font-size: 0.625rem;
   color: var(--vp-c-text-3);
   margin-top: -0.25rem;
+}
+
+.field-type-description {
+  font-size: 0.75rem;
+  color: var(--vp-c-text-2);
+  font-style: italic;
+  text-align: center;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--vp-c-border);
+  opacity: 0.8;
 }
 
 

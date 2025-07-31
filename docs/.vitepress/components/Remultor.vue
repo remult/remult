@@ -25,17 +25,32 @@ const entityPermissions = ref({
   allowApiInsert: null,
   allowApiUpdate: null,
   allowApiDelete: null,
-  allowApiCrud: null
+  allowApiCrud: null,
 })
 
 // Permission options for the dropdown
 const permissionOptions = [
   { value: true, label: 'Allow everyone', icon: '✓', color: 'green' },
   { value: false, label: 'Deny everyone', icon: '✗', color: 'red' },
-  { value: 'Allow.authenticated', label: 'Authenticated users only', icon: '🔐', color: 'blue' },
-  { value: 'admin', label: 'Users with role "admin"', icon: '👑', color: 'purple' },
+  {
+    value: 'Allow.authenticated',
+    label: 'Authenticated users only',
+    icon: '🔐',
+    color: 'blue',
+  },
+  {
+    value: 'admin',
+    label: 'Users with role "admin"',
+    icon: '👑',
+    color: 'purple',
+  },
   { value: 'user', label: 'Users with role "user"', icon: '👤', color: 'gray' },
-  { value: 'currentUser', label: 'Current user only', icon: '🏠', color: 'orange' }
+  {
+    value: 'currentUser',
+    label: 'Current user only',
+    icon: '🏠',
+    color: 'orange',
+  },
 ]
 
 const availablePermissions = [
@@ -43,7 +58,7 @@ const availablePermissions = [
   { key: 'allowApiInsert', label: 'Insert' },
   { key: 'allowApiUpdate', label: 'Update' },
   { key: 'allowApiDelete', label: 'Delete' },
-  { key: 'allowApiCrud', label: 'CRUD (all)' }
+  { key: 'allowApiCrud', label: 'CRUD (all)' },
 ]
 
 // Hook options
@@ -52,14 +67,13 @@ const availableHooks = [
   { key: 'saving', label: 'Saving' },
   { key: 'saved', label: 'Saved' },
   { key: 'deleting', label: 'Deleting' },
-  { key: 'deleted', label: 'Deleted' }
+  { key: 'deleted', label: 'Deleted' },
 ]
 
 // Hook implementation types
 const hookImplementations = [
-  { value: 'todo', label: '🚧 TODO (comment)', icon: '🚧' },
-  { value: 'console', label: '📝 Console log', icon: '📝' },
-  { value: 'custom', label: '⚙️ Custom code', icon: '⚙️' }
+  { value: 'todo', label: 'TODO', icon: '🚧' },
+  { value: 'custom', label: 'Custom code', icon: '⚙️' },
 ]
 const showEntityOptions = ref(false)
 const fields = ref<RemultField[]>([
@@ -442,7 +456,7 @@ const generatedCode = computed(() => {
 
   // Generate entity decorator options
   const entityOptions = []
-  
+
   // Add permissions
   const activePermissions = Object.entries(entityPermissions.value)
     .filter(([_, value]) => value !== null)
@@ -455,35 +469,34 @@ const generatedCode = computed(() => {
       }
       return `  ${key}: ${permValue}`
     })
-  
+
   if (activePermissions.length > 0) {
     entityOptions.push(...activePermissions)
   }
-  
+
   // Add hooks
   if (selectedHooks.length > 0) {
-    const hookMethods = selectedHooks
-      .map(({ hook, implementation }) => {
-        let hookCode = ''
-        if (implementation === 'todo') {
-          hookCode = `  ${hook}: () => { /* TODO: implement ${hook} hook */ }`
-        } else if (implementation === 'console') {
-          hookCode = `  ${hook}: () => { console.log('${hook} hook called') }`
-        } else if (implementation === 'custom') {
-          hookCode = `  ${hook}: () => {\n    // Custom ${hook} implementation\n  }`
-        }
-        return hookCode
-      })
+    const hookMethods = selectedHooks.map(({ hook, implementation }) => {
+      let hookCode = ''
+      if (implementation === 'todo') {
+        hookCode = `  ${hook}: () => { /* TODO: implement ${hook} hook */ }`
+      } else if (implementation === 'console') {
+        hookCode = `  ${hook}: () => { console.log('${hook} hook called') }`
+      } else if (implementation === 'custom') {
+        hookCode = `  ${hook}: () => {\n    // Custom ${hook} implementation\n  }`
+      }
+      return hookCode
+    })
     entityOptions.push(...hookMethods)
   }
-  
+
   // Generate entity decorator
   let entityDecorator = `@Entity<${className.value}>('${entityKey.value}'`
-  
+
   if (entityOptions.length > 0) {
     entityDecorator += `, {\n${entityOptions.join(',\n')}\n}`
   }
-  
+
   entityDecorator += ')'
 
   // Generate the class
@@ -627,23 +640,23 @@ const removePermission = (operation: string) => {
 const getPermissionDisplay = (operation: string) => {
   const value = entityPermissions.value[operation]
   if (value === null) return null
-  
-  const option = permissionOptions.find(opt => opt.value === value)
+
+  const option = permissionOptions.find((opt) => opt.value === value)
   return option ? option.label : 'Custom'
 }
 
 const getPermissionIcon = (operation: string) => {
   const value = entityPermissions.value[operation]
   if (value === null) return null
-  
-  const option = permissionOptions.find(opt => opt.value === value)
+
+  const option = permissionOptions.find((opt) => opt.value === value)
   return option?.icon || '⚙️'
 }
 
 const addPermission = () => {
   // Find first unused permission and add it with default value
-  const unused = availablePermissions.find(perm => 
-    entityPermissions.value[perm.key] === null
+  const unused = availablePermissions.find(
+    (perm) => entityPermissions.value[perm.key] === null,
   )
   if (unused) {
     entityPermissions.value[unused.key] = true // Default to "allow everyone"
@@ -662,8 +675,8 @@ const changePermissionType = (oldKey: string, newKey: string) => {
 // Hook management functions
 const addHook = () => {
   // Find first unused hook and add it with default value
-  const unused = availableHooks.find(hook => 
-    entityHooks.value[hook.key] === null
+  const unused = availableHooks.find(
+    (hook) => entityHooks.value[hook.key] === null,
   )
   if (unused) {
     entityHooks.value[unused.key] = 'todo' // Default to TODO implementation
@@ -715,7 +728,7 @@ onMounted(() => {
         <div class="remultor-settings">
           <div class="setting-group">
             <label for="className">Entity definition</label>
-            
+
             <!-- Entity basic info - similar to field layout -->
             <div class="entity-basic">
               <input
@@ -725,7 +738,7 @@ onMounted(() => {
                 placeholder="MyEntity"
                 class="class-name-input"
               />
-              
+
               <button
                 @click="showEntityOptions = !showEntityOptions"
                 class="entity-options-toggle"
@@ -742,17 +755,20 @@ onMounted(() => {
               <div class="option-section">
                 <div class="section-header">
                   <h4 class="option-section-title">API Permissions</h4>
-                  <button 
+                  <button
                     @click="addPermission"
                     class="add-permission-btn"
-                    :disabled="!availablePermissions.some(p => entityPermissions[p.key] === null)"
+                    :disabled="
+                      !availablePermissions.some(
+                        (p) => entityPermissions[p.key] === null,
+                      )
+                    "
                     title="Add permission"
                   >
                     + Add
                   </button>
                 </div>
-                
-                
+
                 <div class="permissions-list">
                   <RemovableFrame
                     v-for="(value, key) in entityPermissions"
@@ -765,44 +781,53 @@ onMounted(() => {
                       <!-- Permission type selector -->
                       <SelectDropdown
                         :model-value="key"
-                        @update:model-value="(value) => changePermissionType(key, value)"
-                        :options="availablePermissions.map(perm => ({
-                          value: perm.key,
-                          label: perm.label,
-                          disabled: entityPermissions[perm.key] !== null && perm.key !== key
-                        }))"
+                        @update:model-value="
+                          (value) => changePermissionType(key, value)
+                        "
+                        :options="
+                          availablePermissions.map((perm) => ({
+                            value: perm.key,
+                            label: perm.label,
+                            disabled:
+                              entityPermissions[perm.key] !== null &&
+                              perm.key !== key,
+                          }))
+                        "
                         class="permission-selector small"
                       />
-                      
+
                       <!-- Permission level selector -->
                       <SelectDropdown
                         v-model="entityPermissions[key]"
-                        :options="permissionOptions.map(opt => ({
-                          value: opt.value,
-                          label: `${opt.icon} ${opt.label}`
-                        }))"
+                        :options="
+                          permissionOptions.map((opt) => ({
+                            value: opt.value,
+                            label: `${opt.icon} ${opt.label}`,
+                          }))
+                        "
                         class="permission-selector small"
                       />
                     </div>
                   </RemovableFrame>
-                  
                 </div>
               </div>
-              
+
               <!-- Hooks section -->
               <div class="option-section">
                 <div class="section-header">
                   <h4 class="option-section-title">Lifecycle Hooks</h4>
-                  <button 
+                  <button
                     @click="addHook"
                     class="add-permission-btn"
-                    :disabled="!availableHooks.some(h => entityHooks[h.key] === null)"
+                    :disabled="
+                      !availableHooks.some((h) => entityHooks[h.key] === null)
+                    "
                     title="Add hook"
                   >
                     + Add
                   </button>
                 </div>
-                
+
                 <div class="permissions-list">
                   <RemovableFrame
                     v-for="(value, key) in entityHooks"
@@ -815,27 +840,34 @@ onMounted(() => {
                       <!-- Hook type selector -->
                       <SelectDropdown
                         :model-value="key"
-                        @update:model-value="(value) => changeHookType(key, value)"
-                        :options="availableHooks.map(hook => ({
-                          value: hook.key,
-                          label: hook.label,
-                          disabled: entityHooks[hook.key] !== null && hook.key !== key
-                        }))"
+                        @update:model-value="
+                          (value) => changeHookType(key, value)
+                        "
+                        :options="
+                          availableHooks.map((hook) => ({
+                            value: hook.key,
+                            label: hook.label,
+                            disabled:
+                              entityHooks[hook.key] !== null &&
+                              hook.key !== key,
+                          }))
+                        "
                         class="permission-selector small"
                       />
-                      
+
                       <!-- Hook implementation selector -->
                       <SelectDropdown
                         v-model="entityHooks[key]"
-                        :options="hookImplementations.map(impl => ({
-                          value: impl.value,
-                          label: impl.label
-                        }))"
+                        :options="
+                          hookImplementations.map((impl) => ({
+                            value: impl.value,
+                            label: `${impl.icon} ${impl.label}`,
+                          }))
+                        "
                         class="permission-selector small"
                       />
                     </div>
                   </RemovableFrame>
-                  
                 </div>
               </div>
             </div>
@@ -1017,7 +1049,6 @@ onMounted(() => {
 }
 
 .option-section {
-  
 }
 
 .option-section-title {
@@ -1058,7 +1089,6 @@ onMounted(() => {
   cursor: not-allowed;
 }
 
-
 .permissions-list {
   display: flex;
   flex-direction: column;
@@ -1094,7 +1124,6 @@ onMounted(() => {
   color: var(--vp-c-brand-1);
   font-weight: 500;
 }
-
 
 .no-permissions {
   padding: 1rem;

@@ -12,7 +12,7 @@ interface Emits {
 
 const props = withDefaults(defineProps<Props>(), {
   placeholder: 'Select...',
-  class: ''
+  class: '',
 })
 
 const emit = defineEmits<Emits>()
@@ -24,13 +24,13 @@ const updateValue = (event: Event) => {
 </script>
 
 <template>
-  <select 
+  <select
     :value="modelValue"
     @change="updateValue"
     :class="['select-dropdown', props.class]"
   >
-    <option v-if="placeholder" value="" disabled>{{ placeholder }}</option>
-    <option 
+    <!-- <option v-if="placeholder" value="" disabled>{{ placeholder }}</option> -->
+    <option
       v-for="option in options"
       :key="option.value"
       :value="option.value"

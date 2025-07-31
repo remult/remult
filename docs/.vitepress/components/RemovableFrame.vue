@@ -53,23 +53,23 @@ const handleRemove = () => {
 
 .remove-cross {
   position: absolute;
-  top: -9px;
-  right: -9px;
-  width: 18px;
-  height: 18px;
+  top: -6px;
+  right: -6px;
+  width: 14px;
+  height: 14px;
   background: var(--vp-c-danger-1);
   color: white;
   border: none;
   border-radius: 50%;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: bold;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
-  opacity: 0.7;
+  opacity: 0.4;
   z-index: 10;
 }
 
