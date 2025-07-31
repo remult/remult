@@ -803,160 +803,157 @@ onMounted(() => {
       <div class="remultor-builder">
         <div class="remultor-settings">
           <div class="setting-group">
-            <label for="className">Entity definition</label>
-
-            <RemovableFrame :can-remove="false">
-              <!-- Entity basic info - similar to field layout -->
-              <div class="entity-basic">
-                <input
-                  id="className"
-                  v-model="className"
-                  type="text"
-                  placeholder="MyEntity"
-                  class="class-name-input"
-                />
-
-                <button
-                  @click="showEntityOptions = !showEntityOptions"
-                  class="entity-options-toggle"
-                  :class="{ active: showEntityOptions }"
-                  title="Show entity options"
-                >
-                  ⚙️
-                </button>
-              </div>
-
-              <!-- Entity options - collapsible like field options -->
-              <div v-if="showEntityOptions" class="entity-options">
-                <!-- Permissions section -->
-                <div class="option-section">
-                  <div class="section-header">
-                    <h4 class="option-section-title">API Permissions</h4>
-                    <Button
-                      @click="addPermission"
-                      variant="primary"
-                      size="xs"
-                      :disabled="
-                        !availablePermissions.some(
-                          (p) => entityPermissions[p.key] === null,
-                        )
-                      "
-                      title="Add permission"
-                    >
-                      + Add
-                    </Button>
-                  </div>
-
-                  <div class="permissions-list">
-                    <RemovableFrame
-                      v-for="(value, key) in entityPermissions"
-                      v-show="value !== null"
-                      :key="key"
-                      remove-title="Remove permission"
-                      @remove="removePermission(key)"
-                    >
-                      <div class="permission-item">
-                        <!-- Permission type selector -->
-                        <SelectDropdown
-                          :model-value="key"
-                          @update:model-value="
-                            (value) => changePermissionType(key, value)
-                          "
-                          :options="
-                            availablePermissions.map((perm) => ({
-                              value: perm.key,
-                              label: perm.label,
-                              disabled:
-                                entityPermissions[perm.key] !== null &&
-                                perm.key !== key,
-                            }))
-                          "
-                          class="permission-selector small"
-                        />
-
-                        <!-- Permission level selector -->
-                        <SelectDropdown
-                          v-model="entityPermissions[key]"
-                          :options="
-                            permissionOptions.map((opt) => ({
-                              value: opt.value,
-                              label: `${opt.icon} ${opt.label}`,
-                            }))
-                          "
-                          class="permission-selector small"
-                        />
-                      </div>
-                    </RemovableFrame>
-                  </div>
-                </div>
-
-                <!-- Hooks section -->
-                <div class="option-section">
-                  <div class="section-header">
-                    <h4 class="option-section-title">Lifecycle Hooks</h4>
-                    <Button
-                      @click="addHook"
-                      variant="primary"
-                      size="xs"
-                      :disabled="
-                        !availableHooks.some((h) => entityHooks[h.key] === null)
-                      "
-                      title="Add hook"
-                    >
-                      + Add
-                    </Button>
-                  </div>
-
-                  <div class="permissions-list">
-                    <RemovableFrame
-                      v-for="(value, key) in entityHooks"
-                      v-show="value !== null"
-                      :key="key"
-                      remove-title="Remove hook"
-                      @remove="removeHook(key)"
-                    >
-                      <div class="permission-item">
-                        <!-- Hook type selector -->
-                        <SelectDropdown
-                          :model-value="key"
-                          @update:model-value="
-                            (value) => changeHookType(key, value)
-                          "
-                          :options="
-                            availableHooks.map((hook) => ({
-                              value: hook.key,
-                              label: hook.label,
-                              disabled:
-                                entityHooks[hook.key] !== null &&
-                                hook.key !== key,
-                            }))
-                          "
-                          class="permission-selector small"
-                        />
-
-                        <!-- Hook implementation selector -->
-                        <SelectDropdown
-                          v-model="entityHooks[key]"
-                          :options="
-                            hookImplementations.map((impl) => ({
-                              value: impl.value,
-                              label: `${impl.icon} ${impl.label}`,
-                            }))
-                          "
-                          class="permission-selector small"
-                        />
-                      </div>
-                    </RemovableFrame>
-                  </div>
-                </div>
-              </div>
-            </RemovableFrame>
-          </div>
-
-          <div class="setting-group">
-            <label for="fields">Fields</label>
-
+            <label for="className">Entity</label>
             <div class="fields-list">
+              <RemovableFrame :can-remove="false">
+                <!-- Entity basic info - similar to field layout -->
+                <div class="entity-basic">
+                  <input
+                    id="className"
+                    v-model="className"
+                    type="text"
+                    placeholder="MyEntity"
+                    class="class-name-input"
+                  />
+
+                  <button
+                    @click="showEntityOptions = !showEntityOptions"
+                    class="entity-options-toggle"
+                    :class="{ active: showEntityOptions }"
+                    title="Show entity options"
+                  >
+                    ⚙️
+                  </button>
+                </div>
+
+                <!-- Entity options - collapsible like field options -->
+                <div v-if="showEntityOptions" class="entity-options">
+                  <!-- Permissions section -->
+                  <div class="option-section">
+                    <div class="section-header">
+                      <h4 class="option-section-title">API Permissions</h4>
+                      <Button
+                        @click="addPermission"
+                        variant="primary"
+                        size="xs"
+                        :disabled="
+                          !availablePermissions.some(
+                            (p) => entityPermissions[p.key] === null,
+                          )
+                        "
+                        title="Add permission"
+                      >
+                        + Add
+                      </Button>
+                    </div>
+
+                    <div class="permissions-list">
+                      <RemovableFrame
+                        v-for="(value, key) in entityPermissions"
+                        v-show="value !== null"
+                        :key="key"
+                        remove-title="Remove permission"
+                        @remove="removePermission(key)"
+                      >
+                        <div class="permission-item">
+                          <!-- Permission type selector -->
+                          <SelectDropdown
+                            :model-value="key"
+                            @update:model-value="
+                              (value) => changePermissionType(key, value)
+                            "
+                            :options="
+                              availablePermissions.map((perm) => ({
+                                value: perm.key,
+                                label: perm.label,
+                                disabled:
+                                  entityPermissions[perm.key] !== null &&
+                                  perm.key !== key,
+                              }))
+                            "
+                            class="permission-selector small"
+                          />
+
+                          <!-- Permission level selector -->
+                          <SelectDropdown
+                            v-model="entityPermissions[key]"
+                            :options="
+                              permissionOptions.map((opt) => ({
+                                value: opt.value,
+                                label: `${opt.icon} ${opt.label}`,
+                              }))
+                            "
+                            class="permission-selector small"
+                          />
+                        </div>
+                      </RemovableFrame>
+                    </div>
+                  </div>
+
+                  <!-- Hooks section -->
+                  <div class="option-section">
+                    <div class="section-header">
+                      <h4 class="option-section-title">Lifecycle Hooks</h4>
+                      <Button
+                        @click="addHook"
+                        variant="primary"
+                        size="xs"
+                        :disabled="
+                          !availableHooks.some(
+                            (h) => entityHooks[h.key] === null,
+                          )
+                        "
+                        title="Add hook"
+                      >
+                        + Add
+                      </Button>
+                    </div>
+
+                    <div class="permissions-list">
+                      <RemovableFrame
+                        v-for="(value, key) in entityHooks"
+                        v-show="value !== null"
+                        :key="key"
+                        remove-title="Remove hook"
+                        @remove="removeHook(key)"
+                      >
+                        <div class="permission-item">
+                          <!-- Hook type selector -->
+                          <SelectDropdown
+                            :model-value="key"
+                            @update:model-value="
+                              (value) => changeHookType(key, value)
+                            "
+                            :options="
+                              availableHooks.map((hook) => ({
+                                value: hook.key,
+                                label: hook.label,
+                                disabled:
+                                  entityHooks[hook.key] !== null &&
+                                  hook.key !== key,
+                              }))
+                            "
+                            class="permission-selector small"
+                          />
+
+                          <!-- Hook implementation selector -->
+                          <SelectDropdown
+                            v-model="entityHooks[key]"
+                            :options="
+                              hookImplementations.map((impl) => ({
+                                value: impl.value,
+                                label: `${impl.icon} ${impl.label}`,
+                              }))
+                            "
+                            class="permission-selector small"
+                          />
+                        </div>
+                      </RemovableFrame>
+                    </div>
+                  </div>
+                </div>
+              </RemovableFrame>
+
               <FieldBuilder
                 v-for="field in fields"
                 :key="field.id"
@@ -1340,7 +1337,7 @@ onMounted(() => {
 .fields-list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
 .output-header {
