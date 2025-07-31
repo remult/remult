@@ -5,6 +5,7 @@ import SelectDropdown from './SelectDropdown.vue'
 import RemovableFrame from './RemovableFrame.vue'
 import Code from '../../components/homepage/Code.vue'
 import Button from './Button.vue'
+import OptionsRenderer from './OptionsRenderer.vue'
 
 interface RemultField {
   id: string
@@ -14,6 +15,33 @@ interface RemultField {
 }
 
 const className = ref('Task')
+const entityOptions = ref({
+  label: '',
+  dbName: '',
+  sqlExpression: false,
+})
+
+// Define available options for entity (same structure as FieldBuilder)
+const entityAvailableOptions = [
+  {
+    key: 'label',
+    type: 'string' as const,
+    label: 'Label',
+    description: 'Display label for the entity',
+  },
+  {
+    key: 'dbName',
+    type: 'string' as const,
+    label: 'DB Name',
+    description: 'Database table name',
+  },
+  {
+    key: 'sqlExpression',
+    type: 'boolean' as const,
+    label: 'SQL Expression',
+    description: 'Based on SQL expression instead of table',
+  },
+]
 const entityHooks = ref({
   validation: null,
   saving: null,
@@ -151,6 +179,14 @@ const generatedCode = computed(() => {
 
   imports.add('Entity')
 
+  // Check if we need to import remult for currentUser permissions
+  const hasCurrentUserPermissions = Object.values(
+    entityPermissions.value,
+  ).includes('currentUser')
+  if (hasCurrentUserPermissions) {
+    imports.add('remult')
+  }
+
   // Generate field decorators and properties
   fields.value.forEach((field) => {
     // Determine if field is required based on the checkbox value
@@ -164,20 +200,29 @@ const generatedCode = computed(() => {
         if (key === 'defaultValue') return false // Remove defaultValue from decorator
         if (key === 'literalValues' || key === 'constName' || key === 'items')
           return false // These are handled specially
+        if (key === 'sqlExpression') return false // Remove sqlExpression from options object
         return value !== undefined && value !== ''
       },
     )
 
     if (filteredOptions.length > 0) {
-      const formattedOptions = filteredOptions
-        .map(([key, value]) => {
-          if (typeof value === 'string') return `${key}: '${value}'`
-          return `${key}: ${value}`
-        })
-        .join(', ')
+      const formattedOptions = filteredOptions.map(([key, value]) => {
+        if (typeof value === 'string') return `${key}: '${value}'`
+        return `${key}: ${value}`
+      })
 
-      if (formattedOptions) {
-        optionsStr = `({ ${formattedOptions} })`
+      if (formattedOptions.length > 0) {
+        // Format options based on count or if sqlExpression is present
+        if (formattedOptions.length > 3 || field.options.sqlExpression) {
+          // Multi-line format for more than 3 properties or when sqlExpression is present
+          const indentedOptions = formattedOptions
+            .map((opt) => `    ${opt}`)
+            .join(',\n')
+          optionsStr = `({\n${indentedOptions}\n  })`
+        } else {
+          // Single-line format for 3 or fewer properties
+          optionsStr = `({ ${formattedOptions.join(', ')} })`
+        }
       }
     }
 
@@ -315,6 +360,43 @@ const generatedCode = computed(() => {
     } else {
       decorator = `Fields.${field.type}`
     }
+
+    // Add sqlExpression comment inside options if enabled
+    if (field.options.sqlExpression) {
+      // Add comment inside the options object before the closing brace
+      if (optionsStr.includes('({')) {
+        // Insert comment before the closing brace
+        const lastBraceIndex = optionsStr.lastIndexOf('})')
+        if (lastBraceIndex !== -1) {
+          // Find the last property line and insert comment after it
+          const lines = optionsStr.split('\n')
+          const lastPropertyLineIndex = lines.findIndex((line) =>
+            line.trim().endsWith(','),
+          )
+
+          if (lastPropertyLineIndex !== -1) {
+            // Insert comment after the last property line
+            lines.splice(
+              lastPropertyLineIndex + 1,
+              0,
+              `    // sqlExpression: () => sqlRelations(${className.value}).user.name`,
+            )
+            optionsStr = lines.join('\n')
+          } else {
+            // Fallback: insert before closing brace
+            const beforeComment = optionsStr.slice(0, lastBraceIndex)
+            optionsStr =
+              beforeComment +
+              `\n    // sqlExpression: () => sqlRelations(${className.value}).user.name\n` +
+              optionsStr.slice(lastBraceIndex)
+          }
+        }
+      } else {
+        // If no options or empty options, create options object with just the comment
+        optionsStr = `({\n    // sqlExpression: () => sqlRelations(${className.value}).user.name\n  })`
+      }
+    }
+
     fieldLines.push(`  @${decorator}${optionsStr}`)
 
     // Determine TypeScript type
@@ -438,14 +520,15 @@ const generatedCode = computed(() => {
     }
 
     fieldLines.push(propertyDeclaration)
-    
+
     // Don't add empty line if this field is a foreign key for the next relation field
-    const currentIndex = fields.value.findIndex(f => f.id === field.id)
+    const currentIndex = fields.value.findIndex((f) => f.id === field.id)
     const nextField = fields.value[currentIndex + 1]
-    const isFollowedByRelationUsingThisField = nextField && 
-      (nextField.type === 'toOne' || nextField.type === 'toMany') && 
+    const isFollowedByRelationUsingThisField =
+      nextField &&
+      (nextField.type === 'toOne' || nextField.type === 'toMany') &&
       nextField.options.foreignKey === field.name
-    
+
     if (!isFollowedByRelationUsingThisField) {
       fieldLines.push('')
     }
@@ -471,7 +554,20 @@ const generatedCode = computed(() => {
   }
 
   // Generate entity decorator options
-  const entityOptions = []
+  const decoratorOptions = []
+
+  // Add entity options if provided
+  if (entityOptions.value.label) {
+    decoratorOptions.push(`  label: '${entityOptions.value.label}'`)
+  }
+  if (entityOptions.value.dbName) {
+    decoratorOptions.push(`  dbName: '${entityOptions.value.dbName}'`)
+  }
+  if (entityOptions.value.sqlExpression) {
+    decoratorOptions.push(`  // acting like a view
+  // sqlExpression: \`SELECT id, name FROM employees
+  //                 UNION ALL SELECT id, name FROM contractors\``)
+  }
 
   // Add permissions
   const activePermissions = Object.entries(entityPermissions.value)
@@ -479,7 +575,14 @@ const generatedCode = computed(() => {
     .map(([key, value]) => {
       let permValue = value
       if (value === 'currentUser') {
-        permValue = 'remult.user && item.userId === remult.user?.id'
+        // For instance-level permissions, generate a function with item parameter
+        if (
+          ['allowApiUpdate', 'allowApiDelete', 'allowApiInsert'].includes(key)
+        ) {
+          permValue = '(item) => remult.user && item.userId === remult.user?.id'
+        } else {
+          permValue = 'remult.user && item.userId === remult.user?.id'
+        }
       } else if (typeof value === 'string' && !value.startsWith('Allow.')) {
         permValue = `'${value}'`
       }
@@ -487,7 +590,7 @@ const generatedCode = computed(() => {
     })
 
   if (activePermissions.length > 0) {
-    entityOptions.push(...activePermissions)
+    decoratorOptions.push(...activePermissions)
   }
 
   // Add hooks
@@ -499,18 +602,33 @@ const generatedCode = computed(() => {
       } else if (implementation === 'console') {
         hookCode = `  ${hook}: () => { console.log('${hook} hook called') }`
       } else if (implementation === 'custom') {
-        hookCode = `  ${hook}: () => {\n    // Custom ${hook} implementation\n  }`
+        // Add proper arguments for each hook type
+        let args = ''
+        switch (hook) {
+          case 'validation':
+            args = `item, e`
+            break
+          case 'saving':
+          case 'saved':
+          case 'deleting':
+          case 'deleted':
+            args = `item, e`
+            break
+          default:
+            args = `item, e`
+        }
+        hookCode = `  ${hook}: async (${args}) => {\n    // Custom ${hook} implementation\n  }`
       }
       return hookCode
     })
-    entityOptions.push(...hookMethods)
+    decoratorOptions.push(...hookMethods)
   }
 
   // Generate entity decorator
   let entityDecorator = `@Entity<${className.value}>('${entityKey.value}'`
 
-  if (entityOptions.length > 0) {
-    entityDecorator += `, {\n${entityOptions.join(',\n')}\n}`
+  if (decoratorOptions.length > 0) {
+    entityDecorator += `, {\n${decoratorOptions.join(',\n')}\n}`
   }
 
   entityDecorator += ')'
@@ -573,6 +691,10 @@ const updateField = (fieldId: string, updates: Partial<RemultField>) => {
   }
 }
 
+const updateEntityOption = (key: string, value: any) => {
+  entityOptions.value[key] = value
+}
+
 // Handle keyboard navigation between fields
 const handleFieldFocusNext = (fieldId: string) => {
   const currentIndex = fields.value.findIndex((f) => f.id === fieldId)
@@ -604,6 +726,7 @@ const updateUrlFromState = () => {
 
   const state = {
     className: className.value,
+    entityOptions: entityOptions.value,
     fields: fields.value,
     hooks: entityHooks.value,
     permissions: entityPermissions.value,
@@ -625,6 +748,7 @@ const loadStateFromUrl = () => {
     try {
       const state = JSON.parse(atob(encoded))
       if (state.className) className.value = state.className
+      if (state.entityOptions) entityOptions.value = state.entityOptions
       if (state.fields) fields.value = state.fields
       if (state.hooks) entityHooks.value = state.hooks
       if (state.permissions) entityPermissions.value = state.permissions
@@ -744,6 +868,11 @@ const copyGeneratedCode = async () => {
 // Reset form to default state
 const resetForm = () => {
   className.value = 'Task'
+  entityOptions.value = {
+    label: '',
+    dbName: '',
+    sqlExpression: false,
+  }
   fields.value = [
     {
       id: '1',
@@ -771,7 +900,7 @@ const resetForm = () => {
 
 // Watch for changes and update URL
 watch(
-  [className, fields, entityHooks, entityPermissions],
+  [className, entityOptions, fields, entityHooks, entityPermissions],
   () => {
     if (syncStateWithUrl.value) {
       updateUrlFromState()
@@ -835,7 +964,16 @@ onMounted(() => {
                   </button>
                 </div>
 
-                <!-- Entity options - collapsible like field options -->
+                <!-- Entity basic options using OptionsRenderer -->
+                <OptionsRenderer
+                  v-if="showEntityOptions"
+                  :options="entityAvailableOptions"
+                  :values="entityOptions"
+                  id-prefix="entity"
+                  @update="updateEntityOption"
+                />
+
+                <!-- Entity advanced options -->
                 <div v-if="showEntityOptions" class="entity-options">
                   <!-- Permissions section -->
                   <div class="option-section">

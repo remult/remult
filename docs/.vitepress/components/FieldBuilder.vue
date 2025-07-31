@@ -2,6 +2,7 @@
 import { ref, computed, nextTick } from 'vue'
 import SelectDropdown from './SelectDropdown.vue'
 import RemovableFrame from './RemovableFrame.vue'
+import OptionsRenderer from './OptionsRenderer.vue'
 
 interface RemultField {
   id: string
@@ -82,6 +83,9 @@ const fieldTypes = [
 
 // Available options based on field type
 const availableOptions = computed(() => {
+  // Field types that support sqlExpression (everything before 'id' in the list)
+  const sqlExpressionSupportedTypes = ['string', 'number', 'integer', 'boolean', 'date', 'dateOnly']
+  
   const baseOptions = [
     {
       key: 'required',
@@ -99,7 +103,7 @@ const availableOptions = computed(() => {
       key: 'label',
       type: 'string',
       label: 'Label',
-      description: 'Display label for the field',
+      description: 'Display label',
     },
     {
       key: 'dbName',
@@ -108,6 +112,16 @@ const availableOptions = computed(() => {
       description: 'Database column name',
     },
   ]
+
+  // Add sqlExpression option only for supported field types
+  if (sqlExpressionSupportedTypes.includes(props.field.type)) {
+    baseOptions.push({
+      key: 'sqlExpression',
+      type: 'boolean',
+      label: 'SQL Expression',
+      description: 'Computed from SQL expression',
+    })
+  }
 
   const typeSpecificOptions: Record<string, any[]> = {
     string: [
@@ -231,7 +245,7 @@ const availableOptions = computed(() => {
         key: 'label',
         type: 'string',
         label: 'Label',
-        description: 'Display label for the relation (e.g. The Customer)',
+        description: 'Display label (e.g. The Customer)',
       },
       {
         key: 'defaultIncluded',
@@ -257,7 +271,7 @@ const availableOptions = computed(() => {
         key: 'label',
         type: 'string',
         label: 'Label',
-        description: 'Display label for the relation (e.g. The Comments)',
+        description: 'Display label (e.g. The Comments)',
       },
       {
         key: 'defaultIncluded',
@@ -440,67 +454,13 @@ defineExpose({ focusInput })
         </div>
       </div>
 
-      <div v-if="showOptions" class="field-options">
-        <div
-          v-for="option in availableOptions"
-          :key="option.key"
-          class="option-group"
-        >
-          <label :for="`${field.id}-${option.key}`" class="option-label">
-            {{ option.label }}
-          </label>
-
-          <!-- Boolean options -->
-          <input
-            v-if="option.type === 'boolean'"
-            :id="`${field.id}-${option.key}`"
-            type="checkbox"
-            :checked="field.options[option.key] === true"
-            @change="
-              updateOption(
-                option.key,
-                ($event.target as HTMLInputElement).checked,
-              )
-            "
-            class="option-checkbox"
-          />
-
-          <!-- Number options -->
-          <input
-            v-else-if="option.type === 'number'"
-            :id="`${field.id}-${option.key}`"
-            type="number"
-            :value="field.options[option.key] || ''"
-            @input="
-              updateOption(
-                option.key,
-                parseInt(($event.target as HTMLInputElement).value) ||
-                  undefined,
-              )
-            "
-            class="option-input"
-            :placeholder="option.description"
-          />
-
-          <!-- String options -->
-          <input
-            v-else
-            :id="`${field.id}-${option.key}`"
-            type="text"
-            :value="field.options[option.key] || ''"
-            @input="
-              updateOption(
-                option.key,
-                ($event.target as HTMLInputElement).value || undefined,
-              )
-            "
-            class="option-input"
-            :placeholder="option.description"
-          />
-
-          <!-- Remove or comment out the description below input -->
-          <!-- <div class="option-description">{{ option.description }}</div> -->
-        </div>
+      <div v-if="showOptions">
+        <OptionsRenderer
+          :options="availableOptions"
+          :values="field.options"
+          :id-prefix="field.id"
+          @update="updateOption"
+        />
 
         <!-- Field type description at the bottom of parameters -->
         <div v-if="selectedFieldType" class="field-type-description">
@@ -596,59 +556,6 @@ defineExpose({ focusInput })
   font-size: 0.75rem;
   color: var(--vp-c-text-2);
   font-style: italic;
-}
-
-.field-options {
-  border-top: 1px solid var(--vp-c-border);
-  padding-top: 0.5rem;
-  margin-top: 0.5rem;
-  display: grid;
-  gap: 0.5rem;
-}
-
-.option-group {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.option-label {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--vp-c-text-1);
-  line-height: 1.4;
-}
-
-.option-input {
-  padding: 0.375rem;
-  border: 1px solid var(--vp-c-border);
-  border-radius: 0;
-  background: var(--vp-c-bg);
-  color: var(--vp-c-text-1);
-  font-size: 0.75rem;
-}
-
-.option-input:focus {
-  outline: none;
-  border-color: var(--vp-c-brand-1);
-}
-
-.option-input::placeholder {
-  opacity: 0.5;
-  color: var(--vp-c-text-3);
-}
-
-.option-checkbox {
-  justify-self: start;
-  margin-top: 0.125rem;
-}
-
-.option-description {
-  grid-column: 1 / -1;
-  font-size: 0.625rem;
-  color: var(--vp-c-text-3);
-  margin-top: -0.25rem;
 }
 
 .field-type-description {
