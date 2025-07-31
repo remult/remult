@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick, onMounted, watch } from 'vue'
 import FieldBuilder from './FieldBuilder.vue'
 import Code from '../../components/homepage/Code.vue'
 
@@ -11,6 +11,13 @@ interface RemultField {
 }
 
 const className = ref('Task')
+const entityHooks = ref({
+  saving: false,
+  saved: false,
+  deleting: false,
+  deleted: false
+})
+const useEntityFunction = ref(false)
 const fields = ref<RemultField[]>([
   {
     id: '1',
@@ -381,19 +388,48 @@ const generatedCode = computed(() => {
           .join('\n')}`
       : ''
 
+  // Add lifecycle hook imports if needed
+  const selectedHooks = Object.entries(entityHooks.value).filter(([_, enabled]) => enabled).map(([hook]) => hook)
+  if (selectedHooks.length > 0) {
+    imports.add('EntityOptions')
+  }
+
+  // Add entity function import if enabled
+  if (useEntityFunction.value) {
+    entityImportsStr += `\nimport { entity } from 'remult'`
+  }
+
+  // Generate entity decorator options
+  let entityOptions = `'${entityKey.value}'`
+  const optionsParts = []
+  
+  if (selectedHooks.length > 0) {
+    const hookMethods = selectedHooks.map(hook => `    ${hook}: () => { /* TODO: implement ${hook} hook */ }`).join(',\n')
+    optionsParts.push(`{\n  key: '${entityKey.value}',\n${hookMethods}\n  }`)
+  }
+  
+  if (optionsParts.length > 0) {
+    entityOptions = optionsParts.join(', ')
+  }
+
+  // Generate the class
+  let classDefinition = `@Entity(${entityOptions})\nexport class ${className.value} {\n${fieldLines.join('\n').trimEnd()}\n}`
+  
+  // Add entity function if enabled
+  if (useEntityFunction.value) {
+    classDefinition += `\n\nexport const ${className.value.toLowerCase()}Repository = entity(${className.value})`
+  }
+
   return `import { ${Array.from(imports).join(
     ', ',
   )} } from 'remult'${entityImportsStr}
 
-${preClassContent}@Entity('${entityKey.value}')
-export class ${className.value} {
-${fieldLines.join('\n').trimEnd()}
-}`
+${preClassContent}${classDefinition}`
 })
 
 // Function removed - we now handle default values in the decorator options and property assignment
 
-const addField = () => {
+const addField = async () => {
   const newId = (
     Math.max(...fields.value.map((f) => parseInt(f.id)), 0) + 1
   ).toString()
@@ -405,6 +441,14 @@ const addField = () => {
   }
 
   fields.value.push(newField)
+  
+  // Auto-focus the new field
+  await nextTick()
+  const newFieldComponent = document.querySelector(`[data-field-id="${newId}"]`)
+  if (newFieldComponent) {
+    const input = newFieldComponent.querySelector('input')
+    input?.focus()
+  }
 }
 
 const removeField = (fieldId: string) => {
@@ -429,6 +473,77 @@ const updateField = (fieldId: string, updates: Partial<RemultField>) => {
   }
 }
 
+// Handle keyboard navigation between fields
+const handleFieldFocusNext = (fieldId: string) => {
+  const currentIndex = fields.value.findIndex(f => f.id === fieldId)
+  if (currentIndex < fields.value.length - 1) {
+    const nextFieldId = fields.value[currentIndex + 1].id
+    const nextField = document.querySelector(`[data-field-id="${nextFieldId}"]`)
+    if (nextField) {
+      const input = nextField.querySelector('input')
+      input?.focus()
+    }
+  }
+}
+
+const handleFieldFocusPrevious = (fieldId: string) => {
+  const currentIndex = fields.value.findIndex(f => f.id === fieldId)
+  if (currentIndex > 0) {
+    const prevFieldId = fields.value[currentIndex - 1].id
+    const prevField = document.querySelector(`[data-field-id="${prevFieldId}"]`)
+    if (prevField) {
+      const input = prevField.querySelector('input')
+      input?.focus()
+    }
+  }
+}
+
+// URL sharing functionality
+const updateUrlFromState = () => {
+  if (typeof window === 'undefined') return
+  
+  const state = {
+    className: className.value,
+    fields: fields.value,
+    hooks: entityHooks.value,
+    useEntity: useEntityFunction.value
+  }
+  
+  const encoded = btoa(JSON.stringify(state))
+  const url = new URL(window.location.href)
+  url.searchParams.set('remultor', encoded)
+  window.history.replaceState(null, '', url.toString())
+}
+
+const loadStateFromUrl = () => {
+  if (typeof window === 'undefined') return
+  
+  const url = new URL(window.location.href)
+  const encoded = url.searchParams.get('remultor')
+  
+  if (encoded) {
+    try {
+      const state = JSON.parse(atob(encoded))
+      if (state.className) className.value = state.className
+      if (state.fields) fields.value = state.fields
+      if (state.hooks) entityHooks.value = state.hooks
+      if (state.useEntity !== undefined) useEntityFunction.value = state.useEntity
+    } catch (e) {
+      console.warn('Failed to load state from URL:', e)
+    }
+  }
+}
+
+const shareUrl = async () => {
+  updateUrlFromState()
+  try {
+    await navigator.clipboard.writeText(window.location.href)
+    // Could add toast notification here
+  } catch (e) {
+    console.warn('Failed to copy URL to clipboard:', e)
+  }
+}
+
 // Copy to clipboard functionality for generated code
 const copyGeneratedCode = async () => {
   try {
@@ -438,6 +553,16 @@ const copyGeneratedCode = async () => {
     // Optionally, handle error (e.g., fallback or error message)
   }
 }
+
+// Watch for changes and update URL
+watch([className, fields, entityHooks, useEntityFunction], () => {
+  updateUrlFromState()
+}, { deep: true })
+
+// Load state from URL on mount
+onMounted(() => {
+  loadStateFromUrl()
+})
 </script>
 
 <template>
@@ -454,14 +579,42 @@ const copyGeneratedCode = async () => {
               placeholder="MyEntity"
               class="class-name-input"
             />
+            
+            <!-- Hooks checkboxes -->
+            <div class="hooks-section">
+              <label class="section-label">Lifecycle Hooks</label>
+              <div class="hooks-grid">
+                <label class="hook-checkbox">
+                  <input type="checkbox" v-model="entityHooks.saving" />
+                  <span>saving</span>
+                </label>
+                <label class="hook-checkbox">
+                  <input type="checkbox" v-model="entityHooks.saved" />
+                  <span>saved</span>
+                </label>
+                <label class="hook-checkbox">
+                  <input type="checkbox" v-model="entityHooks.deleting" />
+                  <span>deleting</span>
+                </label>
+                <label class="hook-checkbox">
+                  <input type="checkbox" v-model="entityHooks.deleted" />
+                  <span>deleted</span>
+                </label>
+              </div>
+            </div>
+            
+            <!-- Entity function checkbox -->
+            <div class="entity-function-section">
+              <label class="hook-checkbox">
+                <input type="checkbox" v-model="useEntityFunction" />
+                <span>Add entity&lt;{{ className }}&gt;() repository</span>
+              </label>
+            </div>
           </div>
 
           <div class="setting-group">
             <div class="fields-header">
               <h3>Fields</h3>
-              <button @click="addField" class="add-field-btn">
-                + Add Field
-              </button>
             </div>
 
             <div class="fields-list">
@@ -470,10 +623,18 @@ const copyGeneratedCode = async () => {
                 :key="field.id"
                 :field="field"
                 :can-remove="fields.length > 1"
+                :data-field-id="field.id"
                 @update="updateField"
                 @remove="removeField"
+                @focus-next="handleFieldFocusNext"
+                @focus-previous="handleFieldFocusPrevious"
               />
             </div>
+            
+            <!-- Add field button at bottom -->
+            <button @click="addField" class="add-field-btn add-field-bottom">
+              + Add Field
+            </button>
           </div>
         </div>
       </div>
@@ -481,28 +642,53 @@ const copyGeneratedCode = async () => {
       <div class="remultor-output">
         <div class="output-header">
           <h3>Generated Code</h3>
-          <button
-            class="copy-button"
-            @click="copyGeneratedCode"
-            title="Copy code"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+          <div class="output-actions">
+            <button
+              class="copy-button"
+              @click="shareUrl"
+              title="Copy shareable URL"
             >
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path
-                d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
-              ></path>
-            </svg>
-          </button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="m6 9 6 6 6-6"/>
+                <path d="M10 4v9"/>
+                <circle cx="4" cy="9" r="2"/>
+                <circle cx="20" cy="9" r="2"/>
+                <path d="M14 5a4 4 0 0 0-4 4"/>
+              </svg>
+            </button>
+            <button
+              class="copy-button"
+              @click="copyGeneratedCode"
+              title="Copy code"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path
+                  d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                ></path>
+              </svg>
+            </button>
+          </div>
         </div>
         <div class="editor-code">
           <Code :code="generatedCode" language="typescript" />
@@ -590,6 +776,50 @@ const copyGeneratedCode = async () => {
   background: var(--vp-c-brand-2);
 }
 
+.add-field-bottom {
+  width: 100%;
+  margin-top: 1rem;
+  justify-self: center;
+}
+
+.hooks-section {
+  margin-top: 1rem;
+}
+
+.section-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+  font-size: 0.875rem;
+}
+
+.hooks-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.hook-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  color: var(--vp-c-text-1);
+}
+
+.hook-checkbox input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+}
+
+.entity-function-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--vp-c-border);
+}
+
 .fields-list {
   display: flex;
   flex-direction: column;
@@ -607,6 +837,11 @@ const copyGeneratedCode = async () => {
 .output-header h3 {
   margin: 0;
   color: var(--vp-c-text-1);
+}
+
+.output-actions {
+  display: flex;
+  gap: 0.5rem;
 }
 
 .output-header .copy-button {

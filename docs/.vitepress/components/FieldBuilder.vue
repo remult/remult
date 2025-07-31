@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 
 interface RemultField {
   id: string
@@ -16,12 +16,16 @@ interface Props {
 interface Emits {
   (e: 'update', fieldId: string, updates: Partial<RemultField>): void
   (e: 'remove', fieldId: string): void
+  (e: 'focusNext', fieldId: string): void
+  (e: 'focusPrevious', fieldId: string): void
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const showOptions = ref(false)
+const showLabelInput = ref(false)
+const fieldNameInput = ref<HTMLInputElement>()
 
 // Available field types from Fields.ts
 const fieldTypes = [
@@ -95,6 +99,12 @@ const availableOptions = computed(() => {
       type: 'string',
       label: 'Label',
       description: 'Display label for the field',
+    },
+    {
+      key: 'dbName',
+      type: 'string',
+      label: 'DB Name',
+      description: 'Database column name',
     },
   ]
 
@@ -257,14 +267,14 @@ const availableOptions = computed(() => {
     ],
   }
 
-  // For createdAt and updatedAt, only allow label option from baseOptions
+  // For createdAt and updatedAt, no options needed since label is now direct
   if (props.field.type === 'createdAt' || props.field.type === 'updatedAt') {
-    return [baseOptions.find((opt) => opt.key === 'label')!]
+    return []
   }
 
-  // For ID fields, allow label and allowNull options (no required option)
+  // For ID fields, allow allowNull option only (no required or label since label is direct)
   if (props.field.type === 'id') {
-    return baseOptions.filter((opt) => opt.key !== 'required')
+    return baseOptions.filter((opt) => opt.key !== 'required' && opt.key !== 'label')
   }
 
   // For fields with no options (autoIncrement), return empty array
@@ -272,22 +282,22 @@ const availableOptions = computed(() => {
     return []
   }
 
-  // For relation fields, only return type-specific options (no base options)
+  // For relation fields, return type-specific options but exclude label (now direct)
   if (['toOne', 'toMany'].includes(props.field.type)) {
-    return typeSpecificOptions[props.field.type] || []
+    return (typeSpecificOptions[props.field.type] || []).filter(opt => opt.key !== 'label')
   }
 
-  // For date and dateOnly, only return base options (no default value)
+  // For date and dateOnly, only return base options (no default value) but exclude label
   if (['date', 'dateOnly'].includes(props.field.type)) {
-    return baseOptions
+    return baseOptions.filter(opt => opt.key !== 'label')
   }
 
-  // For boolean, only return base options (no default value)
+  // For boolean, only return base options (no default value) but exclude label
   if (props.field.type === 'boolean') {
-    return baseOptions
+    return baseOptions.filter(opt => opt.key !== 'label')
   }
 
-  return [...baseOptions, ...(typeSpecificOptions[props.field.type] || [])]
+  return [...baseOptions.filter(opt => opt.key !== 'label'), ...(typeSpecificOptions[props.field.type] || [])]
 })
 
 const updateField = (updates: Partial<RemultField>) => {
@@ -366,6 +376,28 @@ const selectedFieldType = computed(() =>
 
 // Add computed property to check if there are options
 const hasOptions = computed(() => availableOptions.value.length > 0)
+
+// Handle keyboard navigation
+const handleKeyDown = (event: KeyboardEvent) => {
+  if (event.key === 'Enter' || event.key === 'ArrowDown') {
+    event.preventDefault()
+    emit('focusNext', props.field.id)
+  } else if (event.key === 'ArrowUp') {
+    event.preventDefault()
+    emit('focusPrevious', props.field.id)
+  }
+}
+
+// Auto-focus new input
+const focusInput = async () => {
+  await nextTick()
+  if (fieldNameInput.value) {
+    fieldNameInput.value.focus()
+  }
+}
+
+// Expose focus method
+defineExpose({ focusInput })
 </script>
 
 <template>
@@ -377,6 +409,8 @@ const hasOptions = computed(() => availableOptions.value.length > 0)
           @input="updateFieldName(($event.target as HTMLInputElement).value)"
           placeholder="Field name"
           class="field-name-input"
+          ref="fieldNameInput"
+          @keydown="handleKeyDown"
         />
 
         <select
@@ -402,20 +436,25 @@ const hasOptions = computed(() => availableOptions.value.length > 0)
         >
           ⚙️
         </button>
-
-        <button
-          v-if="canRemove"
-          @click="removeField"
-          class="remove-btn"
-          title="Remove field"
-        >
-          🗑️
-        </button>
       </div>
 
-      <div v-if="selectedFieldType" class="field-description">
-        {{ selectedFieldType.description }}
-      </div>
+      <!-- Label input directly outside parameters -->
+      <input
+        v-if="field.options.label !== undefined || showLabelInput"
+        :value="field.options.label || ''"
+        @input="updateOption('label', ($event.target as HTMLInputElement).value)"
+        placeholder="Field label (optional)"
+        class="field-label-input"
+        @keydown="handleKeyDown"
+      />
+      <button
+        v-if="!field.options.label && !showLabelInput"
+        @click="showLabelInput = true; $nextTick(() => $el.querySelector('.field-label-input')?.focus())"
+        class="add-label-btn"
+        title="Add label"
+      >
+        + Label
+      </button>
     </div>
 
     <div v-if="showOptions" class="field-options">
@@ -479,6 +518,17 @@ const hasOptions = computed(() => availableOptions.value.length > 0)
         <!-- <div class="option-description">{{ option.description }}</div> -->
       </div>
     </div>
+    
+    <!-- Cross button for removal positioned at top right of entire field frame -->
+    <button
+      v-if="canRemove"
+      @click="removeField"
+      class="remove-cross"
+      title="Remove field"
+      tabindex="-1"
+    >
+      ×
+    </button>
   </div>
 </template>
 
@@ -489,6 +539,7 @@ const hasOptions = computed(() => availableOptions.value.length > 0)
   border-radius: 0;
   padding: 1rem;
   transition: border-color 0.2s;
+  position: relative;
 }
 
 .field-builder:hover {
@@ -633,6 +684,73 @@ const hasOptions = computed(() => availableOptions.value.length > 0)
   font-size: 0.625rem;
   color: var(--vp-c-text-3);
   margin-top: -0.25rem;
+}
+
+.field-label-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 0;
+  background: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-1);
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  transition: border-color 0.2s;
+}
+
+.field-label-input:focus {
+  outline: none;
+  border-color: var(--vp-c-brand-1);
+}
+
+.add-label-btn {
+  padding: 0.25rem 0.5rem;
+  background: transparent;
+  border: 1px dashed var(--vp-c-border);
+  border-radius: 0;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: var(--vp-c-text-2);
+  margin-top: 0.5rem;
+  transition: all 0.2s;
+}
+
+.add-label-btn:hover {
+  background: var(--vp-c-bg-soft);
+  border-color: var(--vp-c-brand-1);
+  color: var(--vp-c-text-1);
+}
+
+.remove-cross {
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  width: 18px;
+  height: 18px;
+  background: var(--vp-c-danger-1);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  opacity: 0.7;
+  z-index: 10;
+}
+
+.remove-cross:hover {
+  opacity: 1;
+  background: var(--vp-c-danger-2);
+  transform: scale(1.1);
+}
+
+.remove-cross:focus {
+  outline: none;
 }
 
 @media (max-width: 640px) {
