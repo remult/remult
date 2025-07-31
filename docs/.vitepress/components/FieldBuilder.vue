@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, nextTick } from 'vue'
+import SelectDropdown from './SelectDropdown.vue'
 
 interface RemultField {
   id: string
@@ -412,19 +413,12 @@ defineExpose({ focusInput })
           @keydown="handleKeyDown"
         />
 
-        <select
-          :value="field.type"
-          @change="updateFieldType(($event.target as HTMLSelectElement).value)"
+        <SelectDropdown
+          :model-value="field.type"
+          @update:model-value="updateFieldType"
+          :options="fieldTypes.map(t => ({ value: t.value, label: t.label }))"
           class="field-type-select"
-        >
-          <option
-            v-for="type in fieldTypes"
-            :key="type.value"
-            :value="type.value"
-          >
-            {{ type.label }}
-          </option>
-        </select>
+        />
 
         <button
           @click="showOptions = !showOptions"
@@ -557,29 +551,7 @@ defineExpose({ focusInput })
 }
 
 .field-type-select {
-  flex: 1;
-  padding: 0.5rem;
-  border: 1px solid var(--vp-c-border);
-  border-radius: 0;
-  background: var(--vp-c-bg);
-  color: var(--vp-c-text-1);
-  font-size: 0.875rem;
-  cursor: pointer;
   max-width: 160px;
-  height: 36px;
-  box-sizing: border-box;
-  line-height: 1.2;
-  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23666' d='M8 11l-5-5h10z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.5rem center;
-  background-size: 12px;
-  padding-right: 2rem;
-  appearance: none;
-}
-
-.field-type-select:focus {
-  outline: none;
-  border-color: var(--vp-c-brand-1);
 }
 
 .options-toggle {

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, onMounted, watch } from 'vue'
 import FieldBuilder from './FieldBuilder.vue'
+import SelectDropdown from './SelectDropdown.vue'
 import Code from '../../components/homepage/Code.vue'
 
 interface RemultField {
@@ -711,34 +712,26 @@ onMounted(() => {
                     class="permission-item"
                   >
                     <!-- Permission type selector -->
-                    <select 
-                      :value="key"
-                      @change="changePermissionType(key, ($event.target as HTMLSelectElement).value)"
-                      class="permission-selector"
-                    >
-                      <option 
-                        v-for="perm in availablePermissions" 
-                        :key="perm.key" 
-                        :value="perm.key"
-                        :disabled="entityPermissions[perm.key] !== null && perm.key !== key"
-                      >
-                        {{ perm.label }}
-                      </option>
-                    </select>
+                    <SelectDropdown
+                      :model-value="key"
+                      @update:model-value="(value) => changePermissionType(key, value)"
+                      :options="availablePermissions.map(perm => ({
+                        value: perm.key,
+                        label: perm.label,
+                        disabled: entityPermissions[perm.key] !== null && perm.key !== key
+                      }))"
+                      class="permission-selector small"
+                    />
                     
                     <!-- Permission level selector -->
-                    <select 
+                    <SelectDropdown
                       v-model="entityPermissions[key]"
-                      class="permission-selector"
-                    >
-                      <option 
-                        v-for="option in permissionOptions" 
-                        :key="option.value" 
-                        :value="option.value"
-                      >
-                        {{ option.icon }} {{ option.label }}
-                      </option>
-                    </select>
+                      :options="permissionOptions.map(opt => ({
+                        value: opt.value,
+                        label: `${opt.icon} ${opt.label}`
+                      }))"
+                      class="permission-selector small"
+                    />
                     
                     <!-- Remove button -->
                     <button
@@ -1024,18 +1017,6 @@ onMounted(() => {
 
 .permission-selector {
   flex: 1;
-  padding: 0.375rem;
-  border: 1px solid var(--vp-c-border);
-  border-radius: 3px;
-  background: var(--vp-c-bg);
-  color: var(--vp-c-text-1);
-  font-size: 0.75rem;
-  cursor: pointer;
-}
-
-.permission-selector:focus {
-  outline: none;
-  border-color: var(--vp-c-brand-1);
 }
 
 .permission-status {
