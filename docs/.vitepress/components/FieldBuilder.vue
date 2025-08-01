@@ -232,19 +232,13 @@ const availableOptions = computed(() => {
         key: 'entity',
         type: 'string',
         label: 'Entity',
-        description: 'Related entity class name (e.g. User, Category)',
+        description: 'e.g. User, Category',
       },
       {
         key: 'foreignKey',
         type: 'string',
-        label: 'Foreign Key',
-        description: 'Foreign key field name (e.g. userId, categoryId)',
-      },
-      {
-        key: 'label',
-        type: 'string',
-        label: 'Label',
-        description: 'Display label (e.g. The Customer)',
+        label: 'Field reference',
+        description: 'e.g. userId, categoryId',
       },
       {
         key: 'defaultIncluded',
@@ -258,19 +252,13 @@ const availableOptions = computed(() => {
         key: 'entity',
         type: 'string',
         label: 'Entity',
-        description: 'Related entity class name (e.g. User, Category)',
+        description: 'e.g. User, Category',
       },
       {
         key: 'foreignKey',
         type: 'string',
-        label: 'Foreign Key',
-        description: 'Foreign key field name in related entity (e.g. taskId)',
-      },
-      {
-        key: 'label',
-        type: 'string',
-        label: 'Label',
-        description: 'Display label (e.g. The Comments)',
+        label: 'Field reference',
+        description: 'e.g. taskId',
       },
       {
         key: 'defaultIncluded',
@@ -281,9 +269,9 @@ const availableOptions = computed(() => {
     ],
   }
 
-  // For createdAt and updatedAt, only allow label option from baseOptions
+  // For createdAt and updatedAt, allow label and dbName options from baseOptions
   if (props.field.type === 'createdAt' || props.field.type === 'updatedAt') {
-    return [baseOptions.find((opt) => opt.key === 'label')!]
+    return baseOptions.filter((opt) => ['label', 'dbName'].includes(opt.key))
   }
 
   // For ID fields, allow label and allowNull options (no required option)
@@ -291,14 +279,15 @@ const availableOptions = computed(() => {
     return baseOptions.filter((opt) => opt.key !== 'required')
   }
 
-  // For fields with no options (autoIncrement), return empty array
+  // For autoIncrement fields, allow label and dbName options
   if (['autoIncrement'].includes(props.field.type)) {
-    return []
+    return baseOptions.filter((opt) => ['label', 'dbName'].includes(opt.key))
   }
 
-  // For relation fields, only return type-specific options (no base options)
+  // For relation fields, combine label from baseOptions with type-specific options
   if (['toOne', 'toMany'].includes(props.field.type)) {
-    return typeSpecificOptions[props.field.type] || []
+    const labelOption = baseOptions.find((opt) => opt.key === 'label')!
+    return [labelOption, ...(typeSpecificOptions[props.field.type] || [])]
   }
 
   // For date and dateOnly, only return base options (no default value)
