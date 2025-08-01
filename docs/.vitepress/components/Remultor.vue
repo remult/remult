@@ -701,6 +701,10 @@ const handleFieldFocusPrevious = (fieldId: string) => {
   }
 }
 
+const handleAddFieldAndFocus = async () => {
+  await addField()
+}
+
 // URL sharing functionality
 const updateUrlFromState = () => {
   if (typeof window === 'undefined') return
@@ -1086,15 +1090,17 @@ onMounted(() => {
               </RemovableFrame>
 
               <FieldBuilder
-                v-for="field in fields"
+                v-for="(field, index) in fields"
                 :key="field.id"
                 :field="field"
                 :can-remove="fields.length > 1"
+                :is-last-field="index === fields.length - 1"
                 :data-field-id="field.id"
                 @update="updateField"
                 @remove="removeField"
                 @focus-next="handleFieldFocusNext"
                 @focus-previous="handleFieldFocusPrevious"
+                @add-field-and-focus="handleAddFieldAndFocus"
               />
             </div>
 

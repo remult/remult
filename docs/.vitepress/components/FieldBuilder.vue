@@ -14,6 +14,7 @@ interface RemultField {
 interface Props {
   field: RemultField
   canRemove: boolean
+  isLastField: boolean
 }
 
 interface Emits {
@@ -21,6 +22,7 @@ interface Emits {
   (e: 'remove', fieldId: string): void
   (e: 'focusNext', fieldId: string): void
   (e: 'focusPrevious', fieldId: string): void
+  (e: 'addFieldAndFocus', fieldId: string): void
 }
 
 const props = defineProps<Props>()
@@ -429,7 +431,11 @@ const hasOptions = computed(() => availableOptions.value.length > 0)
 const handleKeyDown = (event: KeyboardEvent) => {
   if (event.key === 'Enter' || event.key === 'ArrowDown') {
     event.preventDefault()
-    emit('focusNext', props.field.id)
+    if (event.key === 'Enter' && props.isLastField) {
+      emit('addFieldAndFocus', props.field.id)
+    } else {
+      emit('focusNext', props.field.id)
+    }
   } else if (event.key === 'ArrowUp') {
     event.preventDefault()
     emit('focusPrevious', props.field.id)
