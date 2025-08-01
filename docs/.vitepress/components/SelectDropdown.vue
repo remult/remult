@@ -19,7 +19,13 @@ const emit = defineEmits<Emits>()
 
 const updateValue = (event: Event) => {
   const target = event.target as HTMLSelectElement
-  emit('update:modelValue', target.value)
+  const stringValue = target.value
+  
+  // Find the original option to get its actual value type
+  const option = props.options.find(opt => String(opt.value) === stringValue)
+  const actualValue = option ? option.value : stringValue
+  
+  emit('update:modelValue', actualValue)
 }
 </script>
 

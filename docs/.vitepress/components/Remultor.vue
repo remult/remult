@@ -220,7 +220,8 @@ const generatedCode = computed(() => {
     // Add sqlExpression comment if enabled
     if (field.options.sqlExpression) {
       optionsItems.push(
-        `// sqlExpression: () => sqlRelations(${className.value}).user.name`,
+        `// sqlExpression: ()=> \`SELECT id, name FROM employees
+  //                 UNION ALL SELECT id, name FROM contractors\``,
       )
     }
 
@@ -543,26 +544,26 @@ const generatedCode = computed(() => {
   }
   if (entityOptions.value.sqlExpression) {
     decoratorOptions.push(`  // acting like a view
-  // sqlExpression: \`SELECT id, name FROM employees
-  //                 UNION ALL SELECT id, name FROM contractors\``)
+  // sqlExpression: () => \`SELECT id, name FROM employees
+  //                       UNION ALL SELECT id, name FROM contractors\``)
   }
 
   // Add permissions
   const activePermissions = Object.entries(entityPermissions.value)
     .filter(([_, value]) => value !== null)
     .map(([key, value]) => {
-      let permValue = value
+      let permValue: any = value
       if (value === 'currentUser') {
-        // For instance-level permissions, generate a function with item parameter
-        if (
-          ['allowApiUpdate', 'allowApiDelete', 'allowApiInsert'].includes(key)
-        ) {
-          permValue = '(item) => remult.user && item.userId === remult.user?.id'
-        } else {
-          permValue = 'remult.user && item.userId === remult.user?.id'
-        }
-      } else if (typeof value === 'string' && !value.startsWith('Allow.')) {
+        // For currentUser, all permissions should use function format with item parameter
+        permValue = '(item) => remult.user && item.userId === remult.user?.id'
+      } else if (typeof value === 'boolean') {
+        permValue = String(value)
+      } else if (typeof value === 'string' && value.startsWith('Allow.')) {
+        permValue = value
+      } else if (typeof value === 'string') {
         permValue = `'${value}'`
+      } else {
+        permValue = String(value)
       }
       return `  ${key}: ${permValue}`
     })
