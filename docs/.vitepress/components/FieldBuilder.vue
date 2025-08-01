@@ -65,7 +65,7 @@ const fieldTypes = [
   },
   { value: 'literal', label: 'Literal', description: 'String literals union' },
   { value: 'json', label: 'JSON', description: 'JSON object field' },
-  { value: 'object', label: 'Object', description: 'Serialized object' },
+  { value: 'object', label: 'Object', description: 'Serialized object - <a href="/docs/field-types#customize-db-value-conversions" target="_blank">next step: value conversions</a>' },
   {
     value: 'list',
     label: 'Value List',
@@ -492,8 +492,7 @@ defineExpose({ focusInput })
         />
 
         <!-- Field type description at the bottom of parameters -->
-        <div v-if="selectedFieldType" class="field-type-description">
-          {{ selectedFieldType.description }}
+        <div v-if="selectedFieldType" class="field-type-description" v-html="selectedFieldType.description">
         </div>
       </div>
     </div>

@@ -201,6 +201,7 @@ const generatedCode = computed(() => {
         if (key === 'literalValues' || key === 'constName' || key === 'items')
           return false // These are handled specially
         if (key === 'sqlExpression') return false // Remove sqlExpression from options object
+        if (key === 'type') return false // Type is used for TypeScript declaration, not decorator
         return value !== undefined && value !== ''
       },
     )
