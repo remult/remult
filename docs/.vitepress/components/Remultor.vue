@@ -533,7 +533,7 @@ const generatedCode = computed(() => {
   }
 
   // Generate entity decorator options
-  const decoratorOptions = []
+  const decoratorOptions: string[] = []
 
   // Add entity options if provided
   if (entityOptions.value.label) {
@@ -558,7 +558,10 @@ const generatedCode = computed(() => {
         permValue = '(item) => remult.user && item.userId === remult.user?.id'
       } else if (typeof value === 'boolean') {
         permValue = String(value)
-      } else if (typeof value === 'string' && value.startsWith('Allow.')) {
+      } else if (
+        typeof value === 'string' &&
+        (permValue ?? '').startsWith('Allow.')
+      ) {
         permValue = value
       } else if (typeof value === 'string') {
         permValue = `'${value}'`
