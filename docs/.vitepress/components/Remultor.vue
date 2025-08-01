@@ -180,9 +180,9 @@ const generatedCode = computed(() => {
   imports.add('Entity')
 
   // Check if we need to import remult for currentUser permissions
-  const hasCurrentUserPermissions = Object.values(
-    entityPermissions.value,
-  ).includes('currentUser')
+  const hasCurrentUserPermissions = Object.values(entityPermissions.value).some(
+    (v) => v === 'currentUser',
+  )
   if (hasCurrentUserPermissions) {
     imports.add('remult')
   }
@@ -372,7 +372,8 @@ const generatedCode = computed(() => {
     } else if (field.type === 'toOne') {
       decorator = 'Relations.toOne'
     } else if (field.type === 'toMany') {
-      decorator = 'Relations.toMany'
+      const entityName = field.options.entity || 'Entity'
+      decorator = `Relations.toMany<${className.value}, ${entityName}>`
     } else {
       decorator = `Fields.${field.type}`
     }
@@ -750,39 +751,8 @@ const loadStateFromUrl = () => {
   }
 }
 
-const shareUrl = async () => {
-  updateUrlFromState()
-  try {
-    await navigator.clipboard.writeText(window.location.href)
-    // Could add toast notification here
-  } catch (e) {
-    console.warn('Failed to copy URL to clipboard:', e)
-  }
-}
-
-// Permission builder functions
-const setPermission = (operation: string, value: any) => {
-  entityPermissions.value[operation] = value
-}
-
 const removePermission = (operation: string) => {
   entityPermissions.value[operation] = null
-}
-
-const getPermissionDisplay = (operation: string) => {
-  const value = entityPermissions.value[operation]
-  if (value === null) return null
-
-  const option = permissionOptions.find((opt) => opt.value === value)
-  return option ? option.label : 'Custom'
-}
-
-const getPermissionIcon = (operation: string) => {
-  const value = entityPermissions.value[operation]
-  if (value === null) return null
-
-  const option = permissionOptions.find((opt) => opt.value === value)
-  return option?.icon || '⚙️'
 }
 
 const addPermission = () => {
@@ -792,7 +762,7 @@ const addPermission = () => {
   )
   if (unused) {
     // Set different defaults based on permission type
-    let defaultValue = true // Default for allowApiRead
+    let defaultValue: any = true // Default for allowApiRead
     switch (unused.key) {
       case 'allowApiCrud':
         defaultValue = 'admin'
