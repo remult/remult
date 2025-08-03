@@ -264,11 +264,13 @@ export interface EntityMetadata<entityType = unknown> {
   /** The class type of the entity */
   readonly entityType: ClassType<entityType>
   /** true if the current user is allowed to update an entity instance
-   * @see {@link EntityOptions.allowApiUpdate
+   * @see {@link EntityOptions.allowApiUpdate}
    * @example
+   * ```ts
    * if (repo(Task).metadata.apiUpdateAllowed(task)){
    *   // Allow user to edit the entity
    * }
+   * ```
    */
   apiUpdateAllowed(item?: entityType): boolean
   /** true if the current user is allowed to read from entity
@@ -858,7 +860,7 @@ export interface Repository<entityType> {
    */
   fields: FieldsMetadata<entityType>
   /**The metadata for the `entity`
-   * @See [EntityMetadata](https://remult.dev/docs/ref_entitymetadata.html)
+   * @see [EntityMetadata](https://remult.dev/docs/ref_entitymetadata.html)
    */
   metadata: EntityMetadata<entityType>
   addEventListener(listener: entityEventListener<entityType>): Unsubscribe

@@ -267,7 +267,7 @@ if (generatedFiles.length > 0) {
   try {
     console.log(`\nRunning prettier on ${generatedFiles.length} files...`)
     execSync(`prettier --write ${generatedFiles.join(' ')}`, {
-      stdio: 'inherit',
+      // stdio: 'inherit',
     })
     console.log('✅ All files prettified successfully!')
   } catch (error: any) {

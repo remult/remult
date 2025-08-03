@@ -65,7 +65,15 @@ true if the current user is allowed to update an entity instance
 
 #### see:
 
-- @example
+EntityOptions.allowApiUpdate
+
+#### example:
+
+```ts
+if (repo(Task).metadata.apiUpdateAllowed(task)) {
+  // Allow user to edit the entity
+}
+```
 
 Arguments:
 

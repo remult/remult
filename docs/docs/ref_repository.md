@@ -642,7 +642,7 @@ console.log(repo.fields.title.options) // writes the options that were defined f
 
 The metadata for the `entity`
 
-#### See:
+#### see:
 
 [EntityMetadata](https://remult.dev/docs/ref_entitymetadata.html)
 
