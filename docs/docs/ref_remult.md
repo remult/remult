@@ -143,19 +143,19 @@ Arguments:
   #### param:
   An object specifying the related entities to include, their options, and filtering criteria.
   Example usage:
-  ```
+  ```ts
   const orders = await customerRepo.find({
     include: {
       // Include the 'tags' relation for each customer.
       tags: true,
     },
-  });
+  })
   ```
   In this example, the `tags` relation for each customer will be loaded and included in the query result.
   #### see:
   - [Relations.toMany](/docs/ref_relations#tomany)
   - [Relations.toOne](/docs/ref_relations#toone)
-  - [RelationOptions](/docs/ref_relationoptions)
+  - [RelationOptions](/docs/ref_relations)
   * **where** - filters the data
   #### example:
   ```ts

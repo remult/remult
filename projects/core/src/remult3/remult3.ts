@@ -1289,7 +1289,7 @@ export interface LoadOptions<entityType> {
    * @param include An object specifying the related entities to include, their options, and filtering criteria.
    *
    * Example usage:
-   * ```
+   * ```ts
    * const orders = await customerRepo.find({
    *   include: {
    *     // Include the 'tags' relation for each customer.

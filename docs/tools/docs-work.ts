@@ -76,22 +76,14 @@ class DocFile {
         let text = t.content
           .map((x) => {
             if (x.kind === 'inline-tag' && x.tag === '@link') {
-              // Create a markdown link to the specific section
-              // Handle both dot and hash separators: FieldOptions.caption or FieldOptions#caption
-              // Format: EntityOptions.allowApiUpdate -> docs/ref_entity#allowapiupdate
-              const parts = x.text.split(/[.#]/)
-              if (parts.length === 2) {
-                const [p1, p2] = parts
-                let file = p1.toLowerCase().replace('options', '')
-                // Special case: FieldOptions -> field
-                if (p1 === 'FieldOptions') {
-                  file = 'field'
-                }
-                return `[${x.text}](/docs/ref_${file}#${p2.toLowerCase()})`
-              }
-              return `[${x.text}](/docs/ref_${x.text
+              const [p1, p2] = x.text.split(/[.#]/)
+              const file = p1
                 .toLowerCase()
-                .replace(/\./g, '_')})`
+                .replace('relationoptions', 'relations')
+                .replace('options', '')
+              return `[${x.text}](/docs/ref_${file.toLowerCase()}${
+                p2 ? `#${p2.toLowerCase()}` : ''
+              })`
             }
             return x.text
           })

@@ -57,7 +57,7 @@ The options send to the `Entity`'s decorator
 
 #### see:
 
-[EntityOptions](/docs/ref_entityoptions)
+[EntityOptions](/docs/ref_entity)
 
 ## apiUpdateAllowed
 
