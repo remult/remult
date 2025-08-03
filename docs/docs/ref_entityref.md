@@ -1,51 +1,99 @@
 # EntityRef
-* **EntityRef**
+
+- **EntityRef**
+
 ## hasErrors
-* **hasErrors**
+
+- **hasErrors**
+
 ## undoChanges
-* **undoChanges**
+
+- **undoChanges**
+
 ## save
-* **save**
+
+- **save**
+
 ## reload
-* **reload**
+
+- **reload**
+
 ## delete
-* **delete**
+
+- **delete**
+
 ## isNew
-* **isNew**
+
+- **isNew**
+
 ## wasChanged
-* **wasChanged**
+
+- **wasChanged**
+
 ## wasDeleted
-* **wasDeleted**
+
+- **wasDeleted**
+
 ## getId
-* **getId**
+
+- **getId**
+
 ## getOriginalId
-* **getOriginalId**
+
+- **getOriginalId**
+
 ## toApiJson
-* **toApiJson**
+
+- **toApiJson**
+
 ## validate
-* **validate**
+
+- **validate**
+
 ## clone
-* **clone**
+
+- **clone**
+
 ## subscribe
-* **subscribe**
+
+- **subscribe**
 
 Arguments:
-* **listener**
+
+- **listener**
+
 ## error
-* **error**
+
+- **error**
+
 ## repository
-* **repository**
+
+- **repository**
+
 ## metadata
-* **metadata**
+
+- **metadata**
+
 ## apiUpdateAllowed
-* **apiUpdateAllowed**
+
+- **apiUpdateAllowed**
+
 ## apiDeleteAllowed
-* **apiDeleteAllowed**
+
+- **apiDeleteAllowed**
+
 ## apiInsertAllowed
-* **apiInsertAllowed**
+
+- **apiInsertAllowed**
+
 ## isLoading
-* **isLoading**
+
+- **isLoading**
+
 ## fields
-* **fields**
+
+- **fields**
+
 ## relations
-* **relations**
+
+- **relations**

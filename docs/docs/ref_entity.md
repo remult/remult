@@ -20,8 +20,6 @@ export class Task {
 }
 ```
 
-#### note:
-
 EntityOptions can be set in two ways:
 
 #### example:
@@ -55,10 +53,6 @@ A human readable label for the entity. Can be used to achieve a consistent label
 ## allowApiRead
 
 Determines if this Entity is available for get requests using Rest Api
-
-#### description:
-
-Determines if one has any access to the data of an entity.
 
 #### see:
 
@@ -201,10 +195,6 @@ this is the place to run logic that we want to run in any case before an entity 
 })
 ```
 
-#### link:
-
-LifeCycleEvent object
-
 #### see:
 
 [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
@@ -212,10 +202,6 @@ LifeCycleEvent object
 ## saved
 
 A hook that runs after an entity has been successfully saved.
-
-#### link:
-
-LifeCycleEvent object
 
 #### see:
 
@@ -225,10 +211,6 @@ LifeCycleEvent object
 
 A hook that runs before an entity is deleted.
 
-#### link:
-
-LifeCycleEvent object
-
 #### see:
 
 [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
@@ -236,10 +218,6 @@ LifeCycleEvent object
 ## deleted
 
 A hook that runs after an entity has been successfully deleted.
-
-#### link:
-
-LifeCycleEvent object
 
 #### see:
 
@@ -249,10 +227,6 @@ LifeCycleEvent object
 
 A hook that runs to perform validation checks on an entity before saving.
 This hook is also executed on the frontend.
-
-#### link:
-
-LifeCycleEvent object
 
 #### see:
 

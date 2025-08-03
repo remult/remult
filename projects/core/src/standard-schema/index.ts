@@ -15,7 +15,7 @@ interface RemultEntitySchema<entityType, fields extends string[] = []>
 /**
  * Implementation of the [Standard Schema](https://standardschema.dev/) specification
  *
- * @usage
+ * @example
  * ```ts
  * // The schema for the entire entity
  * const schema = standardSchema(repo(User))
