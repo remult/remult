@@ -1,4 +1,5 @@
 import * as fs from 'fs'
+import { execSync } from 'child_process'
 const exclude = [
   'repCache',
   'throwErrorIfFilterIsEmpty',
@@ -20,6 +21,9 @@ var api: {
   )
   api.children[0].children.push(z)
 }
+
+// Track all generated files for batch prettier formatting
+const generatedFiles: string[] = []
 
 class DocFile {
   s: string = ''
@@ -175,10 +179,14 @@ class DocFile {
   }
 
   writeFile() {
+    const filePath = './docs/docs/ref_' + this.fileName.toLowerCase() + '.md'
     fs.writeFileSync(
-      './docs/docs/ref_' + this.fileName.toLowerCase() + '.md',
+      filePath,
       this.s, //.replace(/\n/g, '\r\n'),
     )
+
+    // Add to the list of files to be prettified later
+    generatedFiles.push(filePath)
   }
 }
 
@@ -251,6 +259,22 @@ try {
   console.error(err)
   for (const line of err.stack.split('\n')) {
     console.error(line)
+  }
+}
+
+// Run prettier on all generated files at once
+if (generatedFiles.length > 0) {
+  try {
+    console.log(`\nRunning prettier on ${generatedFiles.length} files...`)
+    execSync(`prettier --write ${generatedFiles.join(' ')}`, {
+      stdio: 'inherit',
+    })
+    console.log('✅ All files prettified successfully!')
+  } catch (error: any) {
+    console.warn(
+      'Warning: Could not run prettier on generated files:',
+      error.message,
+    )
   }
 }
 

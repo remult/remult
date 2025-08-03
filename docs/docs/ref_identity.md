@@ -1,21 +1,39 @@
 # IdEntity
-* **IdEntity**
+
+- **IdEntity**
+
 ## constructor
-* **new IdEntity**
+
+- **new IdEntity**
+
 ## id
-* **id**
+
+- **id**
+
 ## $
-* **$**
-## _
-* **_**
+
+- **$**
+
+## \_
+
+- **\_**
+
 ## assign
-* **assign**
+
+- **assign**
 
 Arguments:
-* **values**
+
+- **values**
+
 ## delete
-* **delete**
+
+- **delete**
+
 ## isNew
-* **isNew**
+
+- **isNew**
+
 ## save
-* **save**
+
+- **save**
