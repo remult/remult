@@ -4,7 +4,7 @@
 
 ## constructor
 
-- **new Relations**
+- **Relations**
 
 ## toMany
 
@@ -17,7 +17,7 @@ A decorator function to apply the toMany relation to an entity field.
 
 Example usage:
 
-```
+```ts
 @Relations.toMany(() => Order)
 orders?: Order[];
 
@@ -44,12 +44,12 @@ A decorator function to apply the to-one relation to an entity field.
 
 Example usage:
 
-```
+```ts
 @Relations.toOne(() => Customer)
 customer?: Customer;
 ```
 
-```
+```ts
 Fields.string()
 customerId?: string;
 
@@ -57,7 +57,7 @@ customerId?: string;
 customer?: Customer;
 ```
 
-```
+```ts
 Fields.string()
 customerId?: string;
 
@@ -68,7 +68,7 @@ customerId?: string;
 customer?: Customer;
 ```
 
-```
+```ts
 Fields.string()
 customerId?: string;
 
@@ -86,13 +86,13 @@ Arguments:
 - **options** - (Optional): An object containing options for configuring the to-one relation.
   - **caption** - A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
   #### example:
-  ```ts
-  <input placeholder={taskRepo.metadata.fields.title.caption}/>
+  ```html
+  <input placeholder="{taskRepo.metadata.fields.title.caption}" />
   ```
   - **label** - A human readable name for the field. Can be used to achieve a consistent label for a field throughout the app
   #### example:
-  ```ts
-  <input placeholder={taskRepo.metadata.fields.title.label}/>
+  ```html
+  <input placeholder="{taskRepo.metadata.fields.title.label}" />
   ```
   - **fields** - An object specifying custom field names for the relation.
     Each key represents a field in the related entity, and its value is the corresponding field in the source entity.

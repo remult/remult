@@ -8,8 +8,8 @@ A human readable name for the field. Can be used to achieve a consistent caption
 
 #### example:
 
-```ts
-<input placeholder={taskRepo.metadata.fields.title.caption}/>
+```html
+<input placeholder="{taskRepo.metadata.fields.title.caption}" />
 ```
 
 ## label
@@ -18,8 +18,8 @@ A human readable name for the field. Can be used to achieve a consistent label f
 
 #### example:
 
-```ts
-<input placeholder={taskRepo.metadata.fields.title.label}/>
+```html
+<input placeholder="{taskRepo.metadata.fields.title.label}" />
 ```
 
 ## fields

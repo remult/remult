@@ -26,7 +26,7 @@ A human readable caption for the entity. Can be used to achieve a consistent cap
 
 #### see:
 
-EntityOptions.caption
+[EntityOptions.caption](/docs/ref_entity#caption)
 
 ## label
 
@@ -40,7 +40,7 @@ A human readable label for the entity. Can be used to achieve a consistent label
 
 #### see:
 
-EntityOptions.label
+[EntityOptions.label](/docs/ref_entity#label)
 
 ## dbName
 
@@ -49,7 +49,7 @@ If no name is set in the entity options, the `key` will be used instead.
 
 #### see:
 
-EntityOptions.dbName
+[EntityOptions.dbName](/docs/ref_entity#dbname)
 
 ## options
 
@@ -57,7 +57,7 @@ The options send to the `Entity`'s decorator
 
 #### see:
 
-EntityOptions
+[EntityOptions](/docs/ref_entityoptions)
 
 ## apiUpdateAllowed
 
@@ -65,7 +65,7 @@ true if the current user is allowed to update an entity instance
 
 #### see:
 
-EntityOptions.allowApiUpdate
+[EntityOptions.allowApiUpdate](/docs/ref_entity#allowapiupdate)
 
 #### example:
 
@@ -85,7 +85,7 @@ true if the current user is allowed to read from entity
 
 #### see:
 
-EntityOptions.allowApiRead
+[EntityOptions.allowApiRead](/docs/ref_entity#allowapiread)
 
 #### example:
 
@@ -99,11 +99,9 @@ if (repo(Task).metadata.apiReadAllowed) {
 
 true if the current user is allowed to delete an entity instance
 
--
-
 #### see:
 
-EntityOptions.allowApiDelete
+[EntityOptions.allowApiDelete](/docs/ref_entity#allowapidelete)
 
 #### example:
 
@@ -123,7 +121,7 @@ true if the current user is allowed to create an entity instance
 
 #### see:
 
-EntityOptions.allowApiInsert
+[EntityOptions.allowApiInsert](/docs/ref_entity#allowapiinsert)
 
 #### example:
 
@@ -147,4 +145,4 @@ Metadata for the Entity's id
 
 #### see:
 
-EntityOptions.id for configuration
+[EntityOptions.id](/docs/ref_entity#id) for configuration

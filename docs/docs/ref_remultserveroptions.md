@@ -32,19 +32,23 @@ Data Provider to use for the api.
 
 ## ensureSchema
 
-Will create tables and columns in supporting databases. default: true
+Will create tables and columns in supporting databases.
 
-#### description:
+#### default:
+
+```ts
+true
 
 when set to true, it'll create entities that do not exist, and add columns that are missing.
+```
 
 ## rootPath
 
-The path to use for the api, default:/api
+The path to use for the api, if you want to use a different path adjust this field
 
-#### description:
+#### default:
 
-If you want to use a different api path adjust this field
+`/api`
 
 ## defaultGetLimit
 

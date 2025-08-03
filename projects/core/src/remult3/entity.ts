@@ -14,6 +14,7 @@ import { remultStatic } from '../remult-static.js'
 /**Decorates classes that should be used as entities.
  * Receives a key and an array of EntityOptions.
  * @example
+ * ```ts
  * import  { Entity, Fields } from "remult";
  * @Entity("tasks", {
  *    allowApiCrud: true
@@ -26,14 +27,18 @@ import { remultStatic } from '../remult-static.js'
  *    @Fields.boolean()
  *    completed = false;
  * }
- * @note
+ * ```
  * EntityOptions can be set in two ways:
  * @example
+ * ```ts
  * // as an object
  * @Entity("tasks",{ allowApiCrud:true })
+ * ```
  * @example
+ * ```ts
  * // as an arrow function that receives `remult` as a parameter
  * @Entity("tasks", (options,remult) => options.allowApiCrud = true)
+ * ```
  */
 export function Entity<entityType>(
   key: string,

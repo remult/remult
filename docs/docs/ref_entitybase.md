@@ -4,15 +4,15 @@
 
 ## constructor
 
-- **new EntityBase**
-
-## $
-
-- **$**
+- **EntityBase**
 
 ## \_
 
 - **\_**
+
+## $
+
+- **$**
 
 ## assign
 

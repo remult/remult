@@ -153,9 +153,9 @@ Arguments:
   ```
   In this example, the `tags` relation for each customer will be loaded and included in the query result.
   #### see:
-  - Relations.toMany
-  - Relations.toOne
-  - RelationOptions
+  - [Relations.toMany](/docs/ref_relations#tomany)
+  - [Relations.toOne](/docs/ref_relations#toone)
+  - [RelationOptions](/docs/ref_relationoptions)
   * **where** - filters the data
   #### example:
   ```ts

@@ -385,18 +385,18 @@ export class Relations {
    * @returns A decorator function to apply the to-one relation to an entity field.
    *
    * Example usage:
-   * ```
+   * ```ts
    * @Relations.toOne(() => Customer)
    * customer?: Customer;
    * ```
-   * ```
+   * ```ts
    * Fields.string()
    * customerId?: string;
    *
    * @Relations.toOne(() => Customer, "customerId")
    * customer?: Customer;
    * ```
-   * ```
+   * ```ts
    * Fields.string()
    * customerId?: string;
    *
@@ -406,7 +406,7 @@ export class Relations {
    * })
    * customer?: Customer;
    * ```
-   * ```
+   * ```ts
    * Fields.string()
    * customerId?: string;
    *
@@ -469,7 +469,7 @@ export class Relations {
    * @returns A decorator function to apply the toMany relation to an entity field.
    *
    * Example usage:
-   * ```
+   * ```ts
    * @Relations.toMany(() => Order)
    * orders?: Order[];
    *
@@ -497,7 +497,7 @@ export class Relations {
    * @returns A decorator function to apply the toMany relation to an entity field.
    *
    * Example usage:
-   * ```
+   * ```ts
    * @Relations.toMany(() => Order, {
    *   field: "customerOrders",
    *   findOptions: {

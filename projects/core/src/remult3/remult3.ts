@@ -282,7 +282,7 @@ export interface EntityMetadata<entityType = unknown> {
    */
   readonly apiReadAllowed: boolean
   /** true if the current user is allowed to delete an entity instance
-   * * @see {@link EntityOptions.allowApiDelete}
+   * @see {@link EntityOptions.allowApiDelete}
    * @example
    * if (repo(Task).metadata.apiDeleteAllowed(task)){
    *   // display delete button

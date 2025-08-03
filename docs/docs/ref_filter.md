@@ -164,7 +164,7 @@ Arguments:
 
 ## constructor
 
-- **new Filter**
+- **Filter**
 
 Arguments:
 

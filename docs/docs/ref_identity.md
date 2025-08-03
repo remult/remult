@@ -4,19 +4,19 @@
 
 ## constructor
 
-- **new IdEntity**
+- **IdEntity**
 
 ## id
 
 - **id**
 
-## $
-
-- **$**
-
 ## \_
 
 - **\_**
+
+## $
+
+- **$**
 
 ## assign
 

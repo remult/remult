@@ -10,12 +10,16 @@ import type {
 export interface FieldOptions<entityType = unknown, valueType = unknown> {
   /** A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
    * @example
-   * <input placeholder={taskRepo.metadata.fields.title.caption}/>
+   * ```html
+   * <input placeholder={taskRepo.metadata.fields.title.caption} />
+   * ```
    */
   caption?: string
   /** A human readable name for the field. Can be used to achieve a consistent label for a field throughout the app
    * @example
-   * <input placeholder={taskRepo.metadata.fields.title.label}/>
+   * ```html
+   * <input placeholder={taskRepo.metadata.fields.title.label} />
+   * ```
    */
   label?: string
   /** If it can store `null` in the database. @default false */

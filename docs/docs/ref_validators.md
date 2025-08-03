@@ -4,7 +4,7 @@ Class containing various field validators.
 
 ## constructor
 
-- **new Validators**
+- **Validators**
 
 ## defaultMessage
 

@@ -41,9 +41,9 @@ Arguments:
   ```
   In this example, the `tags` relation for each customer will be loaded and included in the query result.
   #### see:
-  - Relations.toMany
-  - Relations.toOne
-  - RelationOptions
+  - [Relations.toMany](/docs/ref_relations#tomany)
+  - [Relations.toOne](/docs/ref_relations#toone)
+  - [RelationOptions](/docs/ref_relationoptions)
   * **where** - filters the data
   #### example:
   ```ts
@@ -100,9 +100,9 @@ Arguments:
   ```
   In this example, the `tags` relation for each customer will be loaded and included in the query result.
   #### see:
-  - Relations.toMany
-  - Relations.toOne
-  - RelationOptions
+  - [Relations.toMany](/docs/ref_relations#tomany)
+  - [Relations.toOne](/docs/ref_relations#toone)
+  - [RelationOptions](/docs/ref_relationoptions)
   * **where** - filters the data
   #### example:
   ```ts
@@ -161,9 +161,9 @@ Arguments:
   ```
   In this example, the `tags` relation for each customer will be loaded and included in the query result.
   #### see:
-  - Relations.toMany
-  - Relations.toOne
-  - RelationOptions
+  - [Relations.toMany](/docs/ref_relations#tomany)
+  - [Relations.toOne](/docs/ref_relations#toone)
+  - [RelationOptions](/docs/ref_relationoptions)
   * **where** - filters the data
   #### example:
   ```ts
@@ -221,9 +221,9 @@ Arguments:
   ```
   In this example, the `tags` relation for each customer will be loaded and included in the query result.
   #### see:
-  - Relations.toMany
-  - Relations.toOne
-  - RelationOptions
+  - [Relations.toMany](/docs/ref_relations#tomany)
+  - [Relations.toOne](/docs/ref_relations#toone)
+  - [RelationOptions](/docs/ref_relationoptions)
   * **where** - filters the data
   #### example:
   ```ts
@@ -251,27 +251,8 @@ Arguments:
 
 - **id**
 - **options**
-  - **load**
-  - **include** - An option used in the `find` and `findFirst` methods to specify which related entities should be included
-    when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
-  #### param:
-  An object specifying the related entities to include, their options, and filtering criteria.
-  Example usage:
-  ```
-  const orders = await customerRepo.find({
-    include: {
-      // Include the 'tags' relation for each customer.
-      tags: true,
-    },
-  });
-  ```
-  In this example, the `tags` relation for each customer will be loaded and included in the query result.
-  #### see:
-  - Relations.toMany
-  - Relations.toOne
-  - RelationOptions
-  * **useCache** - determines if to cache the result, and return the results from cache.
-  * **createIfNotFound** - If set to true and an item is not found, it's created and returned
+  - **useCache** - determines if to cache the result, and return the results from cache.
+  - **createIfNotFound** - If set to true and an item is not found, it's created and returned
 
 ## groupBy
 
