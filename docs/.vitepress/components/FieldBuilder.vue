@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
+import SelectDropdown from './SelectDropdown.vue'
+import RemovableFrame from './RemovableFrame.vue'
+import OptionsRenderer from './OptionsRenderer.vue'
 
 interface RemultField {
   id: string
@@ -11,17 +14,22 @@ interface RemultField {
 interface Props {
   field: RemultField
   canRemove: boolean
+  isLastField: boolean
 }
 
 interface Emits {
   (e: 'update', fieldId: string, updates: Partial<RemultField>): void
   (e: 'remove', fieldId: string): void
+  (e: 'focusNext', fieldId: string): void
+  (e: 'focusPrevious', fieldId: string): void
+  (e: 'addFieldAndFocus', fieldId: string): void
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const showOptions = ref(false)
+const fieldNameInput = ref<HTMLInputElement>()
 
 // Available field types from Fields.ts
 const fieldTypes = [
@@ -57,7 +65,7 @@ const fieldTypes = [
   },
   { value: 'literal', label: 'Literal', description: 'String literals union' },
   { value: 'json', label: 'JSON', description: 'JSON object field' },
-  { value: 'object', label: 'Object', description: 'Serialized object' },
+  { value: 'object', label: 'Object', description: 'Serialized object - <a href="/docs/field-types#customize-db-value-conversions" target="_blank">next step: value conversions</a>' },
   {
     value: 'list',
     label: 'Value List',
@@ -77,6 +85,16 @@ const fieldTypes = [
 
 // Available options based on field type
 const availableOptions = computed(() => {
+  // Field types that support sqlExpression (everything before 'id' in the list)
+  const sqlExpressionSupportedTypes = [
+    'string',
+    'number',
+    'integer',
+    'boolean',
+    'date',
+    'dateOnly',
+  ]
+
   const baseOptions = [
     {
       key: 'required',
@@ -94,7 +112,13 @@ const availableOptions = computed(() => {
       key: 'label',
       type: 'string',
       label: 'Label',
-      description: 'Display label for the field',
+      description: 'Display label',
+    },
+    {
+      key: 'dbName',
+      type: 'string',
+      label: 'DB Name',
+      description: 'Database column name',
     },
   ]
 
@@ -208,19 +232,13 @@ const availableOptions = computed(() => {
         key: 'entity',
         type: 'string',
         label: 'Entity',
-        description: 'Related entity class name (e.g. User, Category)',
+        description: 'e.g. User, Category',
       },
       {
         key: 'foreignKey',
         type: 'string',
-        label: 'Foreign Key',
-        description: 'Foreign key field name (e.g. userId, categoryId)',
-      },
-      {
-        key: 'label',
-        type: 'string',
-        label: 'Label',
-        description: 'Display label for the relation (e.g. The Customer)',
+        label: 'Field reference',
+        description: 'e.g. userId, categoryId',
       },
       {
         key: 'defaultIncluded',
@@ -234,19 +252,13 @@ const availableOptions = computed(() => {
         key: 'entity',
         type: 'string',
         label: 'Entity',
-        description: 'Related entity class name (e.g. User, Category)',
+        description: 'e.g. User, Category',
       },
       {
         key: 'foreignKey',
         type: 'string',
-        label: 'Foreign Key',
-        description: 'Foreign key field name in related entity (e.g. taskId)',
-      },
-      {
-        key: 'label',
-        type: 'string',
-        label: 'Label',
-        description: 'Display label for the relation (e.g. The Comments)',
+        label: 'Field reference',
+        description: 'e.g. taskId',
       },
       {
         key: 'defaultIncluded',
@@ -257,9 +269,9 @@ const availableOptions = computed(() => {
     ],
   }
 
-  // For createdAt and updatedAt, only allow label option from baseOptions
+  // For createdAt and updatedAt, allow label and dbName options from baseOptions
   if (props.field.type === 'createdAt' || props.field.type === 'updatedAt') {
-    return [baseOptions.find((opt) => opt.key === 'label')!]
+    return baseOptions.filter((opt) => ['label', 'dbName'].includes(opt.key))
   }
 
   // For ID fields, allow label and allowNull options (no required option)
@@ -267,27 +279,64 @@ const availableOptions = computed(() => {
     return baseOptions.filter((opt) => opt.key !== 'required')
   }
 
-  // For fields with no options (autoIncrement), return empty array
+  // For autoIncrement fields, allow label and dbName options
   if (['autoIncrement'].includes(props.field.type)) {
-    return []
+    return baseOptions.filter((opt) => ['label', 'dbName'].includes(opt.key))
   }
 
-  // For relation fields, only return type-specific options (no base options)
+  // For relation fields, combine label from baseOptions with type-specific options
   if (['toOne', 'toMany'].includes(props.field.type)) {
-    return typeSpecificOptions[props.field.type] || []
+    const labelOption = baseOptions.find((opt) => opt.key === 'label')!
+    return [labelOption, ...(typeSpecificOptions[props.field.type] || [])]
   }
 
   // For date and dateOnly, only return base options (no default value)
   if (['date', 'dateOnly'].includes(props.field.type)) {
-    return baseOptions
+    let options = [...baseOptions]
+    // Add sqlExpression option at the bottom for supported field types
+    if (sqlExpressionSupportedTypes.includes(props.field.type)) {
+      options.push({
+        key: 'sqlExpression',
+        type: 'boolean',
+        label: 'SQL Expression',
+        description: 'Computed from SQL expression',
+      })
+    }
+    return options
   }
 
   // For boolean, only return base options (no default value)
   if (props.field.type === 'boolean') {
-    return baseOptions
+    let options = [...baseOptions]
+    // Add sqlExpression option at the bottom for supported field types
+    if (sqlExpressionSupportedTypes.includes(props.field.type)) {
+      options.push({
+        key: 'sqlExpression',
+        type: 'boolean',
+        label: 'SQL Expression',
+        description: 'Computed from SQL expression',
+      })
+    }
+    return options
   }
 
-  return [...baseOptions, ...(typeSpecificOptions[props.field.type] || [])]
+  // For all other field types, combine base and type-specific options
+  let options = [
+    ...baseOptions,
+    ...(typeSpecificOptions[props.field.type] || []),
+  ]
+
+  // Add sqlExpression option at the bottom for supported field types
+  if (sqlExpressionSupportedTypes.includes(props.field.type)) {
+    options.push({
+      key: 'sqlExpression',
+      type: 'boolean',
+      label: 'SQL Expression',
+      description: 'Computed from SQL expression',
+    })
+  }
+
+  return options
 })
 
 const updateField = (updates: Partial<RemultField>) => {
@@ -310,8 +359,8 @@ const updateFieldType = (type: string) => {
 
   // Pre-populate relation fields with example values
   if (type === 'toOne') {
-    newOptions.entity = 'Category'
-    newOptions.foreignKey = 'categoryId'
+    newOptions.entity = 'User'
+    newOptions.foreignKey = 'userId'
   }
 
   if (type === 'toMany') {
@@ -327,7 +376,7 @@ const updateFieldType = (type: string) => {
   } else if (type === 'list') {
     newName = 'priority'
   } else if (type === 'toOne') {
-    newName = 'category'
+    newName = 'user'
   } else if (type === 'toMany') {
     newName = 'comments'
   }
@@ -366,144 +415,104 @@ const selectedFieldType = computed(() =>
 
 // Add computed property to check if there are options
 const hasOptions = computed(() => availableOptions.value.length > 0)
+
+// Handle keyboard navigation
+const handleKeyDown = (event: KeyboardEvent) => {
+  if (event.key === 'Enter' || event.key === 'ArrowDown') {
+    event.preventDefault()
+    if (event.key === 'Enter' && props.isLastField) {
+      emit('addFieldAndFocus', props.field.id)
+    } else {
+      emit('focusNext', props.field.id)
+    }
+  } else if (event.key === 'ArrowUp') {
+    event.preventDefault()
+    emit('focusPrevious', props.field.id)
+  }
+}
+
+// Auto-focus new input
+const focusInput = async () => {
+  await nextTick()
+  if (fieldNameInput.value) {
+    fieldNameInput.value.focus()
+  }
+}
+
+// Expose focus method
+defineExpose({ focusInput })
 </script>
 
 <template>
-  <div class="field-builder">
-    <div class="field-header">
-      <div class="field-basic">
-        <input
-          :value="field.name"
-          @input="updateFieldName(($event.target as HTMLInputElement).value)"
-          placeholder="Field name"
-          class="field-name-input"
-        />
+  <RemovableFrame
+    :can-remove="canRemove"
+    remove-title="Remove field"
+    @remove="removeField"
+  >
+    <div class="field-content">
+      <div class="field-header">
+        <div class="field-basic">
+          <input
+            :value="field.name"
+            @input="updateFieldName(($event.target as HTMLInputElement).value)"
+            placeholder="Field name"
+            class="field-name-input"
+            :class="{ error: !field.name.trim() }"
+            ref="fieldNameInput"
+            @keydown="handleKeyDown"
+          />
 
-        <select
-          :value="field.type"
-          @change="updateFieldType(($event.target as HTMLSelectElement).value)"
-          class="field-type-select"
-        >
-          <option
-            v-for="type in fieldTypes"
-            :key="type.value"
-            :value="type.value"
+          <SelectDropdown
+            :model-value="field.type"
+            @update:model-value="updateFieldType"
+            :options="
+              fieldTypes.map((t) => ({ value: t.value, label: t.label }))
+            "
+            class="field-type-select"
+          />
+
+          <button
+            @click="showOptions = !showOptions"
+            class="options-toggle"
+            :class="{ active: showOptions }"
+            :disabled="!hasOptions"
+            :title="!hasOptions ? 'No options available' : 'Show field options'"
           >
-            {{ type.label }}
-          </option>
-        </select>
-
-        <button
-          @click="showOptions = !showOptions"
-          class="options-toggle"
-          :class="{ active: showOptions }"
-          :disabled="!hasOptions"
-          :title="!hasOptions ? 'No options available' : 'Show field options'"
-        >
-          ⚙️
-        </button>
-
-        <button
-          v-if="canRemove"
-          @click="removeField"
-          class="remove-btn"
-          title="Remove field"
-        >
-          🗑️
-        </button>
+            ⚙️
+          </button>
+        </div>
       </div>
 
-      <div v-if="selectedFieldType" class="field-description">
-        {{ selectedFieldType.description }}
+      <div v-if="showOptions">
+        <OptionsRenderer
+          :options="availableOptions"
+          :values="field.options"
+          :id-prefix="field.id"
+          @update="updateOption"
+        />
+
+        <!-- Field type description at the bottom of parameters -->
+        <div v-if="selectedFieldType" class="field-type-description" v-html="selectedFieldType.description">
+        </div>
       </div>
     </div>
-
-    <div v-if="showOptions" class="field-options">
-      <div
-        v-for="option in availableOptions"
-        :key="option.key"
-        class="option-group"
-      >
-        <label :for="`${field.id}-${option.key}`" class="option-label">
-          {{ option.label }}
-        </label>
-
-        <!-- Boolean options -->
-        <input
-          v-if="option.type === 'boolean'"
-          :id="`${field.id}-${option.key}`"
-          type="checkbox"
-          :checked="field.options[option.key] === true"
-          @change="
-            updateOption(
-              option.key,
-              ($event.target as HTMLInputElement).checked,
-            )
-          "
-          class="option-checkbox"
-        />
-
-        <!-- Number options -->
-        <input
-          v-else-if="option.type === 'number'"
-          :id="`${field.id}-${option.key}`"
-          type="number"
-          :value="field.options[option.key] || ''"
-          @input="
-            updateOption(
-              option.key,
-              parseInt(($event.target as HTMLInputElement).value) || undefined,
-            )
-          "
-          class="option-input"
-          :placeholder="option.description"
-        />
-
-        <!-- String options -->
-        <input
-          v-else
-          :id="`${field.id}-${option.key}`"
-          type="text"
-          :value="field.options[option.key] || ''"
-          @input="
-            updateOption(
-              option.key,
-              ($event.target as HTMLInputElement).value || undefined,
-            )
-          "
-          class="option-input"
-          :placeholder="option.description"
-        />
-
-        <!-- Remove or comment out the description below input -->
-        <!-- <div class="option-description">{{ option.description }}</div> -->
-      </div>
-    </div>
-  </div>
+  </RemovableFrame>
 </template>
 
 <style scoped>
-.field-builder {
-  background: var(--vp-c-bg);
-  border: 1px solid var(--vp-c-border);
-  border-radius: 0;
-  padding: 1rem;
-  transition: border-color 0.2s;
-}
-
-.field-builder:hover {
-  border-color: var(--vp-c-border-hover);
+.field-content {
+  /* Content styling - no border/padding as that's handled by RemovableFrame */
 }
 
 .field-header {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .field-basic {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.25rem;
   align-items: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .field-name-input {
@@ -514,7 +523,9 @@ const hasOptions = computed(() => availableOptions.value.length > 0)
   background: var(--vp-c-bg);
   color: var(--vp-c-text-1);
   font-size: 0.875rem;
-  max-width: 120px;
+  max-width: 100px;
+  height: 36px;
+  box-sizing: border-box;
 }
 
 .field-name-input:focus {
@@ -522,20 +533,12 @@ const hasOptions = computed(() => availableOptions.value.length > 0)
   border-color: var(--vp-c-brand-1);
 }
 
-.field-type-select {
-  flex: 1;
-  padding: 0.5rem;
-  border: 1px solid var(--vp-c-border);
-  border-radius: 0;
-  background: var(--vp-c-bg);
-  color: var(--vp-c-text-1);
-  font-size: 0.875rem;
-  cursor: pointer;
+.field-name-input.error {
+  border-color: var(--vp-c-danger-1);
 }
 
-.field-type-select:focus {
-  outline: none;
-  border-color: var(--vp-c-brand-1);
+.field-type-select {
+  max-width: 160px;
 }
 
 .options-toggle {
@@ -546,6 +549,11 @@ const hasOptions = computed(() => availableOptions.value.length > 0)
   cursor: pointer;
   font-size: 0.875rem;
   transition: all 0.2s;
+  height: 36px;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .options-toggle:hover,
@@ -582,57 +590,15 @@ const hasOptions = computed(() => availableOptions.value.length > 0)
   font-style: italic;
 }
 
-.field-options {
+.field-type-description {
+  font-size: 0.75rem;
+  color: var(--vp-c-text-2);
+  font-style: italic;
+  text-align: center;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
   border-top: 1px solid var(--vp-c-border);
-  padding-top: 1rem;
-  margin-top: 1rem;
-  display: grid;
-  gap: 0.75rem;
-}
-
-.option-group {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.option-label {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--vp-c-text-1);
-  line-height: 1.4;
-}
-
-.option-input {
-  padding: 0.375rem;
-  border: 1px solid var(--vp-c-border);
-  border-radius: 0;
-  background: var(--vp-c-bg);
-  color: var(--vp-c-text-1);
-  font-size: 0.75rem;
-}
-
-.option-input:focus {
-  outline: none;
-  border-color: var(--vp-c-brand-1);
-}
-
-.option-input::placeholder {
-  opacity: 0.5;
-  color: var(--vp-c-text-3);
-}
-
-.option-checkbox {
-  justify-self: start;
-  margin-top: 0.125rem;
-}
-
-.option-description {
-  grid-column: 1 / -1;
-  font-size: 0.625rem;
-  color: var(--vp-c-text-3);
-  margin-top: -0.25rem;
+  opacity: 0.8;
 }
 
 @media (max-width: 640px) {
