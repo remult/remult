@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { standardSchema } from '../core/src/standard-schema/index.js'
 import { Entity, Field, Fields, repo, Validators } from '../core/index.js'
 
-@Entity('User')
+@Entity('users')
 class User {
   @Fields.id()
   id!: string
@@ -43,21 +43,102 @@ describe('standard-schema', () => {
     })
   })
 
-  it('only checking age', async () => {
-    const schema = standardSchema(repo(User), 'age')
-    const ok_age = { age: 30 }
+  describe('object', () => {
+    it('only checking age', async () => {
+      const schema = standardSchema(repo(User), 'age')
+      const ok_age = { age: 30 }
 
-    const result = await schema['~standard'].validate(ok_age)
-    expect(result).toEqual({ value: ok_age })
+      const result = await schema['~standard'].validate(ok_age)
+      expect(result).toEqual({ value: ok_age })
+    })
+
+    it('age and name', async () => {
+      const schema = standardSchema(repo(User), 'age', 'name')
+      const ok_age = { age: 30, name: 'John Doe' }
+
+      const result = await schema['~standard'].validate(ok_age)
+      expect(result).toEqual({ value: ok_age })
+    })
+
+    it('age - wrong type', async () => {
+      const schema = standardSchema(repo(User), 'age')
+      const nok_age = { age: 'aAa' }
+
+      const result = await schema['~standard'].validate(nok_age)
+      expect(result).toEqual({
+        issues: [{ message: 'Invalid value', path: ['age'] }],
+      })
+    })
   })
 
-  it('age - wrong type', async () => {
-    const schema = standardSchema(repo(User), 'age')
-    const nok_age = { age: 'aAa' }
+  describe('not object', () => {
+    it('only checking age', async () => {
+      const schema = standardSchema(repo(User), 'age')
+      const ok_age = 30
 
-    const result = await schema['~standard'].validate(nok_age)
-    expect(result).toEqual({
-      issues: [{ message: 'Invalid value', path: ['age'] }],
+      const result = await schema['~standard'].validate(ok_age)
+      expect(result).toEqual({
+        issues: [
+          {
+            message: 'Invalid shape, expected: { age: ___ }',
+            path: [],
+          },
+        ],
+      })
+    })
+
+    it('age and name', async () => {
+      const schema = standardSchema(repo(User), 'age', 'name')
+      const not_ok = '30' // All wrong
+
+      const result = await schema['~standard'].validate(not_ok)
+      expect(result).toEqual({
+        issues: [
+          {
+            message: 'Invalid shape, expected: { age: ___, name: ___ }',
+            path: [],
+          },
+        ],
+      })
+    })
+
+    it('only checking age types of return', async () => {
+      const schema = standardSchema(repo(User), 'age')
+      const ok_age = 30
+
+      const result = await schema['~standard'].validate(ok_age)
+      expect(result).toEqual({
+        issues: [
+          { message: 'Invalid shape, expected: { age: ___ }', path: [] },
+        ],
+      })
+    })
+
+    it('age - wrong type', async () => {
+      const schema = standardSchema(repo(User), 'age')
+      const nok_age = 'uUu'
+
+      const result = await schema['~standard'].validate(nok_age)
+      expect(result).toEqual({
+        issues: [
+          { message: 'Invalid shape, expected: { age: ___ }', path: [] },
+        ],
+      })
+    })
+
+    it('full obj...', async () => {
+      const schema = standardSchema(repo(User))
+      const nok_age = 'uUu'
+
+      const result = await schema['~standard'].validate(nok_age)
+      expect(result).toEqual({
+        issues: [
+          {
+            message: 'Invalid shape, expected an object of entity: users',
+            path: [],
+          },
+        ],
+      })
     })
   })
 
@@ -79,7 +160,7 @@ describe('standard-schema', () => {
       })
     })
 
-    it('ok', async () => {
+    it('ok 1 field', async () => {
       const schema = standardSchema(repo(UserMail), 'email')
       const nok_mail = { email: 'j@tt.fr' }
 
@@ -89,6 +170,22 @@ describe('standard-schema', () => {
         // manage the issue
         expect('to never').toBe('here')
       } else {
+        // This should also pass the typescript type test!
+        expect(result.value.email).toEqual('j@tt.fr')
+      }
+    })
+
+    it('ok 2 fields', async () => {
+      const schema = standardSchema(repo(UserMail), 'email', 'job')
+      const nok_mail = { email: 'j@tt.fr', job: 'boss' }
+
+      const result = await schema['~standard'].validate(nok_mail)
+
+      if (result.issues) {
+        // manage the issue
+        expect('to never').toBe('here')
+      } else {
+        // This should also pass the typescript type test!
         expect(result.value.email).toEqual('j@tt.fr')
       }
     })
