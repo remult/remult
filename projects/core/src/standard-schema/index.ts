@@ -39,6 +39,31 @@ export function standardSchema<
       version: 1,
       vendor: 'remult',
       async validate(value) {
+        if (typeof value !== 'object') {
+          if (fields.length > 0) {
+            return {
+              issues: [
+                {
+                  message: `Invalid shape, expected: { ${fields
+                    .map((f) => `${String(f)}: ___`)
+                    .join(', ')} }`,
+                  path: [],
+                },
+              ],
+            }
+          }
+          return {
+            issues: [
+              {
+                message: `Invalid shape, expected an object of entity: ${String(
+                  repo.metadata.key,
+                )}`,
+                path: [],
+              },
+            ],
+          }
+        }
+
         const item = value as Partial<entityType>
         try {
           const error = await repo.validate(item, ...fields)
