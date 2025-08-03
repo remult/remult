@@ -1,7 +1,9 @@
 All notable changes to this project will be documented in this file.
 
-## [3.1.2] 2025-7-30
-- Fix documentation on the integration with Sveltekit and Railway App
+## [3.1.2] 2025-8-03
+
+- Minor fix for `standardSchema` - require an object.
+- Thanks to @Nipodemos for their first contribution to the docs
 
 ## [3.1.1] 2025-7-30
 
