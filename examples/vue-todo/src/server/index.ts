@@ -18,7 +18,7 @@ app.use(auth)
 app.use(api)
 
 app.use(express.static(path.join(__dirname, "../")))
-app.get("/*", (_, res) => {
+app.get("/{*any}", (_, res) => {
   res.sendFile(path.join(__dirname, "../", "index.html"))
 })
 
