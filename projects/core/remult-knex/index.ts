@@ -225,6 +225,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
     let cols = [] as any[]
     let colKeys: FieldMetadata[] = []
     for (const x of this.entity.fields) {
+      if (options.select && !options.select.includes(x.key)) continue
       if (x.isServerExpression) {
       } else {
         let name = e.$dbNameOf(x)

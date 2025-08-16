@@ -60,6 +60,7 @@ export interface ProxyEntityDataProvider {
   ): Promise<any[]>
 }
 export interface EntityDataProviderFindOptions {
+  select?: string[]
   where?: Filter
   limit?: number
   page?: number

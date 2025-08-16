@@ -303,6 +303,13 @@ export class DataApi<T = unknown> {
       findOptions.limit = limit
       findOptions.page = +request.get('_page')
     }
+    const select: string | undefined = request.get('_select')
+    if (select) {
+      findOptions.select = select.split(',').reduce((acc: any, key: string) => {
+        acc[key] = true
+        return acc
+      }, {} as any)
+    }
     if (this.remult.isAllowed(this.repository.metadata.options.apiRequireId)) {
       let hasId = false
       let w = await Filter.fromEntityFilter(

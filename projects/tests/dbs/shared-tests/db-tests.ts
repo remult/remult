@@ -75,6 +75,20 @@ export function commonDbTests(
       await r.count({ $and: [{ id: { $nin: [0] } }, { id: { $nin: [2] } }] }),
     ).toBe(1)
   })
+  it('test select', async () => {
+    const repo = await createEntity(stam)
+    await repo.insert({ id: 1, title: 'noam' })
+    const result = await repo.find({
+      select: {
+        id: true,
+      },
+    })
+    expect(result).toMatchInlineSnapshot(`  [
+  stam {
+    "id": 1,
+  },
+]`)
+  })
   it('what', async () => {
     const r = await createEntity(stam)
     await r.create({ id: 1, title: 'noam' }).save()

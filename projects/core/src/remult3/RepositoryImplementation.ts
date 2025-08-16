@@ -867,6 +867,16 @@ export class RepositoryImplementation<entityType>
     let opt: EntityDataProviderFindOptions = {}
 
     opt = {}
+    if (options.select) {
+      opt.select = Object.keys(options.select).map((x) => {
+        let f = this.metadata.fields.find(x)
+        if (!f)
+          throw new Error(
+            `Field ${x} not found in entity ${this.metadata.label}`,
+          )
+        return f.key
+      })
+    }
     if (!options.orderBy || Object.keys(options.orderBy).length === 0) {
       if (!this._dataProvider.isProxy)
         options.orderBy = this._info.entityInfo.defaultOrderBy
@@ -2720,10 +2730,10 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
         typeof entityInfo.id === 'string'
           ? this.fields.find(entityInfo.id)
           : Array.isArray(entityInfo.id)
-          ? entityInfo.id.map((x: string) => this.fields.find(x))
-          : typeof entityInfo.id === 'function'
-          ? entityInfo.id(this.fields)
-          : Object.keys(entityInfo.id).map((x) => this.fields.find(x))
+            ? entityInfo.id.map((x: string) => this.fields.find(x))
+            : typeof entityInfo.id === 'function'
+              ? entityInfo.id(this.fields)
+              : Object.keys(entityInfo.id).map((x) => this.fields.find(x))
       if (Array.isArray(r)) {
         if (r.length > 1) this.idMetadata.field = new CompoundIdField(...r)
         else if (r.length == 1) this.idMetadata.field = r[0]
@@ -2860,8 +2870,8 @@ export function ValueListFieldType<
   return (type: ClassType<valueType>, context?: any) => {
     FieldType<valueType>(
       (o) => {
-        ;(o.valueConverter = ValueListInfo.get(type)),
-          (o.displayValue = (item, val) => val?.label ?? val?.caption)
+        ;((o.valueConverter = ValueListInfo.get(type)),
+          (o.displayValue = (item, val) => val?.label ?? val?.caption))
         o.validate = (entity, ref) => {
           const values = ValueListInfo.get(type).getValues()
           if (ref.value && !values.find((v) => v === ref.value)) {
