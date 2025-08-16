@@ -19,7 +19,7 @@ export class RestDataProvider implements DataProvider {
   constructor(
     private apiProvider: () => ApiClient,
     private entityRequested?: (entity: EntityMetadata) => void,
-  ) { }
+  ) {}
   public getEntityDataProvider(entity: EntityMetadata): RestEntityDataProvider {
     this.entityRequested?.(entity)
     return new RestEntityDataProvider(
@@ -82,6 +82,9 @@ export function findOptionsToJson<entityType = unknown>(
       ...options,
       load: options.load(meta.fields).map((y) => y.key) as any,
     }
+  if (options.select) {
+    options = { ...options, select: Object.keys(options.select) as any }
+  }
   return options
 }
 //@internal
@@ -96,6 +99,7 @@ export function findOptionsFromJson(
     'where',
     'orderBy',
     'include',
+    'select',
   ] as (keyof FindOptions<any>)[]) {
     if (json[key] !== undefined) {
       if (key === 'where') {
@@ -116,6 +120,11 @@ export function findOptionsFromJson(
           }
         }
         r[key] = newInclude
+      } else if (key === 'select') {
+        r[key] = json.select.reduce((acc: any, key: string) => {
+          acc[key] = true
+          return acc
+        }, {} as any)
       } else r[key] = json[key]
     }
   }
@@ -126,12 +135,13 @@ export function findOptionsFromJson(
 }
 
 export class RestEntityDataProvider
-  implements EntityDataProvider, ProxyEntityDataProvider {
+  implements EntityDataProvider, ProxyEntityDataProvider
+{
   constructor(
     private url: () => string,
     private http: () => RestDataProviderHttpProvider,
     private entity: EntityMetadata,
-  ) { }
+  ) {}
   query(
     options: EntityDataProviderFindOptions,
     aggregateOptions: EntityDataProviderGroupByOptions,
@@ -256,6 +266,9 @@ export class RestEntityDataProvider
       }
       if (options.limit) url.add('_limit', options.limit)
       if (options.page) url.add('_page', options.page)
+      if (options.select) {
+        url.add('_select', options.select.join(','))
+      }
     }
 
     const run = (action?: string, body?: any) => {
@@ -296,7 +309,7 @@ export class RestEntityDataProvider
     return this.http()
       .put(
         this.url() +
-        (id != '' ? '/' + encodeURIComponent(id) : '?__action=emptyId'),
+          (id != '' ? '/' + encodeURIComponent(id) : '?__action=emptyId'),
         this.toJsonOfIncludedKeys(data),
       )
       .then((y) => this.translateFromJson(y))

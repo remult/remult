@@ -129,9 +129,14 @@ class MongoEntityDataProvider implements EntityDataProvider {
     private session?: ClientSession,
   ) {}
 
-  translateFromDb(row: any, nameProvider: EntityDbNamesBase) {
+  translateFromDb(
+    row: any,
+    nameProvider: EntityDbNamesBase,
+    select?: string[],
+  ) {
     let result: any = {}
     for (const col of this.entity.fields) {
+      if (select && !select.includes(col.key)) continue
       let val = row[nameProvider.$dbNameOf(col)]
       if (val === undefined) {
         if (!col.allowNull) {
@@ -275,7 +280,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
     return await Promise.all(
       await collection
         .find(where, op)
-        .map((x) => this.translateFromDb(x, e))
+        .map((x) => this.translateFromDb(x, e, options.select))
         .toArray(),
     )
   }

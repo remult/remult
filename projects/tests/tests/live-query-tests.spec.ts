@@ -1025,6 +1025,9 @@ it('Serialize Find Options', async () => {
     orderBy: {
       title: 'desc',
     },
+    select: {
+      title: true,
+    },
   }
 
   const z = findOptionsToJson(findOptions, r.metadata)

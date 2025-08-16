@@ -1,4 +1,4 @@
-import { expect, it, describe } from 'vitest'
+import { expect, it, describe, beforeEach } from 'vitest'
 import {
   Entity,
   Fields,
@@ -51,6 +51,7 @@ describe('test sql implementation', () => {
     end: async () => {},
   } satisfies SqlImplementation)
   const repo = new Remult(db).repo(task)
+  beforeEach(() => (commands = []))
   it('test basic select', async () => {
     await repo.find({
       where: {
@@ -60,6 +61,24 @@ describe('test sql implementation', () => {
     expect(commands).toMatchInlineSnapshot(`
       [
         "select [id], [title], [completed], a+b as exp
+       from [tasks] where [completed] = true Order By [id]",
+      ]
+    `)
+  })
+
+  it('test basic select with select', async () => {
+    await repo.find({
+      where: {
+        completed: true,
+      },
+      select: {
+        id: true,
+        title: true,
+      },
+    })
+    expect(commands).toMatchInlineSnapshot(`
+      [
+        "select [id], [title]
        from [tasks] where [completed] = true Order By [id]",
       ]
     `)
