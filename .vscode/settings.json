@@ -100,5 +100,6 @@
   ],
   "typescript.preferences.importModuleSpecifierEnding": "js",
   "javascript.preferences.autoImportFileExcludePatterns": ["node:test"],
+  "prettier.experimentalTernaries": false,
   "angular.enable-strict-mode-prompt": false
 }
