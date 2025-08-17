@@ -75,19 +75,59 @@ export function commonDbTests(
       await r.count({ $and: [{ id: { $nin: [0] } }, { id: { $nin: [2] } }] }),
     ).toBe(1)
   })
-  it('test select', async () => {
-    const repo = await createEntity(stam)
-    await repo.insert({ id: 1, title: 'noam' })
-    const result = await repo.find({
-      select: {
-        id: true,
-      },
+  describe('select', () => {
+    it('should get id', async () => {
+      const repo = await createEntity(stam)
+      await repo.insert({ id: 1, title: 'noam' })
+      const result = await repo.find({
+        select: {
+          id: true,
+        },
+      })
+      expect(result).toMatchInlineSnapshot(`
+        [
+          stam {
+            "id": 1,
+          },
+        ]
+      `)
     })
-    expect(result).toMatchInlineSnapshot(`  [
-  stam {
-    "id": 1,
-  },
-]`)
+    it('should get id only with title false', async () => {
+      const repo = await createEntity(stam)
+      await repo.insert({ id: 1, title: 'noam' })
+      const maybeTitle = false as boolean
+      const result = await repo.find({
+        select: {
+          id: true,
+          title: maybeTitle,
+        },
+      })
+      expect(result).toMatchInlineSnapshot(`
+        [
+          stam {
+            "id": 1,
+          },
+        ]
+      `)
+    })
+    it('should get id only with title false', async () => {
+      const repo = await createEntity(stam)
+      await repo.insert({ id: 1, title: 'noam' })
+      const maybeTitle = undefined as boolean | undefined
+      const result = await repo.find({
+        select: {
+          id: true,
+          title: maybeTitle,
+        },
+      })
+      expect(result).toMatchInlineSnapshot(`
+        [
+          stam {
+            "id": 1,
+          },
+        ]
+      `)
+    })
   })
   it('what', async () => {
     const r = await createEntity(stam)
