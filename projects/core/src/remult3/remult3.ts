@@ -1281,8 +1281,8 @@ export interface LoadOptions<entityType> {
    */
   load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]
   /**
-   * An option used in the `find` and `findFirst` methods to specify which related entities should be included
-   * when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
+   * An option used to specify which related entities should be included when querying the source entity.
+   * It allows you to eagerly load related data to avoid N+1 query problems.
    *
    * @param include An object specifying the related entities to include, their options, and filtering criteria.
    *
@@ -1305,9 +1305,11 @@ export interface LoadOptions<entityType> {
 }
 export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
   /**
-   * An option used in the `find` and `findFirst` methods to specify which fields should be included in the result.
+   * An option used to specify which fields should be included in the result.
    * @example
-   * await taskRepo.find({select: {id:true, title:true}})
+   * ```ts
+   * await repo(Task).find({ select: { id: true, title: true } })
+   * ```
    */
   select?: EntitySelectFields<entityType>
 

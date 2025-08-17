@@ -1731,9 +1731,11 @@ export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
 }
 export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
   /**
-   * An option used in the `find` and `findFirst` methods to specify which fields should be included in the result.
+   * An option used to specify which fields should be included in the result.
    * @example
-   * await taskRepo.find({select: {id:true, title:true}})
+   * ```ts
+   * await repo(Task).find({ select: { id: true, title: true } })
+   * ```
    */
   select?: EntitySelectFields<entityType>
   /** filters the data
