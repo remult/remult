@@ -110,7 +110,7 @@ export function commonDbTests(
         ]
       `)
     })
-    it('should get id only with title false', async () => {
+    it('should get id only with title undefined', async () => {
       const repo = await createEntity(stam)
       await repo.insert({ id: 1, title: 'noam' })
       const maybeTitle = undefined as boolean | undefined
@@ -126,6 +126,27 @@ export function commonDbTests(
             "id": 1,
           },
         ]
+      `)
+    })
+    it('should get everything as select is not provided', async () => {
+      const repo = await createEntity(stam)
+      await repo.insert({ id: 1, title: 'noam' })
+      const result = await repo.find({})
+      expect(result).toMatchInlineSnapshot(`
+        [
+          stam {
+            "id": 1,
+            "title": "noam",
+          },
+        ]
+      `)
+    })
+    it('should get nothing as there is no select', async () => {
+      const repo = await createEntity(stam)
+      await repo.insert({ id: 1, title: 'noam' })
+      const result = await repo.find({ select: {} })
+      expect(result).toMatchInlineSnapshot(`
+        Not sure what to expect ?!
       `)
     })
   })
