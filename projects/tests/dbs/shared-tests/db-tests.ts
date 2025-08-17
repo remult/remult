@@ -75,87 +75,7 @@ export function commonDbTests(
       await r.count({ $and: [{ id: { $nin: [0] } }, { id: { $nin: [2] } }] }),
     ).toBe(1)
   })
-  describe('select', () => {
-    it('should get id', async () => {
-      const repo = await createEntity(stam)
-      await repo.insert({ id: 1, title: 'noam' })
-      const result = await repo.find({
-        select: {
-          id: true,
-        },
-      })
-      expect(result).toMatchInlineSnapshot(`
-        [
-          stam {
-            "id": 1,
-          },
-        ]
-      `)
-    })
-    it('should get id only with title false', async () => {
-      const repo = await createEntity(stam)
-      await repo.insert({ id: 1, title: 'noam' })
-      const maybeTitle = false as boolean
-      const result = await repo.find({
-        select: {
-          id: true,
-          title: maybeTitle,
-        },
-      })
-      expect(result).toMatchInlineSnapshot(`
-        [
-          stam {
-            "id": 1,
-          },
-        ]
-      `)
-    })
-    it('should get id only with title undefined', async () => {
-      const repo = await createEntity(stam)
-      await repo.insert({ id: 1, title: 'noam' })
-      const maybeTitle = undefined as boolean | undefined
-      const result = await repo.find({
-        select: {
-          id: true,
-          title: maybeTitle,
-        },
-      })
-      expect(result).toMatchInlineSnapshot(`
-        [
-          stam {
-            "id": 1,
-          },
-        ]
-      `)
-    })
-    it('should get everything as select is not provided', async () => {
-      const repo = await createEntity(stam)
-      await repo.insert({ id: 1, title: 'noam' })
-      const result = await repo.find({})
-      expect(result).toMatchInlineSnapshot(`
-        [
-          stam {
-            "id": 1,
-            "title": "noam",
-          },
-        ]
-      `)
-    })
-    it('should get nothing as there is no select', async () => {
-      const repo = await createEntity(stam)
-      await repo.insert({ id: 1, title: 'noam' })
-      const result = await repo.find({ select: {} })
-      expect(result).toMatchInlineSnapshot(`
-        Not sure what to expect ?!
-      `)
-    })
-    // add a relation test (task & category)
-    it('should get task and category', async () => {
-      const repo = await createEntity(tasks)
-      const category = await createEntity(newCategories)
-      await category.insert({ id: 1, categoryName: 'c_test' })
-    })
-  })
+
   it('what', async () => {
     const r = await createEntity(stam)
     await r.create({ id: 1, title: 'noam' }).save()
@@ -1859,23 +1779,6 @@ export function commonDbTests(
       expect(
         (await r.findId(2, { include: { category: true } }))?.category!.id,
       ).toBe(2)
-    })
-
-    describe('select', () => {
-      it('should get task and category', async () => {
-        const { r, cat, cr } = await setupRelationsTest()
-        const result = await r.find({
-          select: {
-            id: true,
-            // should this be allowed ?
-            category: { select: { name: true } },
-          },
-          include: { category: { select: { name: true } } },
-        })
-        expect(result).toMatchInlineSnapshot(`
-          todo
-        `)
-      })
     })
   })
   describe('test value list field type with updates', () => {

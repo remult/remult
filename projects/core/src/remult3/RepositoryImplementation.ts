@@ -868,14 +868,22 @@ export class RepositoryImplementation<entityType>
 
     opt = {}
     if (options.select) {
-      opt.select = Object.keys(options.select).map((x) => {
-        let f = this.metadata.fields.find(x)
-        if (!f)
-          throw new Error(
-            `Field ${x} not found in entity ${this.metadata.label}`,
-          )
-        return f.key
-      })
+      opt.select = Object.keys(options.select)
+        .filter((x) => (options.select as any)[x as any])
+        .map((x) => {
+          let f = this.metadata.fields.find(x)
+          const r = getRelationFieldInfo(f)
+          if (r) {
+            throw new Error(
+              `select is not allowed for relation field ${x} in entity ${this.metadata.label}, use include instead`,
+            )
+          }
+          if (!f)
+            throw new Error(
+              `Field ${x} not found in entity ${this.metadata.label}`,
+            )
+          return f.key
+        })
     }
     if (!options.orderBy || Object.keys(options.orderBy).length === 0) {
       if (!this._dataProvider.isProxy)
@@ -1075,6 +1083,7 @@ export class RepositoryImplementation<entityType>
         'limit',
         'include',
         'orderBy',
+        'select',
       ] as (keyof FindOptions<any>)[]) {
         //@ts-ignore
         if (source[key]) findOptions[key] = source[key]

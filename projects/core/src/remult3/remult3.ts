@@ -1490,7 +1490,7 @@ export declare type EntityIdFields<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?: true
 }
 export declare type EntitySelectFields<entityType> = {
-  [Properties in keyof Partial<MembersOnly<entityType>>]?: true
+  [Properties in keyof Partial<MembersOnly<entityType>>]?: boolean
 }
 
 export interface ClassFieldDecoratorContextStub<entityType, valueType> {

@@ -250,6 +250,44 @@ describe('test relations', () => {
       }
     `)
   })
+  it('test select of relation field', async () => {
+    expect(async () => {
+      await r(Task).findFirst(
+        { id: 1 },
+        {
+          select: {
+            id: true,
+            //@ts-ignore
+            category: { select: { name: true } },
+          },
+        },
+      )
+    }).rejects.toThrowErrorMatchingInlineSnapshot(`[Error: select is not allowed for relation field category in entity Tasks, use include instead]`)
+  })
+  it('test include with select', async () => {
+    expect(
+      await r(Task).findFirst(
+        { id: 1 },
+        {
+          include: {
+            category: { select: { id: true, name: true } },
+          },
+        },
+      ),
+    ).toMatchInlineSnapshot(`
+      Task {
+        "category": Category {
+          "id": 1,
+          "name": "c1",
+        },
+        "completed": false,
+        "id": 1,
+        "secondaryCategoryId": 3,
+        "title": "t1",
+      }
+    `)
+  })
+
   it('test not include', async () => {
     expect(
       await r(Task).findFirst(
@@ -881,6 +919,7 @@ describe('test setting of id and relation field', async () => {
     expect(t.categoryId).toBe(2)
     expect(t.category.id).toBe(2)
   })
+
   it('test update many', async () => {
     await r(Task).insert({ id: 1, categoryId: cat.id })
     await r(Task).updateMany({
