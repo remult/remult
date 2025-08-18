@@ -1525,6 +1525,10 @@ export class Contact {
 
 # Entities - Relations
 
+---
+outline: [2, 3]
+---
+
 # Relations Between Entities
 
 ::: tip **Interactive Learning Available! 🚀**
@@ -2366,6 +2370,7 @@ Utilizing an intermediate table for managing many-to-many relationships in Remul
 ---
 
 In this guide, we've explored the essential concepts of managing entity relations within the Remult library. From one-to-one to many-to-many relationships, we've covered the declaration, customization, and querying of these relations. By understanding the nuances of entity relations, users can harness the full potential of Remult to build robust TypeScript applications with ease.
+
 
 
 # Relations - Filtering and Relations
@@ -7019,6 +7024,14 @@ Accessing the underlying database directly in Remult provides the flexibility to
 
 # Escape Hatches - Using in Non-Remult Routes
 
+---
+keywords:
+  [
+    Error: remult object was requested outside of a valid context,
+    try running it within initApi or a remult request cycle,
+  ]
+---
+
 # Using Remult in Non-Remult Routes
 
 When using the CRUD api or [BackendMethods](./backendMethods.md), `remult` is automatically available. Still, there are many use cases where you may want to user remult in your own routes or other code without using `BackendMethods` but would still want to take advantage of `Remult` as an ORM and use it to check for user validity, etc...
@@ -7269,6 +7282,7 @@ import { remultApi } from 'remult/remult-hapi'
 :::
 
 
+
 # Escape Hatches - Avoiding Decorators
 
 # Working without decorators
@@ -7351,6 +7365,18 @@ This is the same backend method that is detailed in the [Backend methods of the 
 
 
 # Escape Hatches - Extensibility
+
+---
+tags:
+  - options
+  - bespoke options
+  - customizing options
+  - type augmentation
+  - module augmentation
+  - UserInfo
+  - RemultContext
+  - context
+---
 
 # Extensibility
 
@@ -7501,6 +7527,7 @@ or in an entity's saving event:
 ```
 
 By leveraging module augmentation, you can tailor Remult to your specific needs, adding custom options and extending interfaces to suit your application's requirements.
+
 
 
 # Integrations - Open API
@@ -8944,8 +8971,8 @@ Arguments:
    })
    ```
    * **load**
-   * **include** - An option used in the `find` and `findFirst` methods to specify which related entities should be included
-   when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
+   * **include** - An option used to specify which related entities should be included when querying the source entity.
+   It allows you to eagerly load related data to avoid N+1 query problems.
    
    
    #### param:
@@ -8968,6 +8995,13 @@ Arguments:
     - Relations.toOne
     - RelationOptions
    
+   * **select** - An option used to specify which fields should be included in the result.
+   
+   
+   #### example:
+   ```ts
+   await repo(Task).find({ select: { id: true, title: true } })
+   ```
    * **where** - filters the data
    
    
@@ -9150,8 +9184,8 @@ Arguments:
    })
    ```
    * **load**
-   * **include** - An option used in the `find` and `findFirst` methods to specify which related entities should be included
-   when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
+   * **include** - An option used to specify which related entities should be included when querying the source entity.
+   It allows you to eagerly load related data to avoid N+1 query problems.
    
    
    #### param:
@@ -9174,6 +9208,13 @@ Arguments:
     - Relations.toOne
     - RelationOptions
    
+   * **select** - An option used to specify which fields should be included in the result.
+   
+   
+   #### example:
+   ```ts
+   await repo(Task).find({ select: { id: true, title: true } })
+   ```
    * **where** - filters the data
    
    
@@ -9224,8 +9265,8 @@ Arguments:
    })
    ```
    * **load**
-   * **include** - An option used in the `find` and `findFirst` methods to specify which related entities should be included
-   when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
+   * **include** - An option used to specify which related entities should be included when querying the source entity.
+   It allows you to eagerly load related data to avoid N+1 query problems.
    
    
    #### param:
@@ -9248,6 +9289,13 @@ Arguments:
     - Relations.toOne
     - RelationOptions
    
+   * **select** - An option used to specify which fields should be included in the result.
+   
+   
+   #### example:
+   ```ts
+   await repo(Task).find({ select: { id: true, title: true } })
+   ```
    * **where** - filters the data
    
    
@@ -9295,8 +9343,8 @@ Arguments:
 [EntityFilter](http://remult.dev/docs/entityFilter.html)
 * **options**
    * **load**
-   * **include** - An option used in the `find` and `findFirst` methods to specify which related entities should be included
-   when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
+   * **include** - An option used to specify which related entities should be included when querying the source entity.
+   It allows you to eagerly load related data to avoid N+1 query problems.
    
    
    #### param:
@@ -9319,6 +9367,13 @@ Arguments:
     - Relations.toOne
     - RelationOptions
    
+   * **select** - An option used to specify which fields should be included in the result.
+   
+   
+   #### example:
+   ```ts
+   await repo(Task).find({ select: { id: true, title: true } })
+   ```
    * **where** - filters the data
    
    
@@ -9363,8 +9418,8 @@ await taskRepo.findFirst({ where:{ completed:false }, createIfNotFound: true })
 Arguments:
 * **options**
    * **load**
-   * **include** - An option used in the `find` and `findFirst` methods to specify which related entities should be included
-   when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
+   * **include** - An option used to specify which related entities should be included when querying the source entity.
+   It allows you to eagerly load related data to avoid N+1 query problems.
    
    
    #### param:
@@ -9387,6 +9442,13 @@ Arguments:
     - Relations.toOne
     - RelationOptions
    
+   * **select** - An option used to specify which fields should be included in the result.
+   
+   
+   #### example:
+   ```ts
+   await repo(Task).find({ select: { id: true, title: true } })
+   ```
    * **where** - filters the data
    
    
@@ -9420,8 +9482,8 @@ Arguments:
 * **id**
 * **options**
    * **load**
-   * **include** - An option used in the `find` and `findFirst` methods to specify which related entities should be included
-   when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
+   * **include** - An option used to specify which related entities should be included when querying the source entity.
+   It allows you to eagerly load related data to avoid N+1 query problems.
    
    
    #### param:
@@ -9890,6 +9952,14 @@ remultApi({
 
 # API Reference - EntityFilter
 
+---
+tags:
+  - Where
+  - Filter
+  - Entity Where
+  - Entity Filter
+---
+
 # EntityFilter
 
 Used to filter the desired result set
@@ -10028,6 +10098,7 @@ where: {
   }
 }
 ```
+
 
 
 # API Reference - EntityMetadata
@@ -11125,6 +11196,10 @@ You can filter the rows using different operators
 https://mySite.com/api/products?price.gte=5&price.lte=10
 ```
 
+## Select
+
+Use `_select` with a comma separated list of the fields you would like to select
+
 ### Filter Operators
 
 | operator     | description           | example                                            |
@@ -11187,10 +11262,10 @@ https://mySite.com/api/products?price.gte=5&price.lte=10&_sort=price&_order=desc
 * **EntityBase**
 ## constructor
 * **new EntityBase**
-## $
-* **$**
 ## _
 * **_**
+## $
+* **$**
 ## assign
 * **assign**
 
@@ -11213,10 +11288,10 @@ Arguments:
 * **new IdEntity**
 ## id
 * **id**
-## $
-* **$**
 ## _
 * **_**
+## $
+* **$**
 ## assign
 * **assign**
 
@@ -11360,7 +11435,13 @@ Arguments:
 
 
 
-# Introducing Remult: The Backend to Frontend Framework You Always Wanted
+# Remult Blog - Introducing Remult
+
+---
+title: "Introducing Remult: The Backend to Frontend Framework You Always Wanted"
+sidebar: false
+editLink: false
+---
 
 > March 14, 2023 | Noam Honig
 
@@ -11435,6 +11516,7 @@ So we open sourced the framework, to enable other lazy developers like us to be 
 Check out [Remult](https://remult.dev), and if you like it, give it a star.  Let us know what you’d like to see next, and also feel free to contribute to the project.
 
 In our next post, we’ll do a roundup of tools in the ecosystem looking to solve similar challenges though different approaches, and unpack where Remult fits in, and what it’s optimized for.
+
 
 
 # SvelteKit - Tutorial - Go further / Extra
