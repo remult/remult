@@ -891,6 +891,9 @@ export interface EntityRefForEntityBase<entityType>
   fields: FieldsRefForEntityBase<entityType>
   relations: RepositoryRelationsForEntityBase<entityType>
 }
+export declare type EntitySelectFields<entityType> = {
+  [Properties in keyof Partial<MembersOnly<entityType>>]?: boolean
+}
 export interface ErrorInfo<entityType = unknown> {
   message?: string
   modelState?: {
@@ -1752,7 +1755,6 @@ export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
    */
   orderBy?: EntityOrderBy<entityType>
 }
-//[ ] EntitySelectFields from TBD is not exported
 export declare class ForbiddenError extends Error {
   constructor(message?: string)
   isForbiddenError: true
