@@ -1,5 +1,9 @@
 All notable changes to this project will be documented in this file.
 
+## [3.2.1] 2025-8-18
+
+- Export EntitySelectFields type
+
 ## [3.2.0] 2025-8-18
 
 - Added support for `select` in `find`, now you can select which fields will be part of the query and part of the result.

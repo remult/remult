@@ -43,6 +43,7 @@ export {
   MembersToInclude,
   RepositoryRelations,
   EntityIdFields,
+  EntitySelectFields,
   ClassFieldDecorator,
   ClassFieldDecoratorContextStub, //n1 consider removing in ts5
   LifecycleEvent,
