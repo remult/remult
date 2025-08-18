@@ -111,8 +111,8 @@ Arguments:
    })
    ```
    * **load**
-   * **include** - An option used in the `find` and `findFirst` methods to specify which related entities should be included
-   when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
+   * **include** - An option used to specify which related entities should be included when querying the source entity.
+   It allows you to eagerly load related data to avoid N+1 query problems.
    
    
    #### param:
@@ -135,6 +135,13 @@ Arguments:
     - Relations.toOne
     - RelationOptions
    
+   * **select** - An option used to specify which fields should be included in the result.
+   
+   
+   #### example:
+   ```ts
+   await repo(Task).find({ select: { id: true, title: true } })
+   ```
    * **where** - filters the data
    
    

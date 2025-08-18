@@ -2,10 +2,10 @@
 * **EntityBase**
 ## constructor
 * **new EntityBase**
-## $
-* **$**
 ## _
 * **_**
+## $
+* **$**
 ## assign
 * **assign**
 
