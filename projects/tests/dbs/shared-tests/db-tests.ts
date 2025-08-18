@@ -75,6 +75,7 @@ export function commonDbTests(
       await r.count({ $and: [{ id: { $nin: [0] } }, { id: { $nin: [2] } }] }),
     ).toBe(1)
   })
+
   it('what', async () => {
     const r = await createEntity(stam)
     await r.create({ id: 1, title: 'noam' }).save()

@@ -189,14 +189,14 @@ export interface IdFieldRef<entityType, valueType>
     id: valueType extends { id?: number }
       ? number
       : valueType extends { id?: string }
-      ? string
-      : string | number,
+        ? string
+        : string | number,
   ): void
   getId(): valueType extends { id?: number }
     ? number
     : valueType extends { id?: string }
-    ? string
-    : string | number
+      ? string
+      : string | number
 }
 
 export interface FieldRef<entityType = unknown, valueType = unknown>
@@ -321,8 +321,8 @@ export declare type idType<entityType> = entityType extends {
   ? U extends string
     ? string
     : U extends number
-    ? number
-    : string | number
+      ? number
+      : string | number
   : string | number
 
 export type NumericKeys<T> = {
@@ -458,8 +458,8 @@ export type GroupByResult<
     | sumFields[number]]: K extends groupByFields[number]
     ? entityType[K]
     : K extends sumFields[number]
-    ? { sum: number }
-    : never
+      ? { sum: number }
+      : never
 } & { [K in averageFields[number]]: { avg: number } } & {
   [K in minFields[number]]: { min: number }
 } & { [K in maxFields[number]]: { max: number } } & {
@@ -978,17 +978,17 @@ export declare type EntityFilter<entityType> = {
     | (Partial<entityType>[Properties] extends number | Date | undefined | null
         ? ComparisonValueFilter<Partial<entityType>[Properties]>
         : Partial<entityType>[Properties] extends string | undefined
-        ?
-            | Partial<entityType>[Properties]
-            | (ContainsStringValueFilter &
-                ComparisonValueFilter<Partial<entityType>[Properties]>)
-        : Partial<entityType>[Properties] extends boolean | undefined | null
-        ? ValueFilter<boolean>
-        : Partial<entityType>[Properties] extends
-            | { id?: string | number }
-            | undefined
-        ? IdFilter<Partial<entityType>[Properties]>
-        : ValueFilter<Partial<entityType>[Properties]>)
+          ?
+              | Partial<entityType>[Properties]
+              | (ContainsStringValueFilter &
+                  ComparisonValueFilter<Partial<entityType>[Properties]>)
+          : Partial<entityType>[Properties] extends boolean | undefined | null
+            ? ValueFilter<boolean>
+            : Partial<entityType>[Properties] extends
+                  | { id?: string | number }
+                  | undefined
+              ? IdFilter<Partial<entityType>[Properties]>
+              : ValueFilter<Partial<entityType>[Properties]>)
     | ContainsStringValueFilter
 } & {
   /**
@@ -1281,8 +1281,8 @@ export interface LoadOptions<entityType> {
    */
   load?: (entity: FieldsMetadata<entityType>) => FieldMetadata[]
   /**
-   * An option used in the `find` and `findFirst` methods to specify which related entities should be included
-   * when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
+   * An option used to specify which related entities should be included when querying the source entity.
+   * It allows you to eagerly load related data to avoid N+1 query problems.
    *
    * @param include An object specifying the related entities to include, their options, and filtering criteria.
    *
@@ -1304,6 +1304,15 @@ export interface LoadOptions<entityType> {
   include?: MembersToInclude<entityType>
 }
 export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
+  /**
+   * An option used to specify which fields should be included in the result.
+   * @example
+   * ```ts
+   * await repo(Task).find({ select: { id: true, title: true } })
+   * ```
+   */
+  select?: EntitySelectFields<entityType>
+
   /** filters the data
    * @example
    * await taskRepo.find({where: { completed:false }})
@@ -1465,8 +1474,8 @@ export type RepositoryRelations<entityType> = {
   > extends Array<infer R>
     ? Repository<R>
     : entityType[K] extends infer R
-    ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
-    : never
+      ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
+      : never
 }
 
 export type RepositoryRelationsForEntityBase<entityType> = {
@@ -1475,12 +1484,15 @@ export type RepositoryRelationsForEntityBase<entityType> = {
   > extends Array<infer R>
     ? Repository<R>
     : entityType[K] extends infer R
-    ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
-    : never
+      ? { findOne: (options?: FindOptionsBase<R>) => Promise<R> }
+      : never
 }
 
 export declare type EntityIdFields<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?: true
+}
+export declare type EntitySelectFields<entityType> = {
+  [Properties in keyof Partial<MembersOnly<entityType>>]?: boolean
 }
 
 export interface ClassFieldDecoratorContextStub<entityType, valueType> {

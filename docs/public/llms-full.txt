@@ -1052,9 +1052,15 @@ And example of the usage of groupBy
   import Remultor from '../.vitepress/components/Remultor.vue'
 </script>
 
+# Entities
+
+Entities are **THE** key concept of Remult - your **Single Source of Truth (SSoT)** for data structure, api, validation, permissions, and more! In other languages, they can be called `schema` or `model`.
+
+---
+
 # 🧙‍♂️ Remultor
 
-Real-time Remult entity class buildor. Try it out and copy the code to your project!
+Real-time Remult entity builder. Try it out and copy the code to your project!
 
 <Remultor />
 
@@ -1518,10 +1524,6 @@ export class Contact {
 
 
 # Entities - Relations
-
----
-outline: [2, 3]
----
 
 # Relations Between Entities
 
@@ -2364,7 +2366,6 @@ Utilizing an intermediate table for managing many-to-many relationships in Remul
 ---
 
 In this guide, we've explored the essential concepts of managing entity relations within the Remult library. From one-to-one to many-to-many relationships, we've covered the declaration, customization, and querying of these relations. By understanding the nuances of entity relations, users can harness the full potential of Remult to build robust TypeScript applications with ease.
-
 
 
 # Relations - Filtering and Relations
@@ -3986,19 +3987,24 @@ const logout = async () => {
 
 ## Extra - Remote Functions
 
-SvelteKit is introducing a new feature called [Remote Functions](https://github.com/sveltejs/kit/discussions/13897). It's early, but we want to see how it integrates with Remult.
+SvelteKit is introducing a new feature called [Remote Functions](https://svelte.dev/docs/kit/remote-functions). It's early, but we want to see how it integrates with Remult.
 
 Here is the default doc example (zod & drizzle or valibot & prisma, ...):
 
 ```ts
-import z from 'zod' // or valibot, ... any standard schema library
+import { error } from '@sveltejs/kit'
 import { query } from '$app/server'
-import * as db from '$lib/server/db' // with drizzle, prisma, pg, ... any database library
+import * as v from 'valibot' // or zod, ... any standard schema library
+import * as db from '$lib/server/database' // with drizzle, prisma, pg, ... any database library
 
-export const getLikes = query(z.string(), async (id) => {
-  const [row] = await db.sql`select likes from item where id = ${id}`
-  return row.likes
-})
+export const getPost = query(
+  z.string(), // Standard Schema
+  async (slug) => {
+    const [post] = await db.sql`SELECT * FROM post WHERE slug = ${slug}`
+    if (!post) error(404, 'Not found')
+    return post
+  },
+)
 ```
 
 With remult library, you have both:
@@ -4008,18 +4014,27 @@ With remult library, you have both:
 
 So you can replace the previous code with this:
 
-```ts [src/lib/server/functions.ts]
+```ts
+import { error } from '@sveltejs/kit'
 import { query } from '$app/server'
 import { standardSchema, repo } from 'remult'
-import { Item } from '$lib/entities'
+import { Post } from '$lib/entities'
 
-export const getLikes = query(standardSchema(repo(Item), 'id'), async (id) => {
-  const item = await repo(Item).findId(id)
-  return item.likes
-})
+export const getPost = query(
+  standardSchema(repo(Post), 'slug'), // Standard Schema
+  async ({ slug }) => {
+    const post = await repo(Post).findFirst({ slug })
+    if (!post) error(404, 'Not found')
+    return post
+  },
+)
 ```
 
 We are excited to see how you will use it 🚀
+
+::: tip
+More info about [remult standard schema](/docs/standard-schema)
+:::
 
 
 
@@ -7004,14 +7019,6 @@ Accessing the underlying database directly in Remult provides the flexibility to
 
 # Escape Hatches - Using in Non-Remult Routes
 
----
-keywords:
-  [
-    Error: remult object was requested outside of a valid context,
-    try running it within initApi or a remult request cycle,
-  ]
----
-
 # Using Remult in Non-Remult Routes
 
 When using the CRUD api or [BackendMethods](./backendMethods.md), `remult` is automatically available. Still, there are many use cases where you may want to user remult in your own routes or other code without using `BackendMethods` but would still want to take advantage of `Remult` as an ORM and use it to check for user validity, etc...
@@ -7262,7 +7269,6 @@ import { remultApi } from 'remult/remult-hapi'
 :::
 
 
-
 # Escape Hatches - Avoiding Decorators
 
 # Working without decorators
@@ -7345,18 +7351,6 @@ This is the same backend method that is detailed in the [Backend methods of the 
 
 
 # Escape Hatches - Extensibility
-
----
-tags:
-  - options
-  - bespoke options
-  - customizing options
-  - type augmentation
-  - module augmentation
-  - UserInfo
-  - RemultContext
-  - context
----
 
 # Extensibility
 
@@ -7507,7 +7501,6 @@ or in an entity's saving event:
 ```
 
 By leveraging module augmentation, you can tailor Remult to your specific needs, adding custom options and extending interfaces to suit your application's requirements.
-
 
 
 # Integrations - Open API
@@ -9897,14 +9890,6 @@ remultApi({
 
 # API Reference - EntityFilter
 
----
-tags:
-  - Where
-  - Filter
-  - Entity Where
-  - Entity Filter
----
-
 # EntityFilter
 
 Used to filter the desired result set
@@ -10043,7 +10028,6 @@ where: {
   }
 }
 ```
-
 
 
 # API Reference - EntityMetadata
@@ -11376,13 +11360,7 @@ Arguments:
 
 
 
-# Remult Blog - Introducing Remult
-
----
-title: "Introducing Remult: The Backend to Frontend Framework You Always Wanted"
-sidebar: false
-editLink: false
----
+# Introducing Remult: The Backend to Frontend Framework You Always Wanted
 
 > March 14, 2023 | Noam Honig
 
@@ -11457,7 +11435,6 @@ So we open sourced the framework, to enable other lazy developers like us to be 
 Check out [Remult](https://remult.dev), and if you like it, give it a star.  Let us know what you’d like to see next, and also feel free to contribute to the project.
 
 In our next post, we’ll do a roundup of tools in the ecosystem looking to solve similar challenges though different approaches, and unpack where Remult fits in, and what it’s optimized for.
-
 
 
 # react - Tutorial - Setup
@@ -17519,7 +17496,43 @@ npm i @sveltejs/adapter-node --save-dev
 import adapter from '@sveltejs/adapter-auto' // [!code --]
 import adapter from '@sveltejs/adapter-node' // [!code ++]
 ```
+::: 
 
+You also need to change the dataProvider on the remult initilizer a little bit. By default Sveltekit will try to access your database when running the `npm run build` command, but on railway, the postgres database is not accessible at this time, and it will make your deployment fail.
+
+To solve this, we need to make Sveltekit use the default JSON database when building, and use Postgres only in production.
+
+Make the following changes on your `server/api.ts` file:
+
+::: code-group
+```ts [src/server/api.ts]
+import { remultApi } from 'remult/remult-sveltekit'
+import { Task } from './shared/Task'
+import { TasksController } from './shared/TasksController'
+import { createPostgresDataProvider } from 'remult/postgres' 
+import { DATABASE_URL } from '$env/static/private'
+import { building } from '$app/environment'; // [!code ++]
+
+export const api = remultApi({
+  entities: [Task],
+  controllers: [TasksController],
+  dataProvider: DATABASE_URL // [!code --]
+    ? createPostgresDataProvider({ connectionString: DATABASE_URL }) // [!code --]
+    : undefined, // [!code --]
+   dataProvider: async () => { // [!code ++]
+		if (DATABASE_URL && !building) { // [!code ++]
+			return createPostgresDataProvider({ // [!code ++]
+				connectionString: DATABASE_URL // [!code ++]
+			}); // [!code ++]
+		} // [!code ++]
+		return undefined; // [!code ++]
+	}, // [!code ++]
+  getUser: async (event) => {
+    const auth = await event?.locals?.auth()
+    return auth?.user as UserInfo
+  },
+})
+```
 :::
 
 In order to deploy the todo app to [railway](https://railway.app/) you'll need a `railway` account. You'll also need [Railway CLI](https://docs.railway.app/develop/cli#npm) installed, and you'll need to login to railway from the cli, using `railway login`.
@@ -17541,19 +17554,32 @@ Click enter multiple times to answer all its questions with the default answer
    railway add
    ```
 5. Select `postgressql` as the database.
-6. Once that's done run the following command to upload the project to railway:
+6. You need to modify your package.json file and tell the railway to use the correct version of NodeJS, like this:
+   ```jsonc [package.json]
+	"type": "module",
+   "engines": { // [!code ++]
+		"node": ">=20.19" // [!code ++]
+	}, // [!code ++]
+   "scripts": {
+		// ... your scripts
+	},
+   ```
+8. Once that's done run the following command to upload the project to railway:
    ```sh
    railway up
    ```
-7. got to the `railway` project's site and click on the project
-8. Switch to the `settings` tab
-9. Under `Environment` click on `Generate Domain`
-10. Copy the `generated url`, you'll need it for [NEXTAUTH_URL](https://next-auth.js.org/configuration/options#nextauth_url) on step 14
-11. Switch to the `variables` tab
-12. Click on `+ New Variable`, and in the `VARIABLE_NAME` click `Add Reference` and select `DATABASE_URL`
-13. Add another variable called `AUTH_SECRET` and set it to a random string, you can use an [online UUID generator](https://www.uuidgenerator.net/)
-14. Add another variable called `NEXTAUTH_URL` and set it to the `generated url` which was created on step 10.
-15. Wait for railway to finish deploying your changes and Click on the newly generated url to open the app in the browser and you'll see the app live in production. (it may take a few minutes to go live)
+::: warning Note
+Due to a bug in the way the default Railway builds, the first time you use the `railway up` command, it will fail to deploy. Continue to follow the steps to fix it
+:::
+
+9. Go to the `railway` project's site and click on the project
+10. Switch to the `settings` tab
+11. Under `Environment` click on `Generate Domain`
+12. Under `Build` change the build from the default `Nixpacks` to the `Railpack`
+13. Switch to the `variables` tab
+14. Click on `+ New Variable`, and in the `VARIABLE_NAME` click `Add Reference` and select `DATABASE_URL`
+15. Add another variable called `AUTH_SECRET` and set it to a random string, you can use an [online UUID generator](https://www.uuidgenerator.net/)
+16. Wait for railway to finish deploying your changes and Click on the newly generated url to open the app in the browser and you'll see the app live in production. (it may take a few minutes to go live)
 
 ::: warning Note
 If you run into trouble deploying the app to Railway, try using Railway's [documentation](https://docs.railway.app/deploy/deployments).
@@ -17953,19 +17979,24 @@ const logout = async () => {
 
 ## Extra - Remote Functions
 
-SvelteKit is introducing a new feature called [Remote Functions](https://github.com/sveltejs/kit/discussions/13897). It's early, but we want to see how it integrates with Remult.
+SvelteKit is introducing a new feature called [Remote Functions](https://svelte.dev/docs/kit/remote-functions). It's early, but we want to see how it integrates with Remult.
 
 Here is the default doc example (zod & drizzle or valibot & prisma, ...):
 
 ```ts
-import z from 'zod' // or valibot, ... any standard schema library
+import { error } from '@sveltejs/kit'
 import { query } from '$app/server'
-import * as db from '$lib/server/db' // with drizzle, prisma, pg, ... any database library
+import * as v from 'valibot' // or zod, ... any standard schema library
+import * as db from '$lib/server/database' // with drizzle, prisma, pg, ... any database library
 
-export const getLikes = query(z.string(), async (id) => {
-  const [row] = await db.sql`select likes from item where id = ${id}`
-  return row.likes
-})
+export const getPost = query(
+  z.string(), // Standard Schema
+  async (slug) => {
+    const [post] = await db.sql`SELECT * FROM post WHERE slug = ${slug}`
+    if (!post) error(404, 'Not found')
+    return post
+  },
+)
 ```
 
 With remult library, you have both:
@@ -17975,18 +18006,27 @@ With remult library, you have both:
 
 So you can replace the previous code with this:
 
-```ts [src/lib/server/functions.ts]
+```ts
+import { error } from '@sveltejs/kit'
 import { query } from '$app/server'
 import { standardSchema, repo } from 'remult'
-import { Item } from '$lib/entities'
+import { Post } from '$lib/entities'
 
-export const getLikes = query(standardSchema(repo(Item), 'id'), async (id) => {
-  const item = await repo(Item).findId(id)
-  return item.likes
-})
+export const getPost = query(
+  standardSchema(repo(Post), 'slug'), // Standard Schema
+  async ({ slug }) => {
+    const post = await repo(Post).findFirst({ slug })
+    if (!post) error(404, 'Not found')
+    return post
+  },
+)
 ```
 
 We are excited to see how you will use it 🚀
+
+::: tip
+More info about [remult standard schema](/docs/standard-schema)
+:::
 
 
 
@@ -20892,14 +20932,7 @@ To see a larger more complex code base, visit our [CRM example project](https://
 Love Remult?&nbsp;<a href="https://github.com/remult/remult" target="_blank" rel="noopener"> Give our repo a star.⭐</a>
 
 
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Welcome to the Remult Tutorial
-template: after-backend-methods
-focus: /frontend/Todo.tsx
----
+# Interactive Tutorial - Basics - Introduction - Welcome to the Remult Tutorial
 
 # Welcome to the Remult Tutorial
 
@@ -20938,15 +20971,7 @@ Ready to dive in? Click on the next lesson to start building your app with Remul
 Happy coding! 🎉
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Entity
-focus: /shared/Task.ts
-template: before-entity
----
+# Interactive Tutorial - Basics - Introduction - Entity
 
 # The Entity
 
@@ -20987,15 +21012,7 @@ This entity will be used to define the database, API, frontend query language, v
 We've placed the entity's source code in the `shared` folder to indicate that it's shared between the frontend and the backend.
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Rest Api
-focus: /backend/index.ts
-template: before-frontend
----
+# Interactive Tutorial - Basics - Introduction - Rest Api
 
 ## The Rest Api
 
@@ -21038,15 +21055,7 @@ await fetch('/api/tasks').then((result) => result.json())
 :::
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Insert Data on the Backend
-focus: /backend/index.ts
-template: before-frontend
----
+# Interactive Tutorial - Basics - Introduction - Insert Data on the Backend
 
 ## Insert Data on the Backend
 
@@ -21094,15 +21103,7 @@ Click on the `Test the API` button in the preview window. You should see a JSON 
 > **Note:** While Remult supports [many relational and non-relational databases](https://remult.dev/docs/installation/database/), in this tutorial we start by storing entity data in a backend **JSON file** stored in the `db` folder for the project. Later in this tutorial, we'll switch to using SQLite.
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Display the Task List
-focus: /frontend/Todo.tsx
-autoReload: true
----
+# Interactive Tutorial - Basics - Introduction - Display the Task List
 
 ## Display the Task List
 
@@ -21152,23 +21153,7 @@ This code makes a REST API call to the backend at the `/api/tasks` URL to get th
 You can see the tasks in the preview window below.
 
 
-
-# Interactive Tutorial - 
-
----
-type: chapter
-title: Introduction
----
-
-
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Paging
-focus: /frontend/Todo.tsx
----
+# Interactive Tutorial - Basics - Querying Data - Paging
 
 # Paging
 
@@ -21197,14 +21182,7 @@ This code results in the following REST API request:
 Try playing with different values for `limit` and `page` to see the results in the preview window.
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Sorting
-focus: /frontend/Todo.tsx
----
+# Interactive Tutorial - Basics - Querying Data - Sorting
 
 # Sorting
 
@@ -21234,14 +21212,7 @@ This code results in the following REST API request:
 Try changing the sort direction and sorting by different fields to see the results in the preview window.
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Filtering
-focus: /frontend/Todo.tsx
----
+# Interactive Tutorial - Basics - Querying Data - Filtering
 
 # Filtering
 
@@ -21273,23 +21244,7 @@ You can experiment with other types of conditions like `$contains`, `$startsWith
 Try changing the filter condition to see the results in the preview window.
 
 
-
-# Interactive Tutorial - 
-
----
-type: chapter
-title: Querying Data
----
-
-
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Insert
-focus: /frontend/Todo.tsx
----
+# Interactive Tutorial - Basics - Manipulating Data - Insert
 
 # Inserting Data
 
@@ -21373,14 +21328,7 @@ This code results in the following REST API request to insert the new task:
 Try adding new tasks using the form in the preview window below.
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Update
-focus: /frontend/Todo.tsx
----
+# Interactive Tutorial - Basics - Manipulating Data - Update
 
 # Updating Data
 
@@ -21432,14 +21380,7 @@ This code results in the following REST API request to update the task:
 Try toggling the completion status of tasks using the checkboxes in the preview window below.
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Delete
-focus: /frontend/Todo.tsx
----
+# Interactive Tutorial - Basics - Manipulating Data - Delete
 
 # Deleting Data
 
@@ -21501,23 +21442,7 @@ This code results in the following REST API request to delete the task:
 Try deleting tasks using the delete buttons in the preview window below.
 
 
-
-# Interactive Tutorial - 
-
----
-type: chapter
-title: Manipulating Data
----
-
-
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Required
-focus: /shared/Task.ts
----
+# Interactive Tutorial - Basics - Validation - Required
 
 # Validation Introduction
 
@@ -21610,14 +21535,7 @@ See the result error object that's returned
 :::
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Built-In Validations
-focus: /shared/Task.ts
----
+# Interactive Tutorial - Basics - Validation - Built-In Validations
 
 # Built-In Validations
 
@@ -21700,14 +21618,7 @@ export class Task {
 Try adding tasks with titles that do not meet these validation requirements to see the validation in action. The errors returned will include the validation messages specified.
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Custom Validations
-focus: /shared/Task.ts
----
+# Interactive Tutorial - Basics - Validation - Custom Validations
 
 # Custom Validations
 
@@ -21739,23 +21650,7 @@ export class Task {
 Try adding tasks with titles shorter than 3 characters to see the custom validation in action. The error message `'too short'` will be returned if the validation fails.
 
 
-
-# Interactive Tutorial - 
-
----
-type: chapter
-title: Validation
----
-
-
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Live Query
-focus: /frontend/Todo.tsx
----
+# Interactive Tutorial - Basics - Live Query - Live Query
 
 # Introduction
 
@@ -21766,14 +21661,7 @@ Our todo list app can have multiple users using it at the same time. However, ch
 In the preview window below, we can see `user-a` and `user-b`. Try making changes to data as `user-a` and see how `user-b` needs to click `reload page` to see these changes.
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Realtime Updates
-focus: /frontend/Todo.tsx
----
+# Interactive Tutorial - Basics - Live Query - Realtime Updates
 
 # Realtime Updates
 
@@ -21839,24 +21727,7 @@ async function deleteTask(task: Task) {
 - With `liveQuery`, the state updates automatically whenever there are changes to the tasks, simplifying our state management.
 
 
-
-# Interactive Tutorial - 
-
----
-type: chapter
-title: Live Query
-template: live-query
----
-
-
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Updating Multiple Tasks
-focus: /frontend/Todo.tsx
----
+# Interactive Tutorial - Basics - Backend Methods - Updating Multiple Tasks
 
 # Backend Methods
 
@@ -21914,14 +21785,7 @@ In the next lesson, we'll refactor this code to address these performance challe
 Would you like to proceed with another section or make further adjustments?
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Refactor to Backend
-focus: /shared/TasksController.ts
----
+# Interactive Tutorial - Basics - Backend Methods - Refactor to Backend
 
 # Refactor from Frontend to Backend
 
@@ -21995,24 +21859,7 @@ async function setAllCompleted(completed: boolean) {
 Click the "Set All Completed" and "Set All Uncompleted" buttons to see the improved performance with the backend method handling the updates.
 
 
-
-# Interactive Tutorial - 
-
----
-type: chapter
-title: Backend Methods
----
-
-
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Authentication and Authorization
-template: after-backend-methods
-focus: /shared/Task.ts
----
+# Interactive Tutorial - Basics - Authentication & Authorization - Authentication and Authorization
 
 # Authentication and Authorization
 
@@ -22059,15 +21906,7 @@ export class TasksController {
 - We updated the `allowed` property in the `@BackendMethod` decorator to use `remult.authenticated`, ensuring that the `setAllCompleted` function requires an authenticated user to execute.
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Authentication
-template: auth
-focus: /shared/AuthController.ts
----
+# Interactive Tutorial - Basics - Authentication & Authorization - Authentication
 
 ## Authentication
 
@@ -22219,15 +22058,7 @@ useEffect(() => {
 Try signing in as `Alex` or `Jane` and verify that you can perform CRUD operations on tasks. Sign out and ensure that you can no longer access the tasks.
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Role-based Authorization
-template: auth-3
-focus: /shared/Task.ts
----
+# Interactive Tutorial - Basics - Authentication & Authorization - Role-based Authorization
 
 ## Role-based Authorization
 
@@ -22304,15 +22135,7 @@ Sign in to the app as _"Alex"_ to test that actions restricted to `admin` users,
 Then, sign in as _"Jane"_ to confirm that these actions are permitted for admin users.
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Role-based Authorization on the Frontend
-template: auth-3
-focus: /frontend/Todo.tsx
----
+# Interactive Tutorial - Basics - Authentication & Authorization - Role-based Authorization on the Frontend
 
 ## Role-based Authorization on the Frontend
 
@@ -22391,24 +22214,7 @@ By using these methods, we ensure that the frontend stays consistent with the AP
 Test the app by signing in as different users (e.g., as an admin and a regular user) and verify that the add and delete buttons appear or disappear based on the user's role.
 
 
-
-# Interactive Tutorial - 
-
----
-type: chapter
-title: Authentication & Authorization
----
-
-
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Database
-focus: /backend/index.ts
-template: after-backend-methods
----
+# Interactive Tutorial - Basics - Database - Database
 
 # Database
 
@@ -22445,33 +22251,7 @@ And that's it, now you use `sqlite` as the database.
 > Just don't forget to turn it off once you're done, to improve performance
 
 
-
-# Interactive Tutorial - 
-
----
-type: chapter
-title: Database
----
-
-
-
-# Interactive Tutorial - 
-
----
-type: part
-title: Basics
----
-
-
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Many to One
-template: relations
-focus: /shared/Order.ts
----
+# Interactive Tutorial - In Depth - Relations - Many to One
 
 # Relations
 
@@ -22542,15 +22322,7 @@ Here’s a polished version of the paragraph:
 Relations are seamlessly integrated into the [Remult Admin UI](https://remult.dev/docs/admin-ui). To explore how relations are displayed, simply click the "Remult Admin UI" link at the bottom.
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: One to Many
-template: relations
-focus: /shared/Customer.ts
----
+# Interactive Tutorial - In Depth - Relations - One to Many
 
 # One to Many
 
@@ -22627,15 +22399,7 @@ In the Remult Admin UI, `one-to-many` relations are displayed directly within th
 To explore how this works, click the "Remult Admin UI" link at the bottom left of the interface.
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Id Based Relations
-template: relations
-focus: /shared/Order.ts
----
+# Interactive Tutorial - In Depth - Relations - Id Based Relations
 
 # ID-Based Relations
 
@@ -22688,15 +22452,7 @@ By using ID-based relations, you have greater control over your data models and 
 Let me know if this works!
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Many to Many
-template: relations-with-products
-focus: /shared/ProductInOrder.ts
----
+# Interactive Tutorial - In Depth - Relations - Many to Many
 
 # Many-to-Many Relations
 
@@ -22761,24 +22517,7 @@ The reason is that most **many-to-many relationships** in real-world application
 In this lesson, we've learned how to model many-to-many relationships using an intermediate table. By creating the `ProductInOrder` entity, we've enabled a flexible many-to-many relationship between `Order` and `Product`. This approach allows us to include additional fields, such as quantity, in the relationship while maintaining optimal performance through the use of composite keys.
 
 
-
-# Interactive Tutorial - 
-
----
-type: chapter
-title: Relations
----
-
-
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Custom Filter
-template: relations
-focus: /frontend/Page.tsx
----
+# Interactive Tutorial - In Depth - Advanced Filtering - Custom Filter
 
 # Custom Filter
 
@@ -22875,15 +22614,7 @@ repo(Order).find({
 With composable custom filters, you can build modular, reusable filters that combine seamlessly with other conditions, making your code more flexible and maintainable. Whether you're filtering by status, date, or custom logic like order amount, custom filters allow you to easily manage complex queries with less effort.
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Filter Based on Relation
-template: relations
-focus: /shared/Order.ts
----
+# Interactive Tutorial - In Depth - Advanced Filtering - Filter Based on Relation
 
 # Filter Based on Relation
 
@@ -22970,15 +22701,7 @@ Filtering based on relations is a common requirement in web applications, and cu
 The flexibility, efficiency, and composability of custom filters make them an essential tool for managing complex filtering scenarios in your applications.
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Filter Based on Relation Using SQL
-template: relations
-focus: /shared/Order.ts
----
+# Interactive Tutorial - In Depth - Advanced Filtering - Filter Based on Relation Using SQL
 
 # Filter Based on Relation Using SQL
 
@@ -23155,15 +22878,7 @@ In this lesson, we've explored how to use raw SQL within custom filters to perfo
 By combining SQL-based filters with the power of Remult, you can create highly efficient and flexible filtering logic that runs on the backend, making it a powerful tool for building scalable and performant web applications.
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Sql Relations Filter
-template: relations
-focus: /shared/Order.ts
----
+# Interactive Tutorial - In Depth - Advanced Filtering - Sql Relations Filter
 
 ### SQL Relations Filter
 
@@ -23247,24 +22962,7 @@ This SQL query:
 With `sqlRelationsFilter`, handling relation-based filtering in Remult becomes simpler, more efficient, and more powerful. Whether you’re working with large datasets or complex relational models, this utility helps you build queries that are both performant and easy to maintain.
 
 
-
-# Interactive Tutorial - 
-
----
-type: chapter
-title: Advanced Filtering
----
-
-
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Introduction
-template: relations
-focus: /shared/Customer.ts
----
+# Interactive Tutorial - In Depth - Sql Expression Entity Field - Introduction
 
 ### SQL Expressions for Entity Fields
 
@@ -23333,15 +23031,7 @@ In this query:
 With `sqlExpression` fields, you can incorporate powerful SQL computations into your entities, simplifying data aggregation and improving application performance. This feature is ideal for cases like summing order totals, calculating averages, or performing other backend-based calculations, all while keeping your code clean and efficient.
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Getting a field from a relation
-template: relations
-focus: /shared/Order.ts
----
+# Interactive Tutorial - In Depth - Sql Expression Entity Field - Getting a field from a relation
 
 ### SQL Expressions for Fields Based on Relations
 
@@ -23410,15 +23100,7 @@ In this query:
 In this lesson, you’ve seen how `sqlExpression` can transform your data handling by enabling seamless access to fields from related entities. This feature is ideal for situations where you need to use related data for sorting, filtering, or displaying, all while keeping your code efficient and streamlined.
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Sql Relations
-template: relations
-focus: /shared/Order.ts
----
+# Interactive Tutorial - In Depth - Sql Expression Entity Field - Sql Relations
 
 ### Leveraging `sqlRelations` for Advanced SQL-Based Relationships
 
@@ -23499,24 +23181,7 @@ For advanced calculations, such as summing up the total order amount for each cu
 This approach provides a powerful way to manage complex relationships and aggregations in Remult, bringing the flexibility of SQL into the realm of structured, type-safe TypeScript fields.
 
 
-
-# Interactive Tutorial - 
-
----
-type: chapter
-title: Sql Expression Entity Field
----
-
-
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Intro & Field-Level Authorization
-template: access-control
-focus: /shared/Task.ts
----
+# Interactive Tutorial - In Depth - Access Control - Intro & Field-Level Authorization
 
 # Field-Level Authorization in Remult
 
@@ -23641,15 +23306,7 @@ This flexibility with `includeInApi` allows you to apply fine-grained control ov
 By using `allowApiUpdate` and `includeInApi`, you have fine-grained control over which fields users can modify or view based on roles, data ownership, and custom conditions.
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Row-Level Authorization
-template: access-control
-focus: /shared/Task.ts
----
+# Interactive Tutorial - In Depth - Access Control - Row-Level Authorization
 
 # Row-Level Authorization
 
@@ -23698,15 +23355,7 @@ Each of these options—`allowApiRead`, `allowApiInsert`, `allowApiDelete`, and 
 In the upcoming lesson, **"Filtering Rows Based on User Permissions"**, we’ll explore how to apply row-level access control dynamically, allowing each user to view only the rows they are permitted to access using specific filters.
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Filtering Rows Based on User Permissions
-template: access-control
-focus: /shared/Task.ts
----
+# Interactive Tutorial - In Depth - Access Control - Filtering Rows Based on User Permissions
 
 # Filtering Rows Based on User Permissions
 
@@ -23756,15 +23405,7 @@ By switching between these accounts, you’ll observe how `apiPrefilter` limits 
 By combining `apiPrefilter` with row-specific rules in `allowApiUpdate`, `allowApiDelete`, and `allowApiInsert`, you gain a powerful framework for dynamic, row-level security based on user permissions. This approach protects data integrity and enhances security across various layers of application logic.
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Filtering Related Rows Based on User Permissions
-template: access-control-2
-focus: /shared/TimeEntry.ts
----
+# Interactive Tutorial - In Depth - Access Control - Filtering Related Rows Based on User Permissions
 
 # Filtering Related Rows Based on User Permissions
 
@@ -23844,15 +23485,7 @@ To see this SQL-based filtering in action:
 Using SQL-based filters provides an optimized way to manage related access control by leveraging the database’s capabilities, especially useful when dealing with large datasets or complex access rules.
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Sql Relations Filter for User Permissions
-template: access-control-2
-focus: /shared/TimeEntry.ts
----
+# Interactive Tutorial - In Depth - Access Control - Sql Relations Filter for User Permissions
 
 ### SQL Relations Filter for User Permissions
 
@@ -23896,24 +23529,7 @@ In this example, we want to ensure that users can only access `TimeEntry` rows a
 By leveraging `sqlRelationsFilter`, you can create highly performant and intuitive access control that directly uses SQL to enforce row-level permissions across related entities.
 
 
-
-# Interactive Tutorial - 
-
----
-type: chapter
-title: Access Control
----
-
-
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Field Metadata
-focus: /shared/Task.ts
-template: metadata
----
+# Interactive Tutorial - In Depth - Entities as a single source of truth - Field Metadata
 
 # Field Metadata
 
@@ -24039,15 +23655,7 @@ return (
 You can use these capabilities, together with the structured error model to create dynamic forms, dynamic grid and other dynamic uis that leverage
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Forms and Validation
-focus: /frontend/TodoItem.tsx
-template: metadata
----
+# Interactive Tutorial - In Depth - Entities as a single source of truth - Forms and Validation
 
 ### Forms and Validation
 
@@ -24207,14 +23815,7 @@ By utilizing field metadata, error handling, and dynamic rendering techniques, y
 Together, these strategies make it straightforward to construct forms and other UI components that are consistently styled, validated, and ready for reuse throughout the application.
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Lifecycle Hooks
-focus: /shared/Task.ts
----
+# Interactive Tutorial - In Depth - Entities as a single source of truth - Lifecycle Hooks
 
 ## Introduction to Entity Lifecycle Hooks
 
@@ -24262,15 +23863,7 @@ For more information on how to leverage these hooks in your applications, refer 
 Click on the `Toggle Terminal` button on the right, make some changes to tasks, and observe the terminal output to see the messages generated in the saving and deleting hooks.
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Select Fields
-focus: /shared/TaskLight.ts
-template: select-fields
----
+# Interactive Tutorial - In Depth - Entities as a single source of truth - Select Fields
 
 ## Introduction Select Fields
 
@@ -24305,15 +23898,7 @@ We showed that you can use `dbName` to point at an existing table in the databas
 You can also create a dynamic view, [Leveraging Database Capabilities with sqlExpression](https://remult.dev/docs/ref_entity#sqlexpression).
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Extend Entity (add fields)
-focus: /shared/TaskExtra.ts
-template: select-fields
----
+# Interactive Tutorial - In Depth - Entities as a single source of truth - Extend Entity (add fields)
 
 ## Introduction Extend Entity
 
@@ -24351,23 +23936,7 @@ await repo(TaskExtra).find()
 ```
 
 
-
-# Interactive Tutorial - 
-
----
-type: chapter
-title: Entities as a single source of truth
----
-
-
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Introduction to Testing with Remult
-focus: /tests/validations.test.ts
----
+# Interactive Tutorial - In Depth - Testing - Introduction to Testing with Remult
 
 ---
 
@@ -24422,14 +23991,7 @@ In addition to in-memory testing, you can test with your actual database provide
 By using these techniques, you can write comprehensive tests covering all entity aspects, from validations to SQL expressions.
 
 
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Testing Api Rules
-focus: /tests/authorization.test.ts
----
+# Interactive Tutorial - In Depth - Testing - Testing Api Rules
 
 # Testing API Rules
 
@@ -24508,39 +24070,7 @@ For SQL-based tests, you can use the `SqlDatabase.LogToConsole = true` setting t
 Using these techniques allows you to simulate real API operations within tests, ensuring robust access control and proper handling of user permissions in your application.
 
 
-
-# Interactive Tutorial - 
-
----
-type: chapter
-title: Testing
-template: tests
-previews: false
-terminal:
-  activePanel: 1
-  panels:
-    - ['output', 'Terminal']
----
-
-
-
-# Interactive Tutorial - 
-
----
-type: part
-title: In Depth
-slug: in-depth
----
-
-
-
-# Interactive Tutorial - 
-
----
-type: lesson
-title: Extending Existing Validations
-focus: /shared/Task.ts
----
+# Interactive Tutorial - Examples - Validations - Extending Existing Validations
 
 # Extending Existing Validations
 
@@ -24578,35 +24108,4 @@ export class Task {
 ### Try It Out
 
 Test this extended validation by trying to add tasks with duplicate titles. Notice that the validation prevents duplicates only when the title is not empty.
-
-
-
-# Interactive Tutorial - 
-
----
-type: chapter
-title: Validations
----
-
-
-
-# Interactive Tutorial - 
-
----
-type: part
-title: Examples
----
-
-
-
-# Interactive Tutorial - 
-
----
-type: tutorial
-mainCommand: ['npm run dev', 'Starting http server']
-prepareCommands:
-  - ['npm install', 'Installing dependencies']
-editPageLink: https://github.com/remult/remult/blob/main/docs/interactive/src/content/tutorial/${path}?plain=1
----
-
 

@@ -483,6 +483,7 @@ export interface EntityDataProvider {
   insert(data: any): Promise<any>
 }
 export interface EntityDataProviderFindOptions {
+  select?: string[]
   where?: Filter
   limit?: number
   page?: number
@@ -524,19 +525,19 @@ export declare type EntityFilter<entityType> = {
     | (Partial<entityType>[Properties] extends number | Date | undefined | null
         ? ComparisonValueFilter<Partial<entityType>[Properties]>
         : Partial<entityType>[Properties] extends string | undefined
-        ?
-            | Partial<entityType>[Properties]
-            | (ContainsStringValueFilter &
-                ComparisonValueFilter<Partial<entityType>[Properties]>)
-        : Partial<entityType>[Properties] extends boolean | undefined | null
-        ? ValueFilter<boolean>
-        : Partial<entityType>[Properties] extends
-            | {
-                id?: string | number
-              }
-            | undefined
-        ? IdFilter<Partial<entityType>[Properties]>
-        : ValueFilter<Partial<entityType>[Properties]>)
+          ?
+              | Partial<entityType>[Properties]
+              | (ContainsStringValueFilter &
+                  ComparisonValueFilter<Partial<entityType>[Properties]>)
+          : Partial<entityType>[Properties] extends boolean | undefined | null
+            ? ValueFilter<boolean>
+            : Partial<entityType>[Properties] extends
+                  | {
+                      id?: string | number
+                    }
+                  | undefined
+              ? IdFilter<Partial<entityType>[Properties]>
+              : ValueFilter<Partial<entityType>[Properties]>)
     | ContainsStringValueFilter
 } & {
   /**
@@ -940,10 +941,10 @@ export declare function Field<entityType = unknown, valueType = unknown>(
     | (() => valueType extends number
         ? Number
         : valueType extends string
-        ? String
-        : valueType extends boolean
-        ? Boolean
-        : ClassType<valueType>)
+          ? String
+          : valueType extends boolean
+            ? Boolean
+            : ClassType<valueType>)
     | undefined,
   ...options: (
     | FieldOptions<entityType, valueType>
@@ -1729,6 +1730,14 @@ export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
   page?: number
 }
 export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
+  /**
+   * An option used to specify which fields should be included in the result.
+   * @example
+   * ```ts
+   * await repo(Task).find({ select: { id: true, title: true } })
+   * ```
+   */
+  select?: EntitySelectFields<entityType>
   /** filters the data
    * @example
    * await taskRepo.find({where: { completed:false }})
@@ -1743,6 +1752,7 @@ export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
    */
   orderBy?: EntityOrderBy<entityType>
 }
+//[ ] EntitySelectFields from TBD is not exported
 export declare class ForbiddenError extends Error {
   constructor(message?: string)
   isForbiddenError: true
@@ -1838,10 +1848,10 @@ export type GroupByResult<
     | sumFields[number]]: K extends groupByFields[number]
     ? entityType[K]
     : K extends sumFields[number]
-    ? {
-        sum: number
-      }
-    : never
+      ? {
+          sum: number
+        }
+      : never
 } & {
   [K in averageFields[number]]: {
     avg: number
@@ -1872,20 +1882,20 @@ export interface IdFieldRef<entityType, valueType>
     }
       ? number
       : valueType extends {
-          id?: string
-        }
-      ? string
-      : string | number,
+            id?: string
+          }
+        ? string
+        : string | number,
   ): void
   getId(): valueType extends {
     id?: number
   }
     ? number
     : valueType extends {
-        id?: string
-      }
-    ? string
-    : string | number
+          id?: string
+        }
+      ? string
+      : string | number
 }
 export type IdFilter<valueType> =
   | ValueFilter<valueType>
@@ -2886,10 +2896,10 @@ export type RepositoryRelations<entityType> = {
   > extends Array<infer R>
     ? Repository<R>
     : entityType[K] extends infer R
-    ? {
-        findOne: (options?: FindOptionsBase<R>) => Promise<R>
-      }
-    : never
+      ? {
+          findOne: (options?: FindOptionsBase<R>) => Promise<R>
+        }
+      : never
 }
 //[ ] R from TBD is not exported
 export type RepositoryRelationsForEntityBase<entityType> = {
@@ -2898,10 +2908,10 @@ export type RepositoryRelationsForEntityBase<entityType> = {
   > extends Array<infer R>
     ? Repository<R>
     : entityType[K] extends infer R
-    ? {
-        findOne: (options?: FindOptionsBase<R>) => Promise<R>
-      }
-    : never
+      ? {
+          findOne: (options?: FindOptionsBase<R>) => Promise<R>
+        }
+      : never
 }
 export declare class RestDataProvider implements DataProvider {
   private apiProvider

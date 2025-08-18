@@ -1052,9 +1052,15 @@ And example of the usage of groupBy
   import Remultor from '../.vitepress/components/Remultor.vue'
 </script>
 
+# Entities
+
+Entities are **THE** key concept of Remult - your **Single Source of Truth (SSoT)** for data structure, api, validation, permissions, and more! In other languages, they can be called `schema` or `model`.
+
+---
+
 # 🧙‍♂️ Remultor
 
-Real-time Remult entity class buildor. Try it out and copy the code to your project!
+Real-time Remult entity builder. Try it out and copy the code to your project!
 
 <Remultor />
 
@@ -1518,10 +1524,6 @@ export class Contact {
 
 
 # Entities - Relations
-
----
-outline: [2, 3]
----
 
 # Relations Between Entities
 
@@ -2364,7 +2366,6 @@ Utilizing an intermediate table for managing many-to-many relationships in Remul
 ---
 
 In this guide, we've explored the essential concepts of managing entity relations within the Remult library. From one-to-one to many-to-many relationships, we've covered the declaration, customization, and querying of these relations. By understanding the nuances of entity relations, users can harness the full potential of Remult to build robust TypeScript applications with ease.
-
 
 
 # Relations - Filtering and Relations
@@ -3986,19 +3987,24 @@ const logout = async () => {
 
 ## Extra - Remote Functions
 
-SvelteKit is introducing a new feature called [Remote Functions](https://github.com/sveltejs/kit/discussions/13897). It's early, but we want to see how it integrates with Remult.
+SvelteKit is introducing a new feature called [Remote Functions](https://svelte.dev/docs/kit/remote-functions). It's early, but we want to see how it integrates with Remult.
 
 Here is the default doc example (zod & drizzle or valibot & prisma, ...):
 
 ```ts
-import z from 'zod' // or valibot, ... any standard schema library
+import { error } from '@sveltejs/kit'
 import { query } from '$app/server'
-import * as db from '$lib/server/db' // with drizzle, prisma, pg, ... any database library
+import * as v from 'valibot' // or zod, ... any standard schema library
+import * as db from '$lib/server/database' // with drizzle, prisma, pg, ... any database library
 
-export const getLikes = query(z.string(), async (id) => {
-  const [row] = await db.sql`select likes from item where id = ${id}`
-  return row.likes
-})
+export const getPost = query(
+  z.string(), // Standard Schema
+  async (slug) => {
+    const [post] = await db.sql`SELECT * FROM post WHERE slug = ${slug}`
+    if (!post) error(404, 'Not found')
+    return post
+  },
+)
 ```
 
 With remult library, you have both:
@@ -4008,18 +4014,27 @@ With remult library, you have both:
 
 So you can replace the previous code with this:
 
-```ts [src/lib/server/functions.ts]
+```ts
+import { error } from '@sveltejs/kit'
 import { query } from '$app/server'
 import { standardSchema, repo } from 'remult'
-import { Item } from '$lib/entities'
+import { Post } from '$lib/entities'
 
-export const getLikes = query(standardSchema(repo(Item), 'id'), async (id) => {
-  const item = await repo(Item).findId(id)
-  return item.likes
-})
+export const getPost = query(
+  standardSchema(repo(Post), 'slug'), // Standard Schema
+  async ({ slug }) => {
+    const post = await repo(Post).findFirst({ slug })
+    if (!post) error(404, 'Not found')
+    return post
+  },
+)
 ```
 
 We are excited to see how you will use it 🚀
+
+::: tip
+More info about [remult standard schema](/docs/standard-schema)
+:::
 
 
 
@@ -7004,14 +7019,6 @@ Accessing the underlying database directly in Remult provides the flexibility to
 
 # Escape Hatches - Using in Non-Remult Routes
 
----
-keywords:
-  [
-    Error: remult object was requested outside of a valid context,
-    try running it within initApi or a remult request cycle,
-  ]
----
-
 # Using Remult in Non-Remult Routes
 
 When using the CRUD api or [BackendMethods](./backendMethods.md), `remult` is automatically available. Still, there are many use cases where you may want to user remult in your own routes or other code without using `BackendMethods` but would still want to take advantage of `Remult` as an ORM and use it to check for user validity, etc...
@@ -7262,7 +7269,6 @@ import { remultApi } from 'remult/remult-hapi'
 :::
 
 
-
 # Escape Hatches - Avoiding Decorators
 
 # Working without decorators
@@ -7345,18 +7351,6 @@ This is the same backend method that is detailed in the [Backend methods of the 
 
 
 # Escape Hatches - Extensibility
-
----
-tags:
-  - options
-  - bespoke options
-  - customizing options
-  - type augmentation
-  - module augmentation
-  - UserInfo
-  - RemultContext
-  - context
----
 
 # Extensibility
 
@@ -7507,7 +7501,6 @@ or in an entity's saving event:
 ```
 
 By leveraging module augmentation, you can tailor Remult to your specific needs, adding custom options and extending interfaces to suit your application's requirements.
-
 
 
 # Integrations - Open API
@@ -9897,14 +9890,6 @@ remultApi({
 
 # API Reference - EntityFilter
 
----
-tags:
-  - Where
-  - Filter
-  - Entity Where
-  - Entity Filter
----
-
 # EntityFilter
 
 Used to filter the desired result set
@@ -10043,7 +10028,6 @@ where: {
   }
 }
 ```
-
 
 
 # API Reference - EntityMetadata
@@ -11376,13 +11360,7 @@ Arguments:
 
 
 
-# Remult Blog - Introducing Remult
-
----
-title: "Introducing Remult: The Backend to Frontend Framework You Always Wanted"
-sidebar: false
-editLink: false
----
+# Introducing Remult: The Backend to Frontend Framework You Always Wanted
 
 > March 14, 2023 | Noam Honig
 
@@ -11457,7 +11435,6 @@ So we open sourced the framework, to enable other lazy developers like us to be 
 Check out [Remult](https://remult.dev), and if you like it, give it a star.  Let us know what you’d like to see next, and also feel free to contribute to the project.
 
 In our next post, we’ll do a roundup of tools in the ecosystem looking to solve similar challenges though different approaches, and unpack where Remult fits in, and what it’s optimized for.
-
 
 
 # SvelteKit - Tutorial - Go further / Extra
@@ -11847,19 +11824,24 @@ const logout = async () => {
 
 ## Extra - Remote Functions
 
-SvelteKit is introducing a new feature called [Remote Functions](https://github.com/sveltejs/kit/discussions/13897). It's early, but we want to see how it integrates with Remult.
+SvelteKit is introducing a new feature called [Remote Functions](https://svelte.dev/docs/kit/remote-functions). It's early, but we want to see how it integrates with Remult.
 
 Here is the default doc example (zod & drizzle or valibot & prisma, ...):
 
 ```ts
-import z from 'zod' // or valibot, ... any standard schema library
+import { error } from '@sveltejs/kit'
 import { query } from '$app/server'
-import * as db from '$lib/server/db' // with drizzle, prisma, pg, ... any database library
+import * as v from 'valibot' // or zod, ... any standard schema library
+import * as db from '$lib/server/database' // with drizzle, prisma, pg, ... any database library
 
-export const getLikes = query(z.string(), async (id) => {
-  const [row] = await db.sql`select likes from item where id = ${id}`
-  return row.likes
-})
+export const getPost = query(
+  z.string(), // Standard Schema
+  async (slug) => {
+    const [post] = await db.sql`SELECT * FROM post WHERE slug = ${slug}`
+    if (!post) error(404, 'Not found')
+    return post
+  },
+)
 ```
 
 With remult library, you have both:
@@ -11869,17 +11851,26 @@ With remult library, you have both:
 
 So you can replace the previous code with this:
 
-```ts [src/lib/server/functions.ts]
+```ts
+import { error } from '@sveltejs/kit'
 import { query } from '$app/server'
 import { standardSchema, repo } from 'remult'
-import { Item } from '$lib/entities'
+import { Post } from '$lib/entities'
 
-export const getLikes = query(standardSchema(repo(Item), 'id'), async (id) => {
-  const item = await repo(Item).findId(id)
-  return item.likes
-})
+export const getPost = query(
+  standardSchema(repo(Post), 'slug'), // Standard Schema
+  async ({ slug }) => {
+    const post = await repo(Post).findFirst({ slug })
+    if (!post) error(404, 'Not found')
+    return post
+  },
+)
 ```
 
 We are excited to see how you will use it 🚀
+
+::: tip
+More info about [remult standard schema](/docs/standard-schema)
+:::
 
 
