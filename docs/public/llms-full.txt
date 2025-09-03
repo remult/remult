@@ -7887,8 +7887,6 @@ export class Task {
 }
 ```
 
-#### note:
-
 EntityOptions can be set in two ways:
 
 #### example:
@@ -7922,10 +7920,6 @@ A human readable label for the entity. Can be used to achieve a consistent label
 ## allowApiRead
 
 Determines if this Entity is available for get requests using Rest Api
-
-#### description:
-
-Determines if one has any access to the data of an entity.
 
 #### see:
 
@@ -8068,10 +8062,6 @@ this is the place to run logic that we want to run in any case before an entity 
 })
 ```
 
-#### link:
-
-LifeCycleEvent object
-
 #### see:
 
 [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
@@ -8079,10 +8069,6 @@ LifeCycleEvent object
 ## saved
 
 A hook that runs after an entity has been successfully saved.
-
-#### link:
-
-LifeCycleEvent object
 
 #### see:
 
@@ -8092,10 +8078,6 @@ LifeCycleEvent object
 
 A hook that runs before an entity is deleted.
 
-#### link:
-
-LifeCycleEvent object
-
 #### see:
 
 [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
@@ -8103,10 +8085,6 @@ LifeCycleEvent object
 ## deleted
 
 A hook that runs after an entity has been successfully deleted.
-
-#### link:
-
-LifeCycleEvent object
 
 #### see:
 
@@ -8116,10 +8094,6 @@ LifeCycleEvent object
 
 A hook that runs to perform validation checks on an entity before saving.
 This hook is also executed on the frontend.
-
-#### link:
-
-LifeCycleEvent object
 
 #### see:
 
@@ -8244,8 +8218,8 @@ A human readable name for the field. Can be used to achieve a consistent caption
 
 #### example:
 
-```ts
-<input placeholder={taskRepo.metadata.fields.title.caption}/>
+```html
+<input placeholder="{taskRepo.metadata.fields.title.caption}" />
 ```
 
 ## label
@@ -8254,8 +8228,8 @@ A human readable name for the field. Can be used to achieve a consistent label f
 
 #### example:
 
-```ts
-<input placeholder={taskRepo.metadata.fields.title.label}/>
+```html
+<input placeholder="{taskRepo.metadata.fields.title.label}" />
 ```
 
 ## allowNull
@@ -8718,7 +8692,7 @@ Class containing various field validators.
 
 ## constructor
 
-- **new Validators**
+- **Validators**
 
 ## defaultMessage
 
@@ -8794,7 +8768,7 @@ Validator to check if a value is a valid URL.
 
 ## constructor
 
-- **new Relations**
+- **Relations**
 
 ## toMany
 
@@ -8807,7 +8781,7 @@ A decorator function to apply the toMany relation to an entity field.
 
 Example usage:
 
-```
+```ts
 @Relations.toMany(() => Order)
 orders?: Order[];
 
@@ -8834,12 +8808,12 @@ A decorator function to apply the to-one relation to an entity field.
 
 Example usage:
 
-```
+```ts
 @Relations.toOne(() => Customer)
 customer?: Customer;
 ```
 
-```
+```ts
 Fields.string()
 customerId?: string;
 
@@ -8847,7 +8821,7 @@ customerId?: string;
 customer?: Customer;
 ```
 
-```
+```ts
 Fields.string()
 customerId?: string;
 
@@ -8858,7 +8832,7 @@ customerId?: string;
 customer?: Customer;
 ```
 
-```
+```ts
 Fields.string()
 customerId?: string;
 
@@ -8876,14 +8850,16 @@ Arguments:
 - **options** - (Optional): An object containing options for configuring the to-one relation.
   - **caption** - A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
   #### example:
-  ```ts
-  <input placeholder={taskRepo.metadata.fields.title.caption}/>
+  ```html
+  <input placeholder="{taskRepo.metadata.fields.title.caption}" />
   ```
+
   - **label** - A human readable name for the field. Can be used to achieve a consistent label for a field throughout the app
   #### example:
-  ```ts
-  <input placeholder={taskRepo.metadata.fields.title.label}/>
+  ```html
+  <input placeholder="{taskRepo.metadata.fields.title.label}" />
   ```
+
   - **fields** - An object specifying custom field names for the relation.
     Each key represents a field in the related entity, and its value is the corresponding field in the source entity.
     For example, `{ customerId: 'id' }` maps the 'customerId' field in the related entity to the 'id' field in the source entity.
@@ -8911,8 +8887,8 @@ A human readable name for the field. Can be used to achieve a consistent caption
 
 #### example:
 
-```ts
-<input placeholder={taskRepo.metadata.fields.title.caption}/>
+```html
+<input placeholder="{taskRepo.metadata.fields.title.caption}" />
 ```
 
 ## label
@@ -8921,8 +8897,8 @@ A human readable name for the field. Can be used to achieve a consistent label f
 
 #### example:
 
-```ts
-<input placeholder={taskRepo.metadata.fields.title.label}/>
+```html
+<input placeholder="{taskRepo.metadata.fields.title.label}" />
 ```
 
 ## fields
@@ -9084,6 +9060,7 @@ Arguments:
     page: 2,
   })
   ```
+
   - **page** - Determines the page number that will be used to extract the data
   #### example:
   ```ts
@@ -9092,26 +9069,33 @@ Arguments:
     page: 2,
   })
   ```
+
   - **load**
-  - **include** - An option used in the `find` and `findFirst` methods to specify which related entities should be included
-    when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
+  - **include** - An option used to specify which related entities should be included when querying the source entity.
+    It allows you to eagerly load related data to avoid N+1 query problems.
   #### param:
   An object specifying the related entities to include, their options, and filtering criteria.
   Example usage:
-  ```
+  ```ts
   const orders = await customerRepo.find({
     include: {
       // Include the 'tags' relation for each customer.
       tags: true,
     },
-  });
+  })
   ```
   In this example, the `tags` relation for each customer will be loaded and included in the query result.
   #### see:
-  - Relations.toMany
-  - Relations.toOne
-  - RelationOptions
-  * **where** - filters the data
+  - [Relations.toMany](/docs/ref_relations#tomany)
+  - [Relations.toOne](/docs/ref_relations#toone)
+  - [RelationOptions](/docs/ref_relations)
+  * **select** - An option used to specify which fields should be included in the result.
+  #### example:
+  ```ts
+  await repo(Task).find({ select: { id: true, title: true } })
+  ```
+
+  - **where** - filters the data
   #### example:
   ```ts
   await taskRepo.find({ where: { completed: false } })
@@ -9305,6 +9289,7 @@ Arguments:
     page: 2,
   })
   ```
+
   - **page** - Determines the page number that will be used to extract the data
   #### example:
   ```ts
@@ -9313,26 +9298,33 @@ Arguments:
     page: 2,
   })
   ```
+
   - **load**
-  - **include** - An option used in the `find` and `findFirst` methods to specify which related entities should be included
-    when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
+  - **include** - An option used to specify which related entities should be included when querying the source entity.
+    It allows you to eagerly load related data to avoid N+1 query problems.
   #### param:
   An object specifying the related entities to include, their options, and filtering criteria.
   Example usage:
-  ```
+  ```ts
   const orders = await customerRepo.find({
     include: {
       // Include the 'tags' relation for each customer.
       tags: true,
     },
-  });
+  })
   ```
   In this example, the `tags` relation for each customer will be loaded and included in the query result.
   #### see:
-  - Relations.toMany
-  - Relations.toOne
-  - RelationOptions
-  * **where** - filters the data
+  - [Relations.toMany](/docs/ref_relations#tomany)
+  - [Relations.toOne](/docs/ref_relations#toone)
+  - [RelationOptions](/docs/ref_relations)
+  * **select** - An option used to specify which fields should be included in the result.
+  #### example:
+  ```ts
+  await repo(Task).find({ select: { id: true, title: true } })
+  ```
+
+  - **where** - filters the data
   #### example:
   ```ts
   await taskRepo.find({ where: { completed: false } })
@@ -9364,6 +9356,7 @@ Arguments:
     page: 2,
   })
   ```
+
   - **page** - Determines the page number that will be used to extract the data
   #### example:
   ```ts
@@ -9372,26 +9365,33 @@ Arguments:
     page: 2,
   })
   ```
+
   - **load**
-  - **include** - An option used in the `find` and `findFirst` methods to specify which related entities should be included
-    when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
+  - **include** - An option used to specify which related entities should be included when querying the source entity.
+    It allows you to eagerly load related data to avoid N+1 query problems.
   #### param:
   An object specifying the related entities to include, their options, and filtering criteria.
   Example usage:
-  ```
+  ```ts
   const orders = await customerRepo.find({
     include: {
       // Include the 'tags' relation for each customer.
       tags: true,
     },
-  });
+  })
   ```
   In this example, the `tags` relation for each customer will be loaded and included in the query result.
   #### see:
-  - Relations.toMany
-  - Relations.toOne
-  - RelationOptions
-  * **where** - filters the data
+  - [Relations.toMany](/docs/ref_relations#tomany)
+  - [Relations.toOne](/docs/ref_relations#toone)
+  - [RelationOptions](/docs/ref_relations)
+  * **select** - An option used to specify which fields should be included in the result.
+  #### example:
+  ```ts
+  await repo(Task).find({ select: { id: true, title: true } })
+  ```
+
+  - **where** - filters the data
   #### example:
   ```ts
   await taskRepo.find({ where: { completed: false } })
@@ -9434,25 +9434,31 @@ Arguments:
 
 - **options**
   - **load**
-  - **include** - An option used in the `find` and `findFirst` methods to specify which related entities should be included
-    when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
+  - **include** - An option used to specify which related entities should be included when querying the source entity.
+    It allows you to eagerly load related data to avoid N+1 query problems.
   #### param:
   An object specifying the related entities to include, their options, and filtering criteria.
   Example usage:
-  ```
+  ```ts
   const orders = await customerRepo.find({
     include: {
       // Include the 'tags' relation for each customer.
       tags: true,
     },
-  });
+  })
   ```
   In this example, the `tags` relation for each customer will be loaded and included in the query result.
   #### see:
-  - Relations.toMany
-  - Relations.toOne
-  - RelationOptions
-  * **where** - filters the data
+  - [Relations.toMany](/docs/ref_relations#tomany)
+  - [Relations.toOne](/docs/ref_relations#toone)
+  - [RelationOptions](/docs/ref_relations)
+  * **select** - An option used to specify which fields should be included in the result.
+  #### example:
+  ```ts
+  await repo(Task).find({ select: { id: true, title: true } })
+  ```
+
+  - **where** - filters the data
   #### example:
   ```ts
   await taskRepo.find({ where: { completed: false } })
@@ -9468,6 +9474,7 @@ Arguments:
   ```ts
   await repo(Products).find({ orderBy: { price: 'desc', name: 'asc' } })
   ```
+
   - **useCache** - determines if to cache the result, and return the results from cache.
   - **createIfNotFound** - If set to true and an item is not found, it's created and returned
 
@@ -9494,25 +9501,31 @@ Arguments:
 
 - **options**
   - **load**
-  - **include** - An option used in the `find` and `findFirst` methods to specify which related entities should be included
-    when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
+  - **include** - An option used to specify which related entities should be included when querying the source entity.
+    It allows you to eagerly load related data to avoid N+1 query problems.
   #### param:
   An object specifying the related entities to include, their options, and filtering criteria.
   Example usage:
-  ```
+  ```ts
   const orders = await customerRepo.find({
     include: {
       // Include the 'tags' relation for each customer.
       tags: true,
     },
-  });
+  })
   ```
   In this example, the `tags` relation for each customer will be loaded and included in the query result.
   #### see:
-  - Relations.toMany
-  - Relations.toOne
-  - RelationOptions
-  * **where** - filters the data
+  - [Relations.toMany](/docs/ref_relations#tomany)
+  - [Relations.toOne](/docs/ref_relations#toone)
+  - [RelationOptions](/docs/ref_relations)
+  * **select** - An option used to specify which fields should be included in the result.
+  #### example:
+  ```ts
+  await repo(Task).find({ select: { id: true, title: true } })
+  ```
+
+  - **where** - filters the data
   #### example:
   ```ts
   await taskRepo.find({ where: { completed: false } })
@@ -9528,6 +9541,7 @@ Arguments:
   ```ts
   await repo(Products).find({ orderBy: { price: 'desc', name: 'asc' } })
   ```
+
   - **useCache** - determines if to cache the result, and return the results from cache.
   - **createIfNotFound** - If set to true and an item is not found, it's created and returned
 
@@ -9539,27 +9553,8 @@ Arguments:
 
 - **id**
 - **options**
-  - **load**
-  - **include** - An option used in the `find` and `findFirst` methods to specify which related entities should be included
-    when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
-  #### param:
-  An object specifying the related entities to include, their options, and filtering criteria.
-  Example usage:
-  ```
-  const orders = await customerRepo.find({
-    include: {
-      // Include the 'tags' relation for each customer.
-      tags: true,
-    },
-  });
-  ```
-  In this example, the `tags` relation for each customer will be loaded and included in the query result.
-  #### see:
-  - Relations.toMany
-  - Relations.toOne
-  - RelationOptions
-  * **useCache** - determines if to cache the result, and return the results from cache.
-  * **createIfNotFound** - If set to true and an item is not found, it's created and returned
+  - **useCache** - determines if to cache the result, and return the results from cache.
+  - **createIfNotFound** - If set to true and an item is not found, it's created and returned
 
 ## groupBy
 
@@ -9988,19 +9983,23 @@ Data Provider to use for the api.
 
 ## ensureSchema
 
-Will create tables and columns in supporting databases. default: true
+Will create tables and columns in supporting databases.
 
-#### description:
+#### default:
+
+```ts
+true
 
 when set to true, it'll create entities that do not exist, and add columns that are missing.
+```
 
 ## rootPath
 
-The path to use for the api, default:/api
+The path to use for the api, if you want to use a different path adjust this field
 
-#### description:
+#### default:
 
-If you want to use a different api path adjust this field
+`/api`
 
 ## defaultGetLimit
 
@@ -10264,7 +10263,7 @@ A human readable caption for the entity. Can be used to achieve a consistent cap
 
 #### see:
 
-EntityOptions.caption
+[EntityOptions.caption](/docs/ref_entity#caption)
 
 ## label
 
@@ -10278,7 +10277,7 @@ A human readable label for the entity. Can be used to achieve a consistent label
 
 #### see:
 
-EntityOptions.label
+[EntityOptions.label](/docs/ref_entity#label)
 
 ## dbName
 
@@ -10287,7 +10286,7 @@ If no name is set in the entity options, the `key` will be used instead.
 
 #### see:
 
-EntityOptions.dbName
+[EntityOptions.dbName](/docs/ref_entity#dbname)
 
 ## options
 
@@ -10295,7 +10294,7 @@ The options send to the `Entity`'s decorator
 
 #### see:
 
-EntityOptions
+[EntityOptions](/docs/ref_entity)
 
 ## apiUpdateAllowed
 
@@ -10303,7 +10302,7 @@ true if the current user is allowed to update an entity instance
 
 #### see:
 
-EntityOptions.allowApiUpdate
+[EntityOptions.allowApiUpdate](/docs/ref_entity#allowapiupdate)
 
 #### example:
 
@@ -10323,7 +10322,7 @@ true if the current user is allowed to read from entity
 
 #### see:
 
-EntityOptions.allowApiRead
+[EntityOptions.allowApiRead](/docs/ref_entity#allowapiread)
 
 #### example:
 
@@ -10337,11 +10336,9 @@ if (repo(Task).metadata.apiReadAllowed) {
 
 true if the current user is allowed to delete an entity instance
 
--
-
 #### see:
 
-EntityOptions.allowApiDelete
+[EntityOptions.allowApiDelete](/docs/ref_entity#allowapidelete)
 
 #### example:
 
@@ -10361,7 +10358,7 @@ true if the current user is allowed to create an entity instance
 
 #### see:
 
-EntityOptions.allowApiInsert
+[EntityOptions.allowApiInsert](/docs/ref_entity#allowapiinsert)
 
 #### example:
 
@@ -10385,7 +10382,7 @@ Metadata for the Entity's id
 
 #### see:
 
-EntityOptions.id for configuration
+[EntityOptions.id](/docs/ref_entity#id) for configuration
 
 
 
@@ -10422,7 +10419,7 @@ A human readable caption for the field. Can be used to achieve a consistent capt
 
 #### see:
 
-FieldOptions#caption for configuration details
+[FieldOptions#caption](/docs/ref_field#caption) for configuration details
 
 ## label
 
@@ -10436,7 +10433,7 @@ A human readable label for the field. Can be used to achieve a consistent label 
 
 #### see:
 
-FieldOptions.label for configuration details
+[FieldOptions.label](/docs/ref_field#label) for configuration details
 
 ## dbName
 
@@ -10451,7 +10448,7 @@ userName=''
 
 #### see:
 
-FieldOptions#dbName for configuration details
+[FieldOptions#dbName](/docs/ref_field#dbname) for configuration details
 
 ## options
 
@@ -10467,7 +10464,7 @@ if null is allowed for this field
 
 #### see:
 
-FieldOptions#allowNull for configuration details
+[FieldOptions#allowNull](/docs/ref_field#allownull) for configuration details
 
 ## target
 
@@ -10493,7 +10490,7 @@ indicates that this field should only be included in select statement, and exclu
 
 #### see:
 
-FieldOptions#dbReadOnly for configuration details
+[FieldOptions#dbReadOnly](/docs/ref_field#dbreadonly) for configuration details
 
 ## valueConverter
 
@@ -10505,7 +10502,7 @@ Get the display value for a specific item
 
 #### see:
 
-FieldOptions#displayValue for configuration details
+[FieldOptions#displayValue](/docs/ref_field#displayvalue) for configuration details
 
 #### example:
 
@@ -10532,7 +10529,7 @@ if (repo(Task).metadata.apiUpdateAllowed(task)) {
 
 #### see:
 
-FieldOptions#allowApiUpdate for configuration details
+[FieldOptions#allowApiUpdate](/docs/ref_field#allowapiupdate) for configuration details
 
 #### returns:
 
@@ -10559,7 +10556,7 @@ if (employeeRepo.fields.salary.includedInApi({ id: 123, name: 'John Doe' })) {
 
 #### see:
 
-FieldOptions#includeInApi for configuration details
+[FieldOptions#includeInApi](/docs/ref_field#includeinapi) for configuration details
 
 #### returns:
 
@@ -10584,7 +10581,7 @@ input.value = repo.fields.birthDate.toInput(person) // will return '1976-06-16'
 
 #### see:
 
-ValueConverter#toInput for configuration details
+[ValueConverter#toInput](/docs/ref_valueconverter#toinput) for configuration details
 
 Arguments:
 
@@ -10606,7 +10603,7 @@ person.birthDate = repo.fields.birthDate.fromInput(personFormState) // will retu
 
 #### see:
 
-ValueConverter#fromInput for configuration details
+[ValueConverter#fromInput](/docs/ref_valueconverter#frominput) for configuration details
 
 Arguments:
 
@@ -11088,7 +11085,7 @@ Arguments:
 
 ## constructor
 
-- **new Filter**
+- **Filter**
 
 Arguments:
 
@@ -11318,9 +11315,7 @@ Creates a raw filter for entity filtering.
 ```ts
 SqlDatabase.rawFilter(
   ({ param }) =>
-    `"customerId" in (select id from customers where city = ${param(
-      customerCity,
-    )})`,
+    `"customerId" in (select id from customers where city = ${param(customerCity)})`,
 )
 ```
 
@@ -11563,6 +11558,10 @@ You can filter the rows using different operators
 https://mySite.com/api/products?price.gte=5&price.lte=10
 ```
 
+## Select
+
+Use `_select` with a comma separated list of the fields you would like to select
+
 ### Filter Operators
 
 | operator     | description           | example                                            |
@@ -11627,15 +11626,15 @@ https://mySite.com/api/products?price.gte=5&price.lte=10&_sort=price&_order=desc
 
 ## constructor
 
-- **new EntityBase**
-
-## $
-
-- **$**
+- **EntityBase**
 
 ## \_
 
 - **\_**
+
+## $
+
+- **$**
 
 ## assign
 
@@ -11667,19 +11666,19 @@ Arguments:
 
 ## constructor
 
-- **new IdEntity**
+- **IdEntity**
 
 ## id
 
 - **id**
 
-## $
-
-- **$**
-
 ## \_
 
 - **\_**
+
+## $
+
+- **$**
 
 ## assign
 

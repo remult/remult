@@ -263,14 +263,15 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     }
     if (rows)
       return rows.map((i) => {
-        return this.translateFromJson(i, dbNames)
+        return this.translateFromJson(i, dbNames, options?.select)
       })
     return []
   }
   //@internal
-  translateFromJson(row: any, dbNames: EntityDbNamesBase) {
+  translateFromJson(row: any, dbNames: EntityDbNamesBase, select?: string[]) {
     let result: any = {}
     for (const col of this.entity.fields) {
+      if (select && !select.includes(col.key)) continue
       result[col.key] = col.valueConverter.fromJson(row[dbNames.$dbNameOf(col)])
     }
     return result

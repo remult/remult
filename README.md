@@ -107,7 +107,7 @@ app.use(
   remultApi({
     entities: [Product],
     dataProvider: createPostgresDataProvider({
-      connectionString: 'postgres://user:password@host:5432/database"',
+      connectionString: 'postgres://user:password@host:5432/database',
     }),
   }),
 )

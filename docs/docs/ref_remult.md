@@ -129,6 +129,7 @@ Arguments:
     page: 2,
   })
   ```
+
   - **page** - Determines the page number that will be used to extract the data
   #### example:
   ```ts
@@ -137,9 +138,10 @@ Arguments:
     page: 2,
   })
   ```
+
   - **load**
-  - **include** - An option used in the `find` and `findFirst` methods to specify which related entities should be included
-    when querying the source entity. It allows you to eagerly load related data to avoid N+1 query problems.
+  - **include** - An option used to specify which related entities should be included when querying the source entity.
+    It allows you to eagerly load related data to avoid N+1 query problems.
   #### param:
   An object specifying the related entities to include, their options, and filtering criteria.
   Example usage:
@@ -156,7 +158,13 @@ Arguments:
   - [Relations.toMany](/docs/ref_relations#tomany)
   - [Relations.toOne](/docs/ref_relations#toone)
   - [RelationOptions](/docs/ref_relations)
-  * **where** - filters the data
+  * **select** - An option used to specify which fields should be included in the result.
+  #### example:
+  ```ts
+  await repo(Task).find({ select: { id: true, title: true } })
+  ```
+
+  - **where** - filters the data
   #### example:
   ```ts
   await taskRepo.find({ where: { completed: false } })

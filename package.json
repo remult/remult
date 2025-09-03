@@ -1,7 +1,7 @@
 {
   "name": "remult-mono-repo",
   "description": "See projects/core for the remult core package.json. This package.json is used for remult/core development, test projects and experimental work. See ",
-  "version": "3.1.2",
+  "version": "3.2.1",
   "scripts": {
     "format": "prettier \"./projects/core/**\" --write",
     "test": "vitest --ui --coverage",
@@ -36,7 +36,7 @@
   "private": true,
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250613.0",
-    "@duckdb/node-api": "^1.2.2-alpha.18",
+    "@duckdb/node-api": "^1.3.2-alpha.26",
     "@fastify/express": "^2.0.1",
     "@fastify/middie": "^8.0.0",
     "@fastify/swagger-ui": "^1.8.1",
@@ -69,7 +69,7 @@
     "@vitest/ui": "3.1.2",
     "ably": "^1.2.33",
     "axios": "^0.28.0",
-    "better-sqlite3": "^9.1.1",
+    "better-sqlite3": "^12.2.0",
     "class-validator": "^0.14.0",
     "cloudflare": "^4.4.1",
     "concurrently": "^7.2.2",
@@ -95,7 +95,7 @@
     "npm-run-all": "^4.1.5",
     "nuxt": "^3.16.0",
     "pg": "^8.3.0",
-    "prettier": "^3.0.0",
+    "prettier": "^3.6.2",
     "rimraf": "^5.0.5",
     "sql.js": "^1.9.0",
     "sqlite3": "^5.1.7",

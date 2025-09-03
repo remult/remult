@@ -5,7 +5,7 @@ config()
 
 export default defineConfig({
   test: {
-    threads: false,
+    // threads: false,
     fileParallelism: false,
 
     include: [
@@ -26,4 +26,4 @@ export default defineConfig({
   },
 })
 
-process.env['IGNORE_GLOBAL_REMULT_IN_TESTS'] = true
+process.env['IGNORE_GLOBAL_REMULT_IN_TESTS'] = 'true'

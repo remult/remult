@@ -28,6 +28,10 @@ You can filter the rows using different operators
 https://mySite.com/api/products?price.gte=5&price.lte=10
 ```
 
+## Select
+
+Use `_select` with a comma separated list of the fields you would like to select
+
 ### Filter Operators
 
 | operator     | description           | example                                            |

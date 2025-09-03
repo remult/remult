@@ -1,5 +1,17 @@
 All notable changes to this project will be documented in this file.
 
+## [3.2.1] 2025-8-18
+
+- Export EntitySelectFields type
+
+## [3.2.0] 2025-8-18
+
+- Added support for `select` in `find`, now you can select which fields will be part of the query and part of the result.
+  ```ts
+  await repo(Task).find({ select: { id: true, title: true } })
+  ```
+- Thanks to @delebash for their first contribution
+
 ## [3.1.2] 2025-8-03
 
 - Minor fix for `standardSchema` - require an object.
@@ -186,7 +198,6 @@ Finally, replace `@Fields.cuid()` with `MyFields_cuid()`
 ## [0.27.22] 2024-11-08
 
 - Improved support for sveltekit ssr. To configure:
-
   - To enable remult across all sveltekit route
     ```ts
     // src/hooks.server.ts
