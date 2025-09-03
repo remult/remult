@@ -105,9 +105,7 @@ Creates a raw filter for entity filtering.
 ```ts
 SqlDatabase.rawFilter(
   ({ param }) =>
-    `"customerId" in (select id from customers where city = ${param(
-      customerCity,
-    )})`,
+    `"customerId" in (select id from customers where city = ${param(customerCity)})`,
 )
 ```
 
