@@ -1,4 +1,5 @@
 import * as fs from 'fs'
+import { execSync } from 'child_process'
 const exclude = [
   'repCache',
   'throwErrorIfFilterIsEmpty',
@@ -20,6 +21,9 @@ var api: {
   )
   api.children[0].children.push(z)
 }
+
+// Track all generated files for batch prettier formatting
+const generatedFiles: string[] = []
 
 class DocFile {
   s: string = ''
@@ -69,7 +73,21 @@ class DocFile {
         if (t.tag.startsWith('@')) t.tag = t.tag.substring(1)
         this.writeLine('\n\n#### ' + t.tag + ':', indent)
 
-        let text = t.content.map((x) => x.text).join('')
+        let text = t.content
+          .map((x) => {
+            if (x.kind === 'inline-tag' && x.tag === '@link') {
+              const [p1, p2] = x.text.split(/[.#]/)
+              const file = p1
+                .toLowerCase()
+                .replace('relationoptions', 'relations')
+                .replace('options', '')
+              return `[${x.text}](/docs/ref_${file.toLowerCase()}${
+                p2 ? `#${p2.toLowerCase()}` : ''
+              })`
+            }
+            return x.text
+          })
+          .join('')
 
         this.writeLine(text, indent)
       }
@@ -175,10 +193,14 @@ class DocFile {
   }
 
   writeFile() {
+    const filePath = './docs/docs/ref_' + this.fileName.toLowerCase() + '.md'
     fs.writeFileSync(
-      './docs/docs/ref_' + this.fileName.toLowerCase() + '.md',
+      filePath,
       this.s, //.replace(/\n/g, '\r\n'),
     )
+
+    // Add to the list of files to be prettified later
+    generatedFiles.push(filePath)
   }
 }
 
@@ -254,11 +276,30 @@ try {
   }
 }
 
+// Run prettier on all generated files at once
+if (generatedFiles.length > 0) {
+  try {
+    console.log(`\nRunning prettier on ${generatedFiles.length} files...`)
+    execSync(`prettier --write ${generatedFiles.join(' ')}`, {
+      // stdio: 'inherit',
+    })
+    console.log('✅ All files prettified successfully!')
+  } catch (error: any) {
+    console.warn(
+      'Warning: Could not run prettier on generated files:',
+      error.message,
+    )
+  }
+}
+
 type Tag = {
   tag: string
   content: {
     kind: string
     text: string
+    tag?: string
+    target?: number
+    tsLinkText?: string
   }[]
 }
 

@@ -25,8 +25,6 @@ export interface EntityOptions<entityType = unknown> {
   label?: string
   /**
    * Determines if this Entity is available for get requests using Rest Api
-   * @description
-   * Determines if one has any access to the data of an entity.
    * @see [allowed](http://remult.dev/docs/allowed.html)
    * @see to restrict data based on a criteria, use [apiPrefilter](https://remult.dev/docs/ref_entity.html#apiprefilter)
    * */
@@ -142,7 +140,7 @@ export interface EntityOptions<entityType = unknown> {
    *   },
    * })
    * @param entity - The instance of the entity being saved.
-   * @param event - an @link LifeCycleEvent object
+   * @param event - [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks#lifecycle-event-args)
    * @see [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
    */
   saving?: (
@@ -153,7 +151,7 @@ export interface EntityOptions<entityType = unknown> {
    * A hook that runs after an entity has been successfully saved.
    *
    * @param entity The instance of the entity that was saved.
-   * @param event - an @link LifeCycleEvent object
+   * @param event - [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks#lifecycle-event-args)
    * @see [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
    */
   saved?: (
@@ -164,7 +162,7 @@ export interface EntityOptions<entityType = unknown> {
    * A hook that runs before an entity is deleted.
    *
    * @param entity The instance of the entity being deleted.
-   * @param event - an @link LifeCycleEvent object
+   * @param event - [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks#lifecycle-event-args)
    * @see [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
    */
   deleting?: (
@@ -175,7 +173,7 @@ export interface EntityOptions<entityType = unknown> {
    * A hook that runs after an entity has been successfully deleted.
    *
    * @param entity The instance of the entity that was deleted.
-   * @param event - an @link LifeCycleEvent object
+   * @param event - [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks#lifecycle-event-args)
    * @see [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
    */
   deleted?: (
@@ -187,7 +185,7 @@ export interface EntityOptions<entityType = unknown> {
    * This hook is also executed on the frontend.
    *
    * @param entity The instance of the entity being validated.
-   * @param event - an @link LifeCycleEvent object
+   * @param event - [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks#lifecycle-event-args)
    * @see [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
    */
   validation?: (
@@ -266,8 +264,7 @@ export interface PreprocessFilterEvent<entityType> {
    * Retrieves precise values for each property in a filter for an entity.
    * @param filter Optional filter to analyze. If not provided, the current filter being preprocessed is used.
    * @returns A promise that resolves to a FilterPreciseValues object containing the precise values for each property.
-   
-  * @see {@Link FilterPreciseValues }
+   * @see {@link FilterPreciseValues}
    */
   getFilterPreciseValues(
     filter?: EntityFilter<entityType>,

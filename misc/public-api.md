@@ -609,11 +609,13 @@ export interface EntityMetadata<entityType = unknown> {
   /** The class type of the entity */
   readonly entityType: ClassType<entityType>
   /** true if the current user is allowed to update an entity instance
-   * @see {@link EntityOptions.allowApiUpdate
+   * @see {@link EntityOptions.allowApiUpdate}
    * @example
+   * ```ts
    * if (repo(Task).metadata.apiUpdateAllowed(task)){
    *   // Allow user to edit the entity
    * }
+   * ```
    */
   apiUpdateAllowed(item?: entityType): boolean
   /** true if the current user is allowed to read from entity
@@ -625,7 +627,7 @@ export interface EntityMetadata<entityType = unknown> {
    */
   readonly apiReadAllowed: boolean
   /** true if the current user is allowed to delete an entity instance
-   * * @see {@link EntityOptions.allowApiDelete}
+   * @see {@link EntityOptions.allowApiDelete}
    * @example
    * if (repo(Task).metadata.apiDeleteAllowed(task)){
    *   // display delete button
@@ -659,8 +661,6 @@ export interface EntityOptions<entityType = unknown> {
   label?: string
   /**
    * Determines if this Entity is available for get requests using Rest Api
-   * @description
-   * Determines if one has any access to the data of an entity.
    * @see [allowed](http://remult.dev/docs/allowed.html)
    * @see to restrict data based on a criteria, use [apiPrefilter](https://remult.dev/docs/ref_entity.html#apiprefilter)
    * */
@@ -771,7 +771,7 @@ export interface EntityOptions<entityType = unknown> {
    *   },
    * })
    * @param entity - The instance of the entity being saved.
-   * @param event - an @link LifeCycleEvent object
+   * @param event - [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks#lifecycle-event-args)
    * @see [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
    */
   saving?: (
@@ -782,7 +782,7 @@ export interface EntityOptions<entityType = unknown> {
    * A hook that runs after an entity has been successfully saved.
    *
    * @param entity The instance of the entity that was saved.
-   * @param event - an @link LifeCycleEvent object
+   * @param event - [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks#lifecycle-event-args)
    * @see [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
    */
   saved?: (
@@ -793,7 +793,7 @@ export interface EntityOptions<entityType = unknown> {
    * A hook that runs before an entity is deleted.
    *
    * @param entity The instance of the entity being deleted.
-   * @param event - an @link LifeCycleEvent object
+   * @param event - [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks#lifecycle-event-args)
    * @see [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
    */
   deleting?: (
@@ -804,7 +804,7 @@ export interface EntityOptions<entityType = unknown> {
    * A hook that runs after an entity has been successfully deleted.
    *
    * @param entity The instance of the entity that was deleted.
-   * @param event - an @link LifeCycleEvent object
+   * @param event - [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks#lifecycle-event-args)
    * @see [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
    */
   deleted?: (
@@ -816,7 +816,7 @@ export interface EntityOptions<entityType = unknown> {
    * This hook is also executed on the frontend.
    *
    * @param entity The instance of the entity being validated.
-   * @param event - an @link LifeCycleEvent object
+   * @param event - [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks#lifecycle-event-args)
    * @see [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
    */
   validation?: (
@@ -1069,12 +1069,16 @@ export interface FieldMetadata<valueType = unknown, entityType = unknown> {
 export interface FieldOptions<entityType = unknown, valueType = unknown> {
   /** A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
    * @example
-   * <input placeholder={taskRepo.metadata.fields.title.caption}/>
+   * ```html
+   * <input placeholder={taskRepo.metadata.fields.title.caption} />
+   * ```
    */
   caption?: string
   /** A human readable name for the field. Can be used to achieve a consistent label for a field throughout the app
    * @example
-   * <input placeholder={taskRepo.metadata.fields.title.label}/>
+   * ```html
+   * <input placeholder={taskRepo.metadata.fields.title.label} />
+   * ```
    */
   label?: string
   /** If it can store `null` in the database. @default false */
@@ -2211,12 +2215,11 @@ export interface PreprocessFilterEvent<entityType> {
    */
   metadata: EntityMetadata<entityType>
   /**
-     * Retrieves precise values for each property in a filter for an entity.
-     * @param filter Optional filter to analyze. If not provided, the current filter being preprocessed is used.
-     * @returns A promise that resolves to a FilterPreciseValues object containing the precise values for each property.
-     
-    * @see {@Link FilterPreciseValues }
-     */
+   * Retrieves precise values for each property in a filter for an entity.
+   * @param filter Optional filter to analyze. If not provided, the current filter being preprocessed is used.
+   * @returns A promise that resolves to a FilterPreciseValues object containing the precise values for each property.
+   * @see {@link FilterPreciseValues}
+   */
   getFilterPreciseValues(
     filter?: EntityFilter<entityType>,
   ): Promise<FilterPreciseValues<entityType>>
@@ -2306,18 +2309,18 @@ export declare class Relations {
    * @returns A decorator function to apply the to-one relation to an entity field.
    *
    * Example usage:
-   * ```
+   * ```ts
    * @Relations.toOne(() => Customer)
    * customer?: Customer;
    * ```
-   * ```
+   * ```ts
    * Fields.string()
    * customerId?: string;
    *
    * @Relations.toOne(() => Customer, "customerId")
    * customer?: Customer;
    * ```
-   * ```
+   * ```ts
    * Fields.string()
    * customerId?: string;
    *
@@ -2327,7 +2330,7 @@ export declare class Relations {
    * })
    * customer?: Customer;
    * ```
-   * ```
+   * ```ts
    * Fields.string()
    * customerId?: string;
    *
@@ -2366,7 +2369,7 @@ export declare class Relations {
    * @returns A decorator function to apply the toMany relation to an entity field.
    *
    * Example usage:
-   * ```
+   * ```ts
    * @Relations.toMany(() => Order)
    * orders?: Order[];
    *
@@ -2393,7 +2396,7 @@ export declare class Relations {
    * @returns A decorator function to apply the toMany relation to an entity field.
    *
    * Example usage:
-   * ```
+   * ```ts
    * @Relations.toMany(() => Order, {
    *   field: "customerOrders",
    *   findOptions: {
@@ -2885,7 +2888,7 @@ export interface Repository<entityType> {
    */
   fields: FieldsMetadata<entityType>
   /**The metadata for the `entity`
-   * @See [EntityMetadata](https://remult.dev/docs/ref_entitymetadata.html)
+   * @see [EntityMetadata](https://remult.dev/docs/ref_entitymetadata.html)
    */
   metadata: EntityMetadata<entityType>
   addEventListener(listener: entityEventListener<entityType>): Unsubscribe
@@ -3820,16 +3823,16 @@ export interface RemultServerOptions<RequestType> {
     | DataProvider
     | Promise<DataProvider>
     | (() => Promise<DataProvider | undefined>)
-  /** Will create tables and columns in supporting databases. default: true
+  /** Will create tables and columns in supporting databases.
    *
-   * @description
+   * @default true
+   *
    * when set to true, it'll create entities that do not exist, and add columns that are missing.
    */
   ensureSchema?: boolean
-  /** The path to use for the api, default:/api
+  /** The path to use for the api, if you want to use a different path adjust this field
    *
-   * @description
-   * If you want to use a different api path adjust this field
+   * @default `/api`
    */
   rootPath?: string
   /** The default limit to use for find requests that did not specify a limit */
@@ -4057,16 +4060,16 @@ export interface RemultServerOptions<RequestType> {
     | DataProvider
     | Promise<DataProvider>
     | (() => Promise<DataProvider | undefined>)
-  /** Will create tables and columns in supporting databases. default: true
+  /** Will create tables and columns in supporting databases.
    *
-   * @description
+   * @default true
+   *
    * when set to true, it'll create entities that do not exist, and add columns that are missing.
    */
   ensureSchema?: boolean
-  /** The path to use for the api, default:/api
+  /** The path to use for the api, if you want to use a different path adjust this field
    *
-   * @description
-   * If you want to use a different api path adjust this field
+   * @default `/api`
    */
   rootPath?: string
   /** The default limit to use for find requests that did not specify a limit */

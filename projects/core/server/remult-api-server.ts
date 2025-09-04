@@ -71,16 +71,16 @@ export interface RemultServerOptions<RequestType> {
     | DataProvider
     | Promise<DataProvider>
     | (() => Promise<DataProvider | undefined>)
-  /** Will create tables and columns in supporting databases. default: true
+  /** Will create tables and columns in supporting databases.
    *
-   * @description
+   * @default true
+   *
    * when set to true, it'll create entities that do not exist, and add columns that are missing.
    */
   ensureSchema?: boolean
-  /** The path to use for the api, default:/api
+  /** The path to use for the api, if you want to use a different path adjust this field
    *
-   * @description
-   * If you want to use a different api path adjust this field
+   * @default `/api`
    */
   rootPath?: string
   /** The default limit to use for find requests that did not specify a limit */
