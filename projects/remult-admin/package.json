@@ -32,7 +32,7 @@
     "tsx": "^3.14.0",
     "typescript": "^5.4.5",
     "vite": "^5.4.19",
-    "vite-plugin-singlefile": "^0.13.5"
+    "vite-plugin-singlefile": "^2.3.0"
   },
   "dependencies": {
     "reactflow": "^11.11.3",
