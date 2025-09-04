@@ -12,7 +12,8 @@ In this lesson, you'll learn how to extend and customize existing validations in
 
 Let's extend the existing `unique` validation to check that no two tasks exist with the same title, as long as the title is not empty.
 
-````solution:/shared/Task.ts title="shared/Task.ts"  collapse={1-5, 16-99} add={11-13}
+```solution:/shared/Task.ts title="shared/Task.ts"  collapse={1-5, 16-99} add={11-13}
+
 ```
 
 ```typescript title="shared/Task.ts" add={6-8}
@@ -29,7 +30,7 @@ export class Task {
 
   //....
 }
-````
+```
 
 ### Code Explanation
 
