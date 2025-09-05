@@ -18,6 +18,7 @@ export function remultApi(
         method: event.request.method,
         on: (e: 'close', do1: VoidFunction) => {
           if (e === 'close') {
+            event.locals ??= {}
             event.locals['_tempOnClose'] = do1
           }
         },
@@ -27,9 +28,13 @@ export function remultApi(
     getRequestBody: (event) => event.request.json(),
   })
   const serverHandler = async (evt: RequestEvent) => {
-    const event = (await getRequestEvent()) ?? evt
+    const event = getRequestEvent() ?? evt
     let sseResponse: Response | undefined = undefined
-    if (event) event.locals['_tempOnClose'] = () => {}
+
+    if (event) {
+      event.locals ??= {}
+      event.locals['_tempOnClose'] = () => {}
+    }
 
     const response: GenericResponse & ResponseRequiredForSSE = {
       end: () => {},
