@@ -26,8 +26,8 @@ export function remultApi(
     }),
     getRequestBody: (event) => event.request.json(),
   })
-  const serverHandler = async () => {
-    const event = await getRequestEvent()
+  const serverHandler = async (evt: RequestEvent) => {
+    const event = (await getRequestEvent()) ?? evt
     let sseResponse: Response | undefined = undefined
     if (event) event.locals['_tempOnClose'] = () => {}
 

@@ -32,6 +32,7 @@ export {
 } from './remult-api-server.js'
 export { Module } from './module.js'
 export type { ModuleInput } from './module.js'
+export type { ResponseRequiredForSSE } from '../SseSubscriptionServer.js'
 export function createRemultServer<RequestType>(
   options: RemultServerOptions<RequestType>,
   serverCoreOptions?: ServerCoreOptions<RequestType>,

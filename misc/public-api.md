@@ -3925,6 +3925,11 @@ export interface RemultServerOptions<RequestType> {
 //[ ] SubscriptionServer from TBD is not exported
 //[ ] Allowed from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
+export interface ResponseRequiredForSSE {
+  write(data: string): void
+  writeHead(status: number, headers: any): void
+  flush?(): void
+}
 export type SpecificRoute<RequestType> = {
   get(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
   put(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
