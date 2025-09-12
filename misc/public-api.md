@@ -391,6 +391,7 @@ export interface EntityDataProvider {
 export interface EntityDataProviderFindOptions {
   where?: Filter
   limit?: number
+  args?: any
   page?: number
   orderBy?: Sort
 }
@@ -973,7 +974,11 @@ export interface FieldOptions<entityType = any, valueType = any> {
    */
   sqlExpression?:
     | string
-    | ((entity: EntityMetadata<entityType>) => string | Promise<string>)
+    | ((
+        entity: EntityMetadata<entityType>,
+        args: SqlExpressionArgs,
+        command: SqlCommandWithParameters,
+      ) => string | Promise<string>)
   /** For fields that shouldn't be part of an update or insert statement */
   dbReadOnly?: boolean
   /** The value converter to be used when loading and saving this field */
@@ -1007,6 +1012,7 @@ export interface FieldOptions<entityType = any, valueType = any> {
   /** The key to be used for this field */
   key?: string
 }
+//[ ] SqlExpressionArgs from TBD is not exported
 export interface FieldRef<entityType = any, valueType = any>
   extends Subscribable {
   error: string
@@ -1484,6 +1490,7 @@ export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
    * await this.remult.repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
    */
   orderBy?: EntityOrderBy<entityType>
+  args?: SqlExpressionArgs
 }
 export declare class ForbiddenError extends Error {
   constructor(message?: string)

@@ -362,6 +362,7 @@ export async function fieldDbName(
         try {
           f.options.sqlExpression =
             "recursive sqlExpression call for field '" + f.key + "'. "
+          //@ts-expect-error handle later
           result = await prev(meta)
           f.options[sqlExpressionCacheKey] = result
         } finally {
