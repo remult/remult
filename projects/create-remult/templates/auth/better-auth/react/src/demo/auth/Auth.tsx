@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { remult } from "remult";
 import Tile, { type TileStatus } from "../Tile";
 import { createAuthClient } from "better-auth/react";
+import type { JSX } from "react";
 
 const authClient = createAuthClient({
   // you can pass client configuration here

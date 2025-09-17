@@ -9,15 +9,15 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "next": "14.2.28",
-    "react": "^18",
-    "react-dom": "^18",
-    "remult": "^0.27.19"
+    "next": "^15",
+    "react": "^19",
+    "react-dom": "^19",
+    "remult": "latest"
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
+    "@types/node": "^24",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
     "typescript": "^5"
   }
 }
