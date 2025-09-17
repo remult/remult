@@ -473,10 +473,10 @@ async function init() {
 
   if (safeServer.requiresTwoTerminal) {
     console.log(`  ${gray("Then, open two terminals and run:")}
-    npm run dev-node ${gray(" # in one for the backend.")}
-    npm run dev ${gray("      # in the other for the frontend.")}`);
+    ${pkgManager} run dev-node ${gray(" # in one for the backend.")}
+    ${pkgManager} run dev ${gray("      # in the other for the frontend.")}`);
   } else {
-    console.log(`  npm run dev`);
+    console.log(`  ${pkgManager} run dev`);
   }
   console.log("");
 
