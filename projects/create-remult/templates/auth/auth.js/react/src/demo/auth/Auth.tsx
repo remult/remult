@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { remult } from "remult";
 import Tile, { type TileStatus } from "../Tile";
+import type { JSX } from "react";
 
 export default function Auth() {
   const [status, setStatus] = useState<TileStatus>("Loading");
