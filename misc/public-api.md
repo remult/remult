@@ -486,6 +486,7 @@ export interface EntityDataProviderFindOptions {
   select?: string[]
   where?: Filter
   limit?: number
+  args?: any
   page?: number
   orderBy?: Sort
 }
@@ -1176,7 +1177,11 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
    */
   sqlExpression?:
     | string
-    | ((entity: EntityMetadata<entityType>) => string | Promise<string>)
+    | ((
+        entity: EntityMetadata<entityType>,
+        args?: any,
+        command?: SqlCommandWithParameters,
+      ) => string | Promise<string>)
   /** For fields that shouldn't be part of an update or insert statement */
   dbReadOnly?: boolean
   /** The value converter to be used when loading and saving this field */
@@ -1758,6 +1763,7 @@ export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
    * await repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
    */
   orderBy?: EntityOrderBy<entityType>
+  args?: any
 }
 export declare class ForbiddenError extends Error {
   constructor(message?: string)
@@ -3409,6 +3415,7 @@ export interface ValueConverter<valueType> {
    * toDb: val => val?.toISOString()
    */
   toDb?(val: valueType): any
+  toDbSql?(val: string): string
   /**
    * Converts a value of valueType to a string suitable for an HTML input element.
    *
