@@ -291,6 +291,7 @@ export class DataApi<T = unknown> {
       include: this.includeNone(),
     }
     findOptions.where = await this.buildWhere(request, body)
+    if (body?.args) findOptions.args = body.args
 
     if (request) {
       let sort = <string>request.get('_sort')

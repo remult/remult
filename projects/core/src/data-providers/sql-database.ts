@@ -22,6 +22,7 @@ import {
   FilterConsumerBridgeToSqlRequest,
   dbNamesOfWithForceSqlExpression,
   isDbReadonly,
+  toDbSql,
 } from '../filter/filter-consumer-bridge-to-sql-request.js'
 import {
   Filter,
@@ -52,6 +53,7 @@ import type {
   MigrationCode,
 } from '../../migrations/migration-types.js'
 import { isOfType } from '../isOfType.js'
+import { originalSqlExpressionKey } from '../filter/fieldDbName.js'
 
 /**
  * A DataProvider for Sql Databases
@@ -384,11 +386,16 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
   async find(options?: EntityDataProviderFindOptions): Promise<any[]> {
     let e = await this.init()
 
-    let { colKeys, select } = this.buildSelect(e, options?.select)
+    let r = this.sql.createCommand()
+    let { colKeys, select } = await this.buildSelect(
+      e,
+      r,
+      options?.select,
+      options?.args,
+    )
     select = 'select ' + select
 
     select += '\n from ' + e.$entityName
-    let r = this.sql.createCommand()
     if (options) {
       if (options.where) {
         let where = new FilterConsumerBridgeToSqlRequest(r, e)
@@ -413,7 +420,9 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
             first = false
           } else select += ', '
 
-          select += e.$dbNameOf(c.field)
+          select += c.field.options.sqlExpression
+            ? c.field.options.key
+            : await e.$dbNameOf(c.field)
           if (c.isDescending) select += ' desc'
           if (this.sql._getSourceSql().orderByNullsFirst) {
             if (c.isDescending) select += ' nulls last'
@@ -457,7 +466,12 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
     return result
   }
 
-  private buildSelect(e: EntityDbNamesBase, selectedFields?: string[]) {
+  private async buildSelect(
+    e: EntityDbNamesBase,
+    r: SqlCommand,
+    selectedFields?: string[],
+    args?: any,
+  ) {
     let select = ''
     let colKeys: FieldMetadata[] = []
     for (const x of this.entity.fields) {
@@ -465,7 +479,15 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
       if (x.isServerExpression) {
       } else {
         if (colKeys.length > 0) select += ', '
-        select += e.$dbNameOf(x)
+        if (typeof x.options.sqlExpression === 'function') {
+          let sql = await (x as any)[originalSqlExpressionKey](
+            this.entity,
+            args,
+            r,
+          )
+          if (sql.includes(' ')) select += '(' + sql + ')'
+          else select += sql
+        } else select += e.$dbNameOf(x)
         if (x.options.sqlExpression) select += ' as ' + x.key
         colKeys.push(x)
       }
@@ -488,7 +510,7 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
           if (!added) added = true
           else statement += ', '
 
-          statement += e.$dbNameOf(x) + ' = ' + r.param(v)
+          statement += e.$dbNameOf(x) + ' = ' + toDbSql(r, x, v)
         }
       }
     }
@@ -497,7 +519,7 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
     let f = new FilterConsumerBridgeToSqlRequest(r, e)
     Filter.fromEntityFilter(this.entity, idFilter).__applyToConsumer(f)
     statement += await f.resolveWhere()
-    let { colKeys, select } = this.buildSelect(e)
+    let { colKeys, select } = await this.buildSelect(e, r, undefined, undefined)
     let returning = true
     if (this.sql._getSourceSql().doesNotSupportReturningSyntax)
       returning = false
@@ -558,14 +580,14 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
           }
 
           cols += e.$dbNameOf(x)
-          vals += r.param(v)
+          vals += toDbSql(r, x, v)
         }
       }
     }
 
     let statement = `insert into ${e.$entityName} (${cols}) values (${vals})`
 
-    let { colKeys, select } = this.buildSelect(e)
+    let { colKeys, select } = await this.buildSelect(e, r, undefined, undefined)
     if (!this.sql._getSourceSql().doesNotSupportReturningSyntax)
       statement += ' returning ' + select
     return await r.execute(statement).then((sql) => {
