@@ -37,6 +37,7 @@ export interface FieldUIInfo {
   caption: string
   type: FieldUIInfoType
   inputType: string
+  allowNull: boolean
   relationToOne?: FieldRelationToOneInfo
 }
 export interface FieldRelationToOneInfo extends RelationFields {
@@ -44,6 +45,7 @@ export interface FieldRelationToOneInfo extends RelationFields {
   // TODO: remove in favor of fields ?
   idField: string
   captionField: string
+  allowNull: boolean
   where?: any
 }
 export interface AdminEntitiesOptions {
@@ -117,6 +119,7 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
             if (relRepo.metadata.apiReadAllowed) {
               relation = {
                 ...relInfo,
+                allowNull: x.allowNull,
                 where,
                 entityKey: relRepo.metadata.key,
                 idField,
@@ -146,16 +149,17 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
           caption: x.label,
           relationToOne: relation,
           inputType: x.inputType,
+          allowNull: x.allowNull,
           type:
             x.inputType === InputTypes.json
               ? 'json'
               : x.valueType === Number
-              ? 'number'
-              : x.valueType === Boolean
-              ? 'boolean'
-              : x.valueType === Date
-              ? 'date'
-              : 'string',
+                ? 'number'
+                : x.valueType === Boolean
+                  ? 'boolean'
+                  : x.valueType === Date
+                    ? 'date'
+                    : 'string',
         })
       } catch (error) {
         console.error(

@@ -1,5 +1,9 @@
 All notable changes to this project will be documented in this file.
 
+## [3.2.2] 2025-9-x
+
+- Updated remult admin to manage `allowNull` fields
+
 ## [3.2.1] 2025-8-18
 
 - Export EntitySelectFields type

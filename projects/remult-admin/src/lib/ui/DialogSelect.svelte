@@ -53,17 +53,35 @@
         {item.caption ?? "Can't display"}
       </span>
     </button>
-    {/each}
-    <button on:click={() => handleSelect(null)} style="color: rgb(var(--color-black) / 0.5); margin-top: 1rem;">
-      <span style="width: 100%; text-align: left;">
+  {/each}
+  <button
+    id="unset-button"
+    disabled={!relation.allowNull}
+    on:click={() => handleSelect(null)}
+  >
+    <span style="width: 100%; text-align: left;">
+      {#if relation.allowNull}
         - Unset -
-      </span>
-    </button>
+      {:else}
+        Can't unset
+      {/if}
+    </span>
+  </button>
 </div>
 
 <!-- </dialog> -->
 
 <style>
+  #unset-button {
+    color: rgb(var(--color-black) / 0.5);
+    margin-top: 1rem;
+  }
+
+  #unset-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
   :global(body) {
     --primary-color: #007bff;
     --hover-color: #0056b3;

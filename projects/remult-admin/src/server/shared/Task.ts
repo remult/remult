@@ -21,4 +21,6 @@ export class Task {
   remindeMeOn = new Date()
   @Relations.toMany(() => ContactTag)
   tags?: ContactTag[]
+  @Fields.date({ allowNull: true })
+  dueDate: Date | null = null
 }
