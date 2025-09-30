@@ -1,6 +1,6 @@
 All notable changes to this project will be documented in this file.
 
-## [3.2.2] 2025-9-x
+## [3.2.2] 2025-9-30
 
 - Updated remult admin to manage `allowNull` fields
 
