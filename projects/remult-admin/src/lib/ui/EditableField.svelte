@@ -168,6 +168,11 @@
       on:keydown={handleKeydown}
       on:input={checkOverflow}
     />
+    {#if info.allowNull}
+      <button disabled={value === null} on:click={() => (value = null)}>
+        x
+      </button>
+    {/if}
     {#if isOverflowing && value && !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/.test(value)}
       <button
         on:click={async () => {

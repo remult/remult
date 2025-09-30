@@ -47,6 +47,8 @@ describe('remult-admin', () => {
         findOptions: { where: { isBankrupt: true } },
       })
       accountBankrupted!: Account
+      @Fields.date({ allowNull: true })
+      favDate: Date | null = null
     }
 
     class UserExtra extends User {
@@ -68,6 +70,7 @@ describe('remult-admin', () => {
           },
           "fields": [
             {
+              "allowNull": false,
               "caption": "Id",
               "inputType": "number",
               "key": "id",
@@ -78,6 +81,7 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
+              "allowNull": false,
               "caption": "Name",
               "inputType": undefined,
               "key": "name",
@@ -88,6 +92,7 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
+              "allowNull": false,
               "caption": "Bday",
               "inputType": undefined,
               "key": "bday",
@@ -98,6 +103,7 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
+              "allowNull": false,
               "caption": "Age",
               "inputType": "number",
               "key": "age",
@@ -108,6 +114,7 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
+              "allowNull": false,
               "caption": "Age2",
               "inputType": "number",
               "key": "age2",
@@ -118,6 +125,7 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
+              "allowNull": false,
               "caption": "Metadata",
               "inputType": "json",
               "key": "metadata",
@@ -128,6 +136,7 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
+              "allowNull": false,
               "caption": "Metadata2",
               "inputType": "json",
               "key": "metadata2",
@@ -138,11 +147,13 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
+              "allowNull": false,
               "caption": "Account",
               "inputType": "",
               "key": "account",
               "readOnly": false,
               "relationToOne": {
+                "allowNull": false,
                 "captionField": "name",
                 "compoundIdField": undefined,
                 "entityKey": "accounts",
@@ -157,11 +168,13 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
+              "allowNull": false,
               "caption": "Account2",
               "inputType": "text",
               "key": "account2",
               "readOnly": false,
               "relationToOne": {
+                "allowNull": false,
                 "captionField": "name",
                 "compoundIdField": undefined,
                 "entityKey": "accounts",
@@ -176,11 +189,13 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
+              "allowNull": false,
               "caption": "Account Bankrupted",
               "inputType": "text",
               "key": "accountBankrupted",
               "readOnly": false,
               "relationToOne": {
+                "allowNull": false,
                 "captionField": "name",
                 "compoundIdField": undefined,
                 "entityKey": "accounts",
@@ -195,6 +210,18 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
+              "allowNull": true,
+              "caption": "Fav Date",
+              "inputType": undefined,
+              "key": "favDate",
+              "readOnly": false,
+              "relationToOne": undefined,
+              "type": "date",
+              "valFieldKey": "favDate",
+              "values": undefined,
+            },
+            {
+              "allowNull": false,
               "caption": "eMail2",
               "inputType": undefined,
               "key": "email2",
@@ -219,6 +246,7 @@ describe('remult-admin', () => {
           },
           "fields": [
             {
+              "allowNull": false,
               "caption": "Id",
               "inputType": "number",
               "key": "id",
@@ -229,6 +257,7 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
+              "allowNull": false,
               "caption": "Name",
               "inputType": undefined,
               "key": "name",
@@ -239,6 +268,7 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
+              "allowNull": false,
               "caption": "Bday",
               "inputType": undefined,
               "key": "bday",
@@ -249,6 +279,7 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
+              "allowNull": false,
               "caption": "Age",
               "inputType": "number",
               "key": "age",
@@ -259,6 +290,7 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
+              "allowNull": false,
               "caption": "Age2",
               "inputType": "number",
               "key": "age2",
@@ -269,6 +301,7 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
+              "allowNull": false,
               "caption": "Metadata",
               "inputType": "json",
               "key": "metadata",
@@ -279,6 +312,7 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
+              "allowNull": false,
               "caption": "Metadata2",
               "inputType": "json",
               "key": "metadata2",
@@ -289,11 +323,13 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
+              "allowNull": false,
               "caption": "Account",
               "inputType": "",
               "key": "account",
               "readOnly": false,
               "relationToOne": {
+                "allowNull": false,
                 "captionField": "name",
                 "compoundIdField": undefined,
                 "entityKey": "accounts",
@@ -308,11 +344,13 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
+              "allowNull": false,
               "caption": "Account2",
               "inputType": "text",
               "key": "account2",
               "readOnly": false,
               "relationToOne": {
+                "allowNull": false,
                 "captionField": "name",
                 "compoundIdField": undefined,
                 "entityKey": "accounts",
@@ -327,11 +365,13 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
+              "allowNull": false,
               "caption": "Account Bankrupted",
               "inputType": "text",
               "key": "accountBankrupted",
               "readOnly": false,
               "relationToOne": {
+                "allowNull": false,
                 "captionField": "name",
                 "compoundIdField": undefined,
                 "entityKey": "accounts",
@@ -343,6 +383,17 @@ describe('remult-admin', () => {
               },
               "type": "string",
               "valFieldKey": "accountBankrupted",
+              "values": undefined,
+            },
+            {
+              "allowNull": true,
+              "caption": "Fav Date",
+              "inputType": undefined,
+              "key": "favDate",
+              "readOnly": false,
+              "relationToOne": undefined,
+              "type": "date",
+              "valFieldKey": "favDate",
               "values": undefined,
             },
           ],
@@ -360,6 +411,7 @@ describe('remult-admin', () => {
           },
           "fields": [
             {
+              "allowNull": false,
               "caption": "Id",
               "inputType": undefined,
               "key": "id",
@@ -370,6 +422,7 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
+              "allowNull": false,
               "caption": "Name",
               "inputType": undefined,
               "key": "name",
@@ -380,6 +433,7 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
+              "allowNull": false,
               "caption": "Is Bankrupt",
               "inputType": "checkbox",
               "key": "isBankrupt",
