@@ -41,6 +41,7 @@ export function knexTests(
     options,
   )
   SqlDbTests({
+    isKnex: true,
     doesNotSupportDdlTransactions:
       knex.client.config.client.startsWith('mysql'),
     getDb() {
