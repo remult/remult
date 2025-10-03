@@ -361,12 +361,11 @@ async function init() {
       ...safeServer.devDependencies,
       ...authInfo?.devDependencies?.(safeServerName),
     });
-    if (authInfo?.scripts) {
-      pkg.scripts = {
-        ...pkg.scripts,
-        ...authInfo.scripts,
-      };
-    }
+    pkg.scripts = {
+      ...pkg.scripts,
+      ...authInfo?.scripts,
+      ...safeServer?.scripts,
+    };
     if (fw === svelteKit) {
       pkg.devDependencies = sortObject({
         ...pkg.devDependencies,
@@ -412,8 +411,8 @@ async function init() {
                 "# done by the cli",
               )}`
             : env.optional
-            ? `${" ".repeat(25 - env.key.length)}${gray("# optional")}`
-            : ""
+              ? `${" ".repeat(25 - env.key.length)}${gray("# optional")}`
+              : ""
         }`,
       );
     });
