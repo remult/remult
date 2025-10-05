@@ -83,6 +83,9 @@ export const svelteKit: Framework = {
         args.envVariables,
       );
     },
+    scripts: {
+      prepare: "svelte-kit sync || echo ''",
+    },
   },
 };
 
