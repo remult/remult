@@ -69,7 +69,7 @@ Arguments:
 
 Converts a value of valueType to the database format.
 
-If used on an Entity field, this method is only invoked when using a persistent database provider (excluding in-memory or JSON storage).
+Note: This method applies to all [data providers](/docs/installation/database) except `InMemoryDataProvider` and `JsonDataProvider`.
 
 #### returns:
 
