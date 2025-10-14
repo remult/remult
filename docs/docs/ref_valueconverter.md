@@ -8,8 +8,6 @@ JSON data transfer objects (DTOs), and HTML input elements.
 Converts a value from a JSON DTO to the valueType. This method is typically used when receiving data
 from a REST API call or deserializing a JSON payload.
 
-If used on an Entity field, this method is only invoked when using the JSON database provider.
-
 #### returns:
 
 The converted value.
@@ -28,8 +26,6 @@ Arguments:
 
 Converts a value of valueType to a JSON DTO. This method is typically used when sending data
 to a REST API or serializing an object to a JSON payload.
-
-If used on an Entity field, this method is only invoked when using the JSON database provider.
 
 #### returns:
 
