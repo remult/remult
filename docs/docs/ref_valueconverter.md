@@ -45,6 +45,8 @@ Arguments:
 
 Converts a value from the database format to the valueType.
 
+Note: This method applies to all [data providers](/docs/installation/database) except `InMemoryDataProvider` and `JsonDataProvider`.
+
 #### returns:
 
 The converted value.
@@ -62,6 +64,8 @@ Arguments:
 ## toDb
 
 Converts a value of valueType to the database format.
+
+Note: This method applies to all [data providers](/docs/installation/database) except `InMemoryDataProvider` and `JsonDataProvider`.
 
 #### returns:
 
