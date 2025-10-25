@@ -324,7 +324,7 @@ export function BackendMethod<type = unknown>(
               '/' +
               (options?.apiPrefix ? options.apiPrefix + '/' : '') +
               key,
-            options ? options.queue ?? false : false,
+            options ? (options.queue ?? false) : false,
             options.allowed,
             async (d: serverMethodInArgs, req, res) => {
               d.args = d.args.map((x) => (isCustomUndefined(x) ? undefined : x))
@@ -461,7 +461,8 @@ export function BackendMethod<type = unknown>(
               baseUrl,
               http,
             )
-            await defs._updateEntityBasedOnApi(r.rowInfo!.data, true)
+            await defs._updateResultsFromServerAction(r.rowInfo!)
+
             return r.result
           } catch (err) {
             throw defs.catchSaveErrors(err)

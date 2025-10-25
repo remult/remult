@@ -54,7 +54,10 @@ import type {
   UpsertOptions,
 } from './remult3.js'
 import { assign } from '../../assign.js'
-import type { entityEventListener } from '../__EntityValueProvider.js'
+import type {
+  entityEventListener,
+  packedRowInfo,
+} from '../__EntityValueProvider.js'
 import {
   type DataProvider,
   type EntityDataProvider,
@@ -1810,6 +1813,14 @@ export class rowHelperImplementation<T>
   extends rowHelperBase<T>
   implements EntityRef<T>
 {
+  async _updateResultsFromServerAction(rowInfo: packedRowInfo) {
+    await this._updateEntityBasedOnApi(rowInfo!.data, true)
+    if (this._isNew != rowInfo.isNewRow) {
+      this._isNew = rowInfo!.isNewRow
+      this.originalId = rowInfo!.id
+    }
+    if (!rowInfo.wasChanged) this.originalValues = this.copyDataToObject()
+  }
   constructor(
     private info: EntityFullInfo<T>,
     instance: T,
