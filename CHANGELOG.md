@@ -1,5 +1,9 @@
 All notable changes to this project will be documented in this file.
 
+## [3.3.0]
+
+- Added option for `deleteMany({where:'all'})` and `updateMany({where:'all',set:{ status:0 }})`
+
 ## [3.2.3]
 
 - Fix Backend method issue #890
