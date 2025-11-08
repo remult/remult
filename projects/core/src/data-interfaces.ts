@@ -43,8 +43,8 @@ export interface EntityDataProvider {
 }
 export interface ProxyEntityDataProvider {
   insertMany(data: any[]): Promise<any[]>
-  deleteMany(where: Filter): Promise<number>
-  updateMany(where: Filter, data: any): Promise<number>
+  deleteMany(where: Filter | 'all'): Promise<number>
+  updateMany(where: Filter | 'all', data: any): Promise<number>
   query(
     options: EntityDataProviderFindOptions,
     aggregateOptions: EntityDataProviderGroupByOptions,
