@@ -7,7 +7,11 @@ import {
   ValueListInfo,
 } from '../../../core/src/remult3/RepositoryImplementation'
 import { Done } from '../Done'
-import { DummyRequest, TestDataApiResponse } from '../TestDataApiResponse'
+import {
+  DummyRequest,
+  TestDataApiRequest,
+  TestDataApiResponse,
+} from '../TestDataApiResponse'
 import { createData } from '../createData'
 import { Categories } from '../remult-3-entities'
 
@@ -30,7 +34,7 @@ describe('data api', () => {
       expect(data.modelState.categoryName).toBe('invalid')
       d.ok()
     }
-    await api.put(t, 1, {
+    await api.put(t, new TestDataApiRequest(), 1, {
       categoryName: 'noam 1',
     })
     d.test()
@@ -84,7 +88,7 @@ describe('data api', () => {
       },
       undefined!,
     )
-    await api.put(t, 1, {
+    await api.put(t, new TestDataApiRequest(), 1, {
       val: 'yael',
     })
 
@@ -121,12 +125,12 @@ describe('data api', () => {
       },
       undefined!,
     )
-    await api.put(t, 1, {
+    await api.put(t, new TestDataApiRequest(), 1, {
       val: 'yael',
     })
     var x = await c.find({ where: { id: 1 } })
     expect(x[0].val).toBe('yael')
-    await api.put(t, 1, {
+    await api.put(t, new TestDataApiRequest(), 1, {
       val: 'yoni',
     })
     var x = await c.find({ where: { id: 1 } })

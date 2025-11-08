@@ -1,5 +1,9 @@
 All notable changes to this project will be documented in this file.
 
+## [3.3.0]
+
+- [#820](https://github.com/remult/remult/issues/820) - option to eliminate update/insert result to improve performance
+
 ## [3.2.3]
 
 - Fix Backend method issue #890

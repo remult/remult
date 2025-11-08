@@ -22,7 +22,11 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { Done } from './Done'
 import { Categories, Language, Products } from './entities-for-tests'
 import { h } from './h'
-import { DummyRequest, TestDataApiResponse } from './TestDataApiResponse'
+import {
+  DummyRequest,
+  TestDataApiRequest,
+  TestDataApiResponse,
+} from './TestDataApiResponse'
 import { actionInfo } from '../../core/internals'
 import { entity } from './dynamic-classes.js'
 
@@ -882,7 +886,7 @@ describe('Test entity relation and count finds', () => {
       expect(d.refHId).toBe('b')
       done.ok()
     }
-    await api.put(t, 'd', { refH: 'b' })
+    await api.put(t, new TestDataApiRequest(), 'd', { refH: 'b' })
     done.test()
   })
 
@@ -1046,7 +1050,7 @@ describe('test api loading stuff', () => {
       expect(fetches).toEqual([11])
       done.ok()
     }
-    await api.put(t, 11, { categoryId: 2 })
+    await api.put(t, new TestDataApiRequest(), 11, { categoryId: 2 })
     done.test()
   })
   it('test api doesnt load too much on insert', async () => {

@@ -573,6 +573,7 @@ export function remultGraphql(options: {
                       })
                     },
                   },
+                  { get: () => undefined },
                   arg1.id,
                   arg1.patch,
                 )

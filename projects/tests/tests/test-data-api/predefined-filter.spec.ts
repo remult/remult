@@ -1,6 +1,6 @@
 import { createData } from '../createData'
 import { Done } from '../Done'
-import { TestDataApiResponse } from '../TestDataApiResponse'
+import { TestDataApiRequest, TestDataApiResponse } from '../TestDataApiResponse'
 
 import { DataApi } from '../../../core/src/data-api'
 
@@ -112,7 +112,7 @@ describe('data api', () => {
     t.success = () => {
       d.ok()
     }
-    await api.put(t, 2, { name: 'YAEL' })
+    await api.put(t, new TestDataApiRequest(), 2, { name: 'YAEL' })
     d.test()
   })
   it('put id 1 works with predefined filterand shouldnt return anything', async () => {
@@ -127,7 +127,7 @@ describe('data api', () => {
     t.notFound = () => {
       d.ok()
     }
-    await api.put(t, 1, { name: 'YAEL' })
+    await api.put(t, new TestDataApiRequest(), 1, { name: 'YAEL' })
     d.test()
   })
   it('put id 1 works with predefined filterand shouldnt return anything', async () => {
@@ -142,7 +142,7 @@ describe('data api', () => {
     t.notFound = () => {
       d.ok()
     }
-    await api.put(t, 1, { name: 'YAEL' })
+    await api.put(t, new TestDataApiRequest(), 1, { name: 'YAEL' })
     d.test()
   })
   it('getArray works with predefined filter', async () => {
