@@ -27,7 +27,11 @@ import { getRepository } from './src/remult3/RepositoryImplementation.js'
 import { getRepositoryInternals } from './src/remult3/repository-internals.js'
 import { getRowAfterUpdate } from './src/data-providers/sql-database.js'
 import type { EntityDataProviderGroupByOptions } from './src/data-interfaces.js'
-import { GroupByCountMember, GroupByOperators } from './src/remult3/remult3.js'
+import {
+  GroupByCountMember,
+  GroupByOperators,
+  type InsertOrUpdateOptions,
+} from './src/remult3/remult3.js'
 
 export class MongoDataProvider implements DataProvider {
   constructor(
@@ -284,7 +288,11 @@ class MongoEntityDataProvider implements EntityDataProvider {
         .toArray(),
     )
   }
-  async update(id: any, data: any): Promise<any> {
+  async update(
+    id: any,
+    data: any,
+    options?: InsertOrUpdateOptions,
+  ): Promise<any> {
     let { collection, e } = await this.collection()
     let f = new FilterConsumerBridgeToMongo(e)
     Filter.fromEntityFilter(
@@ -308,6 +316,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
       },
       { session: this.session },
     )
+    if (options?.select === 'none') return undefined!
     return getRowAfterUpdate(this.entity, this, data, id, 'update')
   }
   async delete(id: any): Promise<void> {
@@ -321,11 +330,12 @@ class MongoEntityDataProvider implements EntityDataProvider {
       session: this.session,
     })
   }
-  async insert(data: any): Promise<any> {
+  async insert(data: any, options?: InsertOrUpdateOptions): Promise<any> {
     let { collection, e } = await this.collection()
     let r = await collection.insertOne(await this.translateToDb(data, e), {
       session: this.session,
     })
+    if (options?.select === 'none') return undefined!
     return await this.translateFromDb(
       await collection.findOne(
         { _id: r.insertedId },

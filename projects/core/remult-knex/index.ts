@@ -52,6 +52,7 @@ import {
   groupByImpl,
   getRowAfterUpdate,
 } from '../src/data-providers/sql-database.js'
+import type { InsertOrUpdateOptions } from '../src/remult3/remult3.js'
 
 export class KnexDataProvider
   implements
@@ -295,7 +296,11 @@ class KnexEntityDataProvider implements EntityDataProvider {
       wrapIdentifier: r.wrapIdentifier,
     } satisfies EntityDbNamesBase
   }
-  async update(id: any, data: any): Promise<any> {
+  async update(
+    id: any,
+    data: any,
+    options?: InsertOrUpdateOptions,
+  ): Promise<any> {
     const e = await this.init()
     let f = new FilterConsumerBridgeToKnexRequest(e, this.rawSqlWrapIdentifier)
     Filter.fromEntityFilter(
@@ -319,6 +324,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
     await this.getEntityFrom(e)
       .update(updateObject)
       .where((b) => where.forEach((w) => w(b)))
+    if (options?.select === 'none') return undefined!
     return getRowAfterUpdate(this.entity, this, data, id, 'update')
   }
   async delete(id: any): Promise<void> {
@@ -333,7 +339,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
       .delete()
       .where((b) => where.forEach((w) => w(b)))
   }
-  async insert(data: any): Promise<any> {
+  async insert(data: any, options?: InsertOrUpdateOptions): Promise<any> {
     const e = await this.init()
 
     let insertObject: any = {}
@@ -362,12 +368,14 @@ class KnexEntityDataProvider implements EntityDataProvider {
         newId = result[0][this.entity.idMetadata.field.dbName]
       }
 
+      if (options?.select === 'none') return undefined!
       return this.find({
         where: new Filter((x) =>
           x.isEqualTo(this.entity.idMetadata.field, newId),
         ),
       }).then((y) => y[0])
     } else await insert
+    if (options?.select === 'none') return undefined!
     return getRowAfterUpdate(this.entity, this, data, undefined, 'insert')
   }
 }

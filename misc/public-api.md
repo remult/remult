@@ -478,9 +478,9 @@ export interface EntityDataProvider {
   count(where: Filter): Promise<number>
   find(options?: EntityDataProviderFindOptions): Promise<Array<any>>
   groupBy(options?: EntityDataProviderGroupByOptions): Promise<any[]>
-  update(id: any, data: any): Promise<any>
+  update(id: any, data: any, options?: InsertOrUpdateOptions): Promise<any>
   delete(id: any): Promise<void>
-  insert(data: any): Promise<any>
+  insert(data: any, options?: InsertOrUpdateOptions): Promise<any>
 }
 export interface EntityDataProviderFindOptions {
   select?: string[]
@@ -1957,6 +1957,9 @@ export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
     }) => Promise<void>,
   ): Promise<void>
 }
+export declare type InsertOrUpdateOptions = {
+  select: "none"
+}
 export declare function isBackend(): boolean
 export declare class JsonDataProvider implements DataProvider {
   private storage
@@ -2785,8 +2788,14 @@ export interface Repository<entityType> {
    * @example
    * await taskRepo.insert([{title:"task a"}, {title:"task b", completed:true }])
    */
-  insert(item: Partial<MembersOnly<entityType>>[]): Promise<entityType[]>
-  insert(item: Partial<MembersOnly<entityType>>): Promise<entityType>
+  insert(
+    item: Partial<MembersOnly<entityType>>[],
+    options?: InsertOrUpdateOptions,
+  ): Promise<entityType[]>
+  insert(
+    item: Partial<MembersOnly<entityType>>,
+    options?: InsertOrUpdateOptions,
+  ): Promise<entityType>
   /** Updates an item, based on its `id`
    * @example
    * taskRepo.update(task.id,{...task,completed:true})
@@ -2794,10 +2803,12 @@ export interface Repository<entityType> {
   update(
     id: idType<entityType>,
     item: Partial<MembersOnly<entityType>>,
+    options?: InsertOrUpdateOptions,
   ): Promise<entityType>
   update(
     id: Partial<MembersOnly<entityType>>,
     item: Partial<MembersOnly<entityType>>,
+    options?: InsertOrUpdateOptions,
   ): Promise<entityType>
   /**
    * Updates all items that match the `where` condition.

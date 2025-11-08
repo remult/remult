@@ -15,7 +15,7 @@ import { RestEntityDataProvider } from '../../core/src/data-providers/rest-data-
 import { remult } from '../../core/src/remult-proxy'
 import type { EntityMetadata } from '../../core'
 import { serverActionField } from '../../core/src/server-action-info'
-import { TestDataApiResponse } from './TestDataApiResponse'
+import { TestDataApiRequest, TestDataApiResponse } from './TestDataApiResponse'
 import { actionInfo } from '../../core/internals'
 import type {
   CanBuildMigrations,
@@ -212,6 +212,7 @@ export function createMockHttpDataProvider(
         else
           await dataApi.put(
             r,
+            new TestDataApiRequest(),
             decodeURIComponent(urlSplit[urlSplit.length - 1]),
             data,
           )

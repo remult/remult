@@ -19,7 +19,7 @@ export interface UpsertOptions<entityType> {
 export interface EntityRefBase<entityType> extends Subscribable {
   hasErrors(): boolean
   undoChanges(): void
-  save(): Promise<entityType>
+  save(options?: InsertOrUpdateOptions): Promise<entityType>
   reload(): Promise<entityType>
   delete(): Promise<void>
   isNew(): boolean //
@@ -751,8 +751,14 @@ export interface Repository<entityType> {
    * @example
    * await taskRepo.insert([{title:"task a"}, {title:"task b", completed:true }])
    */
-  insert(item: Partial<MembersOnly<entityType>>[]): Promise<entityType[]>
-  insert(item: Partial<MembersOnly<entityType>>): Promise<entityType>
+  insert(
+    item: Partial<MembersOnly<entityType>>[],
+    options?: InsertOrUpdateOptions,
+  ): Promise<entityType[]>
+  insert(
+    item: Partial<MembersOnly<entityType>>,
+    options?: InsertOrUpdateOptions,
+  ): Promise<entityType>
 
   /** Updates an item, based on its `id`
    * @example
@@ -761,10 +767,12 @@ export interface Repository<entityType> {
   update(
     id: idType<entityType>,
     item: Partial<MembersOnly<entityType>>,
+    options?: InsertOrUpdateOptions,
   ): Promise<entityType>
   update(
     id: Partial<MembersOnly<entityType>>,
     item: Partial<MembersOnly<entityType>>,
+    options?: InsertOrUpdateOptions,
   ): Promise<entityType>
   /**
    * Updates all items that match the `where` condition.
@@ -1498,6 +1506,7 @@ export declare type EntityIdFields<entityType> = {
 export declare type EntitySelectFields<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?: boolean
 }
+export declare type InsertOrUpdateOptions = { select: 'none' }
 
 export interface ClassFieldDecoratorContextStub<entityType, valueType> {
   readonly access: {
