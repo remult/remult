@@ -195,8 +195,7 @@ export class DataApi<T = unknown> {
   ) {
     try {
       let deleted = 0
-      let where = await this.buildWhere(request, body)
-      Filter.throwErrorIfFilterIsEmpty(where, 'deleteMany')
+      let where = await this.prepareWhereForManyOperation(body, request)
       return await doTransaction(this.remult, async () => {
         for await (const x of this.repository.query({
           where,
@@ -212,6 +211,18 @@ export class DataApi<T = unknown> {
       response.error(err, this.repository.metadata)
     }
   }
+  private async prepareWhereForManyOperation(
+    body: any,
+    request: DataApiRequest,
+  ) {
+    let where: EntityFilter<any> | undefined = undefined
+    if (body?.where !== 'all') {
+      where = await this.buildWhere(request, body)
+      Filter.throwErrorIfFilterIsEmpty(where, 'deleteMany')
+    }
+    return where
+  }
+
   async groupBy(request: DataApiRequest, body: any) {
     if (!this.repository.metadata.apiReadAllowed) {
       throw new ForbiddenError()
@@ -514,8 +525,7 @@ export class DataApi<T = unknown> {
     body: { where?: any; set?: any },
   ) {
     try {
-      let where = await this.buildWhere(request, body)
-      Filter.throwErrorIfFilterIsEmpty(where, 'updateMany')
+      let where = await this.prepareWhereForManyOperation(body, request)
       return await doTransaction(this.remult, async () => {
         let updated = 0
         for await (const x of this.repository.query({

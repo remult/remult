@@ -637,7 +637,7 @@ export class RepositoryImplementation<entityType>
     Filter.throwErrorIfFilterIsEmpty(where, 'updateMany')
     if (this._dataProvider.isProxy) {
       return (this._edp as any as ProxyEntityDataProvider).updateMany(
-        await this._translateWhereToFilter(where),
+        where === 'all' ? 'all' : await this._translateWhereToFilter(where),
         this.__createDto({ ...set }),
       )
     } else {
@@ -1259,7 +1259,7 @@ export class RepositoryImplementation<entityType>
     Filter.throwErrorIfFilterIsEmpty(where, 'deleteMany')
     if (this._dataProvider.isProxy) {
       return (this._edp as any as ProxyEntityDataProvider).deleteMany(
-        await this._translateWhereToFilter(where),
+        where === 'all' ? 'all' : await this._translateWhereToFilter(where),
       )
     } else {
       let deleted = 0

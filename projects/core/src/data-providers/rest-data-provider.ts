@@ -240,38 +240,42 @@ export class RestEntityDataProvider
   }
   //@internal
   buildFindRequest(
-    options: EntityDataProviderFindOptions | undefined,
+    options: EntityDataProviderFindOptions | undefined | { where: 'all' },
     method?: 'delete' | 'put' | 'get',
   ) {
     if (!method) method = 'get'
     let url = new UrlBuilder(this.url())
     let filterObject: any
     if (options) {
-      if (options.where) {
-        filterObject = options.where.toJson() //        options.where.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(url));
-        if (addFilterToUrlAndReturnTrueIfSuccessful(filterObject, url))
-          filterObject = undefined
-      }
-      if (options.orderBy && options.orderBy.Segments) {
-        let sort = ''
-        let order = ''
-        let hasDescending = false
-        options.orderBy.Segments.forEach((c) => {
-          if (sort.length > 0) {
-            sort += ','
-            order += ','
-          }
-          sort += c.field.key
-          order += c.isDescending ? 'desc' : 'asc'
-          if (c.isDescending) hasDescending = true
-        })
-        if (sort) url.add('_sort', sort)
-        if (hasDescending) url.add('_order', order)
-      }
-      if (options.limit) url.add('_limit', options.limit)
-      if (options.page) url.add('_page', options.page)
-      if (options.select) {
-        url.add('_select', options.select.join(','))
+      if (options.where === 'all') {
+        filterObject = 'all'
+      } else {
+        if (options.where) {
+          filterObject = options.where.toJson()
+          if (addFilterToUrlAndReturnTrueIfSuccessful(filterObject, url))
+            filterObject = undefined
+        }
+        if (options.orderBy && options.orderBy.Segments) {
+          let sort = ''
+          let order = ''
+          let hasDescending = false
+          options.orderBy.Segments.forEach((c) => {
+            if (sort.length > 0) {
+              sort += ','
+              order += ','
+            }
+            sort += c.field.key
+            order += c.isDescending ? 'desc' : 'asc'
+            if (c.isDescending) hasDescending = true
+          })
+          if (sort) url.add('_sort', sort)
+          if (hasDescending) url.add('_order', order)
+        }
+        if (options.limit) url.add('_limit', options.limit)
+        if (options.page) url.add('_page', options.page)
+        if (options.select) {
+          url.add('_select', options.select.join(','))
+        }
       }
     }
 

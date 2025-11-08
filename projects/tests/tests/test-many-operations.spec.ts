@@ -78,6 +78,24 @@ describe('test rest many operations', () => {
       }
     `)
   })
+  it('test delete many all', async () => {
+    await r.insert([
+      { id: 1, name: 'a' },
+      { id: 2, name: 'b' },
+      { id: 3, name: 'c' },
+      { id: 4, name: 'd' },
+    ])
+    expect(await r.deleteMany({ where: 'all' })).toBe(4)
+  })
+  it('test update many all', async () => {
+    await r.insert([
+      { id: 1, name: 'a' },
+      { id: 2, name: 'b' },
+      { id: 3, name: 'c' },
+      { id: 4, name: 'd' },
+    ])
+    expect(await r.updateMany({ where: 'all', set: { name: 'z' } })).toBe(4)
+  })
   it('test delete many', async () => {
     await r.insert([
       { id: 1, name: 'a' },
