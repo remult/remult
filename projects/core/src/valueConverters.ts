@@ -160,6 +160,7 @@ export class ValueConverters {
     toDb: (x) => ValueConverters.JsonString.toDb!(x),
     fromInput: (x) => ValueConverters.Default.fromJson(x),
     toInput: (x) => ValueConverters.Default.toJson(x),
+    toDbSql: (x) => x,
     displayValue: (x) => x + '',
     fieldTypeInDb: '',
     inputType: 'text',

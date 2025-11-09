@@ -37,7 +37,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   constructor(
     private r: SqlCommandWithParameters,
     private nameProvider: EntityDbNamesBase,
-  ) { }
+  ) {}
 
   custom(key: string, customItem: any): void {
     throw new Error('Custom filter should be translated before it gets here')
@@ -100,11 +100,11 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
         if (val && val.length > 0)
           this.addToWhere(
             this.nameProvider.$dbNameOf(col) +
-            ' in (' +
-            val
-              .map((x) => this.r.param(col.valueConverter.toDb(x)))
-              .join(',') +
-            ')',
+              ' in (' +
+              val
+                .map((x) => toDbSql(this.r, col, col.valueConverter.toDb(x)))
+                .join(',') +
+              ')',
           )
         else this.addToWhere('1 = 0 /*isIn with no values*/')
       })(),
@@ -133,10 +133,10 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
       (async () => {
         this.addToWhere(
           'lower (' +
-          this.nameProvider.$dbNameOf(col) +
-          ") like lower ('%" +
-          val.replace(/'/g, "''") +
-          "%')",
+            this.nameProvider.$dbNameOf(col) +
+            ") like lower ('%" +
+            val.replace(/'/g, "''") +
+            "%')",
         )
       })(),
     )
@@ -146,10 +146,10 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
       (async () => {
         this.addToWhere(
           'not lower (' +
-          this.nameProvider.$dbNameOf(col) +
-          ") like lower ('%" +
-          val.replace(/'/g, "''") +
-          "%')",
+            this.nameProvider.$dbNameOf(col) +
+            ") like lower ('%" +
+            val.replace(/'/g, "''") +
+            "%')",
         )
       })(),
     )
@@ -159,10 +159,10 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
       (async () => {
         this.addToWhere(
           'lower (' +
-          this.nameProvider.$dbNameOf(col) +
-          ") like lower ('" +
-          val.replace(/'/g, "''") +
-          "%')",
+            this.nameProvider.$dbNameOf(col) +
+            ") like lower ('" +
+            val.replace(/'/g, "''") +
+            "%')",
         )
       })(),
     )
@@ -172,10 +172,10 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
       (async () => {
         this.addToWhere(
           'lower (' +
-          this.nameProvider.$dbNameOf(col) +
-          ") like lower ('%" +
-          val.replace(/'/g, "''") +
-          "')",
+            this.nameProvider.$dbNameOf(col) +
+            ") like lower ('%" +
+            val.replace(/'/g, "''") +
+            "')",
         )
       })(),
     )
@@ -189,7 +189,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
           ' ' +
           operator +
           ' ' +
-          this.r.param(col.valueConverter.toDb(val))
+          toDbSql(this.r, col, col.valueConverter.toDb(val))
         this.addToWhere(x)
       })(),
     )
@@ -237,7 +237,8 @@ export type CustomSqlFilterBuilderFunction = (
  * Represents a custom SQL filter builder.
  */
 export class CustomSqlFilterBuilder
-  implements SqlCommandWithParameters, HasWrapIdentifier {
+  implements SqlCommandWithParameters, HasWrapIdentifier
+{
   constructor(
     private r: SqlCommandWithParameters,
     public wrapIdentifier: (name: string) => string,
@@ -300,7 +301,7 @@ export function shouldNotCreateField<entityType>(
 ) {
   return Boolean(
     field.isServerExpression ||
-    (field.options.sqlExpression && field.dbName != dbNames.$dbNameOf(field)),
+      (field.options.sqlExpression && field.dbName != dbNames.$dbNameOf(field)),
   )
 }
 export function shouldCreateEntity(
@@ -379,7 +380,15 @@ async function internalDbNamesOf<entityType>(
       else if (options.tableName === true) {
         r = result.$entityName + '.' + r
       }
-    ; (result as any)[field.key] = r
+    ;(result as any)[field.key] = r
   }
   return result as EntityDbNames<entityType>
+}
+
+export function toDbSql(
+  r: SqlCommandWithParameters,
+  field: FieldMetadata,
+  val: any,
+) {
+  return (field.valueConverter.toDbSql ?? ((x) => x))(r.param(val))
 }

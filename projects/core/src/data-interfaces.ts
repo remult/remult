@@ -64,6 +64,7 @@ export interface EntityDataProviderFindOptions {
   select?: string[]
   where?: Filter
   limit?: number
+  args?: any
   page?: number
   orderBy?: Sort
 }

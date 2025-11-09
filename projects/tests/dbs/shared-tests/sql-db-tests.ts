@@ -4,10 +4,10 @@ import { entity as createEntityClass } from '../../tests/dynamic-classes'
 import {
   Entity,
   Fields,
+  Remult,
   SqlDatabase,
   dbNamesOf,
   remult,
-  type Remult,
 } from '../../../core'
 import { entityWithValidations } from './entityWithValidations.js'
 import { cast, isOfType } from '../../../core/src/isOfType.js'
@@ -25,6 +25,7 @@ import {
   DefaultMigrationBuilder,
   type Migrations,
 } from '../../../core/migrations/migration-types.js'
+import { MockRestDataProvider } from '../../tests/testHelper.js'
 
 export function SqlDbTests({
   createEntity,
@@ -32,9 +33,11 @@ export function SqlDbTests({
   getDb,
   skipMigrations,
   doesNotSupportDdlTransactions,
+  isKnex,
 }: DbTestProps & {
   skipMigrations?: boolean
   doesNotSupportDdlTransactions?: boolean
+  isKnex?: boolean
 }) {
   it('test dbReadonly ', async () => {
     const e = await createEntity(
@@ -179,13 +182,9 @@ export function SqlDbTests({
     class Test {
       @Fields.integer()
       id = 0
-      @Fields.integer({
-        sqlExpression: () => 'id+1',
-      })
+      @Fields.integer({ sqlExpression: () => 'id+1' })
       a = 0
-      @Fields.integer({
-        sqlExpression: () => '2+2',
-      })
+      @Fields.integer({ sqlExpression: () => '2+2' })
       b = 0
       @Fields.integer()
       c = 3
@@ -207,16 +206,8 @@ export function SqlDbTests({
         "id": 1,
       }
     `)
-    expect(
-      await r.findOne({
-        where: {
-          b: 4,
-        },
-        orderBy: {
-          a: 'desc',
-        },
-      }),
-    ).toMatchInlineSnapshot(`
+    expect(await r.findOne({ where: { b: 4 }, orderBy: { a: 'desc' } }))
+      .toMatchInlineSnapshot(`
       Test {
         "a": 2,
         "b": 4,
@@ -530,5 +521,110 @@ export function SqlDbTests({
         ).rejects.toThrow()
       },
     )
+  })
+  it.skipIf(isKnex)('test to db sql', async () => {
+    @Entity('myEntity_to_db_sql')
+    class myEntity {
+      @Fields.string()
+      id = ''
+      @Fields.integer({
+        valueConverter: {
+          toDbSql: (x) => `1+${x}`,
+          fromDb: (x) => Number(x),
+        },
+      })
+      exp = 0
+    }
+    const repo = await createEntity(myEntity)
+    expect((await repo.insert({ id: '1', exp: 2 })).exp).toBe(3)
+    expect(await repo.find({ where: { exp: 2 } })).toMatchInlineSnapshot(`
+      [
+        myEntity {
+          "exp": 3,
+          "id": "1",
+        },
+      ]
+    `)
+    expect((await repo.update('1', { exp: 4 })).exp).toBe(5)
+    expect(await repo.find({ where: { exp: 4 } })).toMatchInlineSnapshot(`
+      [
+        myEntity {
+          "exp": 5,
+          "id": "1",
+        },
+      ]
+    `)
+  })
+  describe.skipIf(isKnex)('test arguments', () => {
+    type args = { testNumber: number }
+    @Entity('test')
+    class test {
+      @Fields.integer()
+      id = 0
+      @Fields.integer<test>({
+        sqlExpression: (me, args: args, c) => {
+          if (!c || !args) return `(1)`
+
+          return `${me.fields.id.dbName} + ${c.param(args.testNumber)}`
+        },
+      })
+      exp = 0
+    }
+    it('test argument', async () => {
+      const repo = await createEntity(test)
+      await repo.insert([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }])
+      expect(
+        await repo.find({ args: { testNumber: 3 }, orderBy: { exp: 'asc' } }),
+      ).toMatchInlineSnapshot(`
+        [
+          test {
+            "exp": 4,
+            "id": 1,
+          },
+          test {
+            "exp": 5,
+            "id": 2,
+          },
+          test {
+            "exp": 6,
+            "id": 3,
+          },
+          test {
+            "exp": 7,
+            "id": 4,
+          },
+        ]
+      `)
+    })
+    it('arguments on rest', async () => {
+      const db = new MockRestDataProvider(getRemult())
+      await (
+        await createEntity(test)
+      ).insert([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }])
+      expect(
+        await new Remult(db)
+          .repo(test)
+          .find({ args: { testNumber: 3 }, orderBy: { exp: 'asc' } }),
+      ).toMatchInlineSnapshot(`
+        [
+          test {
+            "exp": 4,
+            "id": 1,
+          },
+          test {
+            "exp": 5,
+            "id": 2,
+          },
+          test {
+            "exp": 6,
+            "id": 3,
+          },
+          test {
+            "exp": 7,
+            "id": 4,
+          },
+        ]
+      `)
+    })
   })
 }

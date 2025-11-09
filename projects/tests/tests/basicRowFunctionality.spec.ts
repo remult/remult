@@ -2524,6 +2524,13 @@ class mockResponse implements Response {
   constructor(val: Partial<Response>) {
     Object.assign(this, val)
   }
+  cf?: any
+  body!: ReadableStream<Uint8Array<ArrayBuffer>> | null
+  bytes(): Promise<Uint8Array<ArrayBuffer>>
+  bytes(): Promise<Uint8Array<ArrayBufferLike>>
+  bytes(): Promise<Uint8Array<ArrayBufferLike>> {
+    throw new Error('Method not implemented.')
+  }
   headers!: Headers
   ok!: boolean
   redirected!: boolean
@@ -2536,7 +2543,7 @@ class mockResponse implements Response {
   clone(): Response {
     throw new Error('Method not implemented.')
   }
-  body!: ReadableStream<Uint8Array>
+
   bodyUsed!: boolean
   readonly trailer!: Promise<Headers>
   arrayBuffer(): Promise<ArrayBuffer> {
@@ -2552,9 +2559,6 @@ class mockResponse implements Response {
     throw new Error('Method not implemented.')
   }
   text(): Promise<string> {
-    throw new Error('Method not implemented.')
-  }
-  bytes(): Promise<Uint8Array> {
     throw new Error('Method not implemented.')
   }
 }

@@ -231,7 +231,7 @@ describe('sql-relations', () => {
       @Relations.toOne(() => CustomerGroup, { field: 'customerZoneGroupId' })
       customerZoneGroup?: CustomerGroup
     }
-    SqlDatabase.LogToConsole = true
+
     expect(
       (await remult.repo(OrdersExtended).find()).map((x) => ({
         id: x.id,

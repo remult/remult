@@ -893,6 +893,7 @@ export class RepositoryImplementation<entityType>
     let opt: EntityDataProviderFindOptions = {}
 
     opt = {}
+    if (options.args) opt.args = options.args
     if (options.select) {
       opt.select = Object.keys(options.select)
         .filter((x) => (options.select as any)[x as any])
