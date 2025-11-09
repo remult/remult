@@ -1,8 +1,11 @@
 All notable changes to this project will be documented in this file.
 
-## [3.3.0]
+## [3.3.0] - 2025-11-09
 
-- [#820](https://github.com/remult/remult/issues/820) - option to eliminate update/insert result to improve performance
+- [#820](https://github.com/remult/remult/issues/820) - option to eliminate update/insert result to improve performance.
+  ```ts
+  repo(Task).Insert({ id: 1, name: 'test' }, { select: 'none' })
+  ```
 - Added option for `deleteMany({where:'all'})` and `updateMany({where:'all',set:{ status:0 }})`
 - Fixed a bunch if issues around `ValueConverter.DateOnlyString`
 
