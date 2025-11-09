@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 - [#820](https://github.com/remult/remult/issues/820) - option to eliminate update/insert result to improve performance
 - Added option for `deleteMany({where:'all'})` and `updateMany({where:'all',set:{ status:0 }})`
+- Fixed a bunch if issues around `ValueConverter.DateOnlyString`
 
 ## [3.2.3] 2025-10-25
 
