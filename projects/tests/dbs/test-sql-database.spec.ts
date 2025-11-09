@@ -105,7 +105,7 @@ describe('test sql implementation', () => {
       @Fields.string()
       id = ''
       @Fields.integer({
-        sqlExpression: myEntity.args.sqlExpression((col, args, c) => {
+        sqlExpression: myEntity.args.sqlExpression((_, args, c) => {
           if (!c || !args) return `111`
           return `3 + ${c.param(args.testNumber)}`
         }),
@@ -156,6 +156,11 @@ function prepareArg<entityType, argsType>() {
         args: argsType,
         c: SqlCommandWithParameters,
       ) => string | Promise<string>,
-    ) => exp,
+    ) =>
+      exp as (
+        entityMetadata: EntityMetadata<entityType>,
+        args: any,
+        c?: SqlCommandWithParameters,
+      ) => string | Promise<string>,
   })
 }

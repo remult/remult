@@ -292,7 +292,7 @@ export class RestEntityDataProvider
           return this.http().post(u.url, { set: body, where: filterObject })
         } else body = { ...body, where: filterObject }
       }
-      if (options?.args) body.args = options.args
+      if (options && 'args' in options) body.args = options.args
       if (body && method != 'put') return this.http().post(u.url, body)
       else return this.http()[method!](u.url, body)
     }
