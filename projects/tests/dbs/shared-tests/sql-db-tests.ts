@@ -530,6 +530,7 @@ export function SqlDbTests({
       @Fields.integer({
         valueConverter: {
           toDbSql: (x) => `1+${x}`,
+          fromDb: (x) => Number(x),
         },
       })
       exp = 0
@@ -558,8 +559,8 @@ export function SqlDbTests({
     type args = { testNumber: number }
     @Entity('test')
     class test {
-      @Fields.string()
-      id = ''
+      @Fields.integer()
+      id = 0
       @Fields.integer<test>({
         sqlExpression: (me, args: args, c) => {
           if (!c || !args) return `(1)`
@@ -571,26 +572,26 @@ export function SqlDbTests({
     }
     it('test argument', async () => {
       const repo = await createEntity(test)
-      await repo.insert([{ id: '1' }, { id: '2' }, { id: '3' }, { id: '4' }])
+      await repo.insert([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }])
       expect(
         await repo.find({ args: { testNumber: 3 }, orderBy: { exp: 'asc' } }),
       ).toMatchInlineSnapshot(`
         [
           test {
-            "exp": 0,
-            "id": "3",
+            "exp": 4,
+            "id": 1,
           },
           test {
-            "exp": 1,
-            "id": "1",
+            "exp": 5,
+            "id": 2,
           },
           test {
-            "exp": 1,
-            "id": "4",
+            "exp": 6,
+            "id": 3,
           },
           test {
-            "exp": 2,
-            "id": "2",
+            "exp": 7,
+            "id": 4,
           },
         ]
       `)
@@ -599,7 +600,7 @@ export function SqlDbTests({
       const db = new MockRestDataProvider(getRemult())
       await (
         await createEntity(test)
-      ).insert([{ id: '1' }, { id: '2' }, { id: '3' }, { id: '4' }])
+      ).insert([{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }])
       expect(
         await new Remult(db)
           .repo(test)
@@ -607,20 +608,20 @@ export function SqlDbTests({
       ).toMatchInlineSnapshot(`
         [
           test {
-            "exp": 0,
-            "id": "3",
+            "exp": 4,
+            "id": 1,
           },
           test {
-            "exp": 1,
-            "id": "1",
+            "exp": 5,
+            "id": 2,
           },
           test {
-            "exp": 1,
-            "id": "4",
+            "exp": 6,
+            "id": 3,
           },
           test {
-            "exp": 2,
-            "id": "2",
+            "exp": 7,
+            "id": 4,
           },
         ]
       `)
