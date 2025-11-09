@@ -1,5 +1,18 @@
 All notable changes to this project will be documented in this file.
 
+## [3.3.0]
+
+- [#820](https://github.com/remult/remult/issues/820) - option to eliminate update/insert result to improve performance
+- Added option for `deleteMany({where:'all'})` and `updateMany({where:'all',set:{ status:0 }})`
+
+## [3.2.3] 2025-10-25
+
+- Fix Backend method issue #890
+
+## [3.2.2] 2025-9-30
+
+- Updated remult admin to manage `allowNull` fields
+
 ## [3.2.1] 2025-8-18
 
 - Export EntitySelectFields type

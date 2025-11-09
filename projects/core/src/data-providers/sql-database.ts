@@ -34,6 +34,7 @@ import {
   GroupByOperators,
   type EntityFilter,
   type EntityMetadata,
+  type InsertOrUpdateOptions,
 } from '../remult3/remult3.js'
 import type {
   EntityBase,
@@ -495,7 +496,11 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
     return { colKeys, select }
   }
 
-  async update(id: any, data: any): Promise<any> {
+  async update(
+    id: any,
+    data: any,
+    options?: InsertOrUpdateOptions,
+  ): Promise<any> {
     let e = await this.init()
     let r = this.sql.createCommand()
 
@@ -523,6 +528,7 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
     let returning = true
     if (this.sql._getSourceSql().doesNotSupportReturningSyntax)
       returning = false
+    if (options?.select === 'none') returning = false
     if (
       returning &&
       this.sql._getSourceSql().doesNotSupportReturningSyntaxOnlyForUpdate
@@ -533,6 +539,7 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
     return r.execute(statement).then((sqlResult) => {
       this.sql._getSourceSql().afterMutation?.()
       if (!returning) {
+        if (options?.select === 'none') return undefined!
         return getRowAfterUpdate(this.entity, this, data, id, 'update')
       }
       if (sqlResult.rows.length != 1)
@@ -560,7 +567,7 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
       this.sql._getSourceSql().afterMutation?.()
     })
   }
-  async insert(data: any): Promise<any> {
+  async insert(data: any, options?: InsertOrUpdateOptions): Promise<any> {
     let e = await this.init()
 
     let r = this.sql.createCommand()
@@ -588,7 +595,10 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
     let statement = `insert into ${e.$entityName} (${cols}) values (${vals})`
 
     let { colKeys, select } = await this.buildSelect(e, r, undefined, undefined)
-    if (!this.sql._getSourceSql().doesNotSupportReturningSyntax)
+    if (
+      !this.sql._getSourceSql().doesNotSupportReturningSyntax &&
+      !(options?.select === 'none')
+    )
       statement += ' returning ' + select
     return await r.execute(statement).then((sql) => {
       this.sql._getSourceSql().afterMutation?.()
@@ -600,15 +610,18 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
               'Auto increment, for a database that is does not support returning syntax, should return an array with the single last added id. Instead it returned: ' +
                 JSON.stringify(id),
             )
+          if (options?.select === 'none') return undefined!
           return this.find({
             where: new Filter((x) =>
               x.isEqualTo(this.entity.idMetadata.field, id),
             ),
           }).then((r) => r[0])
         } else {
+          if (options?.select === 'none') return undefined!
           return getRowAfterUpdate(this.entity, this, data, undefined, 'insert')
         }
       }
+      if (options?.select === 'none') return undefined!
       return this.buildResultRow(colKeys, sql.rows[0], sql)
     })
   }

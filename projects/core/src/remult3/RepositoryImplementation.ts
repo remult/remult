@@ -48,13 +48,17 @@ import {
 } from './remult3.js'
 
 import type {
+  InsertOrUpdateOptions,
   QueryOptions,
   QueryResult,
   RefSubscriber,
   UpsertOptions,
 } from './remult3.js'
 import { assign } from '../../assign.js'
-import type { entityEventListener } from '../__EntityValueProvider.js'
+import type {
+  entityEventListener,
+  packedRowInfo,
+} from '../__EntityValueProvider.js'
 import {
   type DataProvider,
   type EntityDataProvider,
@@ -517,12 +521,19 @@ export class RepositoryImplementation<entityType>
     }
   }
 
-  insert(item: Partial<MembersOnly<entityType>>[]): Promise<entityType[]>
-  insert(item: Partial<MembersOnly<entityType>>): Promise<entityType>
+  insert(
+    item: Partial<MembersOnly<entityType>>[],
+    options?: InsertOrUpdateOptions,
+  ): Promise<entityType[]>
+  insert(
+    item: Partial<MembersOnly<entityType>>,
+    options?: InsertOrUpdateOptions,
+  ): Promise<entityType>
   async insert(
     entity:
       | Partial<MembersOnly<entityType>>
       | Partial<MembersOnly<entityType>>[],
+    options?: InsertOrUpdateOptions,
   ): Promise<entityType | entityType[]> {
     if (Array.isArray(entity)) {
       if (this._dataProvider.isProxy) {
@@ -548,26 +559,33 @@ export class RepositoryImplementation<entityType>
             ).buildDtoForInsert(),
           )
         }
-        return promiseAll(
-          await (this._edp as any as ProxyEntityDataProvider).insertMany(raw),
-          (item, i) => refs[i].processInsertResponseDto(item),
+        const inserted = await (
+          this._edp as any as ProxyEntityDataProvider
+        ).insertMany(raw, options)
+        if (options?.select === 'none') return undefined!
+        return promiseAll(inserted, (item, i) =>
+          refs[i].processInsertResponseDto(item),
         )
       } else {
         let r: entityType[] = []
         for (const item of entity) {
-          r.push(await this.insert(item))
+          r.push(await this.insert(item, options))
         }
+        if (options?.select === 'none') return undefined!
         return r
       }
     } else {
       let ref = getEntityRef(entity, false) as unknown as EntityRef<entityType>
+      let result = undefined
       if (ref) {
         if (!ref.isNew()) throw 'Item is not new'
-        return await ref.save()
+        result = await ref.save(options)
       } else {
         this.__cleanupPartialObject(entity)
-        return await this.getEntityRef(this.create(entity)).save()
+        result = await this.getEntityRef(this.create(entity)).save(options)
       }
+      if (options?.select === 'none') return undefined!
+      return result
     }
   }
   get fields() {
@@ -619,7 +637,7 @@ export class RepositoryImplementation<entityType>
     Filter.throwErrorIfFilterIsEmpty(where, 'updateMany')
     if (this._dataProvider.isProxy) {
       return (this._edp as any as ProxyEntityDataProvider).updateMany(
-        await this._translateWhereToFilter(where),
+        where === 'all' ? 'all' : await this._translateWhereToFilter(where),
         this.__createDto({ ...set }),
       )
     } else {
@@ -635,24 +653,32 @@ export class RepositoryImplementation<entityType>
   update(
     id: idType<entityType>,
     item: Partial<MembersOnly<entityType>>,
+    options?: InsertOrUpdateOptions,
   ): Promise<entityType>
   update(
     originalItem: Partial<MembersOnly<entityType>>,
     item: Partial<MembersOnly<entityType>>,
+    options?: InsertOrUpdateOptions,
   ): Promise<entityType>
   async update(
     id: any,
     entity: Partial<MembersOnly<entityType>>,
+    options?: InsertOrUpdateOptions,
   ): Promise<entityType> {
+    function returnResult(result: entityType) {
+      if (options?.select === 'none') return undefined!
+      return result
+    }
     {
       let ref = getEntityRef(entity, false)
-      if (ref) return (await ref.save()) as unknown as entityType
+      if (ref)
+        return returnResult((await ref.save(options)) as unknown as entityType)
     }
     {
       let ref = getEntityRef(id, false)
       if (ref) {
         assign(id, entity)
-        return ref.save()
+        return returnResult(await ref.save(options))
       }
     }
     this.__cleanupPartialObject(entity)
@@ -669,7 +695,7 @@ export class RepositoryImplementation<entityType>
         id,
       ) as unknown as rowHelperImplementation<entityType>
     if (this._dataProvider.isProxy) {
-      return await ref.save(Object.keys(entity))
+      return returnResult(await ref.save(options, Object.keys(entity)))
     } else {
       const r = await ref.reload()
       if (!r) throw this._notFoundError(ref.id)
@@ -683,7 +709,7 @@ export class RepositoryImplementation<entityType>
         }
       }
       await this._fixTypes(r)
-      return await ref.save()
+      return returnResult(await ref.save(options))
     }
   }
 
@@ -1234,7 +1260,7 @@ export class RepositoryImplementation<entityType>
     Filter.throwErrorIfFilterIsEmpty(where, 'deleteMany')
     if (this._dataProvider.isProxy) {
       return (this._edp as any as ProxyEntityDataProvider).deleteMany(
-        await this._translateWhereToFilter(where),
+        where === 'all' ? 'all' : await this._translateWhereToFilter(where),
       )
     } else {
       let deleted = 0
@@ -1811,6 +1837,14 @@ export class rowHelperImplementation<T>
   extends rowHelperBase<T>
   implements EntityRef<T>
 {
+  async _updateResultsFromServerAction(rowInfo: packedRowInfo) {
+    await this._updateEntityBasedOnApi(rowInfo!.data, true)
+    if (this._isNew != rowInfo.isNewRow) {
+      this._isNew = rowInfo!.isNewRow
+      this.originalId = rowInfo!.id
+    }
+    if (!rowInfo.wasChanged) this.originalValues = this.copyDataToObject()
+  }
   constructor(
     private info: EntityFullInfo<T>,
     instance: T,
@@ -1935,6 +1969,7 @@ export class rowHelperImplementation<T>
   }
   private _saving = false
   async save(
+    options: InsertOrUpdateOptions | undefined,
     onlyTheseFieldsSentOnlyInTheCaseOfProxySaveWithPartialObject?: string[],
   ): Promise<T> {
     try {
@@ -1987,11 +2022,11 @@ export class rowHelperImplementation<T>
       try {
         this._subscribers?.reportChanged()
         if (this.isNew()) {
-          if (doNotSave) {
+          if (doNotSave && options?.select !== 'none') {
             updatedRow = (updatedRow = await this.edp.find({
               where: await this.getIdFilter(),
             }))[0]
-          } else updatedRow = await this.edp.insert(d)
+          } else updatedRow = await this.edp.insert(d, options)
         } else {
           let changesOnly: any = {}
           let wasChanged = false
@@ -2010,13 +2045,15 @@ export class rowHelperImplementation<T>
           }
           if (!wasChanged) return this.instance
           if (doNotSave) {
-            updatedRow = (
-              await this.edp.find({ where: await this.getIdFilter() })
-            )[0]
+            if (options?.select !== 'none')
+              updatedRow = (
+                await this.edp.find({ where: await this.getIdFilter() })
+              )[0]
           } else {
             if (this.id === undefined)
               throw new Error('Invalid operation, id is undefined')
-            updatedRow = await this.edp.update(this.id, changesOnly)
+
+            updatedRow = await this.edp.update(this.id, changesOnly, options)
           }
         }
         if (updatedRow) await this.loadDataFrom(updatedRow)

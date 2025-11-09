@@ -8,7 +8,10 @@ import {
   Remult,
 } from '../../../../core'
 import { DataApi } from '../../../../core/src/data-api'
-import { TestDataApiResponse } from '../../TestDataApiResponse'
+import {
+  TestDataApiRequest,
+  TestDataApiResponse,
+} from '../../TestDataApiResponse'
 import { Done } from '../../Done'
 
 describe('Test relations on api', () => {
@@ -86,7 +89,7 @@ describe('Test relations on api', () => {
       `)
       d.ok()
     }
-    await api.put(t, 1, { name: 'c2' })
+    await api.put(t, new TestDataApiRequest(), 1, { name: 'c2' })
     d.test()
   })
   it("shouldn't return defaultIncluded in api to many", async () => {

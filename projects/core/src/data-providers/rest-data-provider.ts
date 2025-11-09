@@ -11,7 +11,11 @@ import { UrlBuilder } from '../../urlBuilder.js'
 import { buildRestDataProvider } from '../buildRestDataProvider.js'
 import type { ApiClient } from '../context.js'
 import { customUrlToken, Filter } from '../filter/filter-interfaces.js'
-import type { EntityMetadata, FindOptions } from '../remult3/remult3.js'
+import type {
+  EntityMetadata,
+  FindOptions,
+  InsertOrUpdateOptions,
+} from '../remult3/remult3.js'
 import { getRelationFieldInfo } from '../remult3/relationInfoMember.js'
 import { remultStatic } from '../remult-static.js'
 
@@ -237,39 +241,43 @@ export class RestEntityDataProvider
   }
   //@internal
   buildFindRequest(
-    options: EntityDataProviderFindOptions | undefined,
+    options: EntityDataProviderFindOptions | undefined | { where: 'all' },
     method?: 'delete' | 'put' | 'get',
   ) {
     if (!method) method = 'get'
     let url = new UrlBuilder(this.url())
     let filterObject: any
     if (options) {
-      if (options.where) {
-        filterObject = options.where.toJson() //        options.where.__applyToConsumer(new FilterConsumnerBridgeToUrlBuilder(url));
-        if (options.args === undefined)
-          if (addFilterToUrlAndReturnTrueIfSuccessful(filterObject, url))
-            filterObject = undefined
-      }
-      if (options.orderBy && options.orderBy.Segments) {
-        let sort = ''
-        let order = ''
-        let hasDescending = false
-        options.orderBy.Segments.forEach((c) => {
-          if (sort.length > 0) {
-            sort += ','
-            order += ','
-          }
-          sort += c.field.key
-          order += c.isDescending ? 'desc' : 'asc'
-          if (c.isDescending) hasDescending = true
-        })
-        if (sort) url.add('_sort', sort)
-        if (hasDescending) url.add('_order', order)
-      }
-      if (options.limit) url.add('_limit', options.limit)
-      if (options.page) url.add('_page', options.page)
-      if (options.select) {
-        url.add('_select', options.select.join(','))
+      if (options.where === 'all') {
+        filterObject = 'all'
+      } else {
+        if (options.where) {
+          filterObject = options.where.toJson()
+          if (options.args === undefined)
+            if (addFilterToUrlAndReturnTrueIfSuccessful(filterObject, url))
+              filterObject = undefined
+        }
+        if (options.orderBy && options.orderBy.Segments) {
+          let sort = ''
+          let order = ''
+          let hasDescending = false
+          options.orderBy.Segments.forEach((c) => {
+            if (sort.length > 0) {
+              sort += ','
+              order += ','
+            }
+            sort += c.field.key
+            order += c.isDescending ? 'desc' : 'asc'
+            if (c.isDescending) hasDescending = true
+          })
+          if (sort) url.add('_sort', sort)
+          if (hasDescending) url.add('_order', order)
+        }
+        if (options.limit) url.add('_limit', options.limit)
+        if (options.page) url.add('_page', options.page)
+        if (options.select) {
+          url.add('_select', options.select.join(','))
+        }
       }
     }
 
@@ -308,11 +316,20 @@ export class RestEntityDataProvider
     }
   }
 
-  public update(id: any, data: any): Promise<any> {
+  public update(
+    id: any,
+    data: any,
+    options?: InsertOrUpdateOptions,
+  ): Promise<any> {
+    const urlArgs = []
+    if (id == '') urlArgs.push('__action=emptyId')
+    if (options?.select === 'none') urlArgs.push('_select=$none')
+
     return this.http()
       .put(
         this.url() +
-          (id != '' ? '/' + encodeURIComponent(id) : '?__action=emptyId'),
+          (id != '' ? '/' + encodeURIComponent(id) : '') +
+          (urlArgs.length > 0 ? '?' + urlArgs.join('&') : ''),
         this.toJsonOfIncludedKeys(data),
       )
       .then((y) => this.translateFromJson(y))
@@ -339,15 +356,18 @@ export class RestEntityDataProvider
     else return this.http().delete(this.url() + '/' + encodeURIComponent(id))
   }
 
-  public insert(data: any): Promise<any> {
-    return this.http()
-      .post(this.url(), this.translateToJson(data))
-      .then((y) => this.translateFromJson(y))
-  }
-  insertMany(data: any[]): Promise<any[]> {
+  public insert(data: any, options?: InsertOrUpdateOptions): Promise<any> {
     return this.http()
       .post(
-        this.url(),
+        this.url() + (options?.select === 'none' ? '?_select=$none' : ''),
+        this.translateToJson(data),
+      )
+      .then((y) => this.translateFromJson(y))
+  }
+  insertMany(data: any[], options?: InsertOrUpdateOptions): Promise<any[]> {
+    return this.http()
+      .post(
+        this.url() + (options?.select === 'none' ? '?_select=$none' : ''),
         data.map((data) => this.translateToJson(data)),
       )
       .then((y) => y.map((y: any) => this.translateFromJson(y)))

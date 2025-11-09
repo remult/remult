@@ -35,6 +35,7 @@ export type ServerInfo = {
   path?: string;
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
+  scripts?: Record<string, string>;
   requiresTwoTerminal?: boolean;
   writeFiles?: (args: WriteFilesArgs) => void;
   authImplementedReason?: "not-yet";

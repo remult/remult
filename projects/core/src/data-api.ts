@@ -20,6 +20,7 @@ import {
   type EntityMetadata,
   type FindOptions,
   type Repository,
+  type InsertOrUpdateOptions,
 } from './remult3/remult3.js'
 import type { rowHelperImplementation } from './remult3/RepositoryImplementation.js'
 
@@ -109,7 +110,7 @@ export class DataApi<T = unknown> {
         case 'query':
           return res.success(await this.query(res, req, body))
         default:
-          return res.created(await this.post(body))
+          return res.created(await this.post(body, req))
       }
     } catch (err: any) {
       if (err.isForbiddenError) res.forbidden(err.message)
@@ -131,10 +132,10 @@ export class DataApi<T = unknown> {
           include: this.includeNone(),
         })
         if (r.length == 0) {
-          result.push(await this.post({ ...item.where, ...item.set }))
+          result.push(await this.post({ ...item.where, ...item.set }, request))
         } else {
           if (item.set !== undefined) {
-            result.push((await this.actualUpdate(r[0], item.set)).toApiJson())
+            result.push(await this.actualUpdate(r[0], item.set, request))
           } else result.push(this.repository.getEntityRef(r[0]).toApiJson())
         }
       }
@@ -194,8 +195,7 @@ export class DataApi<T = unknown> {
   ) {
     try {
       let deleted = 0
-      let where = await this.buildWhere(request, body)
-      Filter.throwErrorIfFilterIsEmpty(where, 'deleteMany')
+      let where = await this.prepareWhereForManyOperation(body, request)
       return await doTransaction(this.remult, async () => {
         for await (const x of this.repository.query({
           where,
@@ -211,6 +211,18 @@ export class DataApi<T = unknown> {
       response.error(err, this.repository.metadata)
     }
   }
+  private async prepareWhereForManyOperation(
+    body: any,
+    request: DataApiRequest,
+  ) {
+    let where: EntityFilter<any> | undefined = undefined
+    if (body?.where !== 'all') {
+      where = await this.buildWhere(request, body)
+      Filter.throwErrorIfFilterIsEmpty(where, 'deleteMany')
+    }
+    return where
+  }
+
   async groupBy(request: DataApiRequest, body: any) {
     if (!this.repository.metadata.apiReadAllowed) {
       throw new ForbiddenError()
@@ -500,7 +512,7 @@ export class DataApi<T = unknown> {
   ) {
     const action = request?.get('__action')
     if (action == 'emptyId') {
-      return this.put(response, '', body)
+      return this.put(response, request, '', body)
     }
 
     return this.updateManyImplementation(response, request, {
@@ -514,8 +526,7 @@ export class DataApi<T = unknown> {
     body: { where?: any; set?: any },
   ) {
     try {
-      let where = await this.buildWhere(request, body)
-      Filter.throwErrorIfFilterIsEmpty(where, 'updateMany')
+      let where = await this.prepareWhereForManyOperation(body, request)
       return await doTransaction(this.remult, async () => {
         let updated = 0
         for await (const x of this.repository.query({
@@ -523,7 +534,7 @@ export class DataApi<T = unknown> {
           include: this.includeNone(),
           aggregate: undefined!,
         })) {
-          await this.actualUpdate(x, body.set)
+          await this.actualUpdate(x, body.set, request)
           updated++
         }
         response.success({ updated })
@@ -533,20 +544,27 @@ export class DataApi<T = unknown> {
     }
   }
 
-  async actualUpdate(row: any, body: any) {
+  async actualUpdate(row: any, body: any, req: DataApiRequest) {
     let ref = this.repository.getEntityRef(row) as rowHelperImplementation<T>
     await ref._updateEntityBasedOnApi(body)
     if (!ref.apiUpdateAllowed) {
       throw new ForbiddenError()
     }
-    await ref.save()
-    return ref
+    let options =
+      req.get('_select') === 'none' ? { select: 'none' as const } : undefined
+    await ref.save(options)
+    if (options?.select === 'none') return undefined
+    return ref.toApiJson()
   }
-  async put(response: DataApiResponse, id: any, body: any) {
-    await this.doOnId(response, id, async (row) => {
-      const ref = await this.actualUpdate(row, body)
-      response.success(ref.toApiJson())
-    })
+  async put(
+    response: DataApiResponse,
+    req: DataApiRequest,
+    id: any,
+    body: any,
+  ) {
+    await this.doOnId(response, id, async (row) =>
+      response.success(await this.actualUpdate(row, body, req)),
+    )
   }
   async actualDelete(row: any) {
     if (!this.repository.getEntityRef(row).apiDeleteAllowed) {
@@ -562,7 +580,9 @@ export class DataApi<T = unknown> {
     })
   }
 
-  async post(body: any) {
+  async post(body: any, req: DataApiRequest) {
+    let options =
+      req.get('_select') === 'none' ? { select: 'none' as const } : undefined
     const insert = async (what: any) => {
       let newr = this.repository.create()
       await (
@@ -571,7 +591,8 @@ export class DataApi<T = unknown> {
       if (!this.repository.getEntityRef(newr).apiInsertAllowed) {
         throw new ForbiddenError()
       }
-      await this.repository.getEntityRef(newr).save()
+      await this.repository.getEntityRef(newr).save(options)
+      if (options?.select === 'none') return undefined
       return this.repository.getEntityRef(newr).toApiJson()
     }
     if (Array.isArray(body)) {

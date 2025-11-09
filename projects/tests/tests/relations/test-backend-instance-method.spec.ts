@@ -53,6 +53,32 @@ describe('relations to one behavior', () => {
     await serverRemult.repo(Category).insert({ id: 1, title: 'category 1' })
   })
 
+  it('#890', async () => {
+    @Entity('foo', { allowApiCrud: true })
+    class Foo extends EntityBase {
+      @Fields.id()
+      id = ''
+
+      @Fields.integer()
+      a = 0
+
+      @BackendMethod({ allowed: true }) async saveNew() {
+        return await this.save()
+      }
+
+      @BackendMethod({ allowed: true }) async backendMethod() {
+        ++this.a
+        await this.save()
+      }
+    }
+    const foo = remult.repo(Foo).create()
+    expect(foo.isNew()).toBe(true)
+    await foo.saveNew()
+    expect(foo.isNew()).toBe(false)
+    await foo.backendMethod()
+    expect(await remult.repo(Foo).count()).toBe(1)
+  })
+
   it('test how backend method works a', async () => {
     await r(Task).insert({ id: 1, title: 'task 1' })
     Task.defaultCategoryId = 20
@@ -61,7 +87,7 @@ describe('relations to one behavior', () => {
         "categoryId": 10,
         "id": 1,
         "title": "task 1",
-      }
+      } 
     `)
     let task = await r(Task).findFirst({})
     expect(task).toMatchInlineSnapshot(`
