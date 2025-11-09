@@ -598,7 +598,7 @@ describe('test datetime column', () => {
   })
 })
 
-describe.only('Test char date storage', () => {
+describe('Test char date storage', () => {
   let x = ValueConverters.DateOnlyString
   it('from db', () => {
     expect(x.fromDb!('00000000')).toEqual(
