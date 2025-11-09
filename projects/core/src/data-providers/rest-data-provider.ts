@@ -104,6 +104,7 @@ export function findOptionsFromJson(
     'orderBy',
     'include',
     'select',
+    'args',
   ] as (keyof FindOptions<any>)[]) {
     if (json[key] !== undefined) {
       if (key === 'where') {
@@ -252,8 +253,9 @@ export class RestEntityDataProvider
       } else {
         if (options.where) {
           filterObject = options.where.toJson()
-          if (addFilterToUrlAndReturnTrueIfSuccessful(filterObject, url))
-            filterObject = undefined
+          if (options.args === undefined)
+            if (addFilterToUrlAndReturnTrueIfSuccessful(filterObject, url))
+              filterObject = undefined
         }
         if (options.orderBy && options.orderBy.Segments) {
           let sort = ''
@@ -290,6 +292,7 @@ export class RestEntityDataProvider
           return this.http().post(u.url, { set: body, where: filterObject })
         } else body = { ...body, where: filterObject }
       }
+      if (options && 'args' in options) body.args = options.args
       if (body && method != 'put') return this.http().post(u.url, body)
       else return this.http()[method!](u.url, body)
     }

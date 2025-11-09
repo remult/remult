@@ -1338,7 +1338,9 @@ export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
    * await repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
    */
   orderBy?: EntityOrderBy<entityType>
+  args?: any
 }
+
 export interface FindFirstOptions<entityType>
   extends FindOptionsBase<entityType>,
     FindFirstOptionsBase<entityType> {}
@@ -1557,6 +1559,14 @@ export const flags = {
     ```
   
   - 
+*/
+/*p1 - https://github.com/remult/remult/discussions/438
+  - should we use the arg for update and insert? for the returning query?
+  - Does dbNamesOf still makes sense? I think that abstraction, regarding sql expression has lost it's merit
+  - remember caching of sql expression  calculations that took a recursive amount of time for JYC
+  - maybe introduce a ready dbNamesOf of argument that will be aware of prefixes
+  - I've changed the order by to support order by 1
+
 */
 //p1 - deleteAll({title:undefined}) should throw an error - not return 0 (with direct call to db)
 //p1 - remult-create, move db question ahead of auth - everyone needs a database, not everyone need auth
