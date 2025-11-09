@@ -598,13 +598,61 @@ describe('test datetime column', () => {
   })
 })
 
-describe('Test char date storage', () => {
+describe.only('Test char date storage', () => {
   let x = ValueConverters.DateOnlyString
+  it('from db', () => {
+    expect(x.fromDb!('00000000')).toEqual(
+      ValueConverters.DateOnlyString.zeroDate,
+    )
+  })
+  it('to db', () => {
+    expect(x.toDb!(ValueConverters.DateOnlyString.zeroDate)).toBe('00000000')
+  })
   it('from db', () => {
     expect(x.toJson!(x.fromDb!('19760616'))).toBe('1976-06-16')
   })
+  it('to json', () => {
+    expect(
+      x.toJson!(ValueConverters.DateOnlyString.zeroDate),
+    ).toMatchInlineSnapshot(`"0000-01-01"`)
+  })
+  it('from json', () => {
+    expect(x.fromJson!('0000-01-01')).toEqual(
+      ValueConverters.DateOnlyString.zeroDate,
+    )
+  })
   it('to db', () => {
     expect(x.toDb!(x.fromJson!('1976-06-16'))).toBe('19760616')
+  })
+  it('returns valid date', () => {
+    expect(x.fromDb!('19760616')).toEqual(new Date(1976, 5, 16))
+  })
+  it('returns valid date', () => {
+    const d = x.fromDb!('19760616')
+    expect(d.getHours()).toBe(0)
+    expect(d.getMinutes()).toBe(0)
+    expect(d.getSeconds()).toBe(0)
+    expect(d.getMilliseconds()).toBe(0)
+    expect(d.getMonth()).toBe(5)
+    expect(d.getDate()).toBe(16)
+    expect(d.getFullYear()).toBe(1976)
+  })
+  it('export todb of extremes to be valid', () => {
+    expect(x.toDb!(new Date(1976, 5, 16, 23, 59, 59, 999))).toBe('19760616')
+    expect(x.toDb!(new Date(1976, 5, 16, 0, 0, 0, 0))).toBe('19760616')
+    expect(x.toDb!(new Date(1976, 5, 16, 0, 0, 0, 1))).toBe('19760616')
+  })
+  it('export toJson of extremes to be valid', () => {
+    expect(x.toJson!(new Date(1976, 5, 16, 23, 59, 59, 999))).toBe('1976-06-16')
+    expect(x.toJson!(new Date(1976, 5, 16, 0, 0, 0, 0))).toBe('1976-06-16')
+    expect(x.toJson!(new Date(1976, 5, 16, 0, 0, 0, 1))).toBe('1976-06-16')
+  })
+
+  it('expect date stored ok', () => {
+    expect(x.toDb!(new Date(1976, 5, 16))).toBe('19760616')
+  })
+  it('expect date to be date', () => {
+    expect(new Date(1976, 5, 16).getHours()).toBe(0)
   })
 })
 
