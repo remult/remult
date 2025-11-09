@@ -3485,7 +3485,9 @@ export interface ValueConverter<valueType> {
 export declare class ValueConverters {
   static readonly Date: ValueConverter<Date>
   static readonly DateOnly: ValueConverter<Date>
-  static readonly DateOnlyString: ValueConverter<Date>
+  static readonly DateOnlyString: ValueConverter<Date> & {
+    zeroDate: Date
+  }
   static readonly Boolean: ValueConverter<Boolean>
   static readonly Number: ValueConverter<number>
   static readonly String: ValueConverter<String>

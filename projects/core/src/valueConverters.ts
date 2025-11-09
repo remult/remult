@@ -75,7 +75,7 @@ export class ValueConverters {
       return value.toLocaleDateString(undefined)
     },
   }
-  static readonly DateOnlyString = {
+  static readonly DateOnlyString: ValueConverter<Date> & { zeroDate: Date } = {
     ...ValueConverters.DateOnly,
     toDb: (d: Date) => {
       if (d === zeroDate) return '00000000'
