@@ -2820,7 +2820,7 @@ export interface Repository<entityType> {
    * Updates all items that match the `where` condition.
    */
   updateMany(options: {
-    where: EntityFilter<entityType>
+    where: EntityFilter<entityType> | "all"
     set: Partial<MembersOnly<entityType>>
   }): Promise<number>
   /**
@@ -2859,7 +2859,9 @@ export interface Repository<entityType> {
   /**
    * Deletes all items that match the `where` condition.
    */
-  deleteMany(options: { where: EntityFilter<entityType> }): Promise<number>
+  deleteMany(options: {
+    where: EntityFilter<entityType> | "all"
+  }): Promise<number>
   /** Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called.
    *
    * It's useful to start or reset a form taking your entity default values into account.
