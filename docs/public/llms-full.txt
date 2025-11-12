@@ -7866,132 +7866,114 @@ The Standard Schema integration makes Remult entities more versatile and easier 
 # API Reference - Entity
 
 # Entity
-
 Decorates classes that should be used as entities.
 Receives a key and an array of EntityOptions.
 
-#### example:
 
+#### example:
 ```ts
-import { Entity, Fields } from 'remult'
-@Entity('tasks', {
-  allowApiCrud: true,
+import  { Entity, Fields } from "remult";
+@Entity("tasks", {
+   allowApiCrud: true
 })
 export class Task {
-  @Fields.id()
-  id!: string
-  @Fields.string()
-  title = ''
-  @Fields.boolean()
-  completed = false
+   @Fields.id()
+   id!: string;
+   @Fields.string()
+   title = '';
+   @Fields.boolean()
+   completed = false;
 }
 ```
-
 EntityOptions can be set in two ways:
 
-#### example:
 
+#### example:
 ```ts
 // as an object
 @Entity("tasks",{ allowApiCrud:true })
 ```
 
-#### example:
 
+#### example:
 ```ts
 // as an arrow function that receives `remult` as a parameter
 @Entity("tasks", (options,remult) => options.allowApiCrud = true)
 ```
-
 ## caption
-
 A human readable name for the entity
-
 ## label
-
 A human readable label for the entity. Can be used to achieve a consistent label for a field throughout the app
 
-#### example:
 
+#### example:
 ```ts
 <h1>Create a new item in {taskRepo.metadata.label}</h1>
 ```
-
 ## allowApiRead
-
 Determines if this Entity is available for get requests using Rest Api
 
-#### see:
 
-- [allowed](http://remult.dev/docs/allowed.html)
-- to restrict data based on a criteria, use [apiPrefilter](https://remult.dev/docs/ref_entity.html#apiprefilter)
+#### see:
+ - [allowed](http://remult.dev/docs/allowed.html)
+ - to restrict data based on a criteria, use [apiPrefilter](https://remult.dev/docs/ref_entity.html#apiprefilter)
 
 ## allowApiUpdate
-
 Determines if this entity can be updated through the api.
 
-#### see:
 
-- [allowed](http://remult.dev/docs/allowed.html)
-- [Access Control](https://remult.dev/docs/access-control)
+#### see:
+ - [allowed](http://remult.dev/docs/allowed.html)
+ - [Access Control](https://remult.dev/docs/access-control)
 
 ## allowApiDelete
-
 Determines if entries for this entity can be deleted through the api.
 
-#### see:
 
-- [allowed](http://remult.dev/docs/allowed.html)
-- [Access Control](https://remult.dev/docs/access-control)
+#### see:
+ - [allowed](http://remult.dev/docs/allowed.html)
+ - [Access Control](https://remult.dev/docs/access-control)
 
 ## allowApiInsert
-
 Determines if new entries for this entity can be posted through the api.
 
-#### see:
 
-- [allowed](http://remult.dev/docs/allowed.html)
-- [Access Control](https://remult.dev/docs/access-control)
+#### see:
+ - [allowed](http://remult.dev/docs/allowed.html)
+ - [Access Control](https://remult.dev/docs/access-control)
 
 ## allowApiCrud
-
-sets the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in a single set
-
+sets  the `allowApiUpdate`, `allowApiDelete` and `allowApiInsert` properties in a single set
 ## apiPrefilter
-
 An optional filter that determines which rows can be queried using the API.
 This filter is applied to all CRUD operations to ensure that only authorized data is accessible.
 
 Use `apiPrefilter` to restrict data based on user profile or other conditions.
 
-#### example:
 
+#### example:
 ```ts
 // Only include non-archived items in API responses
-apiPrefilter: {
-  archive: false
-}
+apiPrefilter: { archive: false }
 ```
+
 
 #### example:
-
 ```ts
 // Allow admins to access all rows, but restrict non-admins to non-archived items
-apiPrefilter: () => (remult.isAllowed('admin') ? {} : { archive: false })
+apiPrefilter: () => remult.isAllowed("admin") ? {} : { archive: false }
 ```
 
+
 #### see:
-
 [EntityFilter](https://remult.dev/docs/access-control.html#filtering-accessible-rows)
-
 ## apiPreprocessFilter
-
 An optional function that allows for preprocessing or modifying the EntityFilter for a specific entity type
 before it is used in API CRUD operations. This function can be used to enforce additional access control
 rules or adjust the filter based on the current context or specific request.
 
-#### example:
 
+#### example:
 ```typescript
 @Entity<Task>("tasks", {
   apiPreprocessFilter: async (filter, { getPreciseValues }) => {
@@ -8004,53 +7986,41 @@ rules or adjust the filter based on the current context or specific request.
   }
 })
 ```
-
 ## backendPreprocessFilter
-
 Similar to apiPreprocessFilter, but for backend operations.
-
 ## backendPrefilter
-
 A filter that will be used for all queries from this entity both from the API and from within the backend.
 
-#### example:
 
+#### example:
 ```ts
-backendPrefilter: {
-  archive: false
-}
+backendPrefilter: { archive:false }
 ```
+
 
 #### see:
-
 [EntityFilter](http://remult.dev/docs/entityFilter.html)
-
 ## defaultOrderBy
-
 An order by to be used, in case no order by was specified
 
-#### example:
 
+#### example:
 ```ts
-defaultOrderBy: {
-  name: 'asc'
-}
+defaultOrderBy: { name: "asc" }
 ```
 
-#### example:
 
+#### example:
 ```ts
 defaultOrderBy: { price: "desc", name: "asc" }
 ```
-
 ## saving
-
 An event that will be fired before the Entity will be saved to the database.
 If the `error` property of the entity's ref or any of its fields will be set, the save will be aborted and an exception will be thrown.
 this is the place to run logic that we want to run in any case before an entity is saved.
 
-#### example:
 
+#### example:
 ```ts
 @Entity<Task>("tasks", {
   saving: async (task, e) => {
@@ -8062,208 +8032,175 @@ this is the place to run logic that we want to run in any case before an entity 
 })
 ```
 
+
 #### see:
-
 [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
-
 ## saved
-
 A hook that runs after an entity has been successfully saved.
 
+
 #### see:
-
 [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
-
 ## deleting
-
 A hook that runs before an entity is deleted.
 
+
 #### see:
-
 [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
-
 ## deleted
-
 A hook that runs after an entity has been successfully deleted.
 
+
 #### see:
-
 [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
-
 ## validation
-
 A hook that runs to perform validation checks on an entity before saving.
 This hook is also executed on the frontend.
 
+
 #### see:
-
 [Entity Lifecycle Hooks](http://remult.dev/docs/lifecycle-hooks)
-
 ## dbName
-
 The name of the table in the database that holds the data for this entity.
 If no name is set, the `key` will be used instead.
 
-#### example:
 
+#### example:
 ```ts
 dbName:'myProducts'
 
 You can also add your schema name to the table name
 ```
 
+
 #### example:
-
 ```ts
-dbName: 'public."myProducts"'
+dbName:'public."myProducts"'
 ```
-
 ## sqlExpression
-
 For entities that are based on SQL expressions instead of a physical table or view
 
-#### example:
 
+#### example:
 ```ts
 @Entity('people', {
-  sqlExpression: `select id,name from employees
+  sqlExpression:`select id,name from employees
                  union all select id,name from contractors`,
 })
 export class Person {
   @Fields.string()
-  id = ''
+  id=''
   @Fields.string()
-  name = ''
+  name=''
 }
 ```
-
 ## id
-
 An arrow function that identifies the `id` column to use for this entity
 
-#### example:
 
+#### example:
 ```ts
 //Single column id
 @Entity<Products>("products", { id: 'productCode' })
 ```
 
-#### example:
 
+#### example:
 ```ts
 //Multiple columns id
 @Entity<OrderDetails>("orderDetails", { id:['orderId:', 'productCode'] })
 ```
-
 ## entityRefInit
 
 Arguments:
-
-- **ref**
-- **row**
-
+* **ref**
+* **row**
 ## dataProvider
-
 A function that allows customizing the data provider for the entity.
 
-#### example:
 
+#### example:
 ```ts
 dataProvider: (dp) => {
-  if (!dp.isProxy)
-    // usually indicates that we're on the backend
-    return getASpacificDataProvider()
+  if (!dp.isProxy) // usually indicates that we're on the backend
+    return getASpacificDataProvider();
   return null
 }
 ```
-
 ## apiRequireId
-
-- **apiRequireId**
+* **apiRequireId**
 
 
 
 # API Reference - Field
 
 # Field
-
 Decorates fields that should be used as fields.
 for more info see: [Field Types](https://remult.dev/docs/field-types.html)
 
 FieldOptions can be set in two ways:
 
-#### example:
 
+#### example:
 ```ts
 // as an object
 @Fields.string({ includeInApi:false })
 title='';
 ```
 
-#### example:
 
+#### example:
 ```ts
 // as an arrow function that receives `remult` as a parameter
 @Fields.string((options,remult) => options.includeInApi = true)
 title='';
 ```
-
 ## valueType
-
 The value type for this field
-
 ## caption
-
 A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
 
+
 #### example:
-
 ```html
-<input placeholder="{taskRepo.metadata.fields.title.caption}" />
+<input placeholder={taskRepo.metadata.fields.title.caption} />
 ```
-
 ## label
-
 A human readable name for the field. Can be used to achieve a consistent label for a field throughout the app
 
+
 #### example:
-
 ```html
-<input placeholder="{taskRepo.metadata.fields.title.label}" />
+<input placeholder={taskRepo.metadata.fields.title.label} />
 ```
-
 ## allowNull
-
 If it can store `null` in the database.
 
-#### default:
 
+#### default:
 ```ts
 false
 ```
-
 ## required
-
 If a value is required. Short-cut to say `validate: Validators.required`.
 
-#### default:
 
+#### default:
 ```ts
 false
 ```
 
-#### see:
 
-- option [validate](https://remult.dev/docs/ref_field#validate)
-- validator [required](https://remult.dev/docs/ref_validators#required)
+#### see:
+ - option [validate](https://remult.dev/docs/ref_field#validate)
+ - validator [required](https://remult.dev/docs/ref_validators#required)
 
 ## includeInApi
-
 Specifies whether this field should be included in the API. This can be configured
 based on access control levels.
 
-#### example:
 
+#### example:
 ```ts
 // Do not include in the API
 @Fields.string({ includeInApi: false })
@@ -8273,45 +8210,43 @@ password = '';
 salary = 0;
 ```
 
-#### see:
 
-- [allowed](https://remult.dev/docs/allowed.html)
-- [Access Control](https://remult.dev/docs/access-control)
+#### see:
+ - [allowed](https://remult.dev/docs/allowed.html)
+ - [Access Control](https://remult.dev/docs/access-control)
 
 ## allowApiUpdate
-
 Determines whether this field can be updated via the API. This setting can also
 be controlled based on user roles or other access control checks.
 
 _It happens after entity level authorization AND if it's allowed._
 
-#### example:
 
+#### example:
 ```ts
 // Prevent API from updating this field
 @Fields.string({ allowApiUpdate: false })
 createdBy = remult.user?.id;
 ```
 
-#### example:
 
+#### example:
 ```ts
 // Allow API update only on new items
 @Fields.string<Category>({ allowApiUpdate: (c) => getEntityRef(c).isNew() })
 Description = ""
 ```
 
-#### see:
 
-- [allowed](https://remult.dev/docs/allowed.html)
-- [Access Control](https://remult.dev/docs/access-control)
+#### see:
+ - [allowed](https://remult.dev/docs/allowed.html)
+ - [Access Control](https://remult.dev/docs/access-control)
 
 ## validate
-
 An arrow function that'll be used to perform validations on it
 
-#### example:
 
+#### example:
 ```ts
 @Fields.string({
   validate: Validators.required
@@ -8319,16 +8254,16 @@ An arrow function that'll be used to perform validations on it
 *
 ```
 
-#### example:
 
+#### example:
 ```ts
 @Fields.string<Task>({
    validate: task=>task.title.length>3 ||  "Too Short"
 })
 ```
 
-#### example:
 
+#### example:
 ```ts
 @Fields.string<Task>({
    validate: task=>{
@@ -8338,8 +8273,8 @@ An arrow function that'll be used to perform validations on it
 })
 ```
 
-#### example:
 
+#### example:
 ```ts
 @Fields.string({
    validate: (_, fieldValidationEvent)=>{
@@ -8348,32 +8283,24 @@ An arrow function that'll be used to perform validations on it
   }
 })
 ```
-
 ## saving
-
 Will be fired before this field is saved to the server/database
-
 ## serverExpression
-
 An expression that will determine this fields value on the backend and be provided to the front end
-
 ## dbName
-
 The name of the column in the database that holds the data for this field. If no name is set, the key will be used instead.
 
-#### example:
 
+#### example:
 ```ts
 @Fields.string({ dbName: 'userName'})
 userName=''
 ```
-
 ## sqlExpression
-
 Used or fields that are based on an sql expressions, instead of a physical table column
 
-#### example:
 
+#### example:
 ```ts
 @Fields.integer({
   sqlExpression:e=> 'length(title)'
@@ -8382,37 +8309,21 @@ titleLength = 0;
 @Fields.string()
 title='';
 ```
-
 ## dbReadOnly
-
 For fields that shouldn't be part of an update or insert statement
-
 ## valueConverter
-
 The value converter to be used when loading and saving this field
-
 ## displayValue
-
 an arrow function that translates the value to a display value
-
 ## defaultValue
-
 an arrow function that determines the default value of the field, when the entity is created using the `repo.create` method
-
 ## inputType
-
 The html input type for this field
-
 ## lazy
-
-- **lazy**
-
+* **lazy**
 ## target
-
 The entity type to which this field belongs
-
 ## key
-
 The key to be used for this field
 
 
@@ -8420,150 +8331,127 @@ The key to be used for this field
 # API Reference - ValueConverter
 
 # ValueConverter
-
 Interface for converting values between different formats, such as in-memory objects, database storage,
 JSON data transfer objects (DTOs), and HTML input elements.
-
 ## fromJson
-
 Converts a value from a JSON DTO to the valueType. This method is typically used when receiving data
 from a REST API call or deserializing a JSON payload.
 
-#### returns:
 
+#### returns:
 The converted value.
 
-#### example:
 
+#### example:
 ```ts
-fromJson: (val) => new Date(val)
+fromJson: val => new Date(val)
 ```
 
 Arguments:
-
-- **val** - The value to convert.
-
+* **val** - The value to convert.
 ## toJson
-
 Converts a value of valueType to a JSON DTO. This method is typically used when sending data
 to a REST API or serializing an object to a JSON payload.
 
-#### returns:
 
+#### returns:
 The converted value.
 
-#### example:
 
+#### example:
 ```ts
-toJson: (val) => val?.toISOString()
+toJson: val => val?.toISOString()
 ```
 
 Arguments:
-
-- **val** - The value to convert.
-
+* **val** - The value to convert.
 ## fromDb
-
 Converts a value from the database format to the valueType.
 
-Note: This method applies to all [data providers](/docs/installation/database/) except `InMemoryDataProvider` and `JsonDataProvider`.
 
 #### returns:
-
 The converted value.
 
-#### example:
 
+#### example:
 ```ts
-fromDb: (val) => new Date(val)
+fromDb: val => new Date(val)
 ```
 
 Arguments:
-
-- **val** - The value to convert.
-
+* **val** - The value to convert.
 ## toDb
-
 Converts a value of valueType to the database format.
 
-Note: This method applies to all [data providers](/docs/installation/database/) except `InMemoryDataProvider` and `JsonDataProvider`.
 
 #### returns:
-
 The converted value.
 
-#### example:
 
+#### example:
 ```ts
-toDb: (val) => val?.toISOString()
+toDb: val => val?.toISOString()
 ```
 
 Arguments:
+* **val** - The value to convert.
+## toDbSql
+* **toDbSql**
 
-- **val** - The value to convert.
-
+Arguments:
+* **val**
 ## toInput
-
 Converts a value of valueType to a string suitable for an HTML input element.
 
-#### returns:
 
+#### returns:
 The converted value as a string.
 
-#### example:
 
+#### example:
 ```ts
 toInput: (val, inputType) => val?.toISOString().substring(0, 10)
 ```
 
 Arguments:
-
-- **val** - The value to convert.
-- **inputType** - The type of the input element (optional).
-
+* **val** - The value to convert.
+* **inputType** - The type of the input element (optional).
 ## fromInput
-
 Converts a string from an HTML input element to the valueType.
 
-#### returns:
 
+#### returns:
 The converted value.
 
-#### example:
 
+#### example:
 ```ts
 fromInput: (val, inputType) => new Date(val)
 ```
 
 Arguments:
-
-- **val** - The value to convert.
-- **inputType** - The type of the input element (optional).
-
+* **val** - The value to convert.
+* **inputType** - The type of the input element (optional).
 ## displayValue
-
 Returns a displayable string representation of a value of valueType.
 
-#### returns:
 
+#### returns:
 The displayable string.
 
-#### example:
 
+#### example:
 ```ts
-displayValue: (val) => val?.toLocaleDateString()
+displayValue: val => val?.toLocaleDateString()
 ```
 
 Arguments:
-
-- **val** - The value to convert.
-
+* **val** - The value to convert.
 ## fieldTypeInDb
-
 Specifies the storage type used in the database for this field. This can be used to explicitly define the data type and precision of the field in the database.
 
-#### example:
 
+#### example:
 ```ts
 // Define a field with a specific decimal precision in the database
 @Fields.number({
@@ -8573,15 +8461,13 @@ Specifies the storage type used in the database for this field. This can be used
 })
 price=0;
 ```
-
 ## inputType
-
 Specifies the type of HTML input element suitable for values of valueType.
 
-#### example:
 
+#### example:
 ```ts
-inputType = 'date'
+inputType = 'date';
 ```
 
 
@@ -8691,75 +8577,40 @@ Remult entities can also be used as [Standard Schema](./standard-schema.md) comp
 # API Reference - Validators
 
 # Validators
-
 Class containing various field validators.
-
 ## constructor
-
-- **Validators**
-
+* **Validators**
 ## defaultMessage
-
-- **defaultMessage**
-
+* **defaultMessage**
 ## email
-
 Validator to check if a value is a valid email address.
-
 ## enum
-
 Validator to check if a value exists in a given enum.
-
 ## in
-
 Validator to check if a value is one of the specified values.
-
 ## max
-
 Validator to check if a value is less than or equal to a maximum value.
-
 ## maxLength
-
 Validator to check if a string's length is less than or equal to a maximum length.
-
 ## min
-
 Validator to check if a value is greater than or equal to a minimum value.
-
 ## minLength
-
 Validator to check if a string's length is greater than or equal to a minimum length.
-
 ## notNull
-
 Validator to check if a value is not null.
-
 ## range
-
 Validator to check if a value is within a specified range.
-
 ## regex
-
 Validator to check if a value matches a given regular expression.
-
 ## relationExists
-
 Validator to check if a related value exists in the database. By side-effect it loads relation data so it is directly available in [lifecycle hooks](https://remult.dev/docs/lifecycle-hooks)
-
 ## required
-
 Validator to check if a value is required (not null or empty).
-
 ## unique
-
 Validator to ensure a value is unique in the database.
-
 ## uniqueOnBackend
-
-- **uniqueOnBackend**
-
+* **uniqueOnBackend**
 ## url
-
 Validator to check if a value is a valid URL.
 
 
@@ -8767,24 +8618,18 @@ Validator to check if a value is a valid URL.
 # API Reference - Relations
 
 # Relations
-
-- **Relations**
-
+* **Relations**
 ## constructor
-
-- **Relations**
-
+* **Relations**
 ## toMany
-
 Define a toMany relation between entities, indicating a one-to-many relationship.
 This method allows you to establish a relationship where one entity can have multiple related entities.
 
-#### returns:
 
+#### returns:
 A decorator function to apply the toMany relation to an entity field.
 
 Example usage:
-
 ```ts
 @Relations.toMany(() => Order)
 orders?: Order[];
@@ -8795,28 +8640,23 @@ orders?: Order[];
 ```
 
 Arguments:
-
-- **toEntityType**
-- **fieldInToEntity** - (Optional) The field in the target entity that represents the relation.
-  Use this if you want to specify a custom field name for the relation.
-
+* **toEntityType**
+* **fieldInToEntity** - (Optional) The field in the target entity that represents the relation.
+                      Use this if you want to specify a custom field name for the relation.
 ## toOne
-
 Define a to-one relation between entities, indicating a one-to-one relationship.
 If no field or fields are provided, it will automatically create a field in the database
 to represent the relation.
 
-#### returns:
 
+#### returns:
 A decorator function to apply the to-one relation to an entity field.
 
 Example usage:
-
 ```ts
 @Relations.toOne(() => Customer)
 customer?: Customer;
 ```
-
 ```ts
 Fields.string()
 customerId?: string;
@@ -8824,7 +8664,6 @@ customerId?: string;
 @Relations.toOne(() => Customer, "customerId")
 customer?: Customer;
 ```
-
 ```ts
 Fields.string()
 customerId?: string;
@@ -8835,7 +8674,6 @@ customerId?: string;
 })
 customer?: Customer;
 ```
-
 ```ts
 Fields.string()
 customerId?: string;
@@ -8849,82 +8687,70 @@ customer?: Customer;
 ```
 
 Arguments:
-
-- **toEntityType**
-- **options** - (Optional): An object containing options for configuring the to-one relation.
-  - **caption** - A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
-  #### example:
-  ```html
-  <input placeholder="{taskRepo.metadata.fields.title.caption}" />
-  ```
-
-  - **label** - A human readable name for the field. Can be used to achieve a consistent label for a field throughout the app
-  #### example:
-  ```html
-  <input placeholder="{taskRepo.metadata.fields.title.label}" />
-  ```
-
-  - **fields** - An object specifying custom field names for the relation.
-    Each key represents a field in the related entity, and its value is the corresponding field in the source entity.
-    For example, `{ customerId: 'id' }` maps the 'customerId' field in the related entity to the 'id' field in the source entity.
-    This is useful when you want to define custom field mappings for the relation.
-  - **field** - The name of the field for this relation.
-  - **findOptions** - Find options to apply to the relation when fetching related entities.
-    You can specify a predefined set of find options or provide a function that takes the source entity
-    and returns find options dynamically.
-    These options allow you to customize how related entities are retrieved.
-  - **defaultIncluded** - Determines whether the relation should be included by default when querying the source entity.
-    When set to true, related entities will be automatically included when querying the source entity.
-    If false or not specified, related entities will need to be explicitly included using the `include` option.
+* **toEntityType**
+* **options** - (Optional): An object containing options for configuring the to-one relation.
+   * **caption** - A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
+   
+   
+   #### example:
+   ```html
+   <input placeholder={taskRepo.metadata.fields.title.caption} />
+   ```
+   * **label** - A human readable name for the field. Can be used to achieve a consistent label for a field throughout the app
+   
+   
+   #### example:
+   ```html
+   <input placeholder={taskRepo.metadata.fields.title.label} />
+   ```
+   * **fields** - An object specifying custom field names for the relation.
+   Each key represents a field in the related entity, and its value is the corresponding field in the source entity.
+   For example, `{ customerId: 'id' }` maps the 'customerId' field in the related entity to the 'id' field in the source entity.
+   This is useful when you want to define custom field mappings for the relation.
+   * **field** - The name of the field for this relation.
+   * **findOptions** - Find options to apply to the relation when fetching related entities.
+   You can specify a predefined set of find options or provide a function that takes the source entity
+   and returns find options dynamically.
+   These options allow you to customize how related entities are retrieved.
+   * **defaultIncluded** - Determines whether the relation should be included by default when querying the source entity.
+   When set to true, related entities will be automatically included when querying the source entity.
+   If false or not specified, related entities will need to be explicitly included using the `include` option.
 
 
 
 # API Reference - RelationOptions
 
 # RelationOptions
-
 Options for configuring a relation between entities.
-
 ## caption
-
 A human readable name for the field. Can be used to achieve a consistent caption for a field throughout the app
 
+
 #### example:
-
 ```html
-<input placeholder="{taskRepo.metadata.fields.title.caption}" />
+<input placeholder={taskRepo.metadata.fields.title.caption} />
 ```
-
 ## label
-
 A human readable name for the field. Can be used to achieve a consistent label for a field throughout the app
 
+
 #### example:
-
 ```html
-<input placeholder="{taskRepo.metadata.fields.title.label}" />
+<input placeholder={taskRepo.metadata.fields.title.label} />
 ```
-
 ## fields
-
 An object specifying custom field names for the relation.
 Each key represents a field in the related entity, and its value is the corresponding field in the source entity.
 For example, `{ customerId: 'id' }` maps the 'customerId' field in the related entity to the 'id' field in the source entity.
 This is useful when you want to define custom field mappings for the relation.
-
 ## field
-
 The name of the field for this relation.
-
 ## findOptions
-
 Find options to apply to the relation when fetching related entities.
 You can specify a predefined set of find options or provide a function that takes the source entity
 and returns find options dynamically.
 These options allow you to customize how related entities are retrieved.
-
 ## defaultIncluded
-
 Determines whether the relation should be included by default when querying the source entity.
 When set to true, related entities will be automatically included when querying the source entity.
 If false or not specified, related entities will need to be explicitly included using the `include` option.
@@ -8934,94 +8760,70 @@ If false or not specified, related entities will need to be explicitly included 
 # API Reference - Remult
 
 # Remult
-
-- **Remult**
-
+* **Remult**
 ## repo
-
 Return's a `Repository` of the specific entity type
 
-#### example:
 
+#### example:
 ```ts
-const taskRepo = remult.repo(Task)
+const taskRepo = remult.repo(Task);
 ```
 
-#### see:
 
+#### see:
 [Repository](https://remult.dev/docs/ref_repository.html)
 
 Arguments:
-
-- **entity** - the entity to use
-- **dataProvider** - an optional alternative data provider to use. Useful for writing to offline storage or an alternative data provider
-
+* **entity** - the entity to use
+* **dataProvider** - an optional alternative data provider to use. Useful for writing to offline storage or an alternative data provider
 ## subscribeAuth
-
-- **subscribeAuth**
+* **subscribeAuth**
 
 Arguments:
-
-- **listener**
-
+* **listener**
 ## initUser
-
 Fetches user information from the backend and updates the `remult.user` object.
 Typically used during application initialization and user authentication.
 
+
 #### returns:
-
 A promise that resolves to the user's information or `undefined` if unavailable.
-
 ## authenticated
-
 Checks if a user was authenticated
-
 ## isAllowed
-
 checks if the user has any of the roles specified in the parameters
 
-#### example:
 
+#### example:
 ```ts
-remult.isAllowed('admin')
+remult.isAllowed("admin")
 ```
 
-#### see:
 
+#### see:
 [Allowed](https://remult.dev/docs/allowed.html)
 
 Arguments:
-
-- **roles**
-
+* **roles**
 ## isAllowedForInstance
-
 checks if the user matches the allowedForInstance callback
 
-#### see:
 
+#### see:
 [Allowed](https://remult.dev/docs/allowed.html)
 
 Arguments:
-
-- **instance**
-- **allowed**
-
+* **instance**
+* **allowed**
 ## useFetch
-
-- **useFetch**
+* **useFetch**
 
 Arguments:
-
-- **fetch**
-
+* **fetch**
 ## dataProvider
-
 The current data provider
-
 ## constructor
-
 Creates a new instance of the `remult` object.
 
 Can receive either an HttpProvider or a DataProvider as a parameter - which will be used to fetch data from.
@@ -9029,182 +8831,169 @@ Can receive either an HttpProvider or a DataProvider as a parameter - which will
 If no provider is specified, `fetch` will be used as an http provider
 
 Arguments:
-
-- **http**
-
+* **http**
 ## call
-
 Used to call a `backendMethod` using a specific `remult` object
 
-#### example:
 
+#### example:
 ```ts
-await remult.call(TasksController.setAll, undefined, true)
+await remult.call(TasksController.setAll, undefined, true);
 ```
 
 Arguments:
-
-- **backendMethod** - the backend method to call
-- **classInstance** - the class instance of the backend method, for static backend methods use undefined
-- **args** - the arguments to send to the backend method
-
+* **backendMethod** - the backend method to call
+* **classInstance** - the class instance of the backend method, for static backend methods use undefined
+* **args** - the arguments to send to the backend method
 ## onFind
-
 A helper callback that can be used to debug and trace all find operations. Useful in debugging scenarios
 
 Arguments:
-
-- **metadata**
-- **options**
-  - **limit** - Determines the number of rows returned by the request, on the browser the default is 100 rows
-  #### example:
-  ```ts
-  await repo(Products).find({
-    limit: 10,
-    page: 2,
-  })
-  ```
-
-  - **page** - Determines the page number that will be used to extract the data
-  #### example:
-  ```ts
-  await repo(Products).find({
-    limit: 10,
-    page: 2,
-  })
-  ```
-
-  - **load**
-  - **include** - An option used to specify which related entities should be included when querying the source entity.
-    It allows you to eagerly load related data to avoid N+1 query problems.
-  #### param:
-  An object specifying the related entities to include, their options, and filtering criteria.
-  Example usage:
-  ```ts
-  const orders = await customerRepo.find({
-    include: {
-      // Include the 'tags' relation for each customer.
-      tags: true,
-    },
-  })
-  ```
-  In this example, the `tags` relation for each customer will be loaded and included in the query result.
-  #### see:
-  - [Relations.toMany](/docs/ref_relations#tomany)
-  - [Relations.toOne](/docs/ref_relations#toone)
-  - [RelationOptions](/docs/ref_relations)
-  * **select** - An option used to specify which fields should be included in the result.
-  #### example:
-  ```ts
-  await repo(Task).find({ select: { id: true, title: true } })
-  ```
-
-  - **where** - filters the data
-  #### example:
-  ```ts
-  await taskRepo.find({ where: { completed: false } })
-  ```
-  #### see:
-  For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
-  - **orderBy** - Determines the order of items returned .
-  #### example:
-  ```ts
-  await repo(Products).find({ orderBy: { name: 'asc' } })
-  ```
-  #### example:
-  ```ts
-  await repo(Products).find({ orderBy: { price: 'desc', name: 'asc' } })
-  ```
-
+* **metadata**
+* **options**
+   * **limit** - Determines the number of rows returned by the request, on the browser the default is 100 rows
+   
+   
+   #### example:
+   ```ts
+   await repo(Products).find({
+     limit: 10,
+   })
+   ```
+   * **page** - Determines the page number that will be used to extract the data
+   
+   
+   #### example:
+   ```ts
+   await repo(Products).find({
+     page: 2
+   })
+   ```
+   * **load**
+   * **include** - An option used to specify which related entities should be included when querying the source entity.
+   It allows you to eagerly load related data to avoid N+1 query problems.
+   
+   
+   #### param:
+   An object specifying the related entities to include, their options, and filtering criteria.
+   
+   Example usage:
+   ```ts
+   const orders = await customerRepo.find({
+     include: {
+       // Include the 'tags' relation for each customer.
+       tags: true,
+     },
+   });
+   ```
+   In this example, the `tags` relation for each customer will be loaded and included in the query result.
+   
+   
+   #### see:
+    - [Relations.toMany](/docs/ref_relations#tomany)
+    - [Relations.toOne](/docs/ref_relations#toone)
+    - [RelationOptions](/docs/ref_relations)
+   
+   * **select** - An option used to specify which fields should be included in the result.
+   
+   
+   #### example:
+   ```ts
+   await repo(Task).find({ select: { id: true, title: true } })
+   ```
+   * **where** - filters the data
+   
+   
+   #### example:
+   ```ts
+   await taskRepo.find({where: { completed:false }})
+   ```
+   
+   
+   #### see:
+   For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
+   * **orderBy** - Determines the order of items returned .
+   
+   
+   #### example:
+   ```ts
+   await repo(Products).find({ orderBy: { name: "asc" }})
+   ```
+   
+   
+   #### example:
+   ```ts
+   await repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
+   ```
+   * **args**
 ## clearAllCache
-
-- **clearAllCache**
-
+* **clearAllCache**
 ## entityRefInit
-
 A helper callback that is called whenever an entity is created.
-
 ## context
-
 context that can be used to store custom information that will be disposed as part of the `remult` object.
 
 `remult.context` is pre-filled in a framework-agnostic way with:
-
-- `headers.get(key: string)` _of request_
-- `headers.getAll()` _of request_
+  - `headers.get(key: string)` _of request_
+  - `headers.getAll()` _of request_
 
 Check out the [extensibility section](/docs/custom-options#enhancing-field-and-entity-definitions-with-custom-options) for more custom options.
-
 ## apiClient
-
 The api client that will be used by `remult` to perform calls to the `api`
-
 ## user
-
-- **user**
-
+* **user**
 ## liveQueryStorage
-
-- **liveQueryStorage**
-
+* **liveQueryStorage**
 ## subscriptionServer
-
-- **subscriptionServer**
-
+* **subscriptionServer**
 ## liveQueryPublisher
-
-- **liveQueryPublisher**
-
+* **liveQueryPublisher**
 ## liveQuerySubscriber
-
-- **liveQuerySubscriber**
+* **liveQuerySubscriber**
 
 
 
 # API Reference - ApiClient
 
 # ApiClient
-
 Interface for configuring the API client used by Remult to perform HTTP calls to the backend.
-
 ## httpClient
-
 The HTTP client to use when making API calls. It can be set to a function with the `fetch` signature
 or an object that has `post`, `put`, `delete`, and `get` methods. This can also be used to inject
 logic before each HTTP call, such as adding authorization headers.
 
-#### example:
 
+#### example:
 ```ts
 // Using Axios
-remult.apiClient.httpClient = axios
+remult.apiClient.httpClient = axios;
 ```
 
-#### example:
 
+#### example:
 ```ts
 // Using Angular HttpClient
-remult.apiClient.httpClient = httpClient
+remult.apiClient.httpClient = httpClient;
 ```
+
 
 #### see:
-
 If you want to add headers using angular httpClient, see: https://medium.com/angular-shots/shot-3-how-to-add-http-headers-to-every-request-in-angular-fab3d10edc26
 
-#### example:
 
+#### example:
 ```ts
 // Using fetch (default)
-remult.apiClient.httpClient = fetch
+remult.apiClient.httpClient = fetch;
 ```
 
-#### example:
 
+#### example:
 ```ts
 // Adding bearer token authorization
 remult.apiClient.httpClient = (
   input: RequestInfo | URL,
-  init?: RequestInit,
+  init?: RequestInit
 ) => {
   return fetch(input, {
     ...init,
@@ -9219,53 +9008,46 @@ remult.apiClient.httpClient = (
   })
 }
 ```
-
 ## url
-
 The base URL for making API calls. By default, it is set to '/api'. It can be modified to be relative
 or to use a different domain for the server.
 
-#### example:
 
+#### example:
 ```ts
 // Relative URL
-remult.apiClient.url = './api'
+remult.apiClient.url = './api';
 ```
+
 
 #### example:
-
 ```ts
 // Different domain
-remult.apiClient.url = 'https://example.com/api'
+remult.apiClient.url = 'https://example.com/api';
 ```
-
 ## subscriptionClient
-
 The subscription client used for real-time data updates. By default, it is set to use Server-Sent Events (SSE).
 It can be set to any subscription provider as illustrated in the Remult tutorial for deploying to a serverless environment.
 
+
 #### see:
-
 https://remult.dev/tutorials/react-next/deployment.html#deploying-to-a-serverless-environment
-
 ## wrapMessageHandling
-
 A function that wraps message handling for subscriptions. This is useful for executing some code before
 or after any message arrives from the subscription.
 For example, in Angular, to refresh a specific part of the UI,
 you can call the `NgZone` run method at this time.
 
-#### example:
 
+#### example:
 ```ts
 // Angular example
-import { Component, NgZone } from '@angular/core'
-import { remult } from 'remult'
+import { Component, NgZone } from '@angular/core';
+import { remult } from "remult";
 
 export class AppComponent {
   constructor(zone: NgZone) {
-    remult.apiClient.wrapMessageHandling = (handler) =>
-      zone.run(() => handler())
+    remult.apiClient.wrapMessageHandling = handler => zone.run(() => handler());
   }
 }
 ```
@@ -9275,301 +9057,341 @@ export class AppComponent {
 # API Reference - Repository
 
 # Repository
-
 used to perform CRUD operations on an `entityType`
-
 ## find
-
 returns a result array based on the provided options
 
 Arguments:
-
-- **options**
-  - **limit** - Determines the number of rows returned by the request, on the browser the default is 100 rows
-  #### example:
-  ```ts
-  await repo(Products).find({
-    limit: 10,
-    page: 2,
-  })
-  ```
-
-  - **page** - Determines the page number that will be used to extract the data
-  #### example:
-  ```ts
-  await repo(Products).find({
-    limit: 10,
-    page: 2,
-  })
-  ```
-
-  - **load**
-  - **include** - An option used to specify which related entities should be included when querying the source entity.
-    It allows you to eagerly load related data to avoid N+1 query problems.
-  #### param:
-  An object specifying the related entities to include, their options, and filtering criteria.
-  Example usage:
-  ```ts
-  const orders = await customerRepo.find({
-    include: {
-      // Include the 'tags' relation for each customer.
-      tags: true,
-    },
-  })
-  ```
-  In this example, the `tags` relation for each customer will be loaded and included in the query result.
-  #### see:
-  - [Relations.toMany](/docs/ref_relations#tomany)
-  - [Relations.toOne](/docs/ref_relations#toone)
-  - [RelationOptions](/docs/ref_relations)
-  * **select** - An option used to specify which fields should be included in the result.
-  #### example:
-  ```ts
-  await repo(Task).find({ select: { id: true, title: true } })
-  ```
-
-  - **where** - filters the data
-  #### example:
-  ```ts
-  await taskRepo.find({ where: { completed: false } })
-  ```
-  #### see:
-  For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
-  - **orderBy** - Determines the order of items returned .
-  #### example:
-  ```ts
-  await repo(Products).find({ orderBy: { name: 'asc' } })
-  ```
-  #### example:
-  ```ts
-  await repo(Products).find({ orderBy: { price: 'desc', name: 'asc' } })
-  ```
-
+* **options**
+   * **limit** - Determines the number of rows returned by the request, on the browser the default is 100 rows
+   
+   
+   #### example:
+   ```ts
+   await repo(Products).find({
+     limit: 10,
+   })
+   ```
+   * **page** - Determines the page number that will be used to extract the data
+   
+   
+   #### example:
+   ```ts
+   await repo(Products).find({
+     page: 2
+   })
+   ```
+   * **load**
+   * **include** - An option used to specify which related entities should be included when querying the source entity.
+   It allows you to eagerly load related data to avoid N+1 query problems.
+   
+   
+   #### param:
+   An object specifying the related entities to include, their options, and filtering criteria.
+   
+   Example usage:
+   ```ts
+   const orders = await customerRepo.find({
+     include: {
+       // Include the 'tags' relation for each customer.
+       tags: true,
+     },
+   });
+   ```
+   In this example, the `tags` relation for each customer will be loaded and included in the query result.
+   
+   
+   #### see:
+    - [Relations.toMany](/docs/ref_relations#tomany)
+    - [Relations.toOne](/docs/ref_relations#toone)
+    - [RelationOptions](/docs/ref_relations)
+   
+   * **select** - An option used to specify which fields should be included in the result.
+   
+   
+   #### example:
+   ```ts
+   await repo(Task).find({ select: { id: true, title: true } })
+   ```
+   * **where** - filters the data
+   
+   
+   #### example:
+   ```ts
+   await taskRepo.find({where: { completed:false }})
+   ```
+   
+   
+   #### see:
+   For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
+   * **orderBy** - Determines the order of items returned .
+   
+   
+   #### example:
+   ```ts
+   await repo(Products).find({ orderBy: { name: "asc" }})
+   ```
+   
+   
+   #### example:
+   ```ts
+   await repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
+   ```
+   * **args**
 ## liveQuery
-
 returns a result array based on the provided options
 
 Arguments:
-
-- **options**
-  - **limit** - Determines the number of rows returned by the request, on the browser the default is 100 rows
-  #### example:
-  ```ts
-  await repo(Products).find({
-    limit: 10,
-    page: 2,
-  })
-  ```
-
-  - **page** - Determines the page number that will be used to extract the data
-  #### example:
-  ```ts
-  await repo(Products).find({
-    limit: 10,
-    page: 2,
-  })
-  ```
-
-  - **load**
-  - **include** - An option used to specify which related entities should be included when querying the source entity.
-    It allows you to eagerly load related data to avoid N+1 query problems.
-  #### param:
-  An object specifying the related entities to include, their options, and filtering criteria.
-  Example usage:
-  ```ts
-  const orders = await customerRepo.find({
-    include: {
-      // Include the 'tags' relation for each customer.
-      tags: true,
-    },
-  })
-  ```
-  In this example, the `tags` relation for each customer will be loaded and included in the query result.
-  #### see:
-  - [Relations.toMany](/docs/ref_relations#tomany)
-  - [Relations.toOne](/docs/ref_relations#toone)
-  - [RelationOptions](/docs/ref_relations)
-  * **select** - An option used to specify which fields should be included in the result.
-  #### example:
-  ```ts
-  await repo(Task).find({ select: { id: true, title: true } })
-  ```
-
-  - **where** - filters the data
-  #### example:
-  ```ts
-  await taskRepo.find({ where: { completed: false } })
-  ```
-  #### see:
-  For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
-  - **orderBy** - Determines the order of items returned .
-  #### example:
-  ```ts
-  await repo(Products).find({ orderBy: { name: 'asc' } })
-  ```
-  #### example:
-  ```ts
-  await repo(Products).find({ orderBy: { price: 'desc', name: 'asc' } })
-  ```
-
+* **options**
+   * **limit** - Determines the number of rows returned by the request, on the browser the default is 100 rows
+   
+   
+   #### example:
+   ```ts
+   await repo(Products).find({
+     limit: 10,
+   })
+   ```
+   * **page** - Determines the page number that will be used to extract the data
+   
+   
+   #### example:
+   ```ts
+   await repo(Products).find({
+     page: 2
+   })
+   ```
+   * **load**
+   * **include** - An option used to specify which related entities should be included when querying the source entity.
+   It allows you to eagerly load related data to avoid N+1 query problems.
+   
+   
+   #### param:
+   An object specifying the related entities to include, their options, and filtering criteria.
+   
+   Example usage:
+   ```ts
+   const orders = await customerRepo.find({
+     include: {
+       // Include the 'tags' relation for each customer.
+       tags: true,
+     },
+   });
+   ```
+   In this example, the `tags` relation for each customer will be loaded and included in the query result.
+   
+   
+   #### see:
+    - [Relations.toMany](/docs/ref_relations#tomany)
+    - [Relations.toOne](/docs/ref_relations#toone)
+    - [RelationOptions](/docs/ref_relations)
+   
+   * **select** - An option used to specify which fields should be included in the result.
+   
+   
+   #### example:
+   ```ts
+   await repo(Task).find({ select: { id: true, title: true } })
+   ```
+   * **where** - filters the data
+   
+   
+   #### example:
+   ```ts
+   await taskRepo.find({where: { completed:false }})
+   ```
+   
+   
+   #### see:
+   For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
+   * **orderBy** - Determines the order of items returned .
+   
+   
+   #### example:
+   ```ts
+   await repo(Products).find({ orderBy: { name: "asc" }})
+   ```
+   
+   
+   #### example:
+   ```ts
+   await repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
+   ```
+   * **args**
 ## findFirst
-
 returns the first item that matchers the `where` condition
 
-#### example:
 
+#### example:
 ```ts
-await taskRepo.findFirst({ completed: false })
+await taskRepo.findFirst({ completed:false })
 ```
 
-#### example:
 
+#### example:
 ```ts
-await taskRepo.findFirst({ completed: false }, { createIfNotFound: true })
+await taskRepo.findFirst({ completed:false },{ createIfNotFound: true })
 ```
 
 Arguments:
+* **where** - filters the data
 
-- **where** - filters the data
 
 #### see:
-
 [EntityFilter](http://remult.dev/docs/entityFilter.html)
-
-- **options**
-  - **load**
-  - **include** - An option used to specify which related entities should be included when querying the source entity.
-    It allows you to eagerly load related data to avoid N+1 query problems.
-  #### param:
-  An object specifying the related entities to include, their options, and filtering criteria.
-  Example usage:
-  ```ts
-  const orders = await customerRepo.find({
-    include: {
-      // Include the 'tags' relation for each customer.
-      tags: true,
-    },
-  })
-  ```
-  In this example, the `tags` relation for each customer will be loaded and included in the query result.
-  #### see:
-  - [Relations.toMany](/docs/ref_relations#tomany)
-  - [Relations.toOne](/docs/ref_relations#toone)
-  - [RelationOptions](/docs/ref_relations)
-  * **select** - An option used to specify which fields should be included in the result.
-  #### example:
-  ```ts
-  await repo(Task).find({ select: { id: true, title: true } })
-  ```
-
-  - **where** - filters the data
-  #### example:
-  ```ts
-  await taskRepo.find({ where: { completed: false } })
-  ```
-  #### see:
-  For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
-  - **orderBy** - Determines the order of items returned .
-  #### example:
-  ```ts
-  await repo(Products).find({ orderBy: { name: 'asc' } })
-  ```
-  #### example:
-  ```ts
-  await repo(Products).find({ orderBy: { price: 'desc', name: 'asc' } })
-  ```
-
-  - **useCache** - determines if to cache the result, and return the results from cache.
-  - **createIfNotFound** - If set to true and an item is not found, it's created and returned
-
+* **options**
+   * **load**
+   * **include** - An option used to specify which related entities should be included when querying the source entity.
+   It allows you to eagerly load related data to avoid N+1 query problems.
+   
+   
+   #### param:
+   An object specifying the related entities to include, their options, and filtering criteria.
+   
+   Example usage:
+   ```ts
+   const orders = await customerRepo.find({
+     include: {
+       // Include the 'tags' relation for each customer.
+       tags: true,
+     },
+   });
+   ```
+   In this example, the `tags` relation for each customer will be loaded and included in the query result.
+   
+   
+   #### see:
+    - [Relations.toMany](/docs/ref_relations#tomany)
+    - [Relations.toOne](/docs/ref_relations#toone)
+    - [RelationOptions](/docs/ref_relations)
+   
+   * **select** - An option used to specify which fields should be included in the result.
+   
+   
+   #### example:
+   ```ts
+   await repo(Task).find({ select: { id: true, title: true } })
+   ```
+   * **where** - filters the data
+   
+   
+   #### example:
+   ```ts
+   await taskRepo.find({where: { completed:false }})
+   ```
+   
+   
+   #### see:
+   For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
+   * **orderBy** - Determines the order of items returned .
+   
+   
+   #### example:
+   ```ts
+   await repo(Products).find({ orderBy: { name: "asc" }})
+   ```
+   
+   
+   #### example:
+   ```ts
+   await repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
+   ```
+   * **useCache** - determines if to cache the result, and return the results from cache.
+   * **createIfNotFound** - If set to true and an item is not found, it's created and returned
+   * **args**
 ## findOne
-
 returns the first item that matchers the `where` condition
 
-#### example:
 
+#### example:
 ```ts
-await taskRepo.findOne({ where: { completed: false } })
+await taskRepo.findOne({ where:{ completed:false }})
 ```
 
-#### example:
 
+#### example:
 ```ts
-await taskRepo.findFirst({
-  where: { completed: false },
-  createIfNotFound: true,
-})
+await taskRepo.findFirst({ where:{ completed:false }, createIfNotFound: true })
 ```
 
 Arguments:
-
-- **options**
-  - **load**
-  - **include** - An option used to specify which related entities should be included when querying the source entity.
-    It allows you to eagerly load related data to avoid N+1 query problems.
-  #### param:
-  An object specifying the related entities to include, their options, and filtering criteria.
-  Example usage:
-  ```ts
-  const orders = await customerRepo.find({
-    include: {
-      // Include the 'tags' relation for each customer.
-      tags: true,
-    },
-  })
-  ```
-  In this example, the `tags` relation for each customer will be loaded and included in the query result.
-  #### see:
-  - [Relations.toMany](/docs/ref_relations#tomany)
-  - [Relations.toOne](/docs/ref_relations#toone)
-  - [RelationOptions](/docs/ref_relations)
-  * **select** - An option used to specify which fields should be included in the result.
-  #### example:
-  ```ts
-  await repo(Task).find({ select: { id: true, title: true } })
-  ```
-
-  - **where** - filters the data
-  #### example:
-  ```ts
-  await taskRepo.find({ where: { completed: false } })
-  ```
-  #### see:
-  For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
-  - **orderBy** - Determines the order of items returned .
-  #### example:
-  ```ts
-  await repo(Products).find({ orderBy: { name: 'asc' } })
-  ```
-  #### example:
-  ```ts
-  await repo(Products).find({ orderBy: { price: 'desc', name: 'asc' } })
-  ```
-
-  - **useCache** - determines if to cache the result, and return the results from cache.
-  - **createIfNotFound** - If set to true and an item is not found, it's created and returned
-
+* **options**
+   * **load**
+   * **include** - An option used to specify which related entities should be included when querying the source entity.
+   It allows you to eagerly load related data to avoid N+1 query problems.
+   
+   
+   #### param:
+   An object specifying the related entities to include, their options, and filtering criteria.
+   
+   Example usage:
+   ```ts
+   const orders = await customerRepo.find({
+     include: {
+       // Include the 'tags' relation for each customer.
+       tags: true,
+     },
+   });
+   ```
+   In this example, the `tags` relation for each customer will be loaded and included in the query result.
+   
+   
+   #### see:
+    - [Relations.toMany](/docs/ref_relations#tomany)
+    - [Relations.toOne](/docs/ref_relations#toone)
+    - [RelationOptions](/docs/ref_relations)
+   
+   * **select** - An option used to specify which fields should be included in the result.
+   
+   
+   #### example:
+   ```ts
+   await repo(Task).find({ select: { id: true, title: true } })
+   ```
+   * **where** - filters the data
+   
+   
+   #### example:
+   ```ts
+   await taskRepo.find({where: { completed:false }})
+   ```
+   
+   
+   #### see:
+   For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
+   * **orderBy** - Determines the order of items returned .
+   
+   
+   #### example:
+   ```ts
+   await repo(Products).find({ orderBy: { name: "asc" }})
+   ```
+   
+   
+   #### example:
+   ```ts
+   await repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
+   ```
+   * **useCache** - determines if to cache the result, and return the results from cache.
+   * **createIfNotFound** - If set to true and an item is not found, it's created and returned
+   * **args**
 ## findId
-
 returns the items that matches the id. If id is undefined | null, returns null
 
 Arguments:
-
-- **id**
-- **options**
-  - **useCache** - determines if to cache the result, and return the results from cache.
-  - **createIfNotFound** - If set to true and an item is not found, it's created and returned
-
+* **id**
+* **options**
+   * **useCache** - determines if to cache the result, and return the results from cache.
+   * **createIfNotFound** - If set to true and an item is not found, it's created and returned
 ## groupBy
-
 Performs an aggregation on the repository's entity type based on the specified options.
 
-#### returns:
 
+#### returns:
 The result of the aggregation.
 
-#### example:
 
+#### example:
 ```ts
 // Grouping by country and city, summing the salary field, and ordering by country and sum of salary:
 const results = await repo.groupBy({
@@ -9584,54 +9406,50 @@ const results = await repo.groupBy({
       sum: 'desc',
     },
   },
-})
+});
 
 // Accessing the results:
-console.log(results[0].country) // 'uk'
-console.log(results[0].city) // 'London'
-console.log(results[0].$count) // count for London, UK
-console.log(results[0].salary.sum) // Sum of salaries for London, UK
+console.log(results[0].country); // 'uk'
+console.log(results[0].city); // 'London'
+console.log(results[0].$count); // count for London, UK
+console.log(results[0].salary.sum); // Sum of salaries for London, UK
 ```
 
 Arguments:
-
-- **options** - The options for the aggregation.
-  - **group** - Fields to group by. The result will include one entry per unique combination of these fields.
-  - **sum** - Fields to sum. The result will include the sum of these fields for each group.
-  - **avg** - Fields to average. The result will include the average of these fields for each group.
-  - **min** - Fields to find the minimum value. The result will include the minimum value of these fields for each group.
-  - **max** - Fields to find the maximum value. The result will include the maximum value of these fields for each group.
-  - **distinctCount** - Fields to count distinct values. The result will include the distinct count of these fields for each group.
-  - **where** - Filters to apply to the query before aggregation.
-  #### see:
-  EntityFilter
-  - **orderBy** - Fields and aggregates to order the results by.
-    The result can be ordered by groupBy fields, sum fields, average fields, min fields, max fields, and distinctCount fields.
-
+* **options** - The options for the aggregation.
+   * **group** - Fields to group by. The result will include one entry per unique combination of these fields.
+   * **sum** - Fields to sum. The result will include the sum of these fields for each group.
+   * **avg** - Fields to average. The result will include the average of these fields for each group.
+   * **min** - Fields to find the minimum value. The result will include the minimum value of these fields for each group.
+   * **max** - Fields to find the maximum value. The result will include the maximum value of these fields for each group.
+   * **distinctCount** - Fields to count distinct values. The result will include the distinct count of these fields for each group.
+   * **where** - Filters to apply to the query before aggregation.
+   
+   
+   #### see:
+   EntityFilter
+   * **orderBy** - Fields and aggregates to order the results by.
+   The result can be ordered by groupBy fields, sum fields, average fields, min fields, max fields, and distinctCount fields.
 ## aggregate
-
 Performs an aggregation on the repository's entity type based on the specified options.
 
-#### returns:
 
+#### returns:
 The result of the aggregation.
 
-#### example:
 
+#### example:
 ```ts
 // Aggregating  (summing the salary field across all items):
 const totalSalary = await repo.aggregate({
   sum: ['salary'],
-})
-console.log(totalSalary.salary.sum) // Outputs the total sum of salaries
+});
+console.log(totalSalary.salary.sum); // Outputs the total sum of salaries
 ```
 
 Arguments:
-
-- **options** - The options for the aggregation.
-
+* **options** - The options for the aggregation.
 ## query
-
 Fetches data from the repository in a way that is optimized for handling large sets of entity objects.
 
 Unlike the `find` method, which returns an array, the `query` method returns an iterable `QueryResult` object.
@@ -9642,8 +9460,8 @@ the result will include both the items from the current page and the results of 
 
 The `query` method is designed for asynchronous iteration using the `for await` statement.
 
-#### example:
 
+#### example:
 ```ts
 // Basic usage with asynchronous iteration:
 for await (const task of taskRepo.query()) {
@@ -9651,27 +9469,27 @@ for await (const task of taskRepo.query()) {
 }
 ```
 
-#### example:
 
+#### example:
 ```ts
 // Querying with pagination:
 const query = taskRepo.query({
   where: { completed: false },
   pageSize: 100,
-})
+});
 
-let paginator = await query.paginator()
-console.log('Number of items on the current page:', paginator.items.length)
-console.log('Total pages:', Math.ceil(paginator.aggregate.$count / 100))
+let paginator = await query.paginator();
+console.log('Number of items on the current page:', paginator.items.length);
+console.log('Total pages:', Math.ceil(paginator.aggregate.$count / 100));
 
 if (paginator.hasNextPage) {
-  paginator = await paginator.nextPage()
-  console.log('Items on the next page:', paginator.items.length)
+  paginator = await paginator.nextPage();
+  console.log('Items on the next page:', paginator.items.length);
 }
 ```
 
-#### example:
 
+#### example:
 ```ts
 // Querying with aggregation:
 const query = await repo.query({
@@ -9680,131 +9498,113 @@ const query = await repo.query({
   aggregates: {
     sum: ['salary'],
     average: ['age'],
-  },
-})
+  }
+});
 
-let paginator = await query.paginator()
+let paginator = await query.paginator();
 // Accessing paginated items
-console.table(paginator.items)
+console.table(paginator.items);
 
 // Accessing aggregation results
-console.log('Total salary:', paginator.aggregates.salary.sum) // Sum of all salaries
-console.log('Average age:', paginator.aggregates.age.average) // Average age
+console.log('Total salary:', paginator.aggregates.salary.sum); // Sum of all salaries
+console.log('Average age:', paginator.aggregates.age.average);  // Average age
 ```
 
 Arguments:
-
-- **options**
-
+* **options**
 ## count
-
 Returns a count of the items matching the criteria.
 
-#### see:
 
+#### see:
 [EntityFilter](http://remult.dev/docs/entityFilter.html)
 
-#### example:
 
+#### example:
 ```ts
-await taskRepo.count({ completed: false })
+await taskRepo.count({ completed:false })
 ```
 
 Arguments:
+* **where** - filters the data
 
-- **where** - filters the data
 
 #### see:
-
 [EntityFilter](http://remult.dev/docs/entityFilter.html)
-
 ## validate
-
 Validates an item
 
-#### example:
 
+#### example:
 ```ts
-const error = repo.validate(task)
-if (error) {
-  alert(error.message)
-  alert(error.modelState.title) //shows the specific error for the title field
+const error = repo.validate(task);
+if (error){
+  alert(error.message);
+  alert(error.modelState.title);//shows the specific error for the title field
 }
 // Can also be used to validate specific fields
-const error = repo.validate(task, 'title')
+const error = repo.validate(task,"title")
 ```
 
 Arguments:
-
-- **item**
-- **fields**
-
+* **item**
+* **fields**
 ## save
-
 saves an item or item[] to the data source. It assumes that if an `id` value exists, it's an existing row - otherwise it's a new row
 
-#### example:
 
+#### example:
 ```ts
-await taskRepo.save({ ...task, completed: true })
+await taskRepo.save({...task, completed:true })
 ```
 
 Arguments:
-
-- **item**
-
+* **item**
 ## insert
-
 Insert an item or item[] to the data source
 
-#### example:
 
+#### example:
 ```ts
-await taskRepo.insert({ title: 'task a' })
+await taskRepo.insert({title:"task a"})
 ```
 
-#### example:
 
+#### example:
 ```ts
-await taskRepo.insert([
-  { title: 'task a' },
-  { title: 'task b', completed: true },
-])
+await taskRepo.insert([{title:"task a"}, {title:"task b", completed:true }])
 ```
 
 Arguments:
-
-- **item**
-
+* **item**
+* **options**
+   * **select**
 ## update
-
 Updates an item, based on its `id`
 
-#### example:
 
+#### example:
 ```ts
-taskRepo.update(task.id, { ...task, completed: true })
+taskRepo.update(task.id,{...task,completed:true})
 ```
 
 Arguments:
-
-- **id**
-- **item**
-
+* **id**
+* **item**
+* **options**
+   * **select**
 ## updateMany
-
 Updates all items that match the `where` condition.
 
 Arguments:
-
-- **options**
-  - **where** - filters the data
-  #### see:
-  [EntityFilter](http://remult.dev/docs/entityFilter.html)
-  - **set**
-
+* **options**
+   * **where** - filters the data
+   
+   
+   #### see:
+   [EntityFilter](http://remult.dev/docs/entityFilter.html)
+   * **set**
 ## upsert
-
 Inserts a new entity or updates an existing entity based on the specified criteria.
 If an entity matching the `where` condition is found, it will be updated with the provided `set` values.
 If no matching entity is found, a new entity will be created with the given data.
@@ -9812,284 +9612,222 @@ If no matching entity is found, a new entity will be created with the given data
 The `upsert` method ensures that a row exists based on the `where` condition: if no entity is found, a new one is created.
 It can handle both single and multiple upserts.
 
-#### returns:
 
+#### returns:
 A promise that resolves with the inserted or updated entity, or an array of entities if multiple options were provided.
 
-#### example:
 
+#### example:
 ```ts
 // Upserting a single entity: updates 'task a' if it exists, otherwise creates it.
-taskRepo.upsert({ where: { title: 'task a' }, set: { completed: true } })
+taskRepo.upsert({ where: { title: 'task a' }, set: { completed: true } });
 ```
 
-#### example:
 
+#### example:
 ```ts
 // Upserting a single entity without additional `set` values: ensures that a row with the title 'task a' exists.
-taskRepo.upsert({ where: { title: 'task a' } })
+taskRepo.upsert({ where: { title: 'task a' } });
 ```
 
-#### example:
 
+#### example:
 ```ts
 // Upserting multiple entities: ensures both 'task a' and 'task b' exist, updating their `completed` status if found.
 taskRepo.upsert([
   { where: { title: 'task a' }, set: { completed: true } },
-  { where: { title: 'task b' }, set: { completed: true } },
-])
+  { where: { title: 'task b' }, set: { completed: true } }
+]);
 ```
 
 Arguments:
-
-- **options** - The options that define the `where` condition and the `set` values. Can be a single object or an array of objects.
-
+* **options** - The options that define the `where` condition and the `set` values. Can be a single object or an array of objects.
 ## delete
-
 Deletes an Item
 
 Arguments:
-
-- **id**
-
+* **id**
 ## deleteMany
-
 Deletes all items that match the `where` condition.
 
 Arguments:
-
-- **options**
-  - **where** - filters the data
-  #### see:
-  [EntityFilter](http://remult.dev/docs/entityFilter.html)
-
+* **options**
+   * **where** - filters the data
+   
+   
+   #### see:
+   [EntityFilter](http://remult.dev/docs/entityFilter.html)
 ## create
-
 Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called.
 
 It's useful to start or reset a form taking your entity default values into account.
 
 Arguments:
-
-- **item**
-
+* **item**
 ## toJson
-
 Translates an entity to a json object.
-
 - Ready to be sent to the client _(Date & co are managed)_
 - Strip out fields that are not allowed to be sent to the client! Check: [Field.includeInApi](http://remult.dev/docs/ref_field#includeinapi)
 
-#### example:
 
+#### example:
 ```ts
 const tasks = repo(Task).toJson(repo(Task).find())
 ```
 
 Arguments:
-
-- **item** - Can be an array or a single entity, awaitable or not
-
+* **item** - Can be an array or a single entity, awaitable or not
 ## fromJson
-
 Translates a json object to an item instance.
 
-#### example:
 
+#### example:
 ```ts
 const data = // from the server
 const tasks = repo(Task).fromJson(data)
 ```
 
 Arguments:
-
-- **data** - Can be an array or a single element
-- **isNew** - To help the creation of the instance
-
+* **data** - Can be an array or a single element
+* **isNew** - To help the creation of the instance
 ## getEntityRef
-
 returns an `entityRef` for an item returned by `create`, `find` etc...
 
 Arguments:
-
-- **item**
-
+* **item**
 ## fields
-
 Provides information about the fields of the Repository's entity
 
-#### example:
 
+#### example:
 ```ts
 console.log(repo.fields.title.label) // displays the label of a specific field
-console.log(repo.fields.title.options) // writes the options that were defined for this field
+console.log(repo.fields.title.options)// writes the options that were defined for this field
 ```
-
 ## metadata
-
 The metadata for the `entity`
 
+
 #### see:
-
 [EntityMetadata](https://remult.dev/docs/ref_entitymetadata.html)
-
 ## addEventListener
-
-- **addEventListener**
+* **addEventListener**
 
 Arguments:
-
-- **listener**
-
+* **listener**
 ## relations
-
-- **relations**
+* **relations**
 
 Arguments:
-
-- **item**
+* **item**
 
 
 
 # API Reference - RemultServerOptions
 
 # RemultServerOptions
-
-- **RemultServerOptions**
-
+* **RemultServerOptions**
 ## entities
-
 Entities to use for the api
-
 ## controllers
-
 Controller to use for the api
-
 ## getUser
-
 Will be called to get the current user based on the current request
-
 ## initRequest
-
 Will be called for each request and can be used for configuration
-
 ## initApi
-
 Will be called once the server is loaded and the data provider is ready
-
 ## dataProvider
-
 Data Provider to use for the api.
 
+
 #### see:
-
 [Connecting to a Database](https://remult.dev/docs/databases.html).
-
 ## ensureSchema
-
 Will create tables and columns in supporting databases.
 
-#### default:
 
+#### default:
 ```ts
 true
 
 when set to true, it'll create entities that do not exist, and add columns that are missing.
 ```
-
 ## rootPath
-
 The path to use for the api, if you want to use a different path adjust this field
 
+
 #### default:
-
 `/api`
-
 ## defaultGetLimit
-
 The default limit to use for find requests that did not specify a limit
-
 ## logApiEndPoints
-
 When set to true (default) it'll console log each api endpoint that is created
-
 ## subscriptionServer
-
 A subscription server to use for live query and message channels
-
 ## liveQueryStorage
-
 A storage to use to store live queries, relevant mostly for serverless scenarios or larger scales
-
 ## contextSerializer
-
 Used to store the context relevant info for re running a live query
-
 ## admin
-
 When set to true, will display an admin ui in the `/api/admin` url.
 Can also be set to an arrow function for fine grained control
 
-#### example:
 
+#### example:
 ```ts
 admin: true
 ```
 
-#### example:
 
+#### example:
 ```ts
 admin: () => remult.isAllowed('admin')
 ```
 
+
 #### see:
-
 [allowed](http://remult.dev/docs/allowed.html)
-
 ## queueStorage
-
 Storage to use for backend methods that use queue
-
 ## error
-
 This method is called whenever there is an error in the API lifecycle.
 
-#### example:
 
+#### example:
 ```ts
 export const api = remultApi({
   error: async (e) => {
     if (e.httpStatusCode == 400) {
-      e.sendError(500, { message: 'An error occurred' })
+      e.sendError(500, { message: "An error occurred" })
     }
-  },
+  }
 })
 ```
-
 ## modules
-
 Modules are here to group code by feature. [Module Guide](https://remult.dev/docs/modules)
 
-#### example:
 
+#### example:
 ```ts
 import { Module } from 'remult/server'
 
 // create an analytics module
-const analytics = () =>
-  new Module({
-    key: 'analytics',
-    priority: 11, // Default: 0, Prioritized by ascending order.
-    entities: [AnalyticsEvent],
-    controllers: [AnalyticsController],
-    initApi: () => console.log('analytics module initialized'),
-    initRequest: () => {},
-    modules: [], // You can nest modules
-  })
+const analytics = () => new Module({
+  key: 'analytics',
+  priority: 11, // Default: 0, Prioritized by ascending order.
+  entities: [AnalyticsEvent],
+  controllers: [AnalyticsController],
+  initApi: () => console.log('analytics module initialized'),
+  initRequest: () => {},
+  modules: [] // You can nest modules
+})
 
 // use the module in the remultApi
 remultApi({
-  modules: [analytics()],
+  modules: [
+    analytics(),
+  ]
 })
 ```
 
@@ -10240,152 +9978,122 @@ where: {
 # API Reference - EntityMetadata
 
 # EntityMetadata
-
 Metadata for an `Entity`, this metadata can be used in the user interface to provide a richer UI experience
-
 ## entityType
-
 The class type of the entity
-
 ## key
-
 The Entity's key also used as it's url
-
 ## fields
-
 Metadata for the Entity's fields
-
 ## caption
-
 A human readable caption for the entity. Can be used to achieve a consistent caption for a field throughout the app
 
-#### example:
 
+#### example:
 ```ts
 <h1>Create a new item in {taskRepo.metadata.caption}</h1>
 ```
 
+
 #### see:
-
 [EntityOptions.caption](/docs/ref_entity#caption)
-
 ## label
-
 A human readable label for the entity. Can be used to achieve a consistent label for a field throughout the app
 
-#### example:
 
+#### example:
 ```ts
 <h1>Create a new item in {taskRepo.metadata.label}</h1>
 ```
 
+
 #### see:
-
 [EntityOptions.label](/docs/ref_entity#label)
-
 ## dbName
-
 The name of the table in the database that holds the data for this entity.
 If no name is set in the entity options, the `key` will be used instead.
 
+
 #### see:
-
 [EntityOptions.dbName](/docs/ref_entity#dbname)
-
 ## options
-
 The options send to the `Entity`'s decorator
 
+
 #### see:
-
 [EntityOptions](/docs/ref_entity)
-
 ## apiUpdateAllowed
-
 true if the current user is allowed to update an entity instance
 
-#### see:
 
+#### see:
 [EntityOptions.allowApiUpdate](/docs/ref_entity#allowapiupdate)
 
-#### example:
 
+#### example:
 ```ts
-if (repo(Task).metadata.apiUpdateAllowed(task)) {
+if (repo(Task).metadata.apiUpdateAllowed(task)){
   // Allow user to edit the entity
 }
 ```
 
 Arguments:
-
-- **item**
-
+* **item**
 ## apiReadAllowed
-
 true if the current user is allowed to read from entity
 
-#### see:
 
+#### see:
 [EntityOptions.allowApiRead](/docs/ref_entity#allowapiread)
 
-#### example:
 
+#### example:
 ```ts
-if (repo(Task).metadata.apiReadAllowed) {
+if (repo(Task).metadata.apiReadAllowed){
   await taskRepo.find()
 }
 ```
-
 ## apiDeleteAllowed
-
 true if the current user is allowed to delete an entity instance
 
-#### see:
 
+#### see:
 [EntityOptions.allowApiDelete](/docs/ref_entity#allowapidelete)
 
-#### example:
 
+#### example:
 ```ts
-if (repo(Task).metadata.apiDeleteAllowed(task)) {
+if (repo(Task).metadata.apiDeleteAllowed(task)){
   // display delete button
 }
 ```
 
 Arguments:
-
-- **item**
-
+* **item**
 ## apiInsertAllowed
-
 true if the current user is allowed to create an entity instance
 
-#### see:
 
+#### see:
 [EntityOptions.allowApiInsert](/docs/ref_entity#allowapiinsert)
 
-#### example:
 
+#### example:
 ```ts
-if (repo(Task).metadata.apiInsertAllowed(task)) {
+if (repo(Task).metadata.apiInsertAllowed(task)){
   // display insert button
 }
 ```
 
 Arguments:
-
-- **item**
-
+* **item**
 ## getDbName
-
-- **getDbName**
-
+* **getDbName**
 ## idMetadata
-
 Metadata for the Entity's id
 
-#### see:
 
+#### see:
 [EntityOptions.id](/docs/ref_entity#id) for configuration
 
 
@@ -10393,189 +10101,151 @@ Metadata for the Entity's id
 # API Reference - FieldMetadata
 
 # FieldMetadata
-
 Metadata for a `Field`, this metadata can be used in the user interface to provide a richer UI experience
-
 ## valueType
-
 The field's value type (number,string etc...)
-
 ## key
-
 The field's member name in an object.
 
-#### example:
 
+#### example:
 ```ts
-console.log(repo(Task).metadata.fields.title.key)
+console.log(repo(Task).metadata.fields.title.key);
 // result: title
 ```
-
 ## caption
-
 A human readable caption for the field. Can be used to achieve a consistent caption for a field throughout the app
 
-#### example:
 
+#### example:
 ```ts
 <input placeholder={taskRepo.metadata.fields.title.caption}/>
 ```
 
+
 #### see:
-
 [FieldOptions#caption](/docs/ref_field#caption) for configuration details
-
 ## label
-
 A human readable label for the field. Can be used to achieve a consistent label for a field throughout the app
 
-#### example:
 
+#### example:
 ```ts
 <input placeholder={taskRepo.metadata.fields.title.label}/>
 ```
 
+
 #### see:
-
 [FieldOptions.label](/docs/ref_field#label) for configuration details
-
 ## dbName
-
 The name of the column in the database that holds the data for this field. If no name is set, the key will be used instead.
 
-#### example:
 
+#### example:
 ```ts
 @Fields.string({ dbName: 'userName'})
 userName=''
 ```
 
+
 #### see:
-
 [FieldOptions#dbName](/docs/ref_field#dbname) for configuration details
-
 ## options
-
 The options sent to this field's decorator
-
 ## inputType
-
 The `inputType` relevant for this field, determined by the options sent to it's decorator and the valueConverter in these options
-
 ## allowNull
-
 if null is allowed for this field
 
+
 #### see:
-
 [FieldOptions#allowNull](/docs/ref_field#allownull) for configuration details
-
 ## target
-
 The class that contains this field
 
-#### example:
 
+#### example:
 ```ts
 Task == repo(Task).metadata.fields.title.target //will return true
 ```
-
 ## getDbName
-
-- **getDbName**
-
+* **getDbName**
 ## isServerExpression
-
 Indicates if this field is based on a server express
-
 ## dbReadOnly
-
 indicates that this field should only be included in select statement, and excluded from update or insert. useful for db generated ids etc...
 
+
 #### see:
-
 [FieldOptions#dbReadOnly](/docs/ref_field#dbreadonly) for configuration details
-
 ## valueConverter
-
 the Value converter for this field
-
 ## displayValue
-
 Get the display value for a specific item
 
-#### see:
 
+#### see:
 [FieldOptions#displayValue](/docs/ref_field#displayvalue) for configuration details
 
-#### example:
 
+#### example:
 ```ts
 repo.fields.createDate.displayValue(task) //will display the date as defined in the `displayValue` option defined for it.
 ```
 
 Arguments:
-
-- **item**
-
+* **item**
 ## apiUpdateAllowed
-
 Determines if the current user is allowed to update a specific entity instance.
 
-#### example:
 
+#### example:
 ```ts
 // Check if the current user is allowed to update a specific task
-if (repo(Task).metadata.apiUpdateAllowed(task)) {
+if (repo(Task).metadata.apiUpdateAllowed(task)){
   // Allow user to edit the entity
 }
 ```
 
-#### see:
 
+#### see:
 [FieldOptions#allowApiUpdate](/docs/ref_field#allowapiupdate) for configuration details
 
-#### returns:
 
+#### returns:
 True if the update is allowed.
 
 Arguments:
-
-- **item** - Partial entity instance to check permissions against.
-
+* **item** - Partial entity instance to check permissions against.
 ## includedInApi
-
 Determines if a specific entity field should be included in the API based on the current user's permissions.
 This method checks visibility permissions for a field within a partial entity instance.
 
-#### example:
 
+#### example:
 ```ts
-const employeeRepo = remult.repo(Employee)
+const employeeRepo = remult.repo(Employee);
 // Determine if the 'salary' field of an employee should be visible in the API for the current user
 if (employeeRepo.fields.salary.includedInApi({ id: 123, name: 'John Doe' })) {
   // The salary field is included in the API
 }
 ```
 
-#### see:
 
+#### see:
 [FieldOptions#includeInApi](/docs/ref_field#includeinapi) for configuration details
 
-#### returns:
 
+#### returns:
 True if the field is included in the API.
 
 Arguments:
-
-- **item** - The partial entity instance used to evaluate field visibility.
-
+* **item** - The partial entity instance used to evaluate field visibility.
 ## toInput
-
 Adapts the value for usage with html input
 
-#### example:
 
+#### example:
 ```ts
 @Fields.dateOnly()
 birthDate = new Date(1976,5,16)
@@ -10583,21 +10253,18 @@ birthDate = new Date(1976,5,16)
 input.value = repo.fields.birthDate.toInput(person) // will return '1976-06-16'
 ```
 
-#### see:
 
+#### see:
 [ValueConverter#toInput](/docs/ref_valueconverter#toinput) for configuration details
 
 Arguments:
-
-- **value**
-- **inputType**
-
+* **value**
+* **inputType**
 ## fromInput
-
 Adapts the value for usage with html input
 
-#### example:
 
+#### example:
 ```ts
 @Fields.dateOnly()
 birthDate = new Date(1976,5,16)
@@ -10605,14 +10272,13 @@ birthDate = new Date(1976,5,16)
 person.birthDate = repo.fields.birthDate.fromInput(personFormState) // will return Date
 ```
 
-#### see:
 
+#### see:
 [ValueConverter#fromInput](/docs/ref_valueconverter#frominput) for configuration details
 
 Arguments:
-
-- **inputValue**
-- **inputType**
+* **inputValue**
+* **inputType**
 
 
 
@@ -10689,7 +10355,6 @@ For Example:
 # API Reference - BackendMethod
 
 # BackendMethod
-
 Decorator indicating that the decorated method runs on the backend.
 It allows the method to be invoked from the frontend while ensuring that the execution happens on the server side.
 By default, the method runs within a database transaction, meaning it will either complete entirely or fail without making any partial changes.
@@ -10697,99 +10362,74 @@ This behavior can be controlled using the `transactional` option in the `Backend
 
 For more details, see: [Backend Methods](https://remult.dev/docs/backendMethods.html).
 
-#### example:
 
+#### example:
 ```typescript
 @BackendMethod({ allowed: true })
 async someBackendMethod() {
   // method logic here
 }
 ```
-
 ## allowed
-
 Determines when this `BackendMethod` can execute, see: [Allowed](https://remult.dev/docs/allowed.html)
-
 ## apiPrefix
-
 Used to determine the route for the BackendMethod.
 
-#### example:
 
+#### example:
 ```ts
 {allowed:true, apiPrefix:'someFolder/'}
 ```
-
 ## transactional
-
 Controls whether this `BackendMethod` runs within a database transaction. If set to `true`, the method will either complete entirely or fail without making any partial changes. If set to `false`, the method will not be transactional and may result in partial changes if it fails.
 
-#### default:
 
+#### default:
 ```ts
 true
 ```
 
-#### example:
 
+#### example:
 ```ts
 {allowed: true, transactional: false}
 ```
-
 ## queue
-
 EXPERIMENTAL: Determines if this method should be queued for later execution
-
 ## blockUser
-
 EXPERIMENTAL: Determines if the user should be blocked while this `BackendMethod` is running
-
 ## paramTypes
-
-- **paramTypes**
+* **paramTypes**
 
 
 
 # API Reference - QueryResult
 
 # QueryResult
-
 The result of a call to the `query` method in the `Repository` object.
-
 ## [asyncIterator]
-
 returns an iterator that iterates the rows in the result using a paging mechanism
 
-#### example:
 
+#### example:
 ```ts
 for await (const task of taskRepo.query()) {
-  await taskRepo.save({ ...task, completed })
+  await taskRepo.save({ ...task, completed });
 }
 ```
-
 ## count
-
 returns the number of rows that match the query criteria
-
 ## getPage
-
 gets the items in a specific page
 
 Arguments:
-
-- **pageNumber**
-
+* **pageNumber**
 ## forEach
-
 Performs an operation on all the items matching the query criteria
 
 Arguments:
-
-- **what**
-
+* **what**
 ## paginator
-
 Returns a `Paginator` object that is used for efficient paging
 
 
@@ -10797,17 +10437,16 @@ Returns a `Paginator` object that is used for efficient paging
 # API Reference - Paginator
 
 # Paginator
-
 An interface used to paginating using the `query` method in the `Repository` object
 
-#### example:
 
+#### example:
 ```ts
 
 ```
 
-#### example:
 
+#### example:
 ```ts
 const query = taskRepo.query({
   where: { completed: false },
@@ -10822,21 +10461,13 @@ if (paginator.hasNextPage) {
   console.log(paginator.items.length)
 }
 ```
-
 ## items
-
 the items in the current page
-
 ## hasNextPage
-
 True if next page exists
-
 ## count
-
 the count of the total items in the `query`'s result
-
 ## nextPage
-
 Gets the next page in the `query`'s result set
 
 
@@ -10844,106 +10475,94 @@ Gets the next page in the `query`'s result set
 # API Reference - LiveQuery
 
 # LiveQuery
-
 The `LiveQuery` interface represents a live query that allows subscribing to changes in the query results.
-
 ## subscribe
-
 Subscribes to changes in the live query results.
 
-#### returns:
 
+#### returns:
 A function that can be used to unsubscribe from the live query.
 
-#### example:
 
+#### example:
 ```ts
 // Subscribing to changes in a live query
 const unsubscribe = taskRepo
   .liveQuery({
     limit: 20,
-    orderBy: { createdAt: 'asc' },
+    orderBy: { createdAt: 'asc' }
     //where: { completed: true },
   })
-  .subscribe((info) => setTasks(info.applyChanges))
+  .subscribe(info => setTasks(info.applyChanges));
 
 // Later, to unsubscribe
-unsubscribe()
+unsubscribe();
 ```
 
 Arguments:
-
-- **next** - A function that will be called with information about changes in the query results.
+* **next** - A function that will be called with information about changes in the query results.
 
 
 
 # API Reference - LiveQueryChangeInfo
 
 # LiveQueryChangeInfo
-
 The `LiveQueryChangeInfo` interface represents information about changes in the results of a live query.
-
 ## items
-
 The updated array of result items.
-
 ## changes
-
 The changes received in the specific message. The change types can be "all" (replace all), "add", "replace", or "remove".
-
 ## applyChanges
-
 Applies the changes received in the message to an existing array. This method is particularly useful with React
 to update the component's state based on the live query changes.
 
-#### returns:
 
+#### returns:
 The updated array of result items after applying the changes.
 
-#### example:
 
+#### example:
 ```ts
 // Using applyChanges in a React component with useEffect hook
 useEffect(() => {
   return taskRepo
     .liveQuery({
       limit: 20,
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: 'asc' }
       //where: { completed: true },
     })
-    .subscribe((info) => setTasks(info.applyChanges))
-}, [])
+    .subscribe(info => setTasks(info.applyChanges));
+}, []);
 ```
 
 Arguments:
-
-- **prevState** - The previous state of the array of result items.
+* **prevState** - The previous state of the array of result items.
 
 
 
 # API Reference - Filter
 
 # Filter
-
 The `Filter` class is a helper class that focuses on filter-related concerns. It provides methods
 for creating and applying filters in queries.
-
 ## getPreciseValues
-
 Retrieves precise values for each property in a filter for an entity.
 
-#### returns:
 
+#### returns:
 A promise that resolves to a FilterPreciseValues object containing the precise values for each property.
 
-#### example:
 
+#### example:
 ```ts
 const preciseValues = await Filter.getPreciseValues(meta, {
   status: { $ne: 'active' },
-  $or: [{ customerId: ['1', '2'] }, { customerId: '3' }],
-})
-console.log(preciseValues)
+  $or: [
+    { customerId: ["1", "2"] },
+    { customerId: "3" }
+  ]
+});
+console.log(preciseValues);
 // Output:
 // {
 //   "customerId": ["1", "2", "3"], // Precise values inferred from the filter
@@ -10952,151 +10571,131 @@ console.log(preciseValues)
 ```
 
 Arguments:
-
-- **metadata** - The metadata of the entity being filtered.
-- **filter** - The filter to analyze.
-
+* **metadata** - The metadata of the entity being filtered.
+* **filter** - The filter to analyze.
 ## getPreciseValues
-
 Retrieves precise values for each property in a filter for an entity.
 
-#### returns:
 
+#### returns:
 A promise that resolves to a FilterPreciseValues object containing the precise values for each property.
 
-#### example:
 
+#### example:
 ```ts
-const preciseValues = await where.getPreciseValues()
-console.log(preciseValues)
+const preciseValues = await where.getPreciseValues();
+console.log(preciseValues);
 // Output:
 // {
 //   "customerId": ["1", "2", "3"], // Precise values inferred from the filter
 //   "status": undefined,           // Cannot infer precise values for 'status'
 // }
 ```
-
 ## createCustom
-
 Creates a custom filter. Custom filters are evaluated on the backend, ensuring security and efficiency.
 When the filter is used in the frontend, only its name is sent to the backend via the API,
 where the filter gets translated and applied in a safe manner.
 
-#### returns:
 
+#### returns:
 A function that returns an `EntityFilter` of type `entityType`.
 
-#### example:
 
+#### example:
 ```ts
 class Order {
-  //...
-  static activeOrdersFor = Filter.createCustom<Order, { year: number }>(
-    async ({ year }) => {
-      return {
-        status: ['created', 'confirmed', 'pending', 'blocked', 'delayed'],
-        createdAt: {
-          $gte: new Date(year, 0, 1),
-          $lt: new Date(year + 1, 0, 1),
-        },
-      }
-    },
-  )
+ //...
+ static activeOrdersFor = Filter.createCustom<Order, { year: number }>(
+   async ({ year }) => {
+     return {
+       status: ['created', 'confirmed', 'pending', 'blocked', 'delayed'],
+       createdAt: {
+         $gte: new Date(year, 0, 1),
+         $lt: new Date(year + 1, 0, 1),
+       },
+     }
+   },
+ )
 }
 // Usage
 await repo(Order).find({
-  where: Order.activeOrders({ year }),
+ where: Order.activeOrders({ year }),
 })
 ```
 
-#### see:
 
+#### see:
 [Sql filter and Custom filter](/docs/custom-filter.html)
 [Filtering and Relations](/docs/filtering-and-relations.html)
 
 Arguments:
-
-- **translator** - A function that returns an `EntityFilter`.
-- **key** - An optional unique identifier for the custom filter.
-
+* **translator** - A function that returns an `EntityFilter`.
+* **key** - An optional unique identifier for the custom filter.
 ## entityFilterToJson
-
 Translates an `EntityFilter` to a plain JSON object that can be stored or transported.
 
-#### returns:
 
+#### returns:
 A plain JSON object representing the `EntityFilter`.
 
-#### example:
 
+#### example:
 ```ts
 // Assuming `Task` is an entity class
-const jsonFilter = Filter.entityFilterToJson(Task, { completed: true })
+const jsonFilter = Filter.entityFilterToJson(Task, { completed: true });
 // `jsonFilter` can now be stored or transported as JSON
 ```
 
 Arguments:
-
-- **entityDefs** - The metadata of the entity associated with the filter.
-- **where** - The `EntityFilter` to be translated.
-
+* **entityDefs** - The metadata of the entity associated with the filter.
+* **where** - The `EntityFilter` to be translated.
 ## entityFilterFromJson
-
 Translates a plain JSON object back into an `EntityFilter`.
 
-#### returns:
 
+#### returns:
 The reconstructed `EntityFilter`.
 
-#### example:
 
+#### example:
 ```ts
 // Assuming `Task` is an entity class and `jsonFilter` is a JSON object representing an EntityFilter
-const taskFilter = Filter.entityFilterFromJson(Task, jsonFilter)
+const taskFilter = Filter.entityFilterFromJson(Task, jsonFilter);
 // Using the reconstructed `EntityFilter` in a query
-const tasks = await remult.repo(Task).find({ where: taskFilter })
+const tasks = await remult.repo(Task).find({ where: taskFilter });
 for (const task of tasks) {
   // Do something for each task based on the filter
 }
 ```
 
 Arguments:
-
-- **entityDefs** - The metadata of the entity associated with the filter.
-- **packed** - The plain JSON object representing the `EntityFilter`.
-
+* **entityDefs** - The metadata of the entity associated with the filter.
+* **packed** - The plain JSON object representing the `EntityFilter`.
 ## fromEntityFilter
-
 Converts an `EntityFilter` to a `Filter` that can be used by the `DataProvider`. This method is
 mainly used internally.
 
-#### returns:
 
+#### returns:
 A `Filter` instance that can be used by the `DataProvider`.
 
-#### example:
 
+#### example:
 ```ts
 // Assuming `Task` is an entity class and `taskFilter` is an EntityFilter
-const filter = Filter.fromEntityFilter(Task, taskFilter)
+const filter = Filter.fromEntityFilter(Task, taskFilter);
 // `filter` can now be used with the DataProvider
 ```
 
 Arguments:
-
-- **entity** - The metadata of the entity associated with the filter.
-- **whereItem** - The `EntityFilter` to be converted.
-
+* **entity** - The metadata of the entity associated with the filter.
+* **whereItem** - The `EntityFilter` to be converted.
 ## constructor
-
-- **Filter**
+* **Filter**
 
 Arguments:
-
-- **apply**
-
+* **apply**
 ## resolve
-
 Resolves an entity filter.
 
 This method takes a filter which can be either an instance of `EntityFilter`
@@ -11104,251 +10703,197 @@ or a function that returns an instance of `EntityFilter` or a promise that
 resolves to an instance of `EntityFilter`. It then resolves the filter if it
 is a function and returns the resulting `EntityFilter`.
 
-#### returns:
 
+#### returns:
 The resolved entity filter.
 
 Arguments:
-
-- **filter** - The filter to resolve.
-
+* **filter** - The filter to resolve.
 ## toJson
-
-- **toJson**
+* **toJson**
 
 
 
 # API Reference - Sort
 
 # Sort
-
 The `Sort` class is used to describe sorting criteria for queries. It is mainly used internally,
 but it provides a few useful functions for working with sorting.
-
 ## toEntityOrderBy
-
 Translates the current `Sort` instance into an `EntityOrderBy` object.
 
+
 #### returns:
-
 An `EntityOrderBy` object representing the sort criteria.
-
 ## constructor
-
 Constructs a `Sort` instance with the provided sort segments.
 
 Arguments:
-
-- **segments** - The sort segments to be included in the sort criteria.
-
+* **segments** - The sort segments to be included in the sort criteria.
 ## Segments
-
 The segments of the sort criteria.
-
 ## reverse
-
 Reverses the sort order of the current sort criteria.
 
+
 #### returns:
-
 A new `Sort` instance with the reversed sort order.
-
 ## compare
-
 Compares two objects based on the current sort criteria.
 
-#### returns:
 
+#### returns:
 A negative value if `a` should come before `b`, a positive value if `a` should come after `b`, or zero if they are equal.
 
 Arguments:
-
-- **a** - The first object to compare.
-- **b** - The second object to compare.
-- **getFieldKey** - An optional function to get the field key for comparison.
-
+* **a** - The first object to compare.
+* **b** - The second object to compare.
+* **getFieldKey** - An optional function to get the field key for comparison.
 ## translateOrderByToSort
-
 Translates an `EntityOrderBy` to a `Sort` instance.
 
-#### returns:
 
+#### returns:
 A `Sort` instance representing the translated order by.
 
 Arguments:
-
-- **entityDefs** - The metadata of the entity associated with the order by.
-- **orderBy** - The `EntityOrderBy` to be translated.
-
+* **entityDefs** - The metadata of the entity associated with the order by.
+* **orderBy** - The `EntityOrderBy` to be translated.
 ## createUniqueSort
-
 Creates a unique `Sort` instance based on the provided `Sort` and the entity metadata.
 This ensures that the sort criteria result in a unique ordering of entities.
 
-#### returns:
 
+#### returns:
 A `Sort` instance representing the unique sort criteria.
 
 Arguments:
-
-- **entityMetadata** - The metadata of the entity associated with the sort.
-- **orderBy** - The `Sort` instance to be made unique.
-
+* **entityMetadata** - The metadata of the entity associated with the sort.
+* **orderBy** - The `Sort` instance to be made unique.
 ## createUniqueEntityOrderBy
-
 Creates a unique `EntityOrderBy` based on the provided `EntityOrderBy` and the entity metadata.
 This ensures that the order by criteria result in a unique ordering of entities.
 
-#### returns:
 
+#### returns:
 An `EntityOrderBy` representing the unique order by criteria.
 
 Arguments:
-
-- **entityMetadata** - The metadata of the entity associated with the order by.
-- **orderBy** - The `EntityOrderBy` to be made unique.
+* **entityMetadata** - The metadata of the entity associated with the order by.
+* **orderBy** - The `EntityOrderBy` to be made unique.
 
 
 
 # API Reference - SqlDatabase
 
 # SqlDatabase
-
 A DataProvider for Sql Databases
 
-#### example:
 
+#### example:
 ```ts
 const db = new SqlDatabase(new PostgresDataProvider(pgPool))
 ```
 
+
 #### see:
-
 [Connecting a Database](https://remult.dev/docs/quickstart#connecting-a-database)
-
 ## getDb
-
 Gets the SQL database from the data provider.
 
-#### returns:
 
+#### returns:
 The SQL database.
 
-#### see:
 
+#### see:
 [Direct Database Access](https://remult.dev/docs/running-sql-on-the-server)
 
 Arguments:
-
-- **dataProvider** - The data provider.
-
+* **dataProvider** - The data provider.
 ## createCommand
-
 Creates a new SQL command.
 
-#### returns:
 
+#### returns:
 The SQL command.
 
+
 #### see:
-
 [Direct Database Access](https://remult.dev/docs/running-sql-on-the-server)
-
 ## execute
-
 Executes a SQL command.
 
-#### returns:
 
+#### returns:
 The SQL result.
 
-#### see:
 
+#### see:
 [Direct Database Access](https://remult.dev/docs/running-sql-on-the-server)
 
 Arguments:
-
-- **sql** - The SQL command.
-
+* **sql** - The SQL command.
 ## wrapIdentifier
-
 Wraps an identifier with the database's identifier syntax.
-
 ## ensureSchema
-
-- **ensureSchema**
+* **ensureSchema**
 
 Arguments:
-
-- **entities**
-
+* **entities**
 ## getEntityDataProvider
-
 Gets the entity data provider.
 
-#### returns:
 
+#### returns:
 The entity data provider.
 
 Arguments:
-
-- **entity** - The entity metadata.
-
+* **entity** - The entity metadata.
 ## transaction
-
 Runs a transaction. Used internally by remult when transactions are required
 
-#### returns:
 
+#### returns:
 The promise of the transaction.
 
 Arguments:
-
-- **action** - The action to run in the transaction.
-
+* **action** - The action to run in the transaction.
 ## rawFilter
-
 Creates a raw filter for entity filtering.
 
-#### returns:
 
+#### returns:
 - The entity filter with a custom SQL filter.
 
-#### example:
 
+#### example:
 ```ts
-SqlDatabase.rawFilter(
-  ({ param }) =>
-    `"customerId" in (select id from customers where city = ${param(customerCity)})`,
-)
+SqlDatabase.rawFilter(({param}) =>
+     `"customerId" in (select id from customers where city = ${param(customerCity)})`
+   )
 ```
 
-#### see:
 
+#### see:
 [Leveraging Database Capabilities with Raw SQL in Custom Filters](https://remult.dev/docs/custom-filter.html#leveraging-database-capabilities-with-raw-sql-in-custom-filters)
 
 Arguments:
-
-- **build** - The custom SQL filter builder function.
-
+* **build** - The custom SQL filter builder function.
 ## filterToRaw
-
 Converts a filter to a raw SQL string.
 
-#### see:
 
+#### see:
 [Leveraging Database Capabilities with Raw SQL in Custom Filters](https://remult.dev/docs/running-sql-on-the-server#leveraging-entityfilter-for-sql-databases)
 
 Arguments:
-
-- **repo**
-- **condition**
-- **sqlCommand**
-- **dbNames**
-- **wrapIdentifier**
-
+* **repo**
+* **condition**
+* **sqlCommand**
+* **dbNames**
+* **wrapIdentifier**
 ## LogToConsole
-
 `false` _(default)_ - No logging
 
 `true` - to log all queries to the console
@@ -11357,32 +10902,24 @@ Arguments:
 
 a `function` - to log all queries to the console as a custom format
 
+
 #### example:
-
 ```ts
-SqlDatabase.LogToConsole = (duration, query, args) => {
-  console.log('be crazy ;)')
-}
+SqlDatabase.LogToConsole = (duration, query, args) => { console.log("be crazy ;)") }
 ```
-
 ## durationThreshold
-
 Threshold in milliseconds for logging queries to the console.
-
 ## constructor
-
 Creates a new SQL database.
 
-#### example:
 
+#### example:
 ```ts
 const db = new SqlDatabase(new PostgresDataProvider(pgPool))
 ```
 
 Arguments:
-
-- **sql** - The SQL implementation.
-
+* **sql** - The SQL implementation.
 ## end
 
 
@@ -11390,142 +10927,120 @@ Arguments:
 # API Reference - SubscriptionChannel
 
 # SubscriptionChannel
-
 The `SubscriptionChannel` class is used to send messages from the backend to the frontend,
 using the same mechanism used by live queries.
 
-#### example:
 
+#### example:
 ```ts
 // Defined in code that is shared between the frontend and the backend
-const statusChange = new SubscriptionChannel<{
-  oldStatus: number
-  newStatus: number
-}>('statusChange')
+const statusChange = new SubscriptionChannel<{ oldStatus: number, newStatus: number }>("statusChange");
 
 // Backend: Publishing a message
-statusChange.publish({ oldStatus: 1, newStatus: 2 })
+statusChange.publish({ oldStatus: 1, newStatus: 2 });
 
 // Frontend: Subscribing to messages
 statusChange.subscribe((message) => {
-  console.log(
-    `Status changed from ${message.oldStatus} to ${message.newStatus}`,
-  )
-})
+    console.log(`Status changed from ${message.oldStatus} to ${message.newStatus}`);
+});
 
 // Note: If you want to publish from the frontend, use a BackendMethod for that.
 ```
-
 ## constructor
-
 Constructs a new `SubscriptionChannel` instance.
 
 Arguments:
-
-- **channelKey** - The key that identifies the channel.
-
+* **channelKey** - The key that identifies the channel.
 ## channelKey
-
 The key that identifies the channel.
-
 ## publish
-
 Publishes a message to the channel. This method should only be used on the backend.
 
 Arguments:
-
-- **message** - The message to be published.
-- **remult** - An optional instance of Remult to use for publishing the message.
-
+* **message** - The message to be published.
+* **remult** - An optional instance of Remult to use for publishing the message.
 ## subscribe
-
 Subscribes to messages from the channel. This method should only be used on the frontend.
 
-#### returns:
 
+#### returns:
 A promise that resolves to a function that can be used to unsubscribe from the channel.
 
 Arguments:
-
-- **next** - A function that will be called with each message received.
-- **remult** - An optional instance of Remult to use for the subscription.
+* **next** - A function that will be called with each message received.
+* **remult** - An optional instance of Remult to use for the subscription.
 
 
 
 # API Reference - generateMigrations
 
 # generateMigrations
-
 Generates migration scripts based on changes in entities.
 
-#### see:
 
+#### see:
 [Migrations](https://remult.dev/docs/migrations.html)
 
 Arguments:
-
-- **options** - Configuration options for generating migrations.
-  - **entities** - An array of entity classes whose changes will be included in the migration.
-  - **dataProvider** - The data provider instance or a function returning a promise of the data provider.
-  - **migrationsFolder** - (Optional) The path to the folder where migration scripts will be stored. Default is 'src/migrations'.
-  - **snapshotFile** - (Optional) The path to the file where the snapshot of the last known state will be stored. Default is 'migrations-snapshot.json' in the `migrationsFolder`.
-  - **migrationsTSFile** - (Optional) The path to the TypeScript file where the generated migrations will be written. Default is 'migrations.ts' in the `migrationsFolder`.
-  - **endConnection** - (Optional) Determines whether to close the database connection after generating migrations. Default is false.
+* **options** - Configuration options for generating migrations.
+   * **entities** - An array of entity classes whose changes will be included in the migration.
+   * **dataProvider** - The data provider instance or a function returning a promise of the data provider.
+   * **migrationsFolder** - (Optional) The path to the folder where migration scripts will be stored. Default is 'src/migrations'.
+   * **snapshotFile** - (Optional) The path to the file where the snapshot of the last known state will be stored. Default is 'migrations-snapshot.json' in the `migrationsFolder`.
+   * **migrationsTSFile** - (Optional) The path to the TypeScript file where the generated migrations will be written. Default is 'migrations.ts' in the `migrationsFolder`.
+   * **endConnection** - (Optional) Determines whether to close the database connection after generating migrations. Default is false.
 
 
 
 # API Reference - migrate
 
 # migrate
-
 Applies migration scripts to update the database schema.
 
-#### see:
 
+#### see:
 [Migrations](https://remult.dev/docs/migrations.html)
 
 Arguments:
-
-- **options** - Configuration options for applying migrations.
-  - **migrations** - An object containing the migration scripts, each keyed by a unique identifier.
-  - **dataProvider** - The data provider instance or a function returning a promise of the data provider.
-  - **migrationsTable** - (Optional) The name of the table that tracks applied migrations. Default is '\_\_remult_migrations_version'.
-  - **endConnection** - (Optional) Determines whether to close the database connection after applying migrations. Default is false.
-  - **beforeMigration** - (Optional) A callback function that is called before each migration is applied. Receives an object with the migration index.
-  - **afterMigration** - (Optional) A callback function that is called after each migration is applied. Receives an object with the migration index and the duration of the migration.
+* **options** - Configuration options for applying migrations.
+   * **migrations** - An object containing the migration scripts, each keyed by a unique identifier.
+   * **dataProvider** - The data provider instance or a function returning a promise of the data provider.
+   * **migrationsTable** - (Optional) The name of the table that tracks applied migrations. Default is '__remult_migrations_version'.
+   * **endConnection** - (Optional) Determines whether to close the database connection after applying migrations. Default is false.
+   * **beforeMigration** - (Optional) A callback function that is called before each migration is applied. Receives an object with the migration index.
+   * **afterMigration** - (Optional) A callback function that is called after each migration is applied. Receives an object with the migration index and the duration of the migration.
 
 
 
 # API Reference - Async Hooks
 
 # initAsyncHooks
-
 Initializes and enables async context tracking for the server.
 
 This should be called before handling any incoming requests or calling `withRemult()`.
 
+
 #### example:
-
 ```ts
-import { remult, repo, withRemult } from 'remult'
-import { initAsyncHooks } from 'remult/async-hooks'
+import { remult, repo, withRemult } from 'remult';
+import { initAsyncHooks } from 'remult/async-hooks';
 
-import { Task } from './entities/Task.js'
+import { Task } from './entities/Task.js';
 
-initAsyncHooks()
+initAsyncHooks();
 
 // Thx to the `initAsyncHooks` above,
 // we have isolated async contexts with multiple `withRemult()`,
 // without needing to initialize a `remultApi` all the time!
 withRemult(async () => {
-  remult.user = { id: '42' }
-  repo(Task).find()
-})
+    remult.user = { id: '42' };
+    repo(Task).find()
+});
 
 withRemult(async () => {
-  remult.user = { id: '21' }
-  repo(Task).find()
-})
+    remult.user = { id: '21' };
+    repo(Task).find()
+});
 ```
 
 
@@ -11625,295 +11140,183 @@ https://mySite.com/api/products?price.gte=5&price.lte=10&_sort=price&_order=desc
 # Active Record & Mutable - EntityBase
 
 # EntityBase
-
-- **EntityBase**
-
+* **EntityBase**
 ## constructor
-
-- **EntityBase**
-
-## \_
-
-- **\_**
-
+* **EntityBase**
+## _
+* **_**
 ## $
-
-- **$**
-
+* **$**
 ## assign
-
-- **assign**
+* **assign**
 
 Arguments:
-
-- **values**
-
+* **values**
 ## delete
-
-- **delete**
-
+* **delete**
 ## isNew
-
-- **isNew**
-
+* **isNew**
 ## save
-
-- **save**
+* **save**
 
 
 
 # Active Record & Mutable - IdEntity
 
 # IdEntity
-
-- **IdEntity**
-
+* **IdEntity**
 ## constructor
-
-- **IdEntity**
-
+* **IdEntity**
 ## id
-
-- **id**
-
-## \_
-
-- **\_**
-
+* **id**
+## _
+* **_**
 ## $
-
-- **$**
-
+* **$**
 ## assign
-
-- **assign**
+* **assign**
 
 Arguments:
-
-- **values**
-
+* **values**
 ## delete
-
-- **delete**
-
+* **delete**
 ## isNew
-
-- **isNew**
-
+* **isNew**
 ## save
-
-- **save**
+* **save**
 
 
 
 # Active Record & Mutable - EntityRef
 
 # EntityRef
-
-- **EntityRef**
-
+* **EntityRef**
 ## hasErrors
-
-- **hasErrors**
-
+* **hasErrors**
 ## undoChanges
-
-- **undoChanges**
-
+* **undoChanges**
 ## save
-
-- **save**
-
-## reload
-
-- **reload**
-
-## delete
-
-- **delete**
-
-## isNew
-
-- **isNew**
-
-## wasChanged
-
-- **wasChanged**
-
-## wasDeleted
-
-- **wasDeleted**
-
-## getId
-
-- **getId**
-
-## getOriginalId
-
-- **getOriginalId**
-
-## toApiJson
-
-- **toApiJson**
-
-## validate
-
-- **validate**
-
-## clone
-
-- **clone**
-
-## subscribe
-
-- **subscribe**
+* **save**
 
 Arguments:
+* **options**
+   * **select**
+## reload
+* **reload**
+## delete
+* **delete**
+## isNew
+* **isNew**
+## wasChanged
+* **wasChanged**
+## wasDeleted
+* **wasDeleted**
+## getId
+* **getId**
+## getOriginalId
+* **getOriginalId**
+## toApiJson
+* **toApiJson**
+## validate
+* **validate**
+## clone
+* **clone**
+## subscribe
+* **subscribe**
 
-- **listener**
-
+Arguments:
+* **listener**
 ## error
-
-- **error**
-
+* **error**
 ## repository
-
-- **repository**
-
+* **repository**
 ## metadata
-
-- **metadata**
-
+* **metadata**
 ## apiUpdateAllowed
-
-- **apiUpdateAllowed**
-
+* **apiUpdateAllowed**
 ## apiDeleteAllowed
-
-- **apiDeleteAllowed**
-
+* **apiDeleteAllowed**
 ## apiInsertAllowed
-
-- **apiInsertAllowed**
-
+* **apiInsertAllowed**
 ## isLoading
-
-- **isLoading**
-
+* **isLoading**
 ## fields
-
-- **fields**
-
+* **fields**
 ## relations
-
-- **relations**
+* **relations**
 
 
 
 # Active Record & Mutable - FieldRef
 
 # FieldRef
-
-- **FieldRef**
-
+* **FieldRef**
 ## subscribe
-
-- **subscribe**
+* **subscribe**
 
 Arguments:
-
-- **listener**
-
+* **listener**
 ## valueChanged
-
-- **valueChanged**
-
+* **valueChanged**
 ## load
-
 Loads the related value - returns null if the related value is not found
-
 ## valueIsNull
-
-- **valueIsNull**
-
+* **valueIsNull**
 ## originalValueIsNull
-
-- **originalValueIsNull**
-
+* **originalValueIsNull**
 ## validate
-
-- **validate**
-
+* **validate**
 ## error
-
-- **error**
-
+* **error**
 ## displayValue
-
-- **displayValue**
-
+* **displayValue**
 ## value
-
-- **value**
-
+* **value**
 ## originalValue
-
-- **originalValue**
-
+* **originalValue**
 ## inputValue
-
-- **inputValue**
-
+* **inputValue**
 ## entityRef
-
-- **entityRef**
-
+* **entityRef**
 ## container
-
-- **container**
-
+* **container**
 ## metadata
-
-- **metadata**
+* **metadata**
 
 
 
 # Active Record & Mutable - getEntityRef
 
 # getEntityRef
-
 Retrieves the EntityRef object associated with the specified entity instance.
 The EntityRef provides methods for performing operations on the entity instance.
 
-#### returns:
 
+#### returns:
 The EntityRef object associated with the specified entity instance.
 
-#### throws:
 
+#### throws:
 If throwException is true and the EntityRef object cannot be retrieved.
 
-#### see:
 
+#### see:
 [Active Record & EntityBase](https://remult.dev/docs/active-record)
 
 Arguments:
-
-- **entity** - The entity instance.
-- **throwException** - Indicates whether to throw an exception if the EntityRef object cannot be retrieved.
+* **entity** - The entity instance.
+* **throwException** - Indicates whether to throw an exception if the EntityRef object cannot be retrieved.
 
 
 
 # Active Record & Mutable - getFields
 
 # getFields
-
-- **getFields**
+* **getFields**
 
 Arguments:
-
-- **container**
-- **remult**
+* **container**
+* **remult**
 
 
 

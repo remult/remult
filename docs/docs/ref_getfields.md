@@ -1,8 +1,6 @@
 # getFields
-
-- **getFields**
+* **getFields**
 
 Arguments:
-
-- **container**
-- **remult**
+* **container**
+* **remult**

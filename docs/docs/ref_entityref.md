@@ -1,99 +1,55 @@
 # EntityRef
-
-- **EntityRef**
-
+* **EntityRef**
 ## hasErrors
-
-- **hasErrors**
-
+* **hasErrors**
 ## undoChanges
-
-- **undoChanges**
-
+* **undoChanges**
 ## save
-
-- **save**
-
-## reload
-
-- **reload**
-
-## delete
-
-- **delete**
-
-## isNew
-
-- **isNew**
-
-## wasChanged
-
-- **wasChanged**
-
-## wasDeleted
-
-- **wasDeleted**
-
-## getId
-
-- **getId**
-
-## getOriginalId
-
-- **getOriginalId**
-
-## toApiJson
-
-- **toApiJson**
-
-## validate
-
-- **validate**
-
-## clone
-
-- **clone**
-
-## subscribe
-
-- **subscribe**
+* **save**
 
 Arguments:
+* **options**
+   * **select**
+## reload
+* **reload**
+## delete
+* **delete**
+## isNew
+* **isNew**
+## wasChanged
+* **wasChanged**
+## wasDeleted
+* **wasDeleted**
+## getId
+* **getId**
+## getOriginalId
+* **getOriginalId**
+## toApiJson
+* **toApiJson**
+## validate
+* **validate**
+## clone
+* **clone**
+## subscribe
+* **subscribe**
 
-- **listener**
-
+Arguments:
+* **listener**
 ## error
-
-- **error**
-
+* **error**
 ## repository
-
-- **repository**
-
+* **repository**
 ## metadata
-
-- **metadata**
-
+* **metadata**
 ## apiUpdateAllowed
-
-- **apiUpdateAllowed**
-
+* **apiUpdateAllowed**
 ## apiDeleteAllowed
-
-- **apiDeleteAllowed**
-
+* **apiDeleteAllowed**
 ## apiInsertAllowed
-
-- **apiInsertAllowed**
-
+* **apiInsertAllowed**
 ## isLoading
-
-- **isLoading**
-
+* **isLoading**
 ## fields
-
-- **fields**
-
+* **fields**
 ## relations
-
-- **relations**
+* **relations**
