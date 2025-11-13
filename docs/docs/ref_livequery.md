@@ -1,31 +1,27 @@
 # LiveQuery
-
 The `LiveQuery` interface represents a live query that allows subscribing to changes in the query results.
-
 ## subscribe
-
 Subscribes to changes in the live query results.
 
-#### returns:
 
+#### returns:
 A function that can be used to unsubscribe from the live query.
 
-#### example:
 
+#### example:
 ```ts
 // Subscribing to changes in a live query
-const unsubscribe = taskRepo
+const unsubscribe = repo(Task)
   .liveQuery({
     limit: 20,
-    orderBy: { createdAt: 'asc' },
+    orderBy: { createdAt: 'asc' }
     //where: { completed: true },
   })
-  .subscribe((info) => setTasks(info.applyChanges))
+  .subscribe(info => setTasks(info.applyChanges));
 
 // Later, to unsubscribe
-unsubscribe()
+unsubscribe();
 ```
 
 Arguments:
-
-- **next** - A function that will be called with information about changes in the query results.
+* **next** - A function that will be called with information about changes in the query results.

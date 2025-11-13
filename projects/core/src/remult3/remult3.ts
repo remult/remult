@@ -472,9 +472,14 @@ export type GroupByResult<
 
 /** used to perform CRUD operations on an `entityType` */
 export interface Repository<entityType> {
-  /** returns a result array based on the provided options */
+  /** returns an array based on the provided options */
   find(options?: FindOptions<entityType>): Promise<entityType[]>
-  /** returns a result array based on the provided options */
+  /** Using the same options as the {@link find} method, but subscribing to entity changes.
+   *
+   * _Note that today it subscribes to entity changes, but not included entities [Feature Request](https://github.com/remult/remult/issues/712)!_
+   *
+   * @see {@link LiveQuery}
+   */
   liveQuery(options?: FindOptions<entityType>): LiveQuery<entityType>
   /** returns the first item that matchers the `where` condition
    * @example
@@ -890,7 +895,7 @@ export interface LiveQuery<entityType> {
    *
    * @example
    * // Subscribing to changes in a live query
-   * const unsubscribe = taskRepo
+   * const unsubscribe = repo(Task)
    *   .liveQuery({
    *     limit: 20,
    *     orderBy: { createdAt: 'asc' }
@@ -955,20 +960,14 @@ export interface LiveQueryChangeInfo<entityType> {
   applyChanges(prevState: entityType[] | undefined): entityType[]
 }
 export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
-  /** Determines the number of rows returned by the request, on the browser the default is 100 rows
+  /** Number of rows returned. _(Defaults to 100 in the browser)_
    * @example
-   * await repo(Products).find({
-   *   limit: 10,
-   *   page: 2
-   * })
+   * await repo(Products).find({ limit: 10 })
    */
   limit?: number
-  /** Determines the page number that will be used to extract the data
+  /** Determines the page number to retrieve. Works in tandem with the `limit` option.
    * @example
-   * await repo(Products).find({
-   *   limit: 10,
-   *  page: 2
-   * })
+   * await repo(Products).find({ page: 2 })
    */
   page?: number
 }
@@ -1327,7 +1326,7 @@ export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
 
   /** filters the data
    * @example
-   * await taskRepo.find({where: { completed:false }})
+   * await taskRepo.find({ where: { completed:false } })
    * @see For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
    */
   where?: EntityFilter<entityType>
