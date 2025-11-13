@@ -56,15 +56,18 @@ describe("api file variations", async () => {
     ).toMatchInlineSnapshot(`
       "import { remultApi } from "remult/remult-express";
       import { createPostgresDataProvider } from "remult/postgres";
-      import { getUserFromRequest } from "../demo/auth/server/auth.js";
       import { auth } from "../demo/auth/server/index.js";
         
       export const api = remultApi({
         dataProvider: createPostgresDataProvider({
           connectionString: process.env["DATABASE_URL"]    
         }),
-        getUser: getUserFromRequest,
-        modules: [auth()],
+        modules: [
+          auth({
+            // Add some roles to some users with env variable.
+            // SUPER_ADMIN_EMAILS
+          }),
+        ],
       });"
     `);
   });
@@ -84,7 +87,6 @@ describe("api file variations", async () => {
       import { createKnexDataProvider } from "remult/remult-knex";
       import { MSSQL_SERVER, MSSQL_DATABASE, MSSQL_USER, MSSQL_PASSWORD, MSSQL_INSTANCE } from "$env/static/private";
       import { building } from "$app/environment";
-      import { getUserFromRequest } from "../demo/auth/server/auth";
       import { auth } from "../demo/auth/server/index";
         
       export const api = remultApi({
@@ -102,8 +104,12 @@ describe("api file variations", async () => {
             },
           }
         }),
-        getUser: getUserFromRequest,
-        modules: [auth()],
+        modules: [
+          auth({
+            // Add some roles to some users with env variable.
+            // SUPER_ADMIN_EMAILS
+          }),
+        ],
       });"
     `);
   });
@@ -124,7 +130,6 @@ describe("api file variations", async () => {
       import { MONGO_URL, MONGO_DB } from "$env/static/private";
       import { building } from "$app/environment";
       import { MongoDataProvider } from "remult/remult-mongo";
-      import { getUserFromRequest } from "../demo/auth/server/auth";
       import { auth } from "../demo/auth/server/index";
         
       export const api = remultApi({
@@ -133,8 +138,12 @@ describe("api file variations", async () => {
           await client.connect()
           return new MongoDataProvider(client.db(MONGO_DB), client)
         },
-        getUser: getUserFromRequest,
-        modules: [auth()],
+        modules: [
+          auth({
+            // Add some roles to some users with env variable.
+            // SUPER_ADMIN_EMAILS
+          }),
+        ],
       });"
     `);
   });
@@ -148,15 +157,18 @@ describe("api file variations", async () => {
         false,
       ),
     ).toMatchInlineSnapshot(`
-        "import { remultApi } from "remult/remult-express";
-        import { getUserFromRequest } from "../demo/auth/server/auth.js";
-        import { auth } from "../demo/auth/server/index.js";
-          
-        export const api = remultApi({
-          getUser: getUserFromRequest,
-          modules: [auth()],
-        });"
-      `);
+      "import { remultApi } from "remult/remult-express";
+      import { auth } from "../demo/auth/server/index.js";
+        
+      export const api = remultApi({
+        modules: [
+          auth({
+            // Add some roles to some users with env variable.
+            // SUPER_ADMIN_EMAILS
+          }),
+        ],
+      });"
+    `);
   });
 });
 
@@ -328,7 +340,7 @@ describe.sequential("test-write-react stuff", async () => {
                   </div>
                   <div className="intro__stack-item">
                     <span>Auth</span>
-                    auth.js
+                    Better-Auth
                   </div>
                 </div>
               </Tile>
@@ -398,7 +410,7 @@ describe.sequential("test-write-react stuff", async () => {
                   </div>
                   <div className="intro__stack-item">
                     <span>Auth</span>
-                    auth.js
+                    Better-Auth
                   </div>
                 </div>
               </Tile>
@@ -435,10 +447,17 @@ import { Roles } from "./Roles.js";`),
     expect(fs.readFileSync(apiPath).toString()).toMatchInlineSnapshot(`
       "import { remultApi } from "remult/remult-nuxt";
       import { Task } from "../../demo/todo/Task.js";
+      import { auth } from "../../demo/auth/server/index.js";
         
       export const api = remultApi({
         admin: true,
         entities: [Task],
+        modules: [
+          auth({
+            // Add some roles to some users with env variable.
+            // SUPER_ADMIN_EMAILS
+          }),
+        ],
       });
 
       export default defineEventHandler(api);"
