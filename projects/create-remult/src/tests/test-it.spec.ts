@@ -19,10 +19,11 @@ import { react, writeAppTsxAndReadme } from "../frameworks/react";
 import { nextJs, removeJs } from "../frameworks/nextjs";
 import { adjustEnvVariablesForSveltekit } from "../frameworks/sveltekit";
 import { buildApiFile } from "../utils/buildApiFile";
+import { Auths } from "../AUTH.js";
 
 describe("api file variations", async () => {
   test("basic", () => {
-    expect(buildApiFile(DATABASES.json, Servers.express, false, false, false))
+    expect(buildApiFile(DATABASES.json, Servers.express, null, false, false))
       .toMatchInlineSnapshot(`
         "import { remultApi } from "remult/remult-express";
           
@@ -31,7 +32,7 @@ describe("api file variations", async () => {
   });
   test("with db", () => {
     expect(
-      buildApiFile(DATABASES.postgres, Servers.express, false, false, false),
+      buildApiFile(DATABASES.postgres, Servers.express, null, false, false),
     ).toMatchInlineSnapshot(`
       "import { remultApi } from "remult/remult-express";
       import { createPostgresDataProvider } from "remult/postgres";
@@ -45,7 +46,13 @@ describe("api file variations", async () => {
   });
   test("with db and auth", () => {
     expect(
-      buildApiFile(DATABASES.postgres, Servers.express, true, false, false),
+      buildApiFile(
+        DATABASES.postgres,
+        Servers.express,
+        Auths["better-auth"],
+        false,
+        false,
+      ),
     ).toMatchInlineSnapshot(`
       "import { remultApi } from "remult/remult-express";
       import { createPostgresDataProvider } from "remult/postgres";
@@ -67,7 +74,7 @@ describe("api file variations", async () => {
         buildApiFile(
           DATABASES.mssql,
           FRAMEWORKS.find((x) => x.name === "sveltekit")?.serverInfo!,
-          true,
+          Auths["better-auth"],
           false,
           false,
         ),
@@ -106,7 +113,7 @@ describe("api file variations", async () => {
         buildApiFile(
           DATABASES.mongodb,
           FRAMEWORKS.find((x) => x.name === "sveltekit")?.serverInfo!,
-          true,
+          Auths["better-auth"],
           false,
           false,
         ),
@@ -132,8 +139,15 @@ describe("api file variations", async () => {
     `);
   });
   test("with auth", () => {
-    expect(buildApiFile(DATABASES.json, Servers.express, true, false, false))
-      .toMatchInlineSnapshot(`
+    expect(
+      buildApiFile(
+        DATABASES.json,
+        Servers.express,
+        Auths["better-auth"],
+        false,
+        false,
+      ),
+    ).toMatchInlineSnapshot(`
         "import { remultApi } from "remult/remult-express";
         import { getUserFromRequest } from "../demo/auth/server/auth.js";
         import { auth } from "../demo/auth/server/index.js";
@@ -151,7 +165,7 @@ describe("test vite config", async () => {
     expect(
       createViteConfig({
         framework: "vue",
-        withAuth: true,
+        authInfo: Auths["better-auth"],
         withPlugin: true,
       }),
     ).toMatchInlineSnapshot(`
@@ -176,7 +190,7 @@ describe("test vite config", async () => {
     expect(
       createViteConfig({
         framework: "vue",
-        withAuth: true,
+        authInfo: Auths["better-auth"],
         withPlugin: false,
       }),
     ).toMatchInlineSnapshot(`
@@ -209,7 +223,7 @@ describe("test vite config", async () => {
     expect(
       createViteConfig({
         framework: "vue",
-        withAuth: false,
+        authInfo: null,
         withPlugin: false,
       }),
     ).toMatchInlineSnapshot(`
@@ -249,7 +263,7 @@ describe.sequential("test-write-react stuff", async () => {
     root: "tmp",
     server: Servers.express,
     templatesDir: "templates",
-    withAuth: true,
+    authInfo: Auths["better-auth"],
     distLocation: "dist",
     envVariables: [],
   };
@@ -413,7 +427,7 @@ import { Roles } from "./Roles.js";`),
     var nuxt = FRAMEWORKS.find((x) => x.name === "nuxt")!.serverInfo!;
     fs.writeFileSync(
       apiPath,
-      buildApiFile(DATABASES.json, nuxt, false, true, true),
+      buildApiFile(DATABASES.json, nuxt, Auths["better-auth"], true, true),
     );
     nuxt.writeFiles!({
       ...basicArgs,
