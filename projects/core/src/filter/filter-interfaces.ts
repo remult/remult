@@ -281,6 +281,9 @@ export class Filter {
     entity: EntityMetadata<T>,
     whereItem: EntityFilter<T>,
   ): Filter {
+    if ((whereItem as any) === 'all') {
+      whereItem = {} as EntityFilter<T>
+    }
     let result: Filter[] = []
     for (const key in whereItem) {
       if (Object.prototype.hasOwnProperty.call(whereItem, key)) {
