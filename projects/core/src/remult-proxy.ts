@@ -211,11 +211,11 @@ export class RemultProxy implements Remult {
           .remultFactory()
           .repo(...args)
           .getEntityRef(...args2),
-      insert: (args2: any) =>
+      insert: (args2: any, args3: any) =>
         self
           .remultFactory()
           .repo(...args)
-          .insert(args2),
+          .insert(args2, args3),
       liveQuery: (...args2) =>
         self
           .remultFactory()
@@ -239,11 +239,11 @@ export class RemultProxy implements Remult {
           .remultFactory()
           .repo(...args)
           .upsert(args2),
-      update: (a: any, b: any) =>
+      update: (a: any, b: any, c: any) =>
         self
           .remultFactory()
           .repo(...args)
-          .update(a, b),
+          .update(a, b, c),
     }
     entityCache.set(args[1]!, result!)
     return result

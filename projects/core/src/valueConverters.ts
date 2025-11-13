@@ -1,6 +1,8 @@
 import { InputTypes } from '../inputTypes.js'
 import type { ValueConverter } from './column-interfaces.js'
 
+const zeroDate = new Date('0000-01-01')
+
 export class ValueConverters {
   static readonly Date: ValueConverter<Date> = {
     toJson: (val: Date) => {
@@ -52,6 +54,7 @@ export class ValueConverters {
     },
     fromJson: (value: string) => {
       if (!value || value == '' || value == '0000-00-00') return null!
+      if (value == '0000-01-01') return zeroDate
       let d = new Date(Date.parse(value))
       d.setMinutes(d.getMinutes() + d.getTimezoneOffset())
       return d
@@ -72,9 +75,10 @@ export class ValueConverters {
       return value.toLocaleDateString(undefined)
     },
   }
-  static readonly DateOnlyString: ValueConverter<Date> = {
+  static readonly DateOnlyString: ValueConverter<Date> & { zeroDate: Date } = {
     ...ValueConverters.DateOnly,
     toDb: (d: Date) => {
+      if (d === zeroDate) return '00000000'
       let val = ValueConverters.DateOnly.toJson!(d)
       if (!val) return undefined
       return val.replace(/-/g, '')
@@ -82,14 +86,14 @@ export class ValueConverters {
     fromDb: (val: string) => {
       if (val === null) return null!
       if (!val) return undefined!
+      if (val === '00000000') return zeroDate
       return new Date(
-        val.substring(0, 4) +
-          '-' +
-          val.substring(4, 6) +
-          '-' +
-          val.substring(6, 8),
+        Number(val.substring(0, 4)),
+        Number(val.substring(4, 6)) - 1,
+        Number(val.substring(6, 8)),
       )
     },
+    zeroDate,
   }
 
   static readonly Boolean: ValueConverter<Boolean> = {
@@ -156,6 +160,7 @@ export class ValueConverters {
     toDb: (x) => ValueConverters.JsonString.toDb!(x),
     fromInput: (x) => ValueConverters.Default.fromJson(x),
     toInput: (x) => ValueConverters.Default.toJson(x),
+    toDbSql: (x) => x,
     displayValue: (x) => x + '',
     fieldTypeInDb: '',
     inputType: 'text',
@@ -167,8 +172,8 @@ export class ValueConverters {
       x == null
         ? null
         : x
-        ? JSON.parse(ValueConverters.JsonString.fromJson!(x))
-        : undefined,
+          ? JSON.parse(ValueConverters.JsonString.fromJson!(x))
+          : undefined,
     toDb: (x) =>
       x !== undefined
         ? x === null

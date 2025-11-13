@@ -1,9 +1,11 @@
 import { expect, it, describe, beforeEach } from 'vitest'
 import {
   Entity,
+  type EntityMetadata,
   Fields,
   Remult,
   type SqlCommand,
+  type SqlCommandWithParameters,
   SqlDatabase,
   type SqlImplementation,
   dbNamesOf,
@@ -39,10 +41,7 @@ describe('test sql implementation', () => {
 
         execute: async (sql) => {
           commands.push(sql)
-          return {
-            getColumnKeyInResultForIndexInSelect: undefined!,
-            rows: [],
-          }
+          return { getColumnKeyInResultForIndexInSelect: undefined!, rows: [] }
         },
       }) satisfies SqlCommand,
     async entityIsUsedForTheFirstTime(entity) {},
@@ -53,11 +52,7 @@ describe('test sql implementation', () => {
   const repo = new Remult(db).repo(task)
   beforeEach(() => (commands = []))
   it('test basic select', async () => {
-    await repo.find({
-      where: {
-        completed: true,
-      },
-    })
+    await repo.find({ where: { completed: true } })
     expect(commands).toMatchInlineSnapshot(`
       [
         "select [id], [title], [completed], a+b as exp
@@ -68,13 +63,8 @@ describe('test sql implementation', () => {
 
   it('test basic select with select', async () => {
     await repo.find({
-      where: {
-        completed: true,
-      },
-      select: {
-        id: true,
-        title: true,
-      },
+      where: { completed: true },
+      select: { id: true, title: true },
     })
     expect(commands).toMatchInlineSnapshot(`
       [
@@ -87,9 +77,7 @@ describe('test sql implementation', () => {
     expect(
       await SqlDatabase.filterToRaw(
         repo,
-        {
-          completed: true,
-        },
+        { completed: true },
         undefined,
         await dbNamesOf(repo, db.wrapIdentifier),
       ),
@@ -99,9 +87,7 @@ describe('test sql implementation', () => {
     expect(
       await SqlDatabase.filterToRaw(
         repo,
-        {
-          completed: true,
-        },
+        { completed: true },
         undefined,
         new Proxy(await dbNamesOf(repo, db.wrapIdentifier), {
           get(target: any, p, receiver) {
@@ -111,4 +97,70 @@ describe('test sql implementation', () => {
       ),
     ).toMatchInlineSnapshot('"alias.[completed] = true"')
   })
+  it('test argument', async () => {
+    type args = { testNumber: number }
+    @Entity('myEntity')
+    class myEntity {
+      static args = prepareArg<myEntity, args>()
+      @Fields.string()
+      id = ''
+      @Fields.integer({
+        sqlExpression: myEntity.args.sqlExpression((_, args, c) => {
+          if (!c || !args) return `111`
+          return `3 + ${c.param(args.testNumber)}`
+        }),
+      })
+      exp = 0
+    }
+    const repo = new Remult(db).repo(myEntity)
+    await repo.find({
+      args: myEntity.args({ testNumber: 5 }),
+      orderBy: { exp: 'asc' },
+    })
+    expect(commands).toMatchInlineSnapshot(`
+      [
+        "select [id], (3 + 5) as exp
+       from [myEntity] Order By exp",
+      ]
+    `)
+  })
+  it('test to db sql', async () => {
+    @Entity('myEntity')
+    class myEntity {
+      @Fields.string()
+      id = ''
+      @Fields.integer({
+        valueConverter: {
+          toDbSql: (x) => `1+${x}`,
+        },
+      })
+      exp = 0
+    }
+    const repo = new Remult(db).repo(myEntity)
+    await repo.find({ where: { exp: 2 } })
+    expect(commands).toMatchInlineSnapshot(`
+      [
+        "select [id], [exp]
+       from [myEntity] where [exp] = 1+2 Order By [id]",
+      ]
+    `)
+  })
 })
+
+function prepareArg<entityType, argsType>() {
+  const result = (arg: argsType) => arg
+  return Object.assign(result, {
+    sqlExpression: (
+      exp: (
+        entityMetadata: EntityMetadata<entityType>,
+        args: argsType,
+        c: SqlCommandWithParameters,
+      ) => string | Promise<string>,
+    ) =>
+      exp as (
+        entityMetadata: EntityMetadata<entityType>,
+        args: any,
+        c?: SqlCommandWithParameters,
+      ) => string | Promise<string>,
+  })
+}

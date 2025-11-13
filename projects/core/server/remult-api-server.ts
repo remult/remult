@@ -671,6 +671,7 @@ export class RemultServerImplementation<RequestType>
         this.process(async (c, req, res, reqInfo, _, orig) =>
           dataApiFactory(c).put(
             res,
+            req,
             reqInfo.params.id,
             await this.coreOptions.getRequestBody(orig),
           ),
@@ -920,12 +921,12 @@ export class RemultServerImplementation<RequestType>
             f.valueType == String
               ? 'string'
               : f.valueType == Boolean
-              ? 'boolean'
-              : f.valueType == Date
-              ? 'string'
-              : f.valueType == Number
-              ? 'number'
-              : 'object'
+                ? 'boolean'
+                : f.valueType == Date
+                  ? 'string'
+                  : f.valueType == Number
+                    ? 'number'
+                    : 'object'
           if (f.options.includeInApi !== false) {
             properties[f.key] = {
               type,

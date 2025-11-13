@@ -478,14 +478,15 @@ export interface EntityDataProvider {
   count(where: Filter): Promise<number>
   find(options?: EntityDataProviderFindOptions): Promise<Array<any>>
   groupBy(options?: EntityDataProviderGroupByOptions): Promise<any[]>
-  update(id: any, data: any): Promise<any>
+  update(id: any, data: any, options?: InsertOrUpdateOptions): Promise<any>
   delete(id: any): Promise<void>
-  insert(data: any): Promise<any>
+  insert(data: any, options?: InsertOrUpdateOptions): Promise<any>
 }
 export interface EntityDataProviderFindOptions {
   select?: string[]
   where?: Filter
   limit?: number
+  args?: any
   page?: number
   orderBy?: Sort
 }
@@ -1176,7 +1177,11 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
    */
   sqlExpression?:
     | string
-    | ((entity: EntityMetadata<entityType>) => string | Promise<string>)
+    | ((
+        entity: EntityMetadata<entityType>,
+        args?: any,
+        command?: SqlCommandWithParameters,
+      ) => string | Promise<string>)
   /** For fields that shouldn't be part of an update or insert statement */
   dbReadOnly?: boolean
   /** The value converter to be used when loading and saving this field */
@@ -1758,6 +1763,7 @@ export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
    * await repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
    */
   orderBy?: EntityOrderBy<entityType>
+  args?: any
 }
 export declare class ForbiddenError extends Error {
   constructor(message?: string)
@@ -1956,6 +1962,9 @@ export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
       setData(data: any): Promise<void>
     }) => Promise<void>,
   ): Promise<void>
+}
+export declare type InsertOrUpdateOptions = {
+  select: "none"
 }
 export declare function isBackend(): boolean
 export declare class JsonDataProvider implements DataProvider {
@@ -2785,8 +2794,14 @@ export interface Repository<entityType> {
    * @example
    * await taskRepo.insert([{title:"task a"}, {title:"task b", completed:true }])
    */
-  insert(item: Partial<MembersOnly<entityType>>[]): Promise<entityType[]>
-  insert(item: Partial<MembersOnly<entityType>>): Promise<entityType>
+  insert(
+    item: Partial<MembersOnly<entityType>>[],
+    options?: InsertOrUpdateOptions,
+  ): Promise<entityType[]>
+  insert(
+    item: Partial<MembersOnly<entityType>>,
+    options?: InsertOrUpdateOptions,
+  ): Promise<entityType>
   /** Updates an item, based on its `id`
    * @example
    * taskRepo.update(task.id,{...task,completed:true})
@@ -2794,16 +2809,18 @@ export interface Repository<entityType> {
   update(
     id: idType<entityType>,
     item: Partial<MembersOnly<entityType>>,
+    options?: InsertOrUpdateOptions,
   ): Promise<entityType>
   update(
     id: Partial<MembersOnly<entityType>>,
     item: Partial<MembersOnly<entityType>>,
+    options?: InsertOrUpdateOptions,
   ): Promise<entityType>
   /**
    * Updates all items that match the `where` condition.
    */
   updateMany(options: {
-    where: EntityFilter<entityType>
+    where: EntityFilter<entityType> | "all"
     set: Partial<MembersOnly<entityType>>
   }): Promise<number>
   /**
@@ -2842,7 +2859,9 @@ export interface Repository<entityType> {
   /**
    * Deletes all items that match the `where` condition.
    */
-  deleteMany(options: { where: EntityFilter<entityType> }): Promise<number>
+  deleteMany(options: {
+    where: EntityFilter<entityType> | "all"
+  }): Promise<number>
   /** Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called.
    *
    * It's useful to start or reset a form taking your entity default values into account.
@@ -3409,6 +3428,7 @@ export interface ValueConverter<valueType> {
    * toDb: val => val?.toISOString()
    */
   toDb?(val: valueType): any
+  toDbSql?(val: string): string
   /**
    * Converts a value of valueType to a string suitable for an HTML input element.
    *
@@ -3465,7 +3485,9 @@ export interface ValueConverter<valueType> {
 export declare class ValueConverters {
   static readonly Date: ValueConverter<Date>
   static readonly DateOnly: ValueConverter<Date>
-  static readonly DateOnlyString: ValueConverter<Date>
+  static readonly DateOnlyString: ValueConverter<Date> & {
+    zeroDate: Date
+  }
   static readonly Boolean: ValueConverter<Boolean>
   static readonly Number: ValueConverter<number>
   static readonly String: ValueConverter<String>

@@ -19,7 +19,7 @@ export interface UpsertOptions<entityType> {
 export interface EntityRefBase<entityType> extends Subscribable {
   hasErrors(): boolean
   undoChanges(): void
-  save(): Promise<entityType>
+  save(options?: InsertOrUpdateOptions): Promise<entityType>
   reload(): Promise<entityType>
   delete(): Promise<void>
   isNew(): boolean //
@@ -472,9 +472,14 @@ export type GroupByResult<
 
 /** used to perform CRUD operations on an `entityType` */
 export interface Repository<entityType> {
-  /** returns a result array based on the provided options */
+  /** returns an array based on the provided options */
   find(options?: FindOptions<entityType>): Promise<entityType[]>
-  /** returns a result array based on the provided options */
+  /** Using the same options as the {@link find} method, but subscribing to entity changes.
+   *
+   * _Note that today it subscribes to entity changes, but not included entities [Feature Request](https://github.com/remult/remult/issues/712)!_
+   *
+   * @see {@link LiveQuery}
+   */
   liveQuery(options?: FindOptions<entityType>): LiveQuery<entityType>
   /** returns the first item that matchers the `where` condition
    * @example
@@ -751,8 +756,14 @@ export interface Repository<entityType> {
    * @example
    * await taskRepo.insert([{title:"task a"}, {title:"task b", completed:true }])
    */
-  insert(item: Partial<MembersOnly<entityType>>[]): Promise<entityType[]>
-  insert(item: Partial<MembersOnly<entityType>>): Promise<entityType>
+  insert(
+    item: Partial<MembersOnly<entityType>>[],
+    options?: InsertOrUpdateOptions,
+  ): Promise<entityType[]>
+  insert(
+    item: Partial<MembersOnly<entityType>>,
+    options?: InsertOrUpdateOptions,
+  ): Promise<entityType>
 
   /** Updates an item, based on its `id`
    * @example
@@ -761,16 +772,18 @@ export interface Repository<entityType> {
   update(
     id: idType<entityType>,
     item: Partial<MembersOnly<entityType>>,
+    options?: InsertOrUpdateOptions,
   ): Promise<entityType>
   update(
     id: Partial<MembersOnly<entityType>>,
     item: Partial<MembersOnly<entityType>>,
+    options?: InsertOrUpdateOptions,
   ): Promise<entityType>
   /**
    * Updates all items that match the `where` condition.
    */
   updateMany(options: {
-    where: EntityFilter<entityType>
+    where: EntityFilter<entityType> | 'all'
     set: Partial<MembersOnly<entityType>>
   }): Promise<number>
 
@@ -811,7 +824,9 @@ export interface Repository<entityType> {
   /**
    * Deletes all items that match the `where` condition.
    */
-  deleteMany(options: { where: EntityFilter<entityType> }): Promise<number>
+  deleteMany(options: {
+    where: EntityFilter<entityType> | 'all'
+  }): Promise<number>
 
   /** Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called.
    *
@@ -880,7 +895,7 @@ export interface LiveQuery<entityType> {
    *
    * @example
    * // Subscribing to changes in a live query
-   * const unsubscribe = taskRepo
+   * const unsubscribe = repo(Task)
    *   .liveQuery({
    *     limit: 20,
    *     orderBy: { createdAt: 'asc' }
@@ -945,20 +960,14 @@ export interface LiveQueryChangeInfo<entityType> {
   applyChanges(prevState: entityType[] | undefined): entityType[]
 }
 export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
-  /** Determines the number of rows returned by the request, on the browser the default is 100 rows
+  /** Number of rows returned. _(Defaults to 100 in the browser)_
    * @example
-   * await repo(Products).find({
-   *   limit: 10,
-   *   page: 2
-   * })
+   * await repo(Products).find({ limit: 10 })
    */
   limit?: number
-  /** Determines the page number that will be used to extract the data
+  /** Determines the page number to retrieve. Works in tandem with the `limit` option.
    * @example
-   * await repo(Products).find({
-   *   limit: 10,
-   *  page: 2
-   * })
+   * await repo(Products).find({ page: 2 })
    */
   page?: number
 }
@@ -1317,7 +1326,7 @@ export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
 
   /** filters the data
    * @example
-   * await taskRepo.find({where: { completed:false }})
+   * await taskRepo.find({ where: { completed:false } })
    * @see For more usage examples see [EntityFilter](https://remult.dev/docs/entityFilter.html)
    */
   where?: EntityFilter<entityType>
@@ -1328,7 +1337,9 @@ export interface FindOptionsBase<entityType> extends LoadOptions<entityType> {
    * await repo(Products).find({ orderBy: { price: "desc", name: "asc" }})
    */
   orderBy?: EntityOrderBy<entityType>
+  args?: any
 }
+
 export interface FindFirstOptions<entityType>
   extends FindOptionsBase<entityType>,
     FindFirstOptionsBase<entityType> {}
@@ -1496,6 +1507,7 @@ export declare type EntityIdFields<entityType> = {
 export declare type EntitySelectFields<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?: boolean
 }
+export declare type InsertOrUpdateOptions = { select: 'none' }
 
 export interface ClassFieldDecoratorContextStub<entityType, valueType> {
   readonly access: {
@@ -1546,6 +1558,14 @@ export const flags = {
     ```
   
   - 
+*/
+/*p1 - https://github.com/remult/remult/discussions/438
+  - should we use the arg for update and insert? for the returning query?
+  - Does dbNamesOf still makes sense? I think that abstraction, regarding sql expression has lost it's merit
+  - remember caching of sql expression  calculations that took a recursive amount of time for JYC
+  - maybe introduce a ready dbNamesOf of argument that will be aware of prefixes
+  - I've changed the order by to support order by 1
+
 */
 //p1 - deleteAll({title:undefined}) should throw an error - not return 0 (with direct call to db)
 //p1 - remult-create, move db question ahead of auth - everyone needs a database, not everyone need auth

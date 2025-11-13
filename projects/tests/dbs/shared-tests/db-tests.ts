@@ -31,7 +31,10 @@ import {
 } from '../../../core/src/remult3/classDescribers'
 import { Validators } from '../../../core/src/validators'
 import { Done } from '../../tests/Done'
-import { TestDataApiResponse } from '../../tests/TestDataApiResponse'
+import {
+  TestDataApiRequest,
+  TestDataApiResponse,
+} from '../../tests/TestDataApiResponse'
 import { d } from '../../tests/d'
 import { dWithPrefilter } from '../../tests/dWithPrefilter'
 import { entityForrawFilter1 } from '../../tests/entityForCustomFilter'
@@ -74,6 +77,31 @@ export function commonDbTests(
     expect(
       await r.count({ $and: [{ id: { $nin: [0] } }, { id: { $nin: [2] } }] }),
     ).toBe(1)
+  })
+  it("doesn't return a result when we don't need it", async () => {
+    const r = await createEntity(stam)
+    expect(
+      await r.insert(
+        [
+          { id: 0, title: 'noam' },
+          { id: 1, title: 'yael' },
+          { id: 2, title: 'ronen' },
+        ],
+        { select: 'none' },
+      ),
+    ).toBeUndefined()
+    expect(await r.count()).toBe(3)
+  })
+  it("update doesn't return a result when we don't need it", async () => {
+    const r = await createEntity(stam)
+    expect(
+      await r.insert({ id: 1, title: 'noam' }, { select: 'none' }),
+    ).toBeUndefined()
+    expect(await r.count()).toBe(1)
+    expect(
+      await r.update(1, { title: 'jyc' }, { select: 'none' }),
+    ).toBeUndefined()
+    expect((await r.find())[0].title).toBe('jyc')
   })
 
   it('what', async () => {
@@ -282,7 +310,7 @@ export function commonDbTests(
       expect(data.modelState.name).toBe('invalid')
       d.ok()
     }
-    await api.put(t, 1, {
+    await api.put(t, new TestDataApiRequest(), 1, {
       name: '1',
     })
     d.test()
@@ -465,7 +493,7 @@ export function commonDbTests(
       expect(data.modelState.name).toBe('invalid on column')
       d.ok()
     }
-    await api.put(t, 1, {
+    await api.put(t, new TestDataApiRequest(), 1, {
       name: '1',
     })
     d.test()
@@ -744,7 +772,7 @@ export function commonDbTests(
       d.ok()
     }
     count = 0
-    await api.put(t, 1, {
+    await api.put(t, new TestDataApiRequest(), 1, {
       categoryName: 'noam 1',
     })
     d.test()

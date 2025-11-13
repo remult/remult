@@ -44,6 +44,7 @@ export {
   RepositoryRelations,
   EntityIdFields,
   EntitySelectFields,
+  InsertOrUpdateOptions,
   ClassFieldDecorator,
   ClassFieldDecoratorContextStub, //n1 consider removing in ts5
   LifecycleEvent,

@@ -1,4 +1,4 @@
-import type { DataApiResponse } from '../../core/src/data-api'
+import type { DataApiRequest, DataApiResponse } from '../../core/src/data-api'
 
 export class TestDataApiResponse implements DataApiResponse {
   progress(progress: number): void {}
@@ -19,6 +19,11 @@ export class TestDataApiResponse implements DataApiResponse {
   }
   error(data: any) {
     throw data
+  }
+}
+export class TestDataApiRequest implements DataApiRequest {
+  get(key: string): any {
+    return undefined
   }
 }
 

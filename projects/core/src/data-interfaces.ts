@@ -4,6 +4,7 @@ import type {
   GroupByOperators,
   EntityMetadata,
   MembersOnly,
+  InsertOrUpdateOptions,
 } from './remult3/remult3.js'
 import { Sort } from './sort.js'
 
@@ -37,14 +38,14 @@ export interface EntityDataProvider {
   count(where: Filter): Promise<number>
   find(options?: EntityDataProviderFindOptions): Promise<Array<any>>
   groupBy(options?: EntityDataProviderGroupByOptions): Promise<any[]>
-  update(id: any, data: any): Promise<any>
+  update(id: any, data: any, options?: InsertOrUpdateOptions): Promise<any>
   delete(id: any): Promise<void>
-  insert(data: any): Promise<any>
+  insert(data: any, options?: InsertOrUpdateOptions): Promise<any>
 }
 export interface ProxyEntityDataProvider {
-  insertMany(data: any[]): Promise<any[]>
-  deleteMany(where: Filter): Promise<number>
-  updateMany(where: Filter, data: any): Promise<number>
+  insertMany(data: any[], options?: InsertOrUpdateOptions): Promise<any[]>
+  deleteMany(where: Filter | 'all'): Promise<number>
+  updateMany(where: Filter | 'all', data: any): Promise<number>
   query(
     options: EntityDataProviderFindOptions,
     aggregateOptions: EntityDataProviderGroupByOptions,
@@ -63,6 +64,7 @@ export interface EntityDataProviderFindOptions {
   select?: string[]
   where?: Filter
   limit?: number
+  args?: any
   page?: number
   orderBy?: Sort
 }

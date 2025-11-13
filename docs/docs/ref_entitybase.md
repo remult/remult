@@ -1,35 +1,19 @@
 # EntityBase
-
-- **EntityBase**
-
+* **EntityBase**
 ## constructor
-
-- **EntityBase**
-
-## \_
-
-- **\_**
-
+* **EntityBase**
+## _
+* **_**
 ## $
-
-- **$**
-
+* **$**
 ## assign
-
-- **assign**
+* **assign**
 
 Arguments:
-
-- **values**
-
+* **values**
 ## delete
-
-- **delete**
-
+* **delete**
 ## isNew
-
-- **isNew**
-
+* **isNew**
 ## save
-
-- **save**
+* **save**

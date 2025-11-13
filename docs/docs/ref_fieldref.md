@@ -1,63 +1,33 @@
 # FieldRef
-
-- **FieldRef**
-
+* **FieldRef**
 ## subscribe
-
-- **subscribe**
+* **subscribe**
 
 Arguments:
-
-- **listener**
-
+* **listener**
 ## valueChanged
-
-- **valueChanged**
-
+* **valueChanged**
 ## load
-
 Loads the related value - returns null if the related value is not found
-
 ## valueIsNull
-
-- **valueIsNull**
-
+* **valueIsNull**
 ## originalValueIsNull
-
-- **originalValueIsNull**
-
+* **originalValueIsNull**
 ## validate
-
-- **validate**
-
+* **validate**
 ## error
-
-- **error**
-
+* **error**
 ## displayValue
-
-- **displayValue**
-
+* **displayValue**
 ## value
-
-- **value**
-
+* **value**
 ## originalValue
-
-- **originalValue**
-
+* **originalValue**
 ## inputValue
-
-- **inputValue**
-
+* **inputValue**
 ## entityRef
-
-- **entityRef**
-
+* **entityRef**
 ## container
-
-- **container**
-
+* **container**
 ## metadata
-
-- **metadata**
+* **metadata**
