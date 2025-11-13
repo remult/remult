@@ -65,6 +65,7 @@
     "cross-spawn": "^7.0.3",
     "minimist": "^1.2.8",
     "prompts": "^2.4.2",
-    "unbuild": "3.6.1"
+    "unbuild": "3.6.1",
+    "vitest": "3.1.2"
   }
 }
