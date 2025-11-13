@@ -116,7 +116,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
 
       - name: 🛠️ Build create-remult
         run: cd projects/create-remult && npm i && npm run build
@@ -125,4 +124,4 @@ jobs:
         run: cd projects/create-remult && node dist/index.mjs tmp-${{ matrix.template }}-${{ matrix.database }}-${{ matrix.server }}-${{ matrix.auth }} -t ${{ matrix.template }} -d ${{ matrix.database }} -s ${{ matrix.server }} -a ${{ matrix.auth }} --crud --admin
 
       - name: 🛠️ install & build
-        run: cd projects/create-remult/tmp-${{ matrix.template }}-${{ matrix.database }}-${{ matrix.server }}-${{ matrix.auth }} && pnpm i && pnpm run build
+        run: cd projects/create-remult/tmp-${{ matrix.template }}-${{ matrix.database }}-${{ matrix.server }}-${{ matrix.auth }} && pnpm i --no-frozen-lockfile && pnpm run build
