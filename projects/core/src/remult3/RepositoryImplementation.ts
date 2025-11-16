@@ -642,6 +642,7 @@ export class RepositoryImplementation<entityType>
       )
     } else {
       let updated = 0
+      if (where === 'all') where = undefined!
       for await (const item of this.query({ where, aggregate: undefined! })) {
         assign(item, set)
         await getEntityRef(item).save()
@@ -1264,6 +1265,7 @@ export class RepositoryImplementation<entityType>
       )
     } else {
       let deleted = 0
+      if (where === 'all') where = undefined!
       for await (const item of this.query({ where, aggregate: undefined! })) {
         await getEntityRef(item).delete()
         deleted++

@@ -80,7 +80,7 @@ describe('In Memory Tests', () => {
       }
     `)
     expect(await remult.repo(c).count({ a: 'a' })).toBe(1)
-    await remult.repo(c).update(1, { a: 'b' })
+    await remult.repo(c).update(1, { a: 'b' }) 
     expect(db.rows).toMatchInlineSnapshot(`
       {
         "c": [
