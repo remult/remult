@@ -1,5 +1,7 @@
 All notable changes to this project will be documented in this file.
 
+## [3.3.1] - 2025-11
+
 ## [3.3.0] - 2025-11-09
 
 - [#820](https://github.com/remult/remult/issues/820) - option to eliminate update/insert result to improve performance.

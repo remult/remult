@@ -2,6 +2,7 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   Entity,
   Fields,
+  Relations,
   Remult,
   SqlDatabase,
   dbNamesOf,
@@ -322,8 +323,36 @@ describe.skipIf(!postgresConnection)('Postgres Knex', () => {
     Knex.default({
       client: 'pg',
       connection: postgresConnection,
-      //debug:true
     }),
+    ({ createEntity }) => {
+      it('Test Relation Insert', async () => {
+        @Entity('cat')
+        class cat {
+          @Fields.integer()
+          id = 0
+          @Fields.string()
+          name = ''
+          @Relations.toMany(() => Task)
+          tasks?: Task[]
+        }
+        @Entity('task')
+        class Task {
+          @Fields.autoIncrement()
+          id = 0
+          @Fields.string()
+          name = ''
+          @Relations.toOne(() => cat)
+          cat?: cat
+        }
+        await createEntity(Task)
+        const repo = await createEntity(cat)
+        const c = await repo.insert({ id: 1, name: 'a' })
+        const r = await repo
+          .relations(c)
+          .tasks.insert({ name: 't1' }, { select: 'none' })
+        expect(r).toBeUndefined()
+      })
+    },
   )
 })
 
