@@ -94,6 +94,15 @@ export class RemultProxy implements Remult {
   clearAllCache() {
     return remultStatic.remultFactory().clearAllCache()
   }
+
+  clearDataProviderCache(dataProvider: DataProvider): void {
+    return remultStatic.remultFactory().clearDataProviderCache(dataProvider);
+  }
+
+  clearEntityCache(entity: ClassType<any>): void {
+    return remultStatic.remultFactory().clearEntityCache(entity);
+  }
+
   useFetch(args: typeof fetch) {
     return remultStatic.remultFactory().useFetch(args)
   }
