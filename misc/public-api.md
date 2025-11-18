@@ -468,7 +468,7 @@ export declare function Entity<entityType>(
 //[ ] ClassDecoratorContextStub from TBD is not exported
 export declare class EntityBase {
   get _(): EntityRefForEntityBase<this>
-  save(): Promise<this>
+  save(options?: InsertOrUpdateOptions): Promise<this>
   assign(values: Partial<Omit<this, keyof EntityBase>>): this
   delete(): Promise<void>
   isNew(): boolean
@@ -2785,8 +2785,14 @@ export interface Repository<entityType> {
    * @example
    * await taskRepo.save({...task, completed:true })
    */
-  save(item: Partial<MembersOnly<entityType>>[]): Promise<entityType[]>
-  save(item: Partial<MembersOnly<entityType>>): Promise<entityType>
+  save(
+    item: Partial<MembersOnly<entityType>>[],
+    options?: InsertOrUpdateOptions,
+  ): Promise<entityType[]>
+  save(
+    item: Partial<MembersOnly<entityType>>,
+    options?: InsertOrUpdateOptions,
+  ): Promise<entityType>
   /**Insert an item or item[] to the data source
    * @example
    * await taskRepo.insert({title:"task a"})

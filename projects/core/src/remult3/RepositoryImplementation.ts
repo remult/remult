@@ -799,24 +799,33 @@ export class RepositoryImplementation<entityType>
     return ref
   }
 
-  save(item: Partial<MembersOnly<entityType>>[]): Promise<entityType[]>
-  save(item: Partial<MembersOnly<entityType>>): Promise<entityType>
+  save(
+    item: Partial<MembersOnly<entityType>>[],
+    options?: InsertOrUpdateOptions,
+  ): Promise<entityType[]>
+  save(
+    item: Partial<MembersOnly<entityType>>,
+    options?: InsertOrUpdateOptions,
+  ): Promise<entityType>
   async save(
     entity:
       | Partial<MembersOnly<entityType>>
       | Partial<MembersOnly<entityType>>[],
+    options?: InsertOrUpdateOptions,
   ): Promise<entityType | entityType[]> {
     if (Array.isArray(entity)) {
       return promiseAll(entity, (x) => this.save(x))
     } else {
       let ref = getEntityRef(entity, false) as unknown as EntityRef<entityType>
-      if (ref) return await ref.save()
+      if (ref) return await ref.save(options)
       else if (entity instanceof EntityBase) {
-        return await this.getEntityRef(entity as unknown as entityType).save()
+        return await this.getEntityRef(entity as unknown as entityType).save(
+          options,
+        )
       } else {
         let id = this.metadata.idMetadata.getId(entity)
-        if (id === undefined) return this.insert(entity)
-        return this.update(id, entity)
+        if (id === undefined) return this.insert(entity, options)
+        return this.update(id, entity, options)
       }
     }
   }

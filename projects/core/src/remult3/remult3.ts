@@ -747,8 +747,14 @@ export interface Repository<entityType> {
    * await taskRepo.save({...task, completed:true })
    */
 
-  save(item: Partial<MembersOnly<entityType>>[]): Promise<entityType[]>
-  save(item: Partial<MembersOnly<entityType>>): Promise<entityType>
+  save(
+    item: Partial<MembersOnly<entityType>>[],
+    options?: InsertOrUpdateOptions,
+  ): Promise<entityType[]>
+  save(
+    item: Partial<MembersOnly<entityType>>,
+    options?: InsertOrUpdateOptions,
+  ): Promise<entityType>
 
   /**Insert an item or item[] to the data source
    * @example
