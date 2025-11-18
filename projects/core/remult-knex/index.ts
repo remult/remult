@@ -355,7 +355,10 @@ class KnexEntityDataProvider implements EntityDataProvider {
     }
 
     let insert = this.getEntityFrom(e).insert(insertObject)
-    if (isAutoIncrement(this.entity.idMetadata.field)) {
+    if (
+      isAutoIncrement(this.entity.idMetadata.field) &&
+      !(options?.select === 'none')
+    ) {
       let newId
       if (
         this.knex.client.config.client === 'mysql2' ||

@@ -544,14 +544,21 @@ export class DataApi<T = unknown> {
     }
   }
 
-  async actualUpdate(row: any, body: any, req: DataApiRequest) {
+  async actualUpdate(
+    row: any,
+    body: any,
+    req: DataApiRequest,
+    doNotSelect?: boolean,
+  ) {
     let ref = this.repository.getEntityRef(row) as rowHelperImplementation<T>
     await ref._updateEntityBasedOnApi(body)
     if (!ref.apiUpdateAllowed) {
       throw new ForbiddenError()
     }
     let options =
-      req.get('_select') === 'none' ? { select: 'none' as const } : undefined
+      req.get('_select') === 'none' || doNotSelect
+        ? { select: 'none' as const }
+        : undefined
     await ref.save(options)
     if (options?.select === 'none') return undefined
     return ref.toApiJson()

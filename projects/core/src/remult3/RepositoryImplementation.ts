@@ -645,7 +645,7 @@ export class RepositoryImplementation<entityType>
       if (where === 'all') where = undefined!
       for await (const item of this.query({ where, aggregate: undefined! })) {
         assign(item, set)
-        await getEntityRef(item).save()
+        await getEntityRef(item).save({ select: 'none' })
         updated++
       }
       return updated
@@ -3180,8 +3180,8 @@ export class EntityBase {
   get _() {
     return getEntityRef(this) as unknown as EntityRefForEntityBase<this>
   }
-  save() {
-    return getEntityRef(this).save()
+  save(options?: InsertOrUpdateOptions) {
+    return getEntityRef(this).save(options)
   }
   assign(values: Partial<Omit<this, keyof EntityBase>>) {
     assign(this, values)

@@ -63,13 +63,17 @@ describe('test repository relations', () => {
       { id: 1, name: 'cat1' },
       { id: 2, name: 'cat2' },
     ])
-    await repo.relations(c).tasks.insert(
-      [1, 2, 4, 5].map((i) => ({
-        id: i,
-        title: 't' + i.toString(),
-        completed: i % 2 == 0,
-      })),
-    )
+    expect( 
+      await repo.relations(c).tasks.insert(
+        [1, 2, 4, 5].map((i) => ({
+          id: i,
+          title: 't' + i.toString(),
+          completed: i % 2 == 0,
+        })),
+        { select: 'none' },
+      ),
+    ).toBeUndefined() 
+
     await repo.relations(c).completedTask.insert(
       [6, 7].map((i) => ({
         id: i,
