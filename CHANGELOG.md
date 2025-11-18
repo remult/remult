@@ -2,6 +2,8 @@ All notable changes to this project will be documented in this file.
 
 ## [3.3.1] - 2025-11-18
 
+- Doc update by @jycouet in https://github.com/remult/remult/pull/831
+- Light check if admin is here (demo app) by @jycouet in https://github.com/remult/remult/pull/834
 - [#830](https://github.com/remult/remult/issues/830) - changed update many to always use select none
 - [#829](https://github.com/remult/remult/issues/829) - fixed issue with insert & knex & autoIncrement columns
 - Added support for select:'none' also to `save`
