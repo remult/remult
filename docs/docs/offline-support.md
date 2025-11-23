@@ -55,8 +55,6 @@ const localDb = new JsonDataProvider(new JsonEntityOpfsStorage())
 
 Using OPFS with Remult's `JsonDataProvider` provides a robust solution for storing entities in the frontend, especially for applications requiring more complex data handling than what `localStorage` or `sessionStorage` can offer.
 
-Certainly! Here's the adjusted section on `sql.js` with an enriched code sample:
-
 ## `sql.js`: A SQLite Implementation for the Frontend
 
 For applications requiring advanced database functionality, [`sql.js`](https://sql.js.org/) provides a SQLite implementation that runs entirely in the frontend. This allows you to use SQL queries and transactions, offering a powerful and flexible data management solution for offline scenarios.

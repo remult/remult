@@ -55,6 +55,3 @@ With the current state of the `setAllCompleted` function, each modified task bei
 
 In the next lesson, we'll refactor this code to address these performance challenges by moving the logic to the server.
 
----
-
-Would you like to proceed with another section or make further adjustments?

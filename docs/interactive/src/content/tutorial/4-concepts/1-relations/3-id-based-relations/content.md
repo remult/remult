@@ -50,7 +50,3 @@ This ensures that your code uses `customerId` while mapping it correctly to the 
 ---
 
 By using ID-based relations, you have greater control over your data models and can optimize performance by limiting unnecessary entity loading. This approach also provides a clean and efficient way to manage relations in your Remult applications.
-
----
-
-Let me know if this works!

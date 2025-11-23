@@ -609,8 +609,6 @@ The `relations` method serves as a specialized repository, tightly associated wi
 
 Remult's repository methods empower you to seamlessly manage and interact with related data, making it easier to work with complex data structures and relationships in your applications. Whether you need to insert related records or load unfetched relations, these tools provide the flexibility and control you need to handle your data efficiently.
 
-Certainly, here's an extension of the "Loading Unfetched Relations" section that covers the topic of fetching unloaded `toOne` relations using the `findOne` function:
-
 ---
 
 ### Fetching Unloaded `toOne` Relations with `findOne`
@@ -788,8 +786,6 @@ Here's an explanation of what's happening in this code:
 
 **2. Retrieving Tags for a Customer:**
 To fetch the tags associated with a specific customer:
-
-Certainly, here's a shorter explanation:
 
 ```ts
 const customer = await customerRepo.findFirst(

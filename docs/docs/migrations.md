@@ -118,7 +118,6 @@ To enable automatic generation of migration scripts, follow these steps:
 1. **Create the Migrations Folder:** In your `src/server` directory, create a new folder named `migrations`. This folder will hold all your migration scripts.
 
 2. **Create the Migration Generator File:** Inside the `migrations` folder, create a file named `generate-migrations.ts`. This file will contain the script that generates migration scripts based on changes in your entities.
-   Here's the revised section:
 
 3. **Populate the Generator File:** Add the following code to `generate-migrations.ts`:
 
