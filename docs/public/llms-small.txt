@@ -2132,8 +2132,6 @@ The `relations` method serves as a specialized repository, tightly associated wi
 
 Remult's repository methods empower you to seamlessly manage and interact with related data, making it easier to work with complex data structures and relationships in your applications. Whether you need to insert related records or load unfetched relations, these tools provide the flexibility and control you need to handle your data efficiently.
 
-Certainly, here's an extension of the "Loading Unfetched Relations" section that covers the topic of fetching unloaded `toOne` relations using the `findOne` function:
-
 ---
 
 ### Fetching Unloaded `toOne` Relations with `findOne`
@@ -2311,8 +2309,6 @@ Here's an explanation of what's happening in this code:
 
 **2. Retrieving Tags for a Customer:**
 To fetch the tags associated with a specific customer:
-
-Certainly, here's a shorter explanation:
 
 ```ts
 const customer = await customerRepo.findFirst(
@@ -2845,7 +2841,6 @@ To enable automatic generation of migration scripts, follow these steps:
 1. **Create the Migrations Folder:** In your `src/server` directory, create a new folder named `migrations`. This folder will hold all your migration scripts.
 
 2. **Create the Migration Generator File:** Inside the `migrations` folder, create a file named `generate-migrations.ts`. This file will contain the script that generates migration scripts based on changes in your entities.
-   Here's the revised section:
 
 3. **Populate the Generator File:** Add the following code to `generate-migrations.ts`:
 
@@ -3045,8 +3040,6 @@ const localDb = new JsonDataProvider(new JsonEntityOpfsStorage())
 ```
 
 Using OPFS with Remult's `JsonDataProvider` provides a robust solution for storing entities in the frontend, especially for applications requiring more complex data handling than what `localStorage` or `sessionStorage` can offer.
-
-Certainly! Here's the adjusted section on `sql.js` with an enriched code sample:
 
 ## `sql.js`: A SQLite Implementation for the Frontend
 
@@ -8851,23 +8844,19 @@ A helper callback that can be used to debug and trace all find operations. Usefu
 Arguments:
 * **metadata**
 * **options**
-   * **limit** - Determines the number of rows returned by the request, on the browser the default is 100 rows
+   * **limit** - Number of rows returned. _(Defaults to 100 in the browser)_
    
    
    #### example:
    ```ts
-   await repo(Products).find({
-     limit: 10,
-   })
+   await repo(Products).find({ limit: 10 })
    ```
-   * **page** - Determines the page number that will be used to extract the data
+   * **page** - Determines the page number to retrieve. Works in tandem with the `limit` option.
    
    
    #### example:
    ```ts
-   await repo(Products).find({
-     page: 2
-   })
+   await repo(Products).find({ page: 2 })
    ```
    * **load**
    * **include** - An option used to specify which related entities should be included when querying the source entity.
@@ -8906,7 +8895,7 @@ Arguments:
    
    #### example:
    ```ts
-   await taskRepo.find({where: { completed:false }})
+   await taskRepo.find({ where: { completed:false } })
    ```
    
    
@@ -9059,27 +9048,23 @@ export class AppComponent {
 # Repository
 used to perform CRUD operations on an `entityType`
 ## find
-returns a result array based on the provided options
+returns an array based on the provided options
 
 Arguments:
 * **options**
-   * **limit** - Determines the number of rows returned by the request, on the browser the default is 100 rows
+   * **limit** - Number of rows returned. _(Defaults to 100 in the browser)_
    
    
    #### example:
    ```ts
-   await repo(Products).find({
-     limit: 10,
-   })
+   await repo(Products).find({ limit: 10 })
    ```
-   * **page** - Determines the page number that will be used to extract the data
+   * **page** - Determines the page number to retrieve. Works in tandem with the `limit` option.
    
    
    #### example:
    ```ts
-   await repo(Products).find({
-     page: 2
-   })
+   await repo(Products).find({ page: 2 })
    ```
    * **load**
    * **include** - An option used to specify which related entities should be included when querying the source entity.
@@ -9118,7 +9103,7 @@ Arguments:
    
    #### example:
    ```ts
-   await taskRepo.find({where: { completed:false }})
+   await taskRepo.find({ where: { completed:false } })
    ```
    
    
@@ -9139,27 +9124,29 @@ Arguments:
    ```
    * **args**
 ## liveQuery
-returns a result array based on the provided options
+Using the same options as the find method, but subscribing to entity changes.
+
+_Note that today it subscribes to entity changes, but not included entities [Feature Request](https://github.com/remult/remult/issues/712)!_
+
+
+#### see:
+[LiveQuery](/docs/ref_livequery)
 
 Arguments:
 * **options**
-   * **limit** - Determines the number of rows returned by the request, on the browser the default is 100 rows
+   * **limit** - Number of rows returned. _(Defaults to 100 in the browser)_
    
    
    #### example:
    ```ts
-   await repo(Products).find({
-     limit: 10,
-   })
+   await repo(Products).find({ limit: 10 })
    ```
-   * **page** - Determines the page number that will be used to extract the data
+   * **page** - Determines the page number to retrieve. Works in tandem with the `limit` option.
    
    
    #### example:
    ```ts
-   await repo(Products).find({
-     page: 2
-   })
+   await repo(Products).find({ page: 2 })
    ```
    * **load**
    * **include** - An option used to specify which related entities should be included when querying the source entity.
@@ -9198,7 +9185,7 @@ Arguments:
    
    #### example:
    ```ts
-   await taskRepo.find({where: { completed:false }})
+   await taskRepo.find({ where: { completed:false } })
    ```
    
    
@@ -9277,7 +9264,7 @@ Arguments:
    
    #### example:
    ```ts
-   await taskRepo.find({where: { completed:false }})
+   await taskRepo.find({ where: { completed:false } })
    ```
    
    
@@ -9353,7 +9340,7 @@ Arguments:
    
    #### example:
    ```ts
-   await taskRepo.find({where: { completed:false }})
+   await taskRepo.find({ where: { completed:false } })
    ```
    
    
@@ -10487,7 +10474,7 @@ A function that can be used to unsubscribe from the live query.
 #### example:
 ```ts
 // Subscribing to changes in a live query
-const unsubscribe = taskRepo
+const unsubscribe = repo(Task)
   .liveQuery({
     limit: 20,
     orderBy: { createdAt: 'asc' }
@@ -10934,18 +10921,63 @@ using the same mechanism used by live queries.
 #### example:
 ```ts
 // Defined in code that is shared between the frontend and the backend
-const statusChange = new SubscriptionChannel<{ oldStatus: number, newStatus: number }>("statusChange");
+export const notif = new SubscriptionChannel<{ coolInfo: string }>("notif");
 
 // Backend: Publishing a message
-statusChange.publish({ oldStatus: 1, newStatus: 2 });
+notif.publish({ coolInfo: "Message coming from the backend" });
 
 // Frontend: Subscribing to messages
-statusChange.subscribe((message) => {
-    console.log(`Status changed from ${message.oldStatus} to ${message.newStatus}`);
+notif.subscribe((message) => {
+    console.log(`Something exciting happened: ${message.coolInfo}`);
 });
 
 // Note: If you want to publish from the frontend, use a BackendMethod for that.
 ```
+ ---
+
+ ### Use cases:
+
+ #### A user _(Paul)_ wants to notify everyone _(Eric & Simona)_
+ ```ts
+ // shared code between the frontend and the backend
+ export const notif = new SubscriptionChannel<{ from: UserInfo, msg: string }>("notif");
+
+ // Frontend, Paul can call a BackendMethod to send his message
+ NotificationContoller.send("Hello everyone!")
+
+ // Backend
+ export class NotificationContoller {
+   @BackendMethod({ allowed: true })
+   static async send(message: string) {
+     notif.publish({ from: remult.user, msg: message });
+   }
+ }
+
+ // Frontend: Eric & Simona can subscribe to messages
+ notif.subscribe((message) => {
+   if (message.from === remult.user) return;
+   console.log(`Message from ${message.from.name}: ${message.msg}`);
+ });
+ ```
+
+ #### A complexe chart that needs to be updated on multiple changes
+ ```ts
+ // shared code between the frontend and the backend
+ export const chart = new SubscriptionChannel<{ kind: "pie" | "bar" | "line", data: number[] }>("chart");
+
+ // Entity
+ @Entity<Task>("tasks", {
+   saved: async (e) => {
+     if (e.completed) chart.publish({ kind: "pie", data: [1, 2, 3] });
+   }
+ })
+ export class Task { ... }
+
+ // Frontend: in the chart component, we can subscribe to messages
+ chart.subscribe((message) => {
+   console.log(`Chart updated: ${message.kind}`, message.data);
+ });
+ ```
 ## constructor
 Constructs a new `SubscriptionChannel` instance.
 
