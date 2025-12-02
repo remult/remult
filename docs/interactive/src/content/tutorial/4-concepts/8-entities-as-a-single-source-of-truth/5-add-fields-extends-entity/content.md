@@ -28,7 +28,7 @@ Create a new entity that extends the base entity and add the new fields to it.
   - It's to really differentiate between the two entities for remult.
   - It will also create two different entries in Admin UI.
 - You need to set the `dbName` option to point to the right database name (same as the base entity).
-  - Yes, by default, remult will use the entity key as the database name.
+  - By default, remult will use the entity key as the database name.
 
 ### Try it out
 
