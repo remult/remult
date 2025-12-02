@@ -14,11 +14,11 @@
   "dependencies": {
     "@angular/animations": "^17.0.0",
     "@angular/common": "^17.0.0",
-    "@angular/compiler": "^17.0.0",
+    "@angular/compiler": "^21.0.2",
     "@angular/core": "^17.0.0",
     "@angular/forms": "^17.0.0",
     "@angular/platform-browser": "^17.0.0",
-    "@angular/platform-browser-dynamic": "^17.0.0",
+    "@angular/platform-browser-dynamic": "^21.0.2",
     "@angular/router": "^17.0.0",
     "compression": "^1.7.4",
     "cookie-session": "^2.0.0",
@@ -33,7 +33,7 @@
   "devDependencies": {
     "@angular-devkit/build-angular": "^20.0.1",
     "@angular/cli": "^17.0.3",
-    "@angular/compiler-cli": "^17.0.0",
+    "@angular/compiler-cli": "^21.0.2",
     "@types/compression": "^1.7.5",
     "@types/cookie-session": "^2.0.48",
     "@types/express": "^4.17.21",
