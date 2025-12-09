@@ -1,5 +1,9 @@
 All notable changes to this project will be documented in this file.
 
+## [3.3.2] - 2025-12-09
+
+- Expose `DataProviderPromiseWrapper` in internals
+
 ## [3.3.1] - 2025-11-18
 
 - Doc update by @jycouet in https://github.com/remult/remult/pull/831

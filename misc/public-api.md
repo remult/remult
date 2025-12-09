@@ -4837,6 +4837,18 @@ export declare class controllerRefImpl<T = unknown>
 //[ ] FieldMetadata from TBD is not exported
 //[ ] Remult from TBD is not exported
 //[ ] FieldsRef from TBD is not exported
+export declare class DataProviderPromiseWrapper implements DataProvider {
+  private dataProvider
+  constructor(dataProvider: Promise<DataProvider>)
+  getEntityDataProvider(entity: EntityMetadata): EntityDataProvider
+  transaction(
+    action: (dataProvider: DataProvider) => Promise<void>,
+  ): Promise<void>
+  ensureSchema?(entities: EntityMetadata[]): Promise<void>
+  isProxy?: boolean | undefined
+}
+//[ ] DataProvider from TBD is not exported
+//[ ] EntityDataProvider from TBD is not exported
 export declare function decorateColumnSettings<valueType>(
   settings: FieldOptions<unknown, valueType>,
   remult: Remult,

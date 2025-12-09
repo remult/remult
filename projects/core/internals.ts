@@ -26,3 +26,4 @@ export { isOfType } from './src/isOfType.js'
 export type { ClassType } from './classType.js'
 
 export { flags } from './src/remult3/remult3.js'
+export { DataProviderPromiseWrapper } from './src/data-interfaces.js'
