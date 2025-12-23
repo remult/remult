@@ -6,7 +6,7 @@ import { writeImports } from "./writeImports";
 export function buildApiFile(
   db: DatabaseType,
   server: ServerInfo,
-  auth: AuthInfo | undefined,
+  auth: AuthInfo | undefined | null,
   admin: boolean,
   crud: boolean,
 ) {

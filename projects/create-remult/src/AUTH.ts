@@ -18,7 +18,7 @@ export type AuthInfo = {
   envVariables?: envVariable[];
 };
 
-export const Auths: Record<string, AuthInfo | null> = {
+export const Auths: Record<"better-auth" | "none", AuthInfo | null> = {
   ["better-auth"]: {
     name: "better-auth",
     componentInfo: {
@@ -78,58 +78,6 @@ export const Auths: Record<string, AuthInfo | null> = {
           "List of emails that will be given all roles. (comma separated)",
         optional: true,
       },
-    ],
-  },
-  ["auth.js"]: {
-    name: "auth.js",
-    componentInfo: {
-      display: "Auth.js",
-      url: "https://authjs.dev/",
-      description: "Auth.js Authentication for the Web. Free and open source.",
-      emoji: "🔒",
-    },
-
-    devDependencies: (server) => {
-      const d: Record<string, string> = {
-        bcryptjs: "^3.0.2",
-      };
-
-      if (server === "sveltekit") d["@auth/sveltekit"] = "^1.5.0";
-      else if (server === "nextjs") d["next-auth"] = "^5.0.0-beta.21";
-      else if (server === "express") d["@auth/express"] = "^0.6.1";
-      else if (server === "express-vite") d["@auth/express"] = "^0.6.1";
-
-      return d;
-    },
-
-    apiFiles: {
-      imports: [
-        {
-          from: "../demo/auth/server/auth.js",
-          imports: ["getUserFromRequest"],
-        },
-        {
-          from: "../demo/auth/server/index.js",
-          imports: ["auth"],
-        },
-      ],
-      serverArguments: [`getUser: getUserFromRequest`, `modules: [auth()]`],
-    },
-
-    envVariables: [
-      {
-        key: `AUTH_SECRET`,
-        value: generateSecret(),
-        comment:
-          "Secret key for authentication. (You can use Online UUID generator: https://www.uuidgenerator.net)",
-      },
-      {
-        key: "AUTH_GITHUB_ID",
-        comment:
-          "Github OAuth App ID & Secret see https://authjs.dev/getting-started/providers/github",
-        optional: true,
-      },
-      { key: "AUTH_GITHUB_SECRET", optional: true },
     ],
   },
   // It's not that it's not defined, it's really null.
