@@ -105,6 +105,60 @@ To add swagger UI to a `NextJs` application follow these steps:
 
    ![Remult Admin](../public/example_remult-next-swagger-ui-page.png)
 
+## Adding Scalar UI to SvelteKit
+
+1. Install [Scalar](https://scalar.com) to get a modern OpenAPI UI with a built-in interactive playground:
+
+   ```sh
+   npm i @scalar/sveltekit
+   ```
+
+2. Export OpenAPI document schema from your Remult API in `src/server/api.ts` file:
+
+   ```ts{8-11}
+   import { Planet } from '$lib/entities';
+   import { remultApi } from 'remult/remult-sveltekit';
+
+   export const api = remultApi({
+     entities: [Planet]
+   });
+
+   export const openApiDocument = api.openApiDoc({
+    title: 'remult-planets',
+    version: '1.0.0'
+   });
+   ```
+
+3. Add a SvelteKit server route in `src/routes/api/[...remult]/openapi.json/+server.ts` to handle OpenAPI json file:
+
+   ```ts
+   import { json } from '@sveltejs/kit';
+   import { openApiDocument } from '../../../../server/api';
+
+   export const GET = () => {
+    return json(openApiDocument);
+   };
+   ```
+
+4. And finally create an endpoint for Scalar OpenAPI at `src/routes/api/[...remult]/docs/+server.ts`
+
+   ```ts
+   import { ScalarApiReference } from '@scalar/sveltekit'
+   import type { RequestHandler } from './$types'
+   
+
+   const render = ScalarApiReference({
+     url: '/api/openapi.json' // the above endpoint where the openapi spec is located
+   });
+
+   export const GET: RequestHandler = () => {
+     return render();
+   };
+
+   ```
+
+In this case the UI will be available at [http://localhost:5173/api/docs](http://localhost:5173/api/docs)
+
 # Adding open api specific field options
 
 Checkout the following example project that demos how to add `openApi` specific options to field options
