@@ -14,7 +14,7 @@
   "dependencies": {
     "compression": "^1.8.1",
     "cookie-session": "^2.1.1",
-    "express": "^5.1.0",
+    "express": "^5.2.0",
     "helmet": "^8.1.0",
     "pg": "^8.16.3",
     "remult": "^3.1.2",
