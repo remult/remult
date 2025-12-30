@@ -541,6 +541,18 @@ export function aggregateTest(
         ]
       `)
     })
+    it('should support limit and page', async () => {
+      const r = await repo()
+      const results = await r.groupBy({
+        group: ['country'],
+        orderBy: {
+          country: 'asc',
+        },
+        limit: 2,
+        page: 1,
+      })
+      expect(results.length).toBe(2)
+    })
 
     it('should order results by distinct count of cities', async () => {
       const r = await repo()

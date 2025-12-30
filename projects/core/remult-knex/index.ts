@@ -193,7 +193,10 @@ class KnexEntityDataProvider implements EntityDataProvider {
       await dbNamesOf(this.entity, this.dp.wrapIdentifier),
       this.dp.createCommand(),
       false,
-      (limit, offset) => ' limit ' + limit + ' offset ' + offset,
+      (limit, offset) =>
+        this.knex.client.config.client?.includes('mssql')
+          ? ' offset ' + offset + ' rows fetch next ' + limit + ' rows only'
+          : ' limit ' + limit + ' offset ' + offset,
     )
   }
   getEntityFrom(e: EntityDbNamesBase): Knex.QueryBuilder {

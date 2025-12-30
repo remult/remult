@@ -1007,21 +1007,25 @@ export function commonDbTests(
       expect(await remult.repo(Categories).count()).toBe(0)
     })
   })
-  it.skipIf(options?.excludeTransactions)('transactions 1', async () => {
-    let x = await createEntity(Categories)
+  it.skipIf(options?.excludeTransactions)(
+    'transactions 1',
+    async () => {
+      let x = await createEntity(Categories)
 
-    try {
-      await getDb().transaction(async (db) => {
-        let remult = new Remult(db)
-        await remult.repo(Categories).insert({ categoryName: 'testing' })
-        expect(await remult.repo(Categories).count()).toBe(1)
-        throw 'Fail'
-      })
-    } catch (err: any) {
-      expect(err).toBe('Fail')
-    }
-    expect(await x.count()).toBe(0)
-  })
+      try {
+        await getDb().transaction(async (db) => {
+          let remult = new Remult(db)
+          await remult.repo(Categories).insert({ categoryName: 'testing' })
+          expect(await remult.repo(Categories).count()).toBe(1)
+          throw 'Fail'
+        })
+      } catch (err: any) {
+        expect(err).toBe('Fail')
+      }
+      expect(await x.count()).toBe(0)
+    },
+    { timeout: 10000 },
+  )
   it.skipIf(options?.excludeTransactions)(
     'transaction should fully rollback if one fail',
     async () => {

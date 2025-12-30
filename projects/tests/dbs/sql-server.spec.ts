@@ -14,6 +14,7 @@ describe.skipIf(!process.env['TESTS_SQL_SERVER'])('Knex Sql Server', () => {
   knexTests(
     Knex.default({
       client: 'mssql',
+      //  debug: true,
       connection: {
         server: '127.0.0.1',
         database: 'test2',
@@ -24,7 +25,7 @@ describe.skipIf(!process.env['TESTS_SQL_SERVER'])('Knex Sql Server', () => {
           encrypt: false,
           // instanceName: 'sqlexpress',
         },
-      }, //,debug: true
+      },
     }),
     ({ createEntity, getDb, getRemult }) => {
       it('test knex storage', async () => {
