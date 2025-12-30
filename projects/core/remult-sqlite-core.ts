@@ -114,7 +114,9 @@ export class SqliteCoreDataProvider
   addColumnSqlSyntax(x: FieldMetadata, dbName: string, isAlterTable: boolean) {
     let result = dbName
     const nullNumber = x.allowNull ? '' : ' default 0 not null'
-    if (x.valueType == Date) result += ' integer'
+    if (x.valueConverter.fieldTypeInDb)
+      result += ' ' + x.valueConverter.fieldTypeInDb + ' ' + nullNumber
+    else if (x.valueType == Date) result += ' integer'
     else if (x.valueType == Boolean) result += ' integer ' + nullNumber
     else if (x.valueType == Number) {
       if (!x.valueConverter.fieldTypeInDb) result += ' numeric ' + nullNumber
