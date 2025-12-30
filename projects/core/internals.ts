@@ -27,3 +27,4 @@ export type { ClassType } from './classType.js'
 
 export { flags } from './src/remult3/remult3.js'
 export { DataProviderPromiseWrapper } from './src/data-interfaces.js'
+export { pagedQueryResult } from './src/remult3/pagedQueryResult.js'
