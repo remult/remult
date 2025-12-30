@@ -29,7 +29,7 @@ testPaging('test paged Query ', (r, o) => {
     if ((pageNumber ?? 0) < 1) pageNumber = 1
     return r.find({ ...o, page: pageNumber, limit: o.pageSize })
   }
-  return pagedQueryResult(r, o, getPage)
+  return pagedQueryResult(o.pageSize!, getPage, async () => r.count(o?.where))
 })
 
 testPaging('test query ', (r, o) => r.query(o))

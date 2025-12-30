@@ -1,9 +1,9 @@
 import type { QueryOptions, QueryResult, Repository } from './remult3.js'
 
 export function pagedQueryResult<T>(
-  r: Repository<T>,
-  o: QueryOptions<T>,
+  pageSize: number,
   getPage: (pageNumber?: number) => Promise<T[]>,
+  count: () => Promise<number>,
 ): QueryResult<T> {
   const iterator = () => {
     let pageNumber = 1
@@ -25,7 +25,7 @@ export function pagedQueryResult<T>(
     }
   }
   return {
-    count: async () => r.count(o?.where),
+    count,
     getPage,
     forEach: async (what: (item: T) => Promise<any>) => {
       let i = 0
@@ -42,17 +42,17 @@ export function pagedQueryResult<T>(
     paginator: async () => {
       const createPaginator = async (pageNumber: number) => {
         const items = await getPage(pageNumber)
-        const hasNextPage = items.length === o.pageSize!
+        const hasNextPage = items.length === pageSize!
         const emptyPaginator = {
           items: [] as T[],
           hasNextPage: false,
-          count: async () => r.count(o?.where),
+          count,
           nextPage: async () => emptyPaginator,
         }
         return {
           items,
           hasNextPage,
-          count: async () => r.count(o?.where),
+          count,
           nextPage: async () => {
             if (!hasNextPage) {
               return emptyPaginator

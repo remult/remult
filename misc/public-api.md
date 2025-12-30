@@ -1864,11 +1864,11 @@ export type GroupByResult<
   }
 } & {
   [K in minFields[number]]: {
-    min: number
+    min: entityType[K]
   }
 } & {
   [K in maxFields[number]]: {
-    max: number
+    max: entityType[K]
   }
 } & {
   [K in distinctCountFields[number]]: {
@@ -4876,6 +4876,14 @@ export declare function getRelationFieldInfo(
 export declare function getRelationInfo(options: FieldOptions): RelationInfo
 export declare function isOfType<T>(obj: any, checkMethod: keyof T): obj is T
 //[ ] FirstTypeNode from TBD is not exported
+export declare function pagedQueryResult<T>(
+  r: Repository<T>,
+  o: QueryOptions<T>,
+  getPage: (pageNumber?: number) => Promise<T[]>,
+): QueryResult<T>
+//[ ] QueryResult from TBD is not exported
+//[ ] Repository from TBD is not exported
+//[ ] QueryOptions from TBD is not exported
 export interface RelationFieldInfo {
   type: "reference" | "toOne" | "toMany"
   options: RelationOptions<unknown, unknown, unknown>
@@ -4884,7 +4892,6 @@ export interface RelationFieldInfo {
   getFields(): RelationFields
 }
 //[ ] RelationOptions from TBD is not exported
-//[ ] Repository from TBD is not exported
 export interface RelationFields {
   fields: Record<string, string>
   compoundIdField: string | undefined

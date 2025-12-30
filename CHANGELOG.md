@@ -1,5 +1,11 @@
 All notable changes to this project will be documented in this file.
 
+## [3.3.3] - 2025-12-30
+
+- #865 - fix paging syntax in group by for sql server
+- #864 - fixed missing transformations for min and max group by values
+- Added paged query result to internals (for now)
+
 ## [3.3.2] - 2025-12-09
 
 - Expose `DataProviderPromiseWrapper` in internals
