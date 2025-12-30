@@ -252,6 +252,12 @@ export class DataApi<T = unknown> {
     const group = (body?.groupBy as any[])?.filter((x: string) =>
       this.repository.fields.find(x).includedInApi(),
     )
+    const min = (body?.min as any[])?.filter((x: string) =>
+      this.repository.fields.find(x).includedInApi(),
+    )
+    const max = (body?.max as any[])?.filter((x: string) =>
+      this.repository.fields.find(x).includedInApi(),
+    )
     let result = await this.repository.groupBy({
       where: findOptions.where,
       limit: findOptions.limit,
@@ -265,12 +271,8 @@ export class DataApi<T = unknown> {
       avg: (body?.avg as any[])?.filter((x: string) =>
         this.repository.fields.find(x).includedInApi(),
       ),
-      min: (body?.min as any[])?.filter((x: string) =>
-        this.repository.fields.find(x).includedInApi(),
-      ),
-      max: (body?.max as any[])?.filter((x: string) =>
-        this.repository.fields.find(x).includedInApi(),
-      ),
+      min,
+      max,
       distinctCount: (body?.distinctCount as any[])?.filter((x: string) =>
         this.repository.fields.find(x).includedInApi(),
       ),
@@ -282,7 +284,17 @@ export class DataApi<T = unknown> {
           x[f] = this.repository.fields.find(f).valueConverter.toJson(x[f])
         }
       })
-
+    const minMax = { min, max }
+    for (const element of ['min', 'max'] as const) {
+      if (minMax[element])
+        result.forEach((x) => {
+          for (const f of minMax[element]!) {
+            x[f][element] = this.repository.fields
+              .find(f)
+              .valueConverter.toJson(x[f][element])
+          }
+        })
+    }
     return result
   }
 

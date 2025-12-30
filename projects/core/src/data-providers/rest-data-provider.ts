@@ -179,6 +179,14 @@ export class RestEntityDataProvider
           row[g.key] = g.valueConverter.fromJson(row[g.key])
         }
       })
+    for (const element of ['min', 'max'] as const) {
+      if (options?.[element])
+        result.forEach((row) => {
+          for (const f of options![element]!) {
+            row[f.key][element] = f.valueConverter.fromJson(row[f.key][element])
+          }
+        })
+    }
     return result
   }
 

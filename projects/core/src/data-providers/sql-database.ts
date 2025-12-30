@@ -715,6 +715,8 @@ export async function groupByImpl(
           x.valueType === Number || operator == 'distinctCount'
         processResultRow.push((sqlResult, theResult) => {
           if (turnToNumber) sqlResult = Number(sqlResult)
+          if (operator === 'max' || operator === 'min')
+            sqlResult = x.valueConverter.fromDb(sqlResult)
           theResult[x.key] = { ...theResult[x.key], [operator]: sqlResult }
         })
       }

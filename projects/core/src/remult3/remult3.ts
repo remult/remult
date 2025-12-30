@@ -463,8 +463,8 @@ export type GroupByResult<
       ? { sum: number }
       : never
 } & { [K in averageFields[number]]: { avg: number } } & {
-  [K in minFields[number]]: { min: number }
-} & { [K in maxFields[number]]: { max: number } } & {
+  [K in minFields[number]]: { min: entityType[K] }
+} & { [K in maxFields[number]]: { max: entityType[K] } } & {
   [K in distinctCountFields[number]]: { distinctCount: number }
 } & {
   $count: number

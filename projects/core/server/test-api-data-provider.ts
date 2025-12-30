@@ -51,6 +51,8 @@ export function TestApiDataProvider(
           throw { ...result?.data, status: result?.statusCode ?? 500 }
         }
         return result?.data
+          ? JSON.parse(JSON.stringify(result.data))
+          : undefined
       })
     })
   }

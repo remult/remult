@@ -77,6 +77,7 @@ export class ValueConverters {
   }
   static readonly DateOnlyString: ValueConverter<Date> & { zeroDate: Date } = {
     ...ValueConverters.DateOnly,
+    fieldTypeInDb: 'char(8)',
     toDb: (d: Date) => {
       if (d === zeroDate) return '00000000'
       let val = ValueConverters.DateOnly.toJson!(d)

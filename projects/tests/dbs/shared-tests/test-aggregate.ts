@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it, test } from 'vitest'
-import { Entity } from '../../../core/index.js'
+import { Entity, ValueConverters } from '../../../core/index.js'
 import {
   Field,
   Fields,
@@ -58,6 +58,34 @@ export function aggregateTest(
   { createEntity, getRemult, getDb }: DbTestProps,
   options?: DbTestOptions,
 ) {
+  it('test value converter and group by and max', async () => {
+    @Entity('testValueConverterAndGroupByAndMax', { allowApiCrud: true })
+    class testValueConverterAndGroupByAndMax {
+      @Fields.integer()
+      id = 0
+      @Fields.string()
+      name = ''
+      @Fields.dateOnly({ valueConverter: ValueConverters.DateOnlyString })
+      date = new Date()
+    }
+    const r = await createEntity(testValueConverterAndGroupByAndMax)
+    await r.insert([
+      { id: 1, name: 'ran', date: new Date('1976-01-01') },
+      { id: 2, name: 'Gvili', date: new Date('2021-01-02') },
+    ])
+    expect((await r.find()).map((x) => x.date.getFullYear()))
+      .toMatchInlineSnapshot(`
+      [
+        1976,
+        2021,
+      ]
+    `)
+    const results = await r.groupBy({
+      max: ['date'],
+      min: ['date'],
+    })
+    expect(results[0].date.max.getFullYear()).toBe(2021)
+  })
   async function repo() {
     const cat = await createEntity(Category)
     const c = await cat.insert([
