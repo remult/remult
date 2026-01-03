@@ -36,8 +36,8 @@ onMounted(() => {
 
       if (e.message?.includes("the server configuration")) {
         errorMessage.value = `
-          Make sure to set the <code>AUTH_SECRET</code> in the <code>.env</code> file. <br />
-          Read more at <a href="https://errors.authjs.dev#missingsecret" target="_blank">auth.js docs</a>.
+          Make sure to set the <code>BETTER_AUTH_SECRET</code> in the <code>.env</code> file. <br />
+          Read more at <a href="https://www.better-auth.com/docs/reference/options#secret" target="_blank">better-auth docs</a>.
         `;
       } else {
         errorMessage.value = `
@@ -51,8 +51,8 @@ const subtitle = computed(() => {
   return status.value === "Success"
     ? "Up and running"
     : status.value === "Error"
-    ? "There seems to be an issue"
-    : status.value;
+      ? "There seems to be an issue"
+      : status.value;
 });
 </script>
 

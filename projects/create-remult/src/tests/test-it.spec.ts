@@ -19,10 +19,11 @@ import { react, writeAppTsxAndReadme } from "../frameworks/react";
 import { nextJs, removeJs } from "../frameworks/nextjs";
 import { adjustEnvVariablesForSveltekit } from "../frameworks/sveltekit";
 import { buildApiFile } from "../utils/buildApiFile";
+import { Auths } from "../AUTH.js";
 
 describe("api file variations", async () => {
   test("basic", () => {
-    expect(buildApiFile(DATABASES.json, Servers.express, false, false, false))
+    expect(buildApiFile(DATABASES.json, Servers.express, null, false, false))
       .toMatchInlineSnapshot(`
         "import { remultApi } from "remult/remult-express";
           
@@ -31,7 +32,7 @@ describe("api file variations", async () => {
   });
   test("with db", () => {
     expect(
-      buildApiFile(DATABASES.postgres, Servers.express, false, false, false),
+      buildApiFile(DATABASES.postgres, Servers.express, null, false, false),
     ).toMatchInlineSnapshot(`
       "import { remultApi } from "remult/remult-express";
       import { createPostgresDataProvider } from "remult/postgres";
@@ -45,19 +46,28 @@ describe("api file variations", async () => {
   });
   test("with db and auth", () => {
     expect(
-      buildApiFile(DATABASES.postgres, Servers.express, true, false, false),
+      buildApiFile(
+        DATABASES.postgres,
+        Servers.express,
+        Auths["better-auth"],
+        false,
+        false,
+      ),
     ).toMatchInlineSnapshot(`
       "import { remultApi } from "remult/remult-express";
       import { createPostgresDataProvider } from "remult/postgres";
-      import { getUserFromRequest } from "../demo/auth/server/auth.js";
       import { auth } from "../demo/auth/server/index.js";
         
       export const api = remultApi({
         dataProvider: createPostgresDataProvider({
           connectionString: process.env["DATABASE_URL"]    
         }),
-        getUser: getUserFromRequest,
-        modules: [auth()],
+        modules: [
+          auth({
+            // Add some roles to some users with env variable.
+            // SUPER_ADMIN_EMAILS
+          }),
+        ],
       });"
     `);
   });
@@ -67,7 +77,7 @@ describe("api file variations", async () => {
         buildApiFile(
           DATABASES.mssql,
           FRAMEWORKS.find((x) => x.name === "sveltekit")?.serverInfo!,
-          true,
+          Auths["better-auth"],
           false,
           false,
         ),
@@ -77,7 +87,6 @@ describe("api file variations", async () => {
       import { createKnexDataProvider } from "remult/remult-knex";
       import { MSSQL_SERVER, MSSQL_DATABASE, MSSQL_USER, MSSQL_PASSWORD, MSSQL_INSTANCE } from "$env/static/private";
       import { building } from "$app/environment";
-      import { getUserFromRequest } from "../demo/auth/server/auth";
       import { auth } from "../demo/auth/server/index";
         
       export const api = remultApi({
@@ -95,8 +104,12 @@ describe("api file variations", async () => {
             },
           }
         }),
-        getUser: getUserFromRequest,
-        modules: [auth()],
+        modules: [
+          auth({
+            // Add some roles to some users with env variable.
+            // SUPER_ADMIN_EMAILS
+          }),
+        ],
       });"
     `);
   });
@@ -106,7 +119,7 @@ describe("api file variations", async () => {
         buildApiFile(
           DATABASES.mongodb,
           FRAMEWORKS.find((x) => x.name === "sveltekit")?.serverInfo!,
-          true,
+          Auths["better-auth"],
           false,
           false,
         ),
@@ -117,7 +130,6 @@ describe("api file variations", async () => {
       import { MONGO_URL, MONGO_DB } from "$env/static/private";
       import { building } from "$app/environment";
       import { MongoDataProvider } from "remult/remult-mongo";
-      import { getUserFromRequest } from "../demo/auth/server/auth";
       import { auth } from "../demo/auth/server/index";
         
       export const api = remultApi({
@@ -126,23 +138,37 @@ describe("api file variations", async () => {
           await client.connect()
           return new MongoDataProvider(client.db(MONGO_DB), client)
         },
-        getUser: getUserFromRequest,
-        modules: [auth()],
+        modules: [
+          auth({
+            // Add some roles to some users with env variable.
+            // SUPER_ADMIN_EMAILS
+          }),
+        ],
       });"
     `);
   });
   test("with auth", () => {
-    expect(buildApiFile(DATABASES.json, Servers.express, true, false, false))
-      .toMatchInlineSnapshot(`
-        "import { remultApi } from "remult/remult-express";
-        import { getUserFromRequest } from "../demo/auth/server/auth.js";
-        import { auth } from "../demo/auth/server/index.js";
-          
-        export const api = remultApi({
-          getUser: getUserFromRequest,
-          modules: [auth()],
-        });"
-      `);
+    expect(
+      buildApiFile(
+        DATABASES.json,
+        Servers.express,
+        Auths["better-auth"],
+        false,
+        false,
+      ),
+    ).toMatchInlineSnapshot(`
+      "import { remultApi } from "remult/remult-express";
+      import { auth } from "../demo/auth/server/index.js";
+        
+      export const api = remultApi({
+        modules: [
+          auth({
+            // Add some roles to some users with env variable.
+            // SUPER_ADMIN_EMAILS
+          }),
+        ],
+      });"
+    `);
   });
 });
 
@@ -151,7 +177,7 @@ describe("test vite config", async () => {
     expect(
       createViteConfig({
         framework: "vue",
-        withAuth: true,
+        authInfo: Auths["better-auth"],
         withPlugin: true,
       }),
     ).toMatchInlineSnapshot(`
@@ -176,7 +202,7 @@ describe("test vite config", async () => {
     expect(
       createViteConfig({
         framework: "vue",
-        withAuth: true,
+        authInfo: Auths["better-auth"],
         withPlugin: false,
       }),
     ).toMatchInlineSnapshot(`
@@ -209,7 +235,7 @@ describe("test vite config", async () => {
     expect(
       createViteConfig({
         framework: "vue",
-        withAuth: false,
+        authInfo: null,
         withPlugin: false,
       }),
     ).toMatchInlineSnapshot(`
@@ -249,7 +275,7 @@ describe.sequential("test-write-react stuff", async () => {
     root: "tmp",
     server: Servers.express,
     templatesDir: "templates",
-    withAuth: true,
+    authInfo: Auths["better-auth"],
     distLocation: "dist",
     envVariables: [],
   };
@@ -314,7 +340,7 @@ describe.sequential("test-write-react stuff", async () => {
                   </div>
                   <div className="intro__stack-item">
                     <span>Auth</span>
-                    auth.js
+                    Better-Auth
                   </div>
                 </div>
               </Tile>
@@ -384,7 +410,7 @@ describe.sequential("test-write-react stuff", async () => {
                   </div>
                   <div className="intro__stack-item">
                     <span>Auth</span>
-                    auth.js
+                    Better-Auth
                   </div>
                 </div>
               </Tile>
@@ -413,7 +439,7 @@ import { Roles } from "./Roles.js";`),
     var nuxt = FRAMEWORKS.find((x) => x.name === "nuxt")!.serverInfo!;
     fs.writeFileSync(
       apiPath,
-      buildApiFile(DATABASES.json, nuxt, false, true, true),
+      buildApiFile(DATABASES.json, nuxt, Auths["better-auth"], true, true),
     );
     nuxt.writeFiles!({
       ...basicArgs,
@@ -421,10 +447,17 @@ import { Roles } from "./Roles.js";`),
     expect(fs.readFileSync(apiPath).toString()).toMatchInlineSnapshot(`
       "import { remultApi } from "remult/remult-nuxt";
       import { Task } from "../../demo/todo/Task.js";
+      import { auth } from "../../demo/auth/server/index.js";
         
       export const api = remultApi({
         admin: true,
         entities: [Task],
+        modules: [
+          auth({
+            // Add some roles to some users with env variable.
+            // SUPER_ADMIN_EMAILS
+          }),
+        ],
       });
 
       export default defineEventHandler(api);"
