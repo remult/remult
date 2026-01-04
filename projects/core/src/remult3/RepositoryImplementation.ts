@@ -2692,7 +2692,7 @@ export class columnDefsImpl implements FieldMetadata {
   displayValue(item: any): string {
     return this.entityDefs
       .getEntityMetadataWithoutBreakingTheEntity(item)
-      .fields.find(this.key).displayValue
+      .fields.find(this.key)?.displayValue
   }
   includedInApi(item?: any): boolean {
     if (this.options.includeInApi === undefined) return true

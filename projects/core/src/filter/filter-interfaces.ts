@@ -316,6 +316,8 @@ export class Filter {
             result.push(new Filter((x) => x.databaseCustom(fieldToFilter)))
           } else {
             const field = entity.fields[key as keyof FieldsMetadata<T>]
+            if (!field)
+              throw new Error(`Field ${key} not found in entity ${entity.key}`)
             const rel = getRelationFieldInfo(field)
             const op = field.options as RelationOptions<any, any, any>
             let fh =
