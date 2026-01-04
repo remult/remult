@@ -13,7 +13,7 @@
   "dependencies": {
     "compression": "^1.7.4",
     "cookie-session": "^2.0.0",
-    "express": "^4.21.0",
+    "express": "^4.22.1",
     "helmet": "^7.1.0",
     "pg": "^8.11.3",
     "react": "^18.2.0",
