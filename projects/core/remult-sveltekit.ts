@@ -91,6 +91,8 @@ export function remultApi(
   const handler: Handle = async ({ event, resolve }) => {
     return result.withRemultAsync(event, async () => await resolve(event))
   }
+  // Ensure backend methods are included directly (for OpenAPI)
+  ;(result as any).getRouteImpl()
   return Object.assign(handler, {
     getRemult: (req: RequestEvent) => result.getRemult(req),
     openApiDoc: (options: { title: string }) => result.openApiDoc(options),
