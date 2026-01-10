@@ -22,7 +22,7 @@
     "@angular/router": "^17.0.0",
     "compression": "^1.7.4",
     "cookie-session": "^2.0.0",
-    "express": "^4.21.1",
+    "express": "^4.22.1",
     "fastify": "^4.26.1",
     "helmet": "^7.1.0",
     "pg": "^8.11.3",
