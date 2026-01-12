@@ -1032,15 +1032,11 @@ export class RepositoryImplementation<entityType>
         if (incl) {
           const otherRepo = rel.toRepo
           for (const row of result) {
-            let { findOptions, returnNull } = this._findOptionsBasedOnRelation(
-              rel,
-              col,
-              incl,
-              row,
-              otherRepo,
-            )
+            let { findOptions, returnNull, returnUndefined } =
+              this._findOptionsBasedOnRelation(rel, col, incl, row, otherRepo)
             const colKey = col.key as keyof entityType
             if (returnNull) row[colKey] = null!
+            else if (returnUndefined) row[colKey] = undefined!
             else {
               const entityType = rel.toEntity
               const toRepo = otherRepo as RepositoryImplementation<any>
@@ -1158,7 +1154,10 @@ export class RepositoryImplementation<entityType>
 
     for (const key in relFields.fields) {
       if (Object.prototype.hasOwnProperty.call(relFields.fields, key)) {
-        where.push({ [key]: getFieldValue(relFields.fields[key]) })
+        const val = getFieldValue(relFields.fields[key])
+        if (val === null) returnNull = true
+        else if (val === undefined) returnUndefined = true
+        else where.push({ [key]: val })
       }
     }
 

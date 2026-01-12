@@ -13,6 +13,7 @@ import {
   TestDataApiResponse,
 } from '../../TestDataApiResponse'
 import { Done } from '../../Done'
+import { TestApiDataProvider } from '../../../../core/server/test-api-data-provider.js'
 
 describe('Test relations on api', () => {
   @Entity('categories', { allowApiCrud: true })
@@ -212,6 +213,89 @@ describe('Test relations on api', () => {
             },
           ],
         },
+      ]
+    `)
+  })
+  it('test relation and include in api with categoryId', async () => {
+    @Entity('categories', { allowApiCrud: true })
+    class Category {
+      @Fields.integer()
+      id = 0
+      @Fields.string()
+      name = ''
+    }
+    @Entity('products', { allowApiCrud: true })
+    class Product {
+      @Fields.integer()
+      id = 0
+      @Fields.string()
+      name = ''
+      @Fields.integer({ includeInApi: false })
+      categoryId = 0
+      @Relations.toOne(() => Category, 'categoryId')
+      category?: Category
+    }
+    let mem = new InMemoryDataProvider()
+
+    const remult = new Remult(TestApiDataProvider({ dataProvider: mem }))
+    await remult.repo(Category, mem).insert([
+      { id: 1, name: 'c1' },
+      { id: 2, name: 'c2' },
+    ])
+    await remult.repo(Product, mem).insert([
+      { id: 1, name: 'p1', categoryId: 1 },
+      { id: 2, name: 'p2', categoryId: 2 },
+    ])
+    const result = await remult
+      .repo(Product)
+      .find({ include: { category: true } })
+      .then((x) => x.map((y) => y.category?.name))
+
+    expect(result).toMatchInlineSnapshot(`
+      [
+        undefined,
+        undefined,
+      ]
+    `)
+  })
+  it('test relation and include in api', async () => {
+    @Entity('categories', { allowApiCrud: true })
+    class Category {
+      @Fields.integer()
+      id = 0
+      @Fields.string()
+      name = ''
+    }
+    @Entity('products', { allowApiCrud: true })
+    class Product {
+      @Fields.integer()
+      id = 0
+      @Fields.string()
+      name = ''
+
+      @Relations.toOne(() => Category, { includeInApi: false })
+      category?: Category
+    }
+    let mem = new InMemoryDataProvider()
+
+    const remult = new Remult(TestApiDataProvider({ dataProvider: mem }))
+    const [c1, c2] = await remult.repo(Category, mem).insert([
+      { id: 1, name: 'c1' },
+      { id: 2, name: 'c2' },
+    ])
+    await remult.repo(Product, mem).insert([
+      { id: 1, name: 'p1', category: c1 },
+      { id: 2, name: 'p2', category: c2 },
+    ])
+    const result = await remult
+      .repo(Product)
+      .find({ include: { category: true } })
+      .then((x) => x.map((y) => y.category?.name))
+
+    expect(result).toMatchInlineSnapshot(`
+      [
+        undefined,
+        undefined,
       ]
     `)
   })
