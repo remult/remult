@@ -1,5 +1,9 @@
 All notable changes to this project will be documented in this file.
 
+## [3-3-4] 2026-01-12
+
+- [#876](https://github.com/remult/remult/issues/876) Relation should return undefined when includeInApi is false for its id field
+
 ## [3.3.3] - 2025-12-30
 
 - #865 - fix paging syntax in group by for sql server
