@@ -13,7 +13,7 @@
     "@auth/core": "^0.37.3",
     "@auth/sveltekit": "^1.7.3",
     "@sveltejs/adapter-auto": "^3.0.0",
-    "@sveltejs/kit": "^2.20.6",
+    "@sveltejs/kit": "^2.49.5",
     "@sveltejs/vite-plugin-svelte": "^4.0.0",
     "remult": "^3.0.0-next.1",
     "svelte": "^5.7.0",
