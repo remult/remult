@@ -23,7 +23,7 @@ export default function Auth() {
         setStatus("Error");
         if (e.message.includes("the server configuration")) {
           setMessageError(
-            "Make sure to set the AUTH_SECRET in the .env file. Read more at auth.js docs. Please check the server terminal console for more information.",
+            "Make sure to set the BETTER_AUTH_SECRET in the .env file. Read more at better-auth docs. Please check the server terminal console for more information.",
           );
         }
       });

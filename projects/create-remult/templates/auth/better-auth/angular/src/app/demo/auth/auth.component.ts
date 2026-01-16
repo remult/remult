@@ -35,8 +35,8 @@ export class AuthComponent implements OnInit {
       .catch((e) => {
         this.status = "Error";
         if (e.message.includes("the server configuration")) {
-          this.error = `Make sure to set the AUTH_SECRET in the .env file.
-Read more at https://errors.authjs.dev#missingsecret.
+          this.error = `Make sure to set the BETTER_AUTH_SECRET in the .env file.
+Read more at https://www.better-auth.com/docs/reference/options#secret.
 Please check the server terminal console for more information.`;
         }
       });

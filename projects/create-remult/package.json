@@ -40,8 +40,9 @@
     "build": "unbuild",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build",
-    "test": "vitest --run",
-    "try": "npx create-remult remult-project1 -t next -s express -d postgres --crud --overwrite yes --admin -a auth.js",
+    "test": "vitest",
+    "test:ci": "vitest --run",
+    "try": "npx create-remult remult-project1 -t next -s express -d postgres --crud --overwrite yes --admin -a better-auth",
     "try-l": "npm run build && node ./dist/index.mjs remult-project-local -t sveltekit -s express-vite -d json --crud --overwrite yes --admin -a better-auth"
   },
   "engines": {
@@ -62,8 +63,10 @@
     "@types/minimist": "^1.2.5",
     "@types/prompts": "^2.4.9",
     "cross-spawn": "^7.0.3",
+    "dotenv": "^17.2.3",
     "minimist": "^1.2.8",
     "prompts": "^2.4.2",
-    "unbuild": "3.6.1"
+    "unbuild": "3.6.1",
+    "vitest": "3.1.2"
   }
 }

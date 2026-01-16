@@ -33,8 +33,33 @@ jobs:
       - name: 👌 Tests
         run: npm run test-latest-typescript-build
 
+  create_remult_checks:
+    name: Create Remult Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🌐 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🧑‍💻 Setup env
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 📦 Install dependencies
+        run: cd projects/create-remult && npm i
+
+      - name: 🔍 Typecheck
+        run: cd projects/create-remult && npm run typecheck
+
+      - name: 🧪 Run tests
+        run: cd projects/create-remult && npm run test:ci
+
   verify_create:
     name: Verify Create
+    needs: create_remult_checks
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -43,7 +68,7 @@ jobs:
         database:
           [json, postgres, mysql, mongodb, bettersqlite3, sqlite3, mssql]
         server: [express, fastify, express-vite, noserver]
-        auth: [better-auth, auth.js, noauth]
+        auth: [better-auth, noauth]
         exclude:
           - template: react
             server: noserver
@@ -72,11 +97,7 @@ jobs:
             server: fastify
           - template: nuxt
             server: express-vite
-          - template: nuxt
-            auth: auth.js
 
-          - server: fastify
-            auth: auth.js
           - server: fastify
             auth: better-auth
 
@@ -96,6 +117,6 @@ jobs:
 
       - name: ➕ Create template
         run: cd projects/create-remult && node dist/index.mjs tmp-${{ matrix.template }}-${{ matrix.database }}-${{ matrix.server }}-${{ matrix.auth }} -t ${{ matrix.template }} -d ${{ matrix.database }} -s ${{ matrix.server }} -a ${{ matrix.auth }} --crud --admin
-      # tmp --force (because of 3.0.6-next.1 not accepted by @nerdfolio/remult-better-auth peer)
+
       - name: 🛠️ install & build
-        run: cd projects/create-remult/tmp-${{ matrix.template }}-${{ matrix.database }}-${{ matrix.server }}-${{ matrix.auth }} && npm i --force && npm run build
+        run: cd projects/create-remult/tmp-${{ matrix.template }}-${{ matrix.database }}-${{ matrix.server }}-${{ matrix.auth }} && npm i && npm run build
