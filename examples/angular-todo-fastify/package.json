@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^20.0.1",
-    "@angular/cli": "^17.0.3",
+    "@angular/cli": "^21.1.0",
     "@angular/compiler-cli": "^17.0.0",
     "@types/compression": "^1.7.5",
     "@types/cookie-session": "^2.0.48",
