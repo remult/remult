@@ -38,7 +38,7 @@
     "@cloudflare/workers-types": "^4.20250613.0",
     "@duckdb/node-api": "^1.3.2-alpha.26",
     "@fastify/express": "^2.0.1",
-    "@fastify/middie": "^8.0.0",
+    "@fastify/middie": "^9.1.0",
     "@fastify/swagger-ui": "^1.8.1",
     "@hapi/hapi": "^21.3.2",
     "@hono/node-server": "^1.11.0",
