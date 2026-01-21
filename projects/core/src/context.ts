@@ -140,15 +140,14 @@ export class Remult {
 
     let r = dpCache.get(entity)
     if (!r) {
-      dpCache.set(
+      r = new RepositoryImplementation(
         entity,
-        (r = new RepositoryImplementation(
-          entity,
-          this,
-          dataProvider,
-          createOldEntity(entity, this),
-        ) as Repository<any>),
-      )
+        this,
+        dataProvider,
+        createOldEntity(entity, this),
+      ) as Repository<any>
+
+      if (r.metadata.options.disableRepoCache !== true) dpCache.set(entity, r)
 
       verifyFieldRelationInfo(r, this, dataProvider)
     }
@@ -316,6 +315,37 @@ export class Remult {
   clearAllCache(): any {
     this.repCache.clear()
   }
+
+  /**
+   * Clears all cached repositories associated with a given entity for every data provider
+   * @see [Entity.disableRepoCache](https://remult.dev/docs/ref_entity#disablerepocache) to disable caching on specific entities
+   * @example
+   * import { remult } from 'remult';
+   * import { Task } from 'models/Task.js';
+   *
+   * // Clear the cached Task repositories for every data provider
+   * remult.clearEntityCache(Task);
+   */
+  clearEntityCache(entity: ClassType<any>) {
+    this.repCache.forEach((cache) => {
+      cache.delete(entity)
+    })
+  }
+
+  /**
+   * Clears all cached repositories for a given data provider
+   * @see [Entity.disableRepoCache](https://remult.dev/docs/ref_entity#disablerepocache) to disable caching on specific entities
+   * @example
+   * import { remult } from 'remult';
+   * import { postgresDP } from './dataProvider.js';
+   *
+   * // Clear the cached repositories for the postgresDP data provider
+   * remult.clearDataProviderCache(postgresDP);
+   */
+  clearDataProviderCache(dataProvider: DataProvider) {
+    this.repCache.delete(dataProvider)
+  }
+
   /** A helper callback that is called whenever an entity is created. */
   static entityRefInit?: (ref: EntityRef<any>, row: any) => void
   /**
