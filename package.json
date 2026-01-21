@@ -74,7 +74,7 @@
     "cloudflare": "^4.4.1",
     "concurrently": "^7.2.2",
     "copyfiles": "^2.4.1",
-    "dependency-cruiser": "^13.1.5",
+    "dependency-cruiser": "^17.3.6",
     "dotenv": "^8.1.0",
     "eslint": "^8.56.0",
     "eslint-plugin-file-extension-in-import-ts": "^1.0.2",
