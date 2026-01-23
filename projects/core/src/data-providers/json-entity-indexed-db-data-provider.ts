@@ -77,4 +77,18 @@ export class JsonEntityIndexedDbStorage implements JsonEntityStorage {
       request.onsuccess = (_event) => resolve()
     })
   }
+
+  async clear() {
+    return new Promise<void>(async (resolve, reject) => {
+      const transaction = (await this.init()).transaction(
+        [this.storeName],
+        'readwrite',
+      )
+      const store = transaction.objectStore(this.storeName)
+      const request = store.clear()
+
+      request.onerror = (_event) => reject(request.error)
+      request.onsuccess = (_event) => resolve()
+    })
+  }
 }

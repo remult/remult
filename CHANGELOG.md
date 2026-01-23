@@ -1,5 +1,9 @@
 All notable changes to this project will be documented in this file.
 
+## [3-3-6] - 2025-01-23
+
+- Added clear to indexed db database
+
 ## [3-3-5] - 2025-01-14
 
 - #874 - fix: Ensure backend methods are included directly (openApi sveltekit)

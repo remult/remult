@@ -1978,6 +1978,7 @@ export declare class JsonEntityIndexedDbStorage implements JsonEntityStorage {
   getItem(entityDbName: string): Promise<string>
   setItem(entityDbName: string, json: string): Promise<void>
   removeItem(entityDbName: string): Promise<void>
+  clear(): Promise<void>
 }
 export declare class JsonEntityOpfsStorage implements JsonEntityStorage {
   getItem(entityDbName: string): Promise<string>
