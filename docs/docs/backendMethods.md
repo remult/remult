@@ -30,7 +30,7 @@ export class TasksController {
 
 Each controller can house one or more backend methods, each serving distinct purposes tailored to your application's needs. In the provided example, the `TasksController` class contains a single backend method named `setAll`, responsible for setting the completion status of all tasks.
 
-The method name, such as `setAll`, serves as the URL for the corresponding REST endpoint on the backend server. It's worth noting that you can configure a prefix for these endpoints using the `apiPrefix` option, providing flexibility in structuring your backend API routes.
+The method name, such as `setAll`, serves as the URL for the corresponding REST endpoint on the backend server. It's worth noting that, by default, the endpoints are not prefixed. This means that if you define the `setAll` method in `TasksController`, and `setAll` in a separate controller, you will have potentially unwanted behaviour - two handlers for one endpoint. You can fix this by configuring a prefix for these endpoints using the `apiPrefix` option, providing flexibility in structuring your backend API routes.
 
 The allowed: true parameter signifies that the backend method can be invoked by anyone. Alternatively, you can customize the authorization settings for finer control over who can access the method.
 

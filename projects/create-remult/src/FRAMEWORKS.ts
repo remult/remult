@@ -43,7 +43,7 @@ export type ServerInfo = {
 export type WriteFilesArgs = {
   root: string;
   distLocation: string;
-  authInfo: AuthInfo | undefined;
+  authInfo: AuthInfo | undefined | null;
   templatesDir: string;
   framework: Framework;
   server: ServerInfo;
@@ -209,10 +209,7 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"));`;
   }
 
   const getAuthImportPart = () => {
-    if (authInfo?.name === "auth.js") {
-      return `import { auth } from "../demo/auth/server/auth.js";
-`;
-    } else if (authInfo?.name === "better-auth") {
+    if (authInfo?.name === "better-auth") {
       return `import { auth } from "../demo/auth/server/auth.js";
 import { toNodeHandler } from "better-auth/node";
 `;
@@ -221,11 +218,7 @@ import { toNodeHandler } from "better-auth/node";
   };
 
   const getAuthCodePart = () => {
-    if (authInfo?.name === "auth.js") {
-      return `app.set("trust proxy", true);
-app.use("/auth/*", auth);
-`;
-    } else if (authInfo?.name === "better-auth") {
+    if (authInfo?.name === "better-auth") {
       return `app.all("/api/auth/*splat", toNodeHandler(auth));
 `;
     }

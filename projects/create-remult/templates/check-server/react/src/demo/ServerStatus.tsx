@@ -15,10 +15,12 @@ export default function ServerStatus() {
         if (e.message?.includes("the server configuration")) {
           setError(
             <>
-              Make sure to set the <code>AUTH_SECRET</code> in the{" "}
+              Make sure to set the <code>BETTER_AUTH_SECRET</code> in the{" "}
               <code>.env</code> file. <br />
               Read more at{" "}
-              <a href="https://errors.authjs.dev#missingsecret">auth.js docs</a>
+              <a href="https://www.better-auth.com/docs/reference/options#secret">
+                better-auth docs
+              </a>
               .
             </>,
           );
@@ -35,8 +37,8 @@ export default function ServerStatus() {
     status === "Success"
       ? "Up and running"
       : status === "Error"
-      ? "There seems to be an issue"
-      : status;
+        ? "There seems to be an issue"
+        : status;
 
   return (
     <Tile title="Server Status" status={status} subtitle={subtitle}>

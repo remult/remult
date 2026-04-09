@@ -11,14 +11,14 @@ orbs:
 jobs:
   build:
     docker:
-      - image: cimg/node:20.9
+      - image: cimg/node:20.19
     steps:
       - checkout
       - node/install-packages
       - run: npm run build
   test-remult:
     docker:
-      - image: cimg/node:20.9
+      - image: cimg/node:20.19
       - image: cimg/postgres:14.0
         environment:
           POSTGRES_USER: postgres
