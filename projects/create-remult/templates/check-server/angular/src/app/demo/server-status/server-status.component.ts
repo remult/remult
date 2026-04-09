@@ -24,7 +24,7 @@ export class ServerStatusComponent implements OnInit {
 
         if (e.message?.includes("the server configuration")) {
           this.error =
-            "Make sure to set the AUTH_SECRET in the .env file.\nRead more at https://errors.authjs.dev#missingsecret.";
+            "Make sure to set the BETTER_AUTH_SECRET in the .env file.\nRead more at https://www.better-auth.com/docs/reference/options#secret.";
         } else {
           this.error = "Please run npm run dev-node in a separate terminal.";
         }

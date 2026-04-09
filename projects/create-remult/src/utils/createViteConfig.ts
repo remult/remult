@@ -6,7 +6,7 @@ export function createViteConfig({
   withPlugin,
 }: {
   framework: string;
-  authInfo: AuthInfo | undefined;
+  authInfo: AuthInfo | undefined | null;
   withPlugin: boolean;
 }) {
   return `import { defineConfig } from "vite";

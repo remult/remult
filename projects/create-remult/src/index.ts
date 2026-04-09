@@ -42,7 +42,7 @@ Options:
   -t, --template NAME        use a specific template
   -d, --database NAME        use a specific database
   -s, --server NAME          use a specific server
-  -a, --auth auth.js         use auth.js for authentication
+  -a, --auth better-auth     use better-auth for authentication
   --admin                    add admin page
   --crud                     add crud demo
 
@@ -97,7 +97,7 @@ async function init() {
     overwrite: argv.overwrite,
     framework: FRAMEWORKS.find((x) => x.name == argTemplate),
     server: Servers[argServer as keyof typeof Servers],
-    auth: argAuth === undefined ? undefined : argAuth === "auth.js",
+    auth: argAuth === undefined ? undefined : argAuth === "better-auth",
     crud: crudArg === undefined ? undefined : crudArg === true,
     admin: adminArg === undefined ? undefined : adminArg === true,
   });
