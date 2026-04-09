@@ -7,7 +7,7 @@
   import Json from '../icons/Json.svelte'
   import { dialog } from './dialog/dialog.js'
   import RelationField from './RelationField.svelte'
-  import { type Content, JSONEditor } from 'svelte-jsoneditor'
+  import { type Content, JSONEditor } from './json-editor'
   import { onMount } from 'svelte'
   import TextEditor from './TextEditor.svelte'
 

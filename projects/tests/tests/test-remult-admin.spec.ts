@@ -1,6 +1,5 @@
-import remultAdminHtml, {
-  buildEntityInfo,
-} from '../../../projects/core/server/remult-admin'
+import { buildEntityInfo } from '../../../projects/core/server/remult-admin'
+import remultAdminHtml from '../../../projects/core/server/remult-admin-html'
 import { describe, expect, it } from 'vitest'
 import { Entity, Fields, Relations, repo } from '../../core'
 import { Remult } from '../../core/src/context'

@@ -44,7 +44,7 @@ import type {
 import { Action, classBackendMethodsArray } from '../src/server-action.js'
 import { serverActionField } from '../src/server-action-info.js'
 import { remultStatic } from '../src/remult-static.js'
-import remultAdminHtml, { buildEntityInfo } from './remult-admin.js'
+import { buildEntityInfo } from './remult-admin.js'
 import { isOfType } from '../src/isOfType.js'
 import { initDataProviderOrJson } from './initDataProviderOrJson.js'
 import { modulesFlatAndOrdered, type Module } from './module.js'
@@ -511,6 +511,12 @@ export class RemultServerImplementation<RequestType>
                   disableLiveQuery =
                     this.options.admin.disableLiveQuery ?? disableLiveQuery
                 }
+                // Lazy-load the ~1.4MB admin HTML module only when the admin
+                // page is actually requested, so it is never pulled into the
+                // bundle of apps that don't serve the admin UI.
+                const { default: remultAdminHtml } = await import(
+                  './remult-admin-html.js'
+                )
                 origResponse.send(
                   remultAdminHtml({
                     rootPath: this.options.rootPath ?? '/api',

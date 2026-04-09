@@ -5,7 +5,6 @@ import {
 import { Filter } from '../src/filter/filter-interfaces.js'
 import type { ClassType } from '../classType.js'
 import type { Remult } from '../src/context.js'
-import { getHtml } from './get-remult-admin-html.js'
 import { getValueList } from '../src/remult3/RepositoryImplementation.js'
 import type { EntityFilter } from '../src/remult3/remult3.js'
 import { InputTypes } from '../inputTypes.js'
@@ -57,22 +56,6 @@ export interface AdminDisplayOptions {
   head: string
   requireAuthToken: boolean
   disableLiveQuery: boolean
-}
-
-export default function remultAdminHtml(options: AdminDisplayOptions) {
-  const { head, rootPath, requireAuthToken, disableLiveQuery } = options
-  return getHtml()
-    .replace('<!--PLACE_HERE_HEAD-->', head)
-    .replace(
-      '<!--PLACE_HERE_BODY-->',
-      `<script>
-  window.optionsFromServer = ${JSON.stringify({
-    rootPath,
-    requireAuthToken,
-    disableLiveQuery,
-  })}
-</script>`,
-    )
 }
 
 export function buildEntityInfo(options: AdminEntitiesOptions) {

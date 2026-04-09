@@ -25,3 +25,6 @@ dist-ssr
 tmp
 
 !/db
+
+stats.json
+stats.html
