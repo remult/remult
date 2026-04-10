@@ -68,7 +68,7 @@
     "@vitest/coverage-v8": "3.1.2",
     "@vitest/ui": "3.1.2",
     "ably": "^1.2.33",
-    "axios": "^0.28.0",
+    "axios": "^1.15.0",
     "better-sqlite3": "^12.2.0",
     "class-validator": "^0.14.0",
     "cloudflare": "^4.4.1",
