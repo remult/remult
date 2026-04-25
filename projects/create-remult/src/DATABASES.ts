@@ -83,10 +83,10 @@ export const DATABASES = {
     emoji: "💾",
     description: "Powerful, database system",
     dependencies: {
-      "better-sqlite3": "^9.1.1",
+      "better-sqlite3": "^12.0.0",
     },
     devDependencies: {
-      "@types/better-sqlite3": "^7.6.11",
+      "@types/better-sqlite3": "^7.6.13",
     },
     imports: [
       {
