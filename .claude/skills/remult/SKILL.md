@@ -78,11 +78,36 @@ Order on save: `saving` -> save -> `saved`. On delete: `deleting` -> delete -> `
 })
 ```
 
-### Server-only Code in Hooks
+### Server-only Code in Hooks / BackendMethods
 
-If a hook touches Node-only deps (`sharp`, `fs`, ...), you don't want this to go in the frontend bundle. Use dynamic `import()` inside a hook and guard with `import.meta.env.SSR` so it only runs server-side and doesn't bloat the client.
+For Node-only deps (`sharp`, `fs`, ...), wrap the server section in `if (import.meta.env.SSR) { ... }` and dynamically `import()` inside the block. Vite drops the entire branch from the client bundle.
 
-- Vite: `if (import.meta.env.SSR) { const { x } = await import('node-only-pkg') }`
+```ts
+@BackendMethod({ allowed: true })
+static async log(msg: string) {
+  if (import.meta.env.SSR) {
+    const { appendFileSync } = await import('fs')
+    appendFileSync('./logs/log.txt', `${new Date().toISOString()} ${msg}\n`)
+  }
+}
+```
+
+Same pattern in hooks:
+
+```ts
+@Entity<Post>('posts', {
+  saved: async (post) => {
+    if (import.meta.env.SSR) {
+      const { appendFileSync } = await import('fs')
+      appendFileSync('./logs/log.txt', `${new Date().toISOString()} saved ${post.id}\n`)
+    }
+  },
+})
+```
+
+**Do not use `if (!import.meta.env.SSR) return` as an early-return** - it does NOT strip the Node-only deps from the client bundle. Always wrap the server-only section in `if (import.meta.env.SSR) { ... }`.
+
+For more (abstract-the-call, bundler exclusion), see <https://remult.dev/docs/using-server-only-packages>.
 
 ## Entity-first vs. BackendMethod
 
