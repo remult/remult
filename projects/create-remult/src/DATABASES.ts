@@ -59,7 +59,7 @@ export const DATABASES = {
     emoji: "💾",
     description: "Powerful, database system",
     dependencies: {
-      mongodb: "^4.17.1",
+      mongodb: "^6.0.0",
     },
     imports: [
       {
