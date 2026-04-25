@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { remult } from "remult";
-import Tile, { type TileStatus } from "../Tile";
+import { Tile, type TileStatus } from "../ui";
 import { createAuthClient } from "better-auth/react";
 import type { JSX } from "react";
 

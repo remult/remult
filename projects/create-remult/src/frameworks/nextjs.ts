@@ -45,7 +45,7 @@ export default nextConfig;
     }
     writeAppTsxAndReadme(args);
     if (args.authInfo) {
-      const checkAuthPath = path.join(root, "src/demo/auth/Auth.tsx");
+      const checkAuthPath = path.join(root, "src/modules/auth/Auth.tsx");
       fs.writeFileSync(
         checkAuthPath,
         fs

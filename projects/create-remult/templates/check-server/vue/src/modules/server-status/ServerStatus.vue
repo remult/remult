@@ -19,7 +19,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import { remult } from "remult";
-import Tile from "./Tile.vue";
+import { Tile } from "../ui";
 type TileStatus = "Success" | "Error" | "Warning" | "Info" | "Loading";
 
 const status = ref<TileStatus>("Loading");

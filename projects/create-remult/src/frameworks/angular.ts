@@ -33,25 +33,20 @@ export const angular: Framework = {
       `import { Component, NgZone } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { remult } from 'remult';
-import { TileComponent } from './demo/tile/tile.component';
+import { TileComponent${args.admin ? ", AdminComponent" : ""} } from './modules/ui';
 ${
   args.crud
-    ? `import { TodoComponent } from './demo/todo/todo.component';
+    ? `import { TodoComponent } from './modules/todo/todo.component';
 `
     : ""
 }${
         args.server.requiresTwoTerminal
-          ? `import { ServerStatusComponent } from './demo/server-status/server-status.component';
+          ? `import { ServerStatusComponent } from './modules/server-status/server-status.component';
 `
           : ""
       }${
         args.authInfo
-          ? `import { AuthComponent } from './demo/auth/auth.component';
-`
-          : ""
-      }${
-        args.admin
-          ? `import { AdminComponent } from './demo/admin/admin.component';
+          ? `import { AuthComponent } from './modules/auth/auth.component';
 `
           : ""
       }

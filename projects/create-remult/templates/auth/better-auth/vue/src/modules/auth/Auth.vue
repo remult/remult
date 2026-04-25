@@ -47,7 +47,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { remult } from "remult";
-import Tile from "../Tile.vue";
+import { Tile } from "../ui";
 import { authClient } from "./auth-client.js";
 
 type TileStatus = "Success" | "Error" | "Warning" | "Info" | "Loading";

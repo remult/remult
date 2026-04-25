@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import Tile from "../Tile";
+import { Tile } from "../ui";
 import { repo } from "remult";
 import { Task } from "./Task";
 

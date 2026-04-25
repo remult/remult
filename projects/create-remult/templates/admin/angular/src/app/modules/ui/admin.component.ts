@@ -1,6 +1,6 @@
 import { remult } from "remult";
 import { Component, OnInit } from "@angular/core";
-import { TileComponent, type TileStatus } from "../tile/tile.component";
+import { TileComponent, type TileStatus } from "./tile.component";
 
 @Component({
   selector: "app-admin",

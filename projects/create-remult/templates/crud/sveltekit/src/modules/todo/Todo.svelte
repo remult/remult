@@ -1,7 +1,7 @@
 <script lang="ts">
   import { EntityError, repo } from "remult";
   import { Task } from "./Task";
-  import Tile from "../Tile.svelte";
+  import { Tile } from "../ui";
 
   let tasks: Task[] = $state([]);
   let hideCompleted = $state(false);

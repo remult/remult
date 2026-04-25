@@ -52,7 +52,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from "vue";
 import { repo } from "remult";
-import Tile from "../Tile.vue";
+import { Tile } from "../ui";
 import { Task } from "./Task";
 import plusIcon from "../../assets/plus.svg";
 import trashIcon from "../../assets/trash.svg";

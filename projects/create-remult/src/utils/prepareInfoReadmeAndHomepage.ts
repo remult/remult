@@ -38,10 +38,11 @@ export function prepareInfoReadmeAndHomepage(
   if (server.componentInfo) components.push(server.componentInfo);
   components.push({ ...db, type: "Database" });
 
+  const uiNames: string[] = ["Tile"];
   const imports: Import[] = [
     {
-      from: "./demo/Tile" + (framework.componentFileSuffix ?? ""),
-      imports: "Tile",
+      from: "./modules/ui",
+      imports: uiNames,
     },
   ];
   const li: (() => string)[] = [];
@@ -52,7 +53,7 @@ export function prepareInfoReadmeAndHomepage(
       path.join(root),
     );
     imports.push({
-      from: "./demo/ServerStatus" + (framework.componentFileSuffix ?? ""),
+      from: "./modules/server-status/ServerStatus" + (framework.componentFileSuffix ?? ""),
       imports: "ServerStatus",
     });
     li.push(() => "<ServerStatus />");
@@ -68,7 +69,7 @@ export function prepareInfoReadmeAndHomepage(
       type: "Auth",
     });
     imports.push({
-      from: "./demo/auth/Auth" + (framework.componentFileSuffix ?? ""),
+      from: "./modules/auth/Auth" + (framework.componentFileSuffix ?? ""),
       imports: "Auth",
     });
     li.push(() => "<Auth />");
@@ -78,23 +79,20 @@ export function prepareInfoReadmeAndHomepage(
       path.join(templatesDir, "admin", frontendTemplate),
       path.join(root),
     );
-    imports.push({
-      from: "./demo/Admin" + (framework.componentFileSuffix ?? ""),
-      imports: "Admin",
-    });
+    uiNames.push("Admin");
     li.push(() => `<Admin />`);
   }
   if (crud) {
     copyDir(path.join(templatesDir, "crud", frontendTemplate), path.join(root));
     imports.push({
-      from: "./demo/todo/Todo" + (framework.componentFileSuffix ?? ""),
+      from: "./modules/todo/Todo" + (framework.componentFileSuffix ?? ""),
       imports: "Todo",
     });
     li.push(() => "<Todo />");
   }
   if (server.doesNotLikeJsFileSuffix) {
     for (const i of imports) {
-      if (i.from.startsWith("./demo")) i.from = "." + i.from;
+      if (i.from.startsWith("./modules/")) i.from = "." + i.from;
     }
   }
   return { components, imports, li };

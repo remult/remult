@@ -22,7 +22,7 @@ export const nuxt: Framework = {
         fs
           .readFileSync(apiPath)
           .toString()
-          .replace(/"\.\.\/demo/g, '"../../demo') +
+          .replace(/"\.\.\/modules\//g, '"../../modules/') +
           "\n\nexport default defineEventHandler(api);",
       );
       var info = prepareInfoReadmeAndHomepage({

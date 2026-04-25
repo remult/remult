@@ -1,9 +1,9 @@
 import { Component, type OnInit } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
-import { Task } from "../../../demo/todo/Task.js";
+import { Task } from "../../../modules/todo/Task.js";
 import { repo } from "remult";
-import { TileComponent } from "../tile/tile.component";
+import { TileComponent } from "../ui";
 import { CommonModule } from "@angular/common";
 
 @Component({

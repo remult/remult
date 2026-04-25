@@ -1,6 +1,6 @@
 <script lang="ts">
   import { remult } from "remult";
-  import Tile from "../Tile.svelte";
+  import { Tile } from "../ui";
 
   import { createAuthClient } from "better-auth/svelte";
 

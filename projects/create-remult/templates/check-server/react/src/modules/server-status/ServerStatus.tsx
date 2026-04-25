@@ -1,5 +1,5 @@
 import { remult } from "remult";
-import Tile, { type TileStatus } from "./Tile";
+import { Tile, type TileStatus } from "../ui";
 import { useState, useEffect } from "react";
 
 export default function ServerStatus() {

@@ -1,6 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { remult } from "remult";
-import { TileComponent, type TileStatus } from "../tile/tile.component";
+import { TileComponent, type TileStatus } from "../ui";
 
 @Component({
   selector: "app-server-status",
