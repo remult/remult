@@ -53,8 +53,8 @@ export function prepareInfoReadmeAndHomepage(
       path.join(root),
     );
     imports.push({
-      from: "./modules/server-status/ServerStatus" + (framework.componentFileSuffix ?? ""),
-      imports: "ServerStatus",
+      from: "./modules/server-status",
+      imports: ["ServerStatus"],
     });
     li.push(() => "<ServerStatus />");
   }

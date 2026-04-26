@@ -286,7 +286,7 @@ describe.sequential("test-write-react stuff", async () => {
     expect(fs.readFileSync(path.join(sourceDir, "App.tsx")).toString())
       .toMatchInlineSnapshot(`
         "import { Tile } from "./modules/ui";
-        import ServerStatus from "./modules/server-status/ServerStatus";
+        import { ServerStatus } from "./modules/server-status";
         import { Auth } from "./modules/auth";
         import { Todo } from "./modules/todo";
 
