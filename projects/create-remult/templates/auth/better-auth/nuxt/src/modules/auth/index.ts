@@ -1,4 +1,4 @@
-export { default as Auth } from "./Auth.svelte";
+export { default as Auth } from "./Auth.vue";
 export {
   User,
   Session,
@@ -6,3 +6,4 @@ export {
   Verification,
   Roles_Auth,
 } from "./authEntities.js";
+export { Roles } from "./Roles.js";

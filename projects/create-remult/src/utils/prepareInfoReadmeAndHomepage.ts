@@ -69,8 +69,8 @@ export function prepareInfoReadmeAndHomepage(
       type: "Auth",
     });
     imports.push({
-      from: "./modules/auth/Auth" + (framework.componentFileSuffix ?? ""),
-      imports: "Auth",
+      from: "./modules/auth",
+      imports: ["Auth"],
     });
     li.push(() => "<Auth />");
   }

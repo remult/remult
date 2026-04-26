@@ -34,16 +34,7 @@ export const svelteKit: Framework = {
         frontendTemplate: "sveltekit",
       });
 
-      // SvelteKit: Auth.svelte is re-exported from src/modules/auth/index.ts,
-      // and Roles lives in src/lib (auto-removed below if it was copied from shared).
-      const authIdx = info.imports.findIndex((i) =>
-        /\/modules\/auth\/Auth/.test(i.from),
-      );
-      if (authIdx >= 0)
-        info.imports[authIdx] = {
-          from: info.imports[authIdx].from.replace(/\/Auth\.svelte$/, ""),
-          imports: ["Auth"],
-        };
+      // SvelteKit-specific: Roles lives in src/lib, remove the shared copy.
       const rolesPath = path.join(args.root, "src/modules/auth/Roles.ts");
       if (fs.existsSync(rolesPath)) fs.rmSync(rolesPath);
       fs.writeFileSync(
