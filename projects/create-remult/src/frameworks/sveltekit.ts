@@ -33,7 +33,6 @@ export const svelteKit: Framework = {
         ...args,
         frontendTemplate: "sveltekit",
       });
-
       fs.writeFileSync(
         path.join(args.root, "src", "routes", "+page.svelte"),
         `<script lang="ts">
