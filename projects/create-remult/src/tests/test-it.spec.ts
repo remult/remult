@@ -287,7 +287,7 @@ describe.sequential("test-write-react stuff", async () => {
       .toMatchInlineSnapshot(`
         "import { Tile } from "./modules/ui";
         import ServerStatus from "./modules/server-status/ServerStatus";
-        import Auth from "./modules/auth/Auth";
+        import { Auth } from "./modules/auth";
         import Todo from "./modules/todo/Todo";
 
         export default function App() {
@@ -365,7 +365,7 @@ describe.sequential("test-write-react stuff", async () => {
       .toMatchInlineSnapshot(`
         ""use client"
         import { Tile } from "../modules/ui";
-        import Auth from "../modules/auth/Auth";
+        import { Auth } from "../modules/auth";
         import Todo from "../modules/todo/Todo";
 
         export default function Home() {
