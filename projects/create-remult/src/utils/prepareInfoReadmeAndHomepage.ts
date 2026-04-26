@@ -85,8 +85,8 @@ export function prepareInfoReadmeAndHomepage(
   if (crud) {
     copyDir(path.join(templatesDir, "crud", frontendTemplate), path.join(root));
     imports.push({
-      from: "./modules/todo/Todo" + (framework.componentFileSuffix ?? ""),
-      imports: "Todo",
+      from: "./modules/todo",
+      imports: ["Todo"],
     });
     li.push(() => "<Todo />");
   }

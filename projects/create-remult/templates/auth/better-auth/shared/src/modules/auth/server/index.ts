@@ -3,7 +3,7 @@ import { authEntities } from "../authEntities.js";
 import { auth as authConfig } from "./auth.js";
 import { remult } from "remult";
 import { Roles } from "../Roles.js";
-import { addRolesToUser } from "./authHelpers.js";
+import { addRolesToUser, stringToArray } from "./authHelpers.js";
 
 export const auth = (o?: { SUPER_ADMIN_EMAILS?: string }) =>
   new Module({
@@ -13,10 +13,7 @@ export const auth = (o?: { SUPER_ADMIN_EMAILS?: string }) =>
 
     initApi: async () => {
       // Add some roles to some users.
-      const emails = (o?.SUPER_ADMIN_EMAILS ?? "")
-        .split(",")
-        .map((c) => c.trim())
-        .filter(Boolean);
+      const emails = stringToArray(o?.SUPER_ADMIN_EMAILS);
       await addRolesToUser(emails, Object.values(Roles));
     },
 

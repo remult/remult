@@ -6,3 +6,4 @@ export {
   Verification,
   Roles_Auth,
 } from "./authEntities.js";
+export { Roles } from "./Roles.js";

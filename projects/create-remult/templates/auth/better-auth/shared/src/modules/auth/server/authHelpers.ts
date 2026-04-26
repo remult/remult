@@ -1,6 +1,12 @@
 import { repo } from "remult";
 import { User } from "../authEntities.js";
 
+export const stringToArray = (s?: string): string[] =>
+  (s ?? "")
+    .split(",")
+    .map((c) => c.trim())
+    .filter(Boolean);
+
 export const addRolesToUser = async (emails: string[], roles: string[]) => {
   const users = await repo(User).find({
     where: {

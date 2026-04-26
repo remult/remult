@@ -34,9 +34,6 @@ export const svelteKit: Framework = {
         frontendTemplate: "sveltekit",
       });
 
-      // SvelteKit-specific: Roles lives in src/lib, remove the shared copy.
-      const rolesPath = path.join(args.root, "src/modules/auth/Roles.ts");
-      if (fs.existsSync(rolesPath)) fs.rmSync(rolesPath);
       fs.writeFileSync(
         path.join(args.root, "src", "routes", "+page.svelte"),
         `<script lang="ts">

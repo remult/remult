@@ -288,7 +288,7 @@ describe.sequential("test-write-react stuff", async () => {
         "import { Tile } from "./modules/ui";
         import ServerStatus from "./modules/server-status/ServerStatus";
         import { Auth } from "./modules/auth";
-        import Todo from "./modules/todo/Todo";
+        import { Todo } from "./modules/todo";
 
         export default function App() {
           return (
@@ -366,7 +366,7 @@ describe.sequential("test-write-react stuff", async () => {
         ""use client"
         import { Tile } from "../modules/ui";
         import { Auth } from "../modules/auth";
-        import Todo from "../modules/todo/Todo";
+        import { Todo } from "../modules/todo";
 
         export default function Home() {
           return (
