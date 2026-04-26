@@ -7,16 +7,14 @@ export const stringToArray = (s?: string): string[] =>
     .map((c) => c.trim())
     .filter(Boolean);
 
-export const addRolesToUser = async (emails: string[], roles: string[]) => {
-  const users = await repo(User).find({
-    where: {
-      email: emails,
-    },
-  });
+export const addRolesToUsers = async (emails: string[], roles: string[]) => {
+  if (emails.length === 0 || roles.length === 0) return;
+
+  const users = await repo(User).find({ where: { email: emails } });
 
   const userNotFounds = emails.filter((e) => !users.some((u) => u.email === e));
   for (const nf of userNotFounds) {
-    console.log(`addRolesToUser: User`, nf, "not found, roles", roles);
+    console.info(`addRolesToUsers: User`, nf, "not found, roles", roles);
   }
 
   const usersAlreadyHaveRoles = [];
@@ -26,8 +24,8 @@ export const addRolesToUser = async (emails: string[], roles: string[]) => {
       await repo(User).update(user.id, {
         roles: [...new Set([...user.roles, ...rolesToAdd])],
       });
-      console.log(
-        `addRolesToUser: User`,
+      console.info(
+        `addRolesToUsers: User`,
         user.email,
         "roles added",
         rolesToAdd,
@@ -38,8 +36,8 @@ export const addRolesToUser = async (emails: string[], roles: string[]) => {
   }
 
   if (usersAlreadyHaveRoles.length > 0) {
-    console.log(
-      `addRolesToUser: Users`,
+    console.info(
+      `addRolesToUsers: Users`,
       usersAlreadyHaveRoles,
       "already have roles",
       roles,
