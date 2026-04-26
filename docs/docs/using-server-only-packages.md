@@ -37,87 +37,38 @@ i ｢wdm｣: Failed to compile.
 
 We get this error because the `fs` module on which we rely here is only relevant in the remult of a `Node JS` server and not in the context of the browser.
 
-There are two ways to handle this:
+There are three ways to handle this:
 
-## Solution 1 - exclude from bundler
+## Solution 1 - guard with `if (import.meta.env.SSR)`
 
-::: tabs
+In Vite-based projects (React-Vite, Vue, SvelteKit, SolidStart, ...), wrap the server-only section in `if (import.meta.env.SSR) { ... }` and dynamically `import()` the Node-only dep inside the block. Vite resolves `import.meta.env.SSR` at build time (`false` on the client bundle), so the entire branch - including the dynamic import - is dropped from the client.
 
-== vite
-
-### Exclude in `vite.config`
-
-Instruct vite to exclude the `server-only` packages from the bundle
-
-<!-- prettier-ignore-start -->
 ```ts
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-
-// https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [react()],
-  build: {    // [!code ++]
-    rollupOptions: {      // [!code ++]
-      external: ['fs', 'nodemailer', 'node-fetch'], // [!code ++]
-    }, // [!code ++]
-  }, // [!code ++]
-  optimizeDeps: {    // [!code ++]
-    exclude: ['fs', 'nodemailer', 'node-fetch'], // [!code ++]
-  }, // [!code ++]
-})
-```
-<!-- prettier-ignore-end -->
-
-== Webpack and Angular version <=16
-Instruct `webpack` not to include the `fs` package in the `frontend` bundle by adding the following JSON to the main section of the project's `package.json` file.
-_package.json_
-
-```json
-"browser": {
-   "jsonwebtoken": false
+@BackendMethod({ allowed: true })
+static async log(msg: string) {
+  if (import.meta.env.SSR) {
+    const { appendFileSync } = await import('fs')
+    appendFileSync('./logs/log.txt', `${new Date().toISOString()} ${msg}\n`)
+  }
 }
 ```
 
-- note that you'll need to restart the react/angular dev server.
+Same pattern in an entity `saved` hook:
 
-== Angular 17
+```ts
+@Entity<Post>('posts', {
+  saved: async (post) => {
+    if (import.meta.env.SSR) {
+      const { appendFileSync } = await import('fs')
+      appendFileSync('./logs/log.txt', `${new Date().toISOString()} saved ${post.id}\n`)
+    }
+  },
+})
+```
 
-1. You'll need to either remove `types` entry in the `tsconfig.app.json` or add the types you need to that types array.
-2. In `angular.json` you'll need to add an entry called `externalDependencies` to the `architect/build/options` key for your project
-
-   ```json{21-23}
-   // angular.json
-
-   {
-     "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
-     "version": 1,
-     "newProjectRoot": "projects",
-     "projects": {
-       "remult-angular-todo": {
-         "projectType": "application",
-         "schematics": {},
-         "root": "",
-         "sourceRoot": "src",
-         "prefix": "app",
-         "architect": {
-           "build": {
-             "builder": "@angular-devkit/build-angular:application",
-             "options": {
-               "outputPath": "dist/remult-angular-todo",
-               "index": "src/index.html",
-               "browser": "src/main.ts",
-               "externalDependencies": [
-                 "fs"
-               ],
-               "polyfills": [
-                 "zone.js"
-               ],
-               //...
-
-   ```
-
-   :::
+::: warning Early-return does NOT work
+`if (!import.meta.env.SSR) return` at the top of a `BackendMethod` does **not** strip the Node-only deps from the client bundle - you'll still get `Module not found`. Always wrap the server-only section in `if (import.meta.env.SSR) { ... }`.
+:::
 
 ## Solution 2 - abstract the call
 
@@ -179,6 +130,70 @@ import * as passwordHash from 'password-hash';
 That's it - it'll work now.
 ::: tip
 If you're still getting an error - check that you have a `logs` folder on your project :)
+:::
+
+## Solution 3 - exclude from bundler
+
+Tell the bundler to leave the server-only packages out of the frontend bundle.
+
+::: tabs
+
+== Vite
+
+In `vite.config.ts`, mark the packages as `external` and exclude them from `optimizeDeps`:
+
+```ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  build: {
+    rollupOptions: {
+      external: ['fs', 'nodemailer', 'node-fetch'],
+    },
+  },
+  optimizeDeps: {
+    exclude: ['fs', 'nodemailer', 'node-fetch'],
+  },
+})
+```
+
+== Webpack and Angular <= 16
+
+Add a `browser` field to `package.json` mapping the server-only package to `false`:
+
+```json
+"browser": {
+  "jsonwebtoken": false
+}
+```
+
+Restart the dev server after editing.
+
+== Angular 17+
+
+1. Either remove the `types` entry in `tsconfig.app.json`, or add the types you need to its `types` array.
+2. In `angular.json`, add an `externalDependencies` entry under `architect.build.options`:
+
+```json
+// angular.json
+{
+  "projects": {
+    "remult-angular-todo": {
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:application",
+          "options": {
+            "externalDependencies": ["fs"]
+          }
+        }
+      }
+    }
+  }
+}
+```
+
 :::
 
 ## Additional Resources

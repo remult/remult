@@ -168,6 +168,12 @@ onUnmounted(() => {
       <Icon tech="json files" link="/docs/installation/database/json" />
     </div>
     <div class="intro-logos-claim">Works with your favorite stack</div>
+
+    <div class="intro-skill">
+      <span>Coding with an AI agent? Install the Remult skill:</span>
+      <code>npx skills add https://remult.dev</code>
+      <a href="/docs/llms" class="intro-skill-link">Learn more -></a>
+    </div>
   </div>
 </template>
 
@@ -277,6 +283,7 @@ onUnmounted(() => {
 
   .code-init {
     user-select: all;
+    cursor: pointer;
   }
 }
 
@@ -375,7 +382,43 @@ onUnmounted(() => {
   font-size: 0.8rem;
   color: var(--vp-c-text);
   opacity: 0.5;
+  margin-bottom: 1rem;
+}
+
+.intro-skill {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  color: var(--vp-c-text);
+  opacity: 0.85;
   margin-bottom: 2rem;
+  padding: 0.6rem 1.1rem;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 6px;
+}
+
+.intro-skill code {
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.8rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  background: var(--vp-c-default-soft);
+  color: var(--vp-c-text);
+  user-select: all;
+  cursor: pointer;
+}
+
+.intro-skill-link {
+  font-size: 0.8rem;
+  color: var(--vp-c-brand-1);
+  text-decoration: none;
+}
+
+.intro-skill-link:hover {
+  text-decoration: underline;
 }
 
 .rotating-text {
