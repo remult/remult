@@ -3020,10 +3020,10 @@ export class ValueListInfo<T extends ValueListItem>
   toDb(val: T) {
     return this.toJson(val)
   }
-  toInput(val: T, inputType: string): string {
+  toInput(val: T, inputType?: string): string {
     return this.toJson(val)
   }
-  fromInput(val: string, inputType: string): T {
+  fromInput(val: string, inputType?: string): T {
     return this.fromJson(val)
   }
   displayValue?(val: T): string {

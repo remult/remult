@@ -246,6 +246,51 @@ console.table(getValueList(Country))
 
 The `id` and `label` properties are special in that the `id` will be used to save and load from the database, and the `label` will be used as the display value.
 
+### Binding to a `<select>` or query string
+
+`<select>` values and URL parameters are strings, but a ValueList field is a class instance. `ValueListInfo.get(MyClass)` bridges the two:
+
+- `toInput(instance)` -> the `id` as a string
+- `fromInput(idString)` -> the instance
+
+Given a `Status` with an extra `color`:
+
+```ts
+@ValueListFieldType()
+export class Status {
+  static Open   = new Status('open',   'Open',   '#22c55e')
+  static Closed = new Status('closed', 'Closed', '#ef4444')
+  constructor(public id: string, public caption: string, public color: string) {}
+}
+```
+
+Populate a `<select>` (React example - the same pattern works in any framework):
+
+```tsx
+const info = ValueListInfo.get(Status)
+
+<select
+  value={info.toInput(task.status)}
+  onChange={(e) => setTask({ ...task, status: info.fromInput(e.target.value) })}
+>
+  {getValueList(Status).map((s) => (
+    <option key={s.id} value={info.toInput(s)} style={{ color: s.color }}>
+      {s.caption}
+    </option>
+  ))}
+</select>
+```
+
+Read/write a query string param:
+
+```ts
+const info = ValueListInfo.get(Status)
+const params = new URLSearchParams(location.search)
+
+const status = info.fromInput(params.get('status') ?? '') // /tasks?status=open
+params.set('status', String(info.toInput(Status.Open)))
+```
+
 ### Automatic Generation of id, caption and label
 
 If `id` and/or `caption` & `label` are not provided, they are automatically generated based on the static member name. For example:
