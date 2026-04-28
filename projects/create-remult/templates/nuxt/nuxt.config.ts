@@ -3,6 +3,7 @@ export default defineNuxtConfig({
   css: ["/styles.css"],
   compatibilityDate: "2024-04-03",
   devtools: { enabled: true },
+  dir: { modules: ".nuxt-modules" },
   nitro: {
     esbuild: {
       options: {

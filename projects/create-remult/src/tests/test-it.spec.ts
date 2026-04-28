@@ -56,7 +56,7 @@ describe("api file variations", async () => {
     ).toMatchInlineSnapshot(`
       "import { remultApi } from "remult/remult-express";
       import { createPostgresDataProvider } from "remult/postgres";
-      import { auth } from "../demo/auth/server/index.js";
+      import { auth } from "../modules/auth/server/index.js";
         
       export const api = remultApi({
         dataProvider: createPostgresDataProvider({
@@ -87,7 +87,7 @@ describe("api file variations", async () => {
       import { createKnexDataProvider } from "remult/remult-knex";
       import { MSSQL_SERVER, MSSQL_DATABASE, MSSQL_USER, MSSQL_PASSWORD, MSSQL_INSTANCE } from "$env/static/private";
       import { building } from "$app/environment";
-      import { auth } from "../demo/auth/server/index";
+      import { auth } from "../modules/auth/server/index";
         
       export const api = remultApi({
         dataProvider: building ? undefined : createKnexDataProvider({
@@ -130,7 +130,7 @@ describe("api file variations", async () => {
       import { MONGO_URL, MONGO_DB } from "$env/static/private";
       import { building } from "$app/environment";
       import { MongoDataProvider } from "remult/remult-mongo";
-      import { auth } from "../demo/auth/server/index";
+      import { auth } from "../modules/auth/server/index";
         
       export const api = remultApi({
         dataProvider: building ? undefined : async () => {
@@ -158,7 +158,7 @@ describe("api file variations", async () => {
       ),
     ).toMatchInlineSnapshot(`
       "import { remultApi } from "remult/remult-express";
-      import { auth } from "../demo/auth/server/index.js";
+      import { auth } from "../modules/auth/server/index.js";
         
       export const api = remultApi({
         modules: [
@@ -285,10 +285,10 @@ describe.sequential("test-write-react stuff", async () => {
     writeAppTsxAndReadme(basicArgs);
     expect(fs.readFileSync(path.join(sourceDir, "App.tsx")).toString())
       .toMatchInlineSnapshot(`
-        "import Tile from "./demo/Tile";
-        import ServerStatus from "./demo/ServerStatus";
-        import Auth from "./demo/auth/Auth";
-        import Todo from "./demo/todo/Todo";
+        "import { Tile } from "./modules/ui";
+        import { ServerStatus } from "./modules/server-status";
+        import { Auth } from "./modules/auth";
+        import { Todo } from "./modules/todo";
 
         export default function App() {
           return (
@@ -364,9 +364,9 @@ describe.sequential("test-write-react stuff", async () => {
     expect(fs.readFileSync(path.join(nextAppDir, "page.tsx")).toString())
       .toMatchInlineSnapshot(`
         ""use client"
-        import Tile from "../demo/Tile";
-        import Auth from "../demo/auth/Auth";
-        import Todo from "../demo/todo/Todo";
+        import { Tile } from "../modules/ui";
+        import { Auth } from "../modules/auth";
+        import { Todo } from "../modules/todo";
 
         export default function Home() {
           return (
@@ -446,8 +446,8 @@ import { Roles } from "./Roles.js";`),
     });
     expect(fs.readFileSync(apiPath).toString()).toMatchInlineSnapshot(`
       "import { remultApi } from "remult/remult-nuxt";
-      import { Task } from "../../demo/todo/Task.js";
-      import { auth } from "../../demo/auth/server/index.js";
+      import { Task } from "../../modules/todo/Task.js";
+      import { auth } from "../../modules/auth/server/index.js";
         
       export const api = remultApi({
         admin: true,

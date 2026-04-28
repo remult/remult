@@ -210,7 +210,7 @@ app.listen(process.env["PORT"] || 3002, () => console.log("Server started"));`;
 
   const getAuthImportPart = () => {
     if (authInfo?.name === "better-auth") {
-      return `import { auth } from "../demo/auth/server/auth.js";
+      return `import { auth } from "../modules/auth/server/auth.js";
 import { toNodeHandler } from "better-auth/node";
 `;
     }

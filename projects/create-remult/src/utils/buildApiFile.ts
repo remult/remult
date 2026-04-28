@@ -23,7 +23,7 @@ export function buildApiFile(
   if (crud) {
     entities.push("Task");
     imports.push({
-      from: "../demo/todo/Task.js",
+      from: "../modules/todo/Task.js",
       imports: ["Task"],
     });
   }

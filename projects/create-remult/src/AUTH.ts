@@ -31,12 +31,12 @@ export const Auths: Record<"better-auth" | "none", AuthInfo | null> = {
 
     scripts: {
       "auth:generate":
-        "pnpx @better-auth/cli@latest generate --config ./src/demo/auth/server/auth.ts --output ./src/demo/auth/authEntities.ts -y",
+        "pnpx @better-auth/cli@latest generate --config ./src/modules/auth/server/auth.ts --output ./src/modules/auth/authEntities.ts -y",
     },
     devDependencies: () => {
       const d: Record<string, string> = {
-        "@nerdfolio/remult-better-auth": "0.3.1",
-        "better-auth": "1.2.12",
+        "@nerdfolio/remult-better-auth": "0.4.3",
+        "better-auth": "1.6.9",
       };
       return d;
     },
@@ -44,7 +44,7 @@ export const Auths: Record<"better-auth" | "none", AuthInfo | null> = {
     apiFiles: {
       imports: [
         {
-          from: "../demo/auth/server/index.js",
+          from: "../modules/auth/server/index.js",
           imports: ["auth"],
         },
       ],
