@@ -142,25 +142,83 @@ Use it instead of hand-rolling find-then-insert-or-update.
 
 ## ValueList Enums
 
+Use over `@Fields.enum` / `@Fields.literal` it's more future-proof, supports extra properties (label, color, etc.) and behavior on each value, and is easier to maintain as the list grows.
+
 ```ts
-import { ValueListFieldType, getValueList } from 'remult'
+import { ValueListFieldType, getValueList, ValueListInfo } from 'remult'
 
 @ValueListFieldType()
 export class TaskStatus {
-  static Open = new TaskStatus('open', 'Open')
-  static Done = new TaskStatus('done', 'Done')
+  static Open = new TaskStatus('open', 'Open', '#22c55e')
+  static Done = new TaskStatus('done', 'Done', '#94a3b8')
   constructor(
     public id: string,
     public caption: string,
+    public color: string,
   ) {}
 }
 
 for (const s of getValueList(TaskStatus)) {
-  // s.id, s.caption
+  // s.id, s.caption, s.color
 }
 ```
 
-Use `getValueList(EnumClass)` to iterate.
+`getValueList(EnumClass | fieldRef | fieldMetadata)` returns the values (use to populate dropdowns). `id` is what's stored in the DB and sent over the API; `caption` is what you display.
+
+### Binding to `<select>` / query string
+
+Cross any string boundary (HTML inputs, URLs, FormData, localStorage) via `ValueListInfo.get(EnumClass)`:
+
+- `toInput(instance)` -> the `id` as a string
+- `fromInput(idString)` -> the instance
+
+```tsx
+const info = ValueListInfo.get(TaskStatus)
+
+// React <select>
+<select
+  value={info.toInput(task.status)}
+  onChange={(e) => setTask({ ...task, status: info.fromInput(e.target.value) })}
+>
+  {getValueList(TaskStatus).map((s) => (
+    <option key={s.id} value={info.toInput(s)} style={{ color: s.color }}>
+      {s.caption}
+    </option>
+  ))}
+</select>
+
+// URL <-> instance
+const params = new URLSearchParams(location.search)
+const status = info.fromInput(params.get('status') ?? '')
+params.set('status', String(info.toInput(TaskStatus.Open)))
+```
+
+In Svelte/Vue/Angular template syntax with two-way binds on objects, you bind the **instance** directly and skip `toInput`/`fromInput` - reach for them only when something forces strings.
+
+## Field Metadata in the UI
+
+Don't hard-code field labels, types, or validators in templates - read them from `repo(X).metadata.fields.<field>` so a single source of truth drives the UI.
+
+```ts
+@Entity('tasks', { allowApiCrud: true })
+export class Task {
+  @Fields.string({ label: 'Task title' })
+  title = ''
+}
+
+const f = repo(Task).metadata.fields.title
+f.label // 'Task title'
+f.key // 'title'        (the field name)
+f.valueType // String
+f.options // raw FieldOptions (validate, includeInApi, ...)
+```
+
+```tsx
+<label htmlFor={f.key}>{f.label}</label>
+<input id={f.key} placeholder={f.label} value={task.title} />
+```
+
+If a field doesn't set `label`, remult auto-generates one from the key (`firstName` -> `First Name`). Same auto-titleising applies to ValueList items.
 
 ## Permission Checks in UI
 

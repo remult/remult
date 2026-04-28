@@ -164,6 +164,10 @@ priority = Priority.Low;
 
 In this example, the `priority` field is defined as an enum type using the `@Fields.enum` decorator. The `Priority` enum is passed as an argument to the decorator, ensuring that only valid `Priority` enum values can be assigned to the `priority` field. The `Validators.enum` validation is used and ensures that any value assigned to this field must be a member of the `Priority` enum, providing type safety and preventing invalid values.
 
+::: tip Need extra properties on each value (label, color, etc.)?
+Use [`ValueListFieldType`](#valuelistfieldtype) instead - it lets each value carry its own data and behavior.
+:::
+
 ## Literal Fields (Union of string values)
 
 Literal fields let you restrict a field to a specific set of string values using the `@Fields.literal` decorator. This is useful for fields with a finite set of possible values.
@@ -188,6 +192,10 @@ status: StatusType = 'open';
 ```
 
 In this refactored example, `statuses` is a readonly array of the allowed values, and `StatusType` is a type derived from the elements of `statuses`. The `@Fields.literal` decorator is then used with the `statuses` array, and the `status` field is typed as `StatusType`. This approach makes it easier to manage and update the allowed values for the `status` field, reducing duplication and making the code more robust and easier to maintain.
+
+::: tip Need extra properties on each value (label, color, etc.)?
+Use [`ValueListFieldType`](#valuelistfieldtype) instead - it lets each value carry its own data and behavior.
+:::
 
 ## ValueListFieldType
 
