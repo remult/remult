@@ -164,6 +164,10 @@ priority = Priority.Low;
 
 In this example, the `priority` field is defined as an enum type using the `@Fields.enum` decorator. The `Priority` enum is passed as an argument to the decorator, ensuring that only valid `Priority` enum values can be assigned to the `priority` field. The `Validators.enum` validation is used and ensures that any value assigned to this field must be a member of the `Priority` enum, providing type safety and preventing invalid values.
 
+::: tip Need extra properties on each value (label, color, etc.)?
+Use [`ValueListFieldType`](#valuelistfieldtype) instead - it lets each value carry its own data and behavior.
+:::
+
 ## Literal Fields (Union of string values)
 
 Literal fields let you restrict a field to a specific set of string values using the `@Fields.literal` decorator. This is useful for fields with a finite set of possible values.
@@ -188,6 +192,10 @@ status: StatusType = 'open';
 ```
 
 In this refactored example, `statuses` is a readonly array of the allowed values, and `StatusType` is a type derived from the elements of `statuses`. The `@Fields.literal` decorator is then used with the `statuses` array, and the `status` field is typed as `StatusType`. This approach makes it easier to manage and update the allowed values for the `status` field, reducing duplication and making the code more robust and easier to maintain.
+
+::: tip Need extra properties on each value (label, color, etc.)?
+Use [`ValueListFieldType`](#valuelistfieldtype) instead - it lets each value carry its own data and behavior.
+:::
 
 ## ValueListFieldType
 
@@ -245,6 +253,51 @@ console.table(getValueList(Country))
 ### Special Properties: id and label
 
 The `id` and `label` properties are special in that the `id` will be used to save and load from the database, and the `label` will be used as the display value.
+
+### Binding to a `<select>` or query string
+
+`<select>` values and URL parameters are strings, but a ValueList field is a class instance. `ValueListInfo.get(MyClass)` bridges the two:
+
+- `toInput(instance)` -> the `id` as a string
+- `fromInput(idString)` -> the instance
+
+Given a `Status` with an extra `color`:
+
+```ts
+@ValueListFieldType()
+export class Status {
+  static Open   = new Status('open',   'Open',   '#22c55e')
+  static Closed = new Status('closed', 'Closed', '#ef4444')
+  constructor(public id: string, public caption: string, public color: string) {}
+}
+```
+
+Populate a `<select>` (React example - the same pattern works in any framework):
+
+```tsx
+const info = ValueListInfo.get(Status)
+
+<select
+  value={info.toInput(task.status)}
+  onChange={(e) => setTask({ ...task, status: info.fromInput(e.target.value) })}
+>
+  {getValueList(Status).map((s) => (
+    <option key={s.id} value={info.toInput(s)} style={{ color: s.color }}>
+      {s.caption}
+    </option>
+  ))}
+</select>
+```
+
+Read/write a query string param:
+
+```ts
+const info = ValueListInfo.get(Status)
+const params = new URLSearchParams(location.search)
+
+const status = info.fromInput(params.get('status') ?? '') // /tasks?status=open
+params.set('status', String(info.toInput(Status.Open)))
+```
 
 ### Automatic Generation of id, caption and label
 

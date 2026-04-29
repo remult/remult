@@ -160,7 +160,7 @@ class valueList {
     public id?: string,
     public caption?: string,
     public label?: string,
-  ) {}
+  ) { }
 }
 
 @Entity('entity with value list')
@@ -380,7 +380,7 @@ describe('test row provider', () => {
     try {
       await c._.save()
       throw 'Shouldnt have reached this'
-    } catch (err) {}
+    } catch (err) { }
     expect(c.categoryName).toBe('bla bla')
   })
   it('update should fail nicely', async () => {
@@ -430,9 +430,9 @@ describe('test row provider', () => {
 })
 
 @Entity('typeA', { dbName: 'dbnameA' })
-class typeA extends EntityBase {}
+class typeA extends EntityBase { }
 @Entity('typeB')
-class typeB extends typeA {}
+class typeB extends typeA { }
 describe('decorator inheritance', () => {
   it('entity extends', async () => {
     let c = new Remult()
@@ -662,6 +662,67 @@ describe('value list column without id and caption', () => {
   })
 })
 
+describe('ValueList - input conversions for forms and query strings', () => {
+  describe('numeric id (Language)', () => {
+    const info = ValueListInfo.get(Language)
+
+    it('fromInput parses an id string into a ValueList instance', () => {
+      // <select>/URLSearchParams always yield strings
+      expect(info.fromInput('10')).toBe(Language.Russian)
+      expect(info.fromInput('0')).toBe(Language.Hebrew)
+    })
+
+    it('toInput + fromInput round-trip', () => {
+      const value = Language.Russian
+      const asString = String(info.toInput(value))
+      expect(info.fromInput(asString)).toBe(value)
+    })
+
+    it('parses URLSearchParams into a ValueList instance', () => {
+      const params = new URLSearchParams('?lang=10')
+      const lang = info.fromInput(params.get('lang')!)
+      expect(lang).toBe(Language.Russian)
+    })
+
+    it('builds URLSearchParams from a ValueList instance', () => {
+      const params = new URLSearchParams()
+      params.set('lang', String(info.toInput(Language.Russian)))
+      expect(params.toString()).toBe('lang=10')
+    })
+
+    it('simulates a <select> change event', () => {
+      // populate options
+      const options = getValueList(Language).map((s) => ({
+        value: String(info.toInput(s)),
+        label: s.caption,
+      }))
+      expect(options).toEqual([
+        { value: '0', label: 'עברית' },
+        { value: '10', label: 'רוסית' },
+        { value: '20', label: 'אמהרית' },
+      ])
+      // user picks "10" - browsers always give us a string
+      const selected = info.fromInput('10')
+      expect(selected).toBe(Language.Russian)
+    })
+  })
+
+  describe('string id (valueList)', () => {
+    const info = ValueListInfo.get(valueList)
+
+    it('fromInput parses string id into instance', () => {
+      expect(info.fromInput('firstName')).toBe(valueList.firstName)
+      expect(info.fromInput('listName')).toBe(valueList.listName)
+    })
+
+    it('toInput + fromInput round-trip', () => {
+      const asString = info.toInput(valueList.listName)
+      expect(asString).toBe('listName')
+      expect(info.fromInput(asString)).toBe(valueList.listName)
+    })
+  })
+})
+
 describe('context', () => {
   it('what', () => {
     var c = new Remult()
@@ -694,9 +755,9 @@ it('test http provider for remult', async () => {
     get: async (url) => {
       return { count: 7 }
     },
-    delete: async () => {},
-    put: async () => {},
-    post: async () => {},
+    delete: async () => { },
+    put: async () => { },
+    post: async () => { },
   })
   // expect(await toPromise(Promise.resolve(7))).toBe(7);
   expect(await remult.repo(TestCategories1).count()).toBe(7)
@@ -763,7 +824,7 @@ export class myDp extends ArrayEntityDataProvider {
 }
 
 class mockColumnDefs implements FieldMetadata {
-  constructor(public dbName: string) {}
+  constructor(public dbName: string) { }
   apiUpdateAllowed(item: any): boolean {
     throw new Error('Method not implemented.')
   }
