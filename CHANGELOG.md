@@ -1,18 +1,22 @@
 All notable changes to this project will be documented in this file.
 
-## [3-3-7] - 2026-04-09
+## [3.3.8] - 2026-05-12
+
+- Fixed issue with indexed db recovery after close (ios closes long open indexed db)
+
+## [3.3.7] - 2026-04-09
 
 - Reduced npm package size by > 50%
 
-## [3-3-6] - 2026-01-23
+## [3.3.6] - 2026-01-23
 
 - Added clear to indexed db database
 
-## [3-3-5] - 2026-01-14
+## [3.3.5] - 2026-01-14
 
 - #874 - fix: Ensure backend methods are included directly (openApi sveltekit)
 
-## [3-3-4] - 2026-01-12
+## [3.3.4] - 2026-01-12
 
 - [#876](https://github.com/remult/remult/issues/876) Relation should return undefined when includeInApi is false for its id field
 
