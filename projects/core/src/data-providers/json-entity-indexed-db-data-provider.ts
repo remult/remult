@@ -8,87 +8,59 @@ export class JsonEntityIndexedDbStorage implements JsonEntityStorage {
   supportsRawJson = true
   //@internal
   db?: IDBDatabase
-  async getItem(entityDbName: string) {
-    return new Promise<string>(async (resolve, reject) => {
-      const transaction = (await this.init()).transaction(
-        [this.storeName],
-        'readonly',
-      )
-      const store = transaction.objectStore(this.storeName)
-      const request = store.get(entityDbName)
 
-      request.onerror = (event) => reject(request.error)
-      request.onsuccess = (event) => {
-        if (request.result) {
-          resolve(request.result)
-        } else {
-          resolve(null!)
-        }
-      }
-    })
-  }
-  //@internal
-  async init() {
-    if (!this.db) {
-      this.db = await new Promise<IDBDatabase>((resolve, reject) => {
-        let db: IDBDatabase
-        const request = indexedDB.open(this.dbName, 1)
+  getItem = (key: string) =>
+    this.run('readonly', (s) => s.get(key)) as Promise<string>
+  setItem = (key: string, json: string) =>
+    this.run('readwrite', (s) => s.put(json, key)) as Promise<void>
+  removeItem = (key: string) =>
+    this.run('readwrite', (s) => s.delete(key)) as Promise<void>
+  clear = () => this.run('readwrite', (s) => s.clear()) as Promise<void>
 
-        request.onerror = (event) => reject(request.error)
-
-        request.onsuccess = (event) => {
-          db = request.result
-          resolve(db)
-        }
-
-        request.onupgradeneeded = (event) => {
-          db = request.result
-          db.createObjectStore(this.storeName)
-        }
+  private async run(
+    mode: IDBTransactionMode,
+    op: (store: IDBObjectStore) => IDBRequest,
+  ): Promise<unknown> {
+    const attempt = async () => {
+      const db = await this.init()
+      return new Promise<unknown>((resolve, reject) => {
+        const request = op(
+          db.transaction([this.storeName], mode).objectStore(this.storeName),
+        )
+        request.onerror = () => reject(request.error)
+        request.onsuccess = () => resolve(request.result ?? null!)
       })
     }
+    try {
+      return await attempt()
+    } catch (err) {
+      if ((err as DOMException)?.name !== 'InvalidStateError') throw err
+      this.db = undefined
+      return await attempt()
+    }
+  }
+
+  //@internal
+  async init() {
+    if (this.db) return this.db
+    this.db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open(this.dbName, 1)
+      request.onerror = () => reject(request.error)
+      request.onupgradeneeded = () =>
+        request.result.createObjectStore(this.storeName)
+      request.onsuccess = () => {
+        const db = request.result
+        const forget = () => {
+          if (this.db === db) this.db = undefined
+        }
+        db.onclose = forget
+        db.onversionchange = () => {
+          db.close()
+          forget()
+        }
+        resolve(db)
+      }
+    })
     return this.db
-  }
-
-  async setItem(entityDbName: string, json: string) {
-    return new Promise<void>(async (resolve, reject) => {
-      const transaction = (await this.init()).transaction(
-        [this.storeName],
-        'readwrite',
-      )
-      const store = transaction.objectStore(this.storeName)
-      const request = store.put(json, entityDbName)
-
-      request.onerror = (event) => reject(request.error)
-      request.onsuccess = (event) => resolve()
-    })
-  }
-
-  async removeItem(entityDbName: string) {
-    return new Promise<void>(async (resolve, reject) => {
-      const transaction = (await this.init()).transaction(
-        [this.storeName],
-        'readwrite',
-      )
-      const store = transaction.objectStore(this.storeName)
-      const request = store.delete(entityDbName)
-
-      request.onerror = (_event) => reject(request.error)
-      request.onsuccess = (_event) => resolve()
-    })
-  }
-
-  async clear() {
-    return new Promise<void>(async (resolve, reject) => {
-      const transaction = (await this.init()).transaction(
-        [this.storeName],
-        'readwrite',
-      )
-      const store = transaction.objectStore(this.storeName)
-      const request = store.clear()
-
-      request.onerror = (_event) => reject(request.error)
-      request.onsuccess = (_event) => resolve()
-    })
   }
 }
