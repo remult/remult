@@ -9,14 +9,22 @@ export class JsonEntityIndexedDbStorage implements JsonEntityStorage {
   //@internal
   db?: IDBDatabase
 
-  getItem = (key: string) =>
-    this.run('readonly', (s) => s.get(key)) as Promise<string>
-  setItem = (key: string, json: string) =>
-    this.run('readwrite', (s) => s.put(json, key)) as Promise<void>
-  removeItem = (key: string) =>
-    this.run('readwrite', (s) => s.delete(key)) as Promise<void>
-  clear = () => this.run('readwrite', (s) => s.clear()) as Promise<void>
+  getItem(entityDbName: string) {
+    return this.run('readonly', (s) => s.get(entityDbName)) as Promise<string>
+  }
+  setItem(entityDbName: string, json: string) {
+    return this.run('readwrite', (s) =>
+      s.put(json, entityDbName),
+    ) as Promise<void>
+  }
+  removeItem(entityDbName: string) {
+    return this.run('readwrite', (s) => s.delete(entityDbName)) as Promise<void>
+  }
+  clear() {
+    return this.run('readwrite', (s) => s.clear()) as Promise<void>
+  }
 
+  //@internal
   private async run(
     mode: IDBTransactionMode,
     op: (store: IDBObjectStore) => IDBRequest,

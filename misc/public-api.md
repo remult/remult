@@ -3602,8 +3602,8 @@ export declare class ValueListInfo<T extends ValueListItem>
   toJson(val: T): any
   fromDb(val: any): T
   toDb(val: T): any
-  toInput(val: T, inputType: string): string
-  fromInput(val: string, inputType: string): T
+  toInput(val: T, inputType?: string): string
+  fromInput(val: string, inputType?: string): T
   displayValue?(val: T): string
   fieldTypeInDb?: string
   inputType?: string
