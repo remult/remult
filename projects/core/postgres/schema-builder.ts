@@ -12,6 +12,7 @@ import type { SqlCommand } from '../src/sql-command.js'
 import { ValueConverters } from '../src/valueConverters.js'
 
 export function postgresColumnSyntax(x: FieldMetadata, dbName: string) {
+  if (isAutoIncrement(x)) return dbName + ' serial'
   let result = dbName
   if (x.valueType == Number) {
     if (!x.valueConverter.fieldTypeInDb)
