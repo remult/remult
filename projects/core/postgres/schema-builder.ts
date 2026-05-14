@@ -152,11 +152,7 @@ export class PostgresSchemaBuilder {
       if (!shouldNotCreateField(x, e) || isAutoIncrement(x)) {
         if (result.length != 0) result += ','
         result += '\r\n  '
-
-        if (isAutoIncrement(x)) result += e.$dbNameOf(x) + ' serial'
-        else {
-          result += postgresColumnSyntax(x, e.$dbNameOf(x))
-        }
+        result += postgresColumnSyntax(x, e.$dbNameOf(x))
       }
     }
     result += `,\r\n   primary key (${entity.idMetadata.fields

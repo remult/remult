@@ -66,6 +66,25 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
     },
     createEntity,
   })
+  it('create table with autoincrement field generates serial sql', async () => {
+    const ent = entity('t_autoincrement_create', {
+      id: Fields.autoIncrement(),
+      name: Fields.string(),
+    })
+    expect(
+      await testMigrationScript(db, (m) =>
+        m.createTable(remult.repo(ent).metadata),
+      ),
+    ).toMatchInlineSnapshot(`
+      "CREATE SCHEMA IF NOT EXISTS public;
+      CREATE table "t_autoincrement_create" (
+        "id" serial,
+        "name" varchar default '' not null,
+         primary key ("id")
+      )"
+    `)
+  })
+
   it('add autoincrement column to existing table generates valid serial sql', async () => {
     const ent = entity('t_autoincrement_add', {
       id: Fields.string(),
