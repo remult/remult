@@ -66,6 +66,63 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
     },
     createEntity,
   })
+  it('create table with autoincrement field generates serial sql', async () => {
+    const ent = entity('t_autoincrement_create', {
+      id: Fields.autoIncrement(),
+      name: Fields.string(),
+    })
+    expect(
+      await testMigrationScript(db, (m) =>
+        m.createTable(remult.repo(ent).metadata),
+      ),
+    ).toMatchInlineSnapshot(`
+      "CREATE SCHEMA IF NOT EXISTS public;
+      CREATE table "t_autoincrement_create" (
+        "id" serial,
+        "name" varchar default '' not null,
+         primary key ("id")
+      )"
+    `)
+  })
+
+  it('add autoincrement column to existing table generates valid serial sql', async () => {
+    const ent = entity('t_autoincrement_add', {
+      id: Fields.string(),
+      seq: Fields.autoIncrement(),
+    })
+    expect(
+      await testMigrationScript(db, (m) =>
+        m.addColumn(
+          remult.repo(ent).metadata,
+          remult.repo(ent).metadata.fields.seq,
+        ),
+      ),
+    ).toMatchInlineSnapshot(
+      `"ALTER table "t_autoincrement_add" ADD column "seq" serial"`,
+    )
+  })
+
+  it('ensureSchema adds autoincrement column to table with non-autoincrement pk', async () => {
+    const tableName = 't_auto_add_live'
+    await db.execute(`DROP TABLE IF EXISTS "${tableName}"`)
+    // create the table with only a string primary key (no autoincrement)
+    await db.execute(
+      `CREATE TABLE "${tableName}" ("id" varchar(255) not null, PRIMARY KEY ("id"))`,
+    )
+    const ent = class {
+      id = ''
+      seq = 0
+    }
+    describeClass(ent, Entity(tableName), {
+      id: Fields.string(),
+      seq: Fields.autoIncrement(),
+    })
+    // ensureSchema should ADD the missing serial column without crashing
+    await db.ensureSchema([remult.repo(ent).metadata])
+    const inserted = await remult.repo(ent).insert({ id: 'a' })
+    expect(inserted.seq).toBeGreaterThan(0)
+  })
+
   it('test primary key on multiple id column entity', async () => {
     const e = await createEntity(
       entity(
