@@ -1,5 +1,11 @@
 import type { JsonEntityStorage } from './json-data-provider.js'
 
+const connectionLostNames = new Set([
+  'InvalidStateError',
+  'UnknownError',
+  'AbortError',
+])
+
 export class JsonEntityIndexedDbStorage implements JsonEntityStorage {
   constructor(
     private dbName: string = 'db',
@@ -32,9 +38,9 @@ export class JsonEntityIndexedDbStorage implements JsonEntityStorage {
     const attempt = async () => {
       const db = await this.init()
       return new Promise<unknown>((resolve, reject) => {
-        const request = op(
-          db.transaction([this.storeName], mode).objectStore(this.storeName),
-        )
+        const tx = db.transaction([this.storeName], mode)
+        tx.onabort = () => reject(tx.error)
+        const request = op(tx.objectStore(this.storeName))
         request.onerror = () => reject(request.error)
         request.onsuccess = () => resolve(request.result ?? null!)
       })
@@ -42,7 +48,7 @@ export class JsonEntityIndexedDbStorage implements JsonEntityStorage {
     try {
       return await attempt()
     } catch (err) {
-      if ((err as DOMException)?.name !== 'InvalidStateError') throw err
+      if (!connectionLostNames.has((err as DOMException)?.name)) throw err
       this.db = undefined
       return await attempt()
     }
