@@ -1,5 +1,11 @@
 All notable changes to this project will be documented in this file.
 
+## [3.3.9] - 2026-05-15
+
+- Change Postgres Table Alter Autoincrement to Use Serial, by @jckwik - https://github.com/remult/remult/pull/968
+- Thanks to @jckwik for their first contribution
+- Improved handling of indexed db connection close etc...
+
 ## [3.3.8] - 2026-05-12
 
 - Fixed issue with indexed db recovery after close (ios closes long open indexed db)
