@@ -87,3 +87,4 @@ docs/public/.well-known/agent-skills
 
 # cloudflare
 .wrangler
+.claude/settings.local.json
