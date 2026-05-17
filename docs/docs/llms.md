@@ -1,5 +1,5 @@
 ---
-llm: "llms.txt index of every doc page and the official remult agent skill for AI coding tools."
+llm: false # meta page about llms.txt itself - excluded from the index
 ---
 
 # Docs for LLMs

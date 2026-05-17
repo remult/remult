@@ -38,8 +38,6 @@
 - [Mutable Controllers](https://remult.dev/docs/mutable-controllers): @Controller classes with stateful fields that round-trip between client and server on BackendMethod calls.
 
 ### Stacks
-- [Stacks](https://remult.dev/docs/installation/)
-- [Framework](https://remult.dev/docs/installation/framework/)
 - [React](https://remult.dev/docs/installation/framework/react): React + Vite frontend integration with experimentalDecorators and a /api proxy to the API server.
 - [Angular](https://remult.dev/docs/installation/framework/angular): Angular frontend integration with proxy.conf.json forwarding /api calls to the separate API server.
 - [Vue](https://remult.dev/docs/installation/framework/vue): Vue + Vite frontend integration with experimentalDecorators and a /api proxy to the API server.
@@ -47,7 +45,6 @@
 - [Next.js](https://remult.dev/docs/installation/framework/nextjs): Next.js integration via a catch-all dynamic API route calling remultApi from remult/remult-next.
 - [SolidStart](https://remult.dev/docs/installation/framework/solid): SolidStart integration via a catch-all dynamic API route calling remultApi from remult/remult-solid-start.
 - [Nuxt](https://remult.dev/docs/installation/framework/nuxt): Nuxt integration via a server/api catch-all route using remultApi from remult/remult-nuxt.
-- [Server](https://remult.dev/docs/installation/server/)
 - [Express](https://remult.dev/docs/installation/server/express): Express integration via the remult-express middleware adapter.
 - [Fastify](https://remult.dev/docs/installation/server/fastify): Fastify integration via the remult-fastify plugin registered on the Fastify app.
 - [Hono](https://remult.dev/docs/installation/server/hono): Hono integration via the remult-hono adapter mounted as a route on the Hono app.
@@ -57,7 +54,7 @@
 - [nest](https://remult.dev/docs/installation/server/nest): Nest.js integration via app.use(remultApi({})) using the remult/remult-express adapter.
 - [Database](https://remult.dev/docs/installation/database/): Database picker - defaults to a JSON file store in ./db when no dataProvider is configured.
 - [PostgreSQL](https://remult.dev/docs/installation/database/postgresql): PostgreSQL via createPostgresDataProvider on the dataProvider option, or reuse an existing pg.Pool.
-- [MySQL](https://remult.dev/docs/installation/database/mysql)
+- [MySQL](https://remult.dev/docs/installation/database/mysql): MySQL via createKnexDataProvider with the mysql2 client on the dataProvider option.
 - [MongoDB](https://remult.dev/docs/installation/database/mongodb): MongoDB integration via MongoDataProvider on the dataProvider option, no schema migrations needed.
 - [SQLite3](https://remult.dev/docs/installation/database/sqlite3): SQLite3 via Sqlite3DataProvider wrapped in SqlDatabase on the dataProvider option, works on StackBlitz.
 - [Better SQLite3](https://remult.dev/docs/installation/database/better-sqlite3): Better-sqlite3 via BetterSqlite3DataProvider wrapped in SqlDatabase on the dataProvider option.
@@ -67,7 +64,7 @@
 - [Turso](https://remult.dev/docs/installation/database/turso): Turso via TursoDataProvider over @libsql/client wrapped in SqlDatabase on the dataProvider option.
 - [DuckDb](https://remult.dev/docs/installation/database/duckdb): DuckDB via DuckDBDataProvider wrapped in SqlDatabase on the dataProvider option.
 - [Oracle](https://remult.dev/docs/installation/database/oracle): Oracle via createKnexDataProvider with the oracledb client on the dataProvider option.
-- [D1](https://remult.dev/docs/installation/database/d1)
+- [D1](https://remult.dev/docs/installation/database/d1): Cloudflare D1 via createD1DataProvider from remult/remult-d1 on the dataProvider option.
 - [Json files](https://remult.dev/docs/installation/database/json): JSON file storage via JsonDataProvider + JsonEntityFileStorage on the dataProvider option.
 
 ### Server-side Code
@@ -91,7 +88,6 @@
 - [Open API](https://remult.dev/docs/adding-swagger): Generate OpenAPI doc from entities and serve a Swagger UI for the REST API.
 - [GraphQL](https://remult.dev/docs/adding-graphql): Expose entities as a GraphQL schema via remultGraphql + graphql-yoga (Express, Next.js, SvelteKit).
 - [Standard Schema](https://remult.dev/docs/standard-schema): standardSchema(repo(Entity)) - use entities as Standard Schema validators interoperable with zod, valibot, ArkType.
-- [LLMs](https://remult.dev/docs/llms): llms.txt index of every doc page and the official remult agent skill for AI coding tools.
 
 ### API Reference
 - [Entity](https://remult.dev/docs/ref_entity)
@@ -157,57 +153,87 @@ Each framework tutorial walks through the same 10 lessons (Setup, Entities, Pagi
 Hands-on, browser-based tutorial at https://learn.remult.dev.
 
 ### Basics
-- [Introduction - Welcome to the Remult Tutorial](https://learn.remult.dev/1-basics/1-introduction/0-intro): Tutorial overview and what you'll build (a real-time todo app).
-- [Introduction - Entity](https://learn.remult.dev/1-basics/1-introduction/1-entity): Define the Task @Entity with @Fields.id, @Fields.string, @Fields.boolean, and @Fields.createdAt.
-- [Introduction - Rest Api](https://learn.remult.dev/1-basics/1-introduction/2-rest-api): Wire the Task entity into an Express server via remultApi({ entities: [Task] }).
-- [Introduction - Insert Data on the Backend](https://learn.remult.dev/1-basics/1-introduction/3-insert-data-on-the-backend): Seed sample tasks in initApi using repo(Task).insert() when the table is empty.
-- [Introduction - Display the Task List](https://learn.remult.dev/1-basics/1-introduction/4-display-the-task-list): Fetch tasks from the frontend with repo(Task).find() inside useEffect and render them.
-- [Querying Data - Paging](https://learn.remult.dev/1-basics/2-querying-data/1-paging): Page results server-side by passing limit and page to repo(Task).find().
-- [Querying Data - Sorting](https://learn.remult.dev/1-basics/2-querying-data/2-sorting): Sort results server-side via the orderBy option of repo(Task).find().
-- [Querying Data - Filtering](https://learn.remult.dev/1-basics/2-querying-data/3-filtering): Filter results server-side with the where option of repo(Task).find().
-- [Manipulating Data - Insert](https://learn.remult.dev/1-basics/3-manipulating-data/1-Insert): Add a new task via repo(Task).insert() from the form submit handler.
-- [Manipulating Data - Update](https://learn.remult.dev/1-basics/3-manipulating-data/2-update): Toggle completion via repo(Task).update() bound to the checkbox onChange.
-- [Manipulating Data - Delete](https://learn.remult.dev/1-basics/3-manipulating-data/3-delete): Delete a task via repo(Task).delete() wired to a Delete button.
-- [Validation - Required](https://learn.remult.dev/1-basics/4-validation/1-required): Mark the title field required: true so the same rule runs on frontend and API.
-- [Validation - Built-In Validations](https://learn.remult.dev/1-basics/4-validation/2-built-in-validations): Apply built-in Validators (minLength, maxLength) and chain them with custom messages.
-- [Validation - Custom Validations](https://learn.remult.dev/1-basics/4-validation/3-custom-validations): Write a custom validate function on a field that returns true or an error message.
-- [Live Query - Live Query](https://learn.remult.dev/1-basics/5-live-query/1-introduction): Demonstrate the stale-data problem when multiple users edit without real-time sync.
-- [Live Query - Realtime Updates](https://learn.remult.dev/1-basics/5-live-query/2-realtime-updates): Swap the one-shot find for repo(Task).liveQuery().subscribe and drop manual state updates.
-- [Backend Methods - Updating Multiple Tasks](https://learn.remult.dev/1-basics/6-backend-methods/1-introduction): Add a setAllCompleted loop on the client that updates every task one PUT at a time.
-- [Backend Methods - Refactor to Backend](https://learn.remult.dev/1-basics/6-backend-methods/2-refactor-to-backend): Move setAllCompleted into a @BackendMethod on TasksController and call it from the client.
-- [Authentication & Authorization - Authentication and Authorization](https://learn.remult.dev/1-basics/7-auth/1-introduction): Gate CRUD with allowApiCrud: remult.authenticated and lock the @BackendMethod with allowed: remult.authenticated.
-- [Authentication & Authorization - Authentication](https://learn.remult.dev/1-basics/7-auth/2-user-authentication): Build an AuthController with signIn/signOut @BackendMethods backed by cookie-session and getUser.
-- [Authentication & Authorization - Role-based Authorization](https://learn.remult.dev/1-basics/7-auth/3-authorization): Restrict insert/delete to the 'admin' role via allowApiInsert and allowApiDelete, plus assign roles on signIn.
-- [Authentication & Authorization - Role-based Authorization on the Frontend](https://learn.remult.dev/1-basics/7-auth/4-role-based-authorization-on-frontend): Conditionally render the form and Delete button using repo.metadata.apiInsertAllowed and apiDeleteAllowed.
-- [Database - Database](https://learn.remult.dev/1-basics/8-Database/1-connection-to-a-database): Switch storage from JSON file to SQLite by setting dataProvider to SqlDatabase with Sqlite3DataProvider.
+
+#### Introduction
+- [Welcome to the Remult Tutorial](https://learn.remult.dev/1-basics/1-introduction/0-intro): Tutorial overview and what you'll build (a real-time todo app).
+- [Entity](https://learn.remult.dev/1-basics/1-introduction/1-entity): Define the Task @Entity with @Fields.id, @Fields.string, @Fields.boolean, and @Fields.createdAt.
+- [Rest Api](https://learn.remult.dev/1-basics/1-introduction/2-rest-api): Wire the Task entity into an Express server via remultApi({ entities: [Task] }).
+- [Insert Data on the Backend](https://learn.remult.dev/1-basics/1-introduction/3-insert-data-on-the-backend): Seed sample tasks in initApi using repo(Task).insert() when the table is empty.
+- [Display the Task List](https://learn.remult.dev/1-basics/1-introduction/4-display-the-task-list): Fetch tasks from the frontend with repo(Task).find() inside useEffect and render them.
+
+#### Querying Data
+- [Paging](https://learn.remult.dev/1-basics/2-querying-data/1-paging): Page results server-side by passing limit and page to repo(Task).find().
+- [Sorting](https://learn.remult.dev/1-basics/2-querying-data/2-sorting): Sort results server-side via the orderBy option of repo(Task).find().
+- [Filtering](https://learn.remult.dev/1-basics/2-querying-data/3-filtering): Filter results server-side with the where option of repo(Task).find().
+
+#### Manipulating Data
+- [Insert](https://learn.remult.dev/1-basics/3-manipulating-data/1-Insert): Add a new task via repo(Task).insert() from the form submit handler.
+- [Update](https://learn.remult.dev/1-basics/3-manipulating-data/2-update): Toggle completion via repo(Task).update() bound to the checkbox onChange.
+- [Delete](https://learn.remult.dev/1-basics/3-manipulating-data/3-delete): Delete a task via repo(Task).delete() wired to a Delete button.
+
+#### Validation
+- [Required](https://learn.remult.dev/1-basics/4-validation/1-required): Mark the title field required: true so the same rule runs on frontend and API.
+- [Built-In Validations](https://learn.remult.dev/1-basics/4-validation/2-built-in-validations): Apply built-in Validators (minLength, maxLength) and chain them with custom messages.
+- [Custom Validations](https://learn.remult.dev/1-basics/4-validation/3-custom-validations): Write a custom validate function on a field that returns true or an error message.
+
+#### Live Query
+- [Live Query](https://learn.remult.dev/1-basics/5-live-query/1-introduction): Demonstrate the stale-data problem when multiple users edit without real-time sync.
+- [Realtime Updates](https://learn.remult.dev/1-basics/5-live-query/2-realtime-updates): Swap the one-shot find for repo(Task).liveQuery().subscribe and drop manual state updates.
+
+#### Backend Methods
+- [Updating Multiple Tasks](https://learn.remult.dev/1-basics/6-backend-methods/1-introduction): Add a setAllCompleted loop on the client that updates every task one PUT at a time.
+- [Refactor to Backend](https://learn.remult.dev/1-basics/6-backend-methods/2-refactor-to-backend): Move setAllCompleted into a @BackendMethod on TasksController and call it from the client.
+
+#### Authentication & Authorization
+- [Authentication and Authorization](https://learn.remult.dev/1-basics/7-auth/1-introduction): Gate CRUD with allowApiCrud: remult.authenticated and lock the @BackendMethod with allowed: remult.authenticated.
+- [Authentication](https://learn.remult.dev/1-basics/7-auth/2-user-authentication): Build an AuthController with signIn/signOut @BackendMethods backed by cookie-session and getUser.
+- [Role-based Authorization](https://learn.remult.dev/1-basics/7-auth/3-authorization): Restrict insert/delete to the 'admin' role via allowApiInsert and allowApiDelete, plus assign roles on signIn.
+- [Role-based Authorization on the Frontend](https://learn.remult.dev/1-basics/7-auth/4-role-based-authorization-on-frontend): Conditionally render the form and Delete button using repo.metadata.apiInsertAllowed and apiDeleteAllowed.
+
+#### Database
+- [Database](https://learn.remult.dev/1-basics/8-Database/1-connection-to-a-database): Switch storage from JSON file to SQLite by setting dataProvider to SqlDatabase with Sqlite3DataProvider.
 
 ### In Depth
-- [Relations - Many to One](https://learn.remult.dev/4-concepts/1-relations/1-many-to-one): Many-to-one relations via @Relations.toOne on the child entity, with include and defaultIncluded for eager loading.
-- [Relations - One to Many](https://learn.remult.dev/4-concepts/1-relations/2-one-to-many): One-to-many relations via @Relations.toMany, with repo.relations(parent).child.find/insert for scoped operations.
-- [Relations - Id Based Relations](https://learn.remult.dev/4-concepts/1-relations/3-id-based-relations): Expose the foreign key as a field and wire @Relations.toOne<Order, Customer> to it via the fields option.
-- [Relations - Many to Many](https://learn.remult.dev/4-concepts/1-relations/4-many-to-many): Many-to-many via a join entity with a composite primary key and @Relations.toOne on each side.
-- [Advanced Filtering - Custom Filter](https://learn.remult.dev/4-concepts/4-filtering/1-custom-filters): Encapsulate reusable, parameterized server-side filters with Filter.createCustom and compose them via $and.
-- [Advanced Filtering - Filter Based on Relation](https://learn.remult.dev/4-concepts/4-filtering/2-filter-based-on-relation): Filter by related-entity fields with a custom filter that queries the related repo and feeds IDs into the parent query.
-- [Advanced Filtering - Filter Based on Relation Using SQL](https://learn.remult.dev/4-concepts/4-filtering/3-fitler-based-on-relation-sql): Custom filters that emit raw SQL via SqlDatabase.rawFilter, dbNamesOf, and filterToRaw for cross-table predicates.
-- [Advanced Filtering - Sql Relations Filter](https://learn.remult.dev/4-concepts/4-filtering/4-sql-relations-filter): Filter by related entities declaratively with sqlRelationsFilter(...).relation.some(condition) compiled to SQL.
-- [Sql Expression Entity Field - Introduction](https://learn.remult.dev/4-concepts/6-sql-expression/1-introduction): Computed fields via sqlExpression that aggregate from other tables and remain sortable and filterable.
-- [Sql Expression Entity Field - Getting a field from a relation](https://learn.remult.dev/4-concepts/6-sql-expression/2-getting-a-field-from-a-relation): Pull a related-entity column into a sqlExpression field via subquery for inline sort and filter.
-- [Sql Expression Entity Field - Sql Relations](https://learn.remult.dev/4-concepts/6-sql-expression/3-sql-relations): Derive fields from relations with sqlRelations, including .$count(filter) and .$subQuery for SQL aggregations.
-- [Access Control - Intro & Field-Level Authorization](https://learn.remult.dev/4-concepts/7-access-control/1-field-level-control): Per-field access control with allowApiUpdate and includeInApi - booleans, roles, or row-aware arrow functions.
-- [Access Control - Row-Level Authorization](https://learn.remult.dev/4-concepts/7-access-control/2-row-level-authorization): Row-level CRUD permissions via allowApiRead/Insert/Update/Delete using booleans, roles, or row-aware functions.
-- [Access Control - Filtering Rows Based on User Permissions](https://learn.remult.dev/4-concepts/7-access-control/3-filtering-rows-based-on-User-Permissions): Scope API rows by user with apiPrefilter, and mirror to server code with backendPrefilter.
-- [Access Control - Filtering Related Rows Based on User Permissions](https://learn.remult.dev/4-concepts/7-access-control/4-filtering-related-rows-based-on-user-permissions): Reuse a static custom filter (allowedTasks) across apiPrefilter on parent and child entities, with a rawFilter SQL variant.
-- [Access Control - Sql Relations Filter for User Permissions](https://learn.remult.dev/4-concepts/7-access-control/5-sql-relations-filter-for-user-permissions): Row-level access control on related entities via sqlRelationsFilter(...).relation.some(allowedFilter()).
-- [Entities as a single source of truth - Field Metadata](https://learn.remult.dev/4-concepts/8-entities-as-a-single-source-of-truth/1-field-meta-data): FieldMetadata for label and displayValue - drive consistent UI from repo(...).fields anywhere in the app.
-- [Entities as a single source of truth - Forms and Validation](https://learn.remult.dev/4-concepts/8-entities-as-a-single-source-of-truth/2-using-field-metadata-in-forms): Bind ErrorInfo<T>.modelState to per-field error UI and render dynamic forms from FieldMetadata and getValueList.
-- [Entities as a single source of truth - Lifecycle Hooks](https://learn.remult.dev/4-concepts/8-entities-as-a-single-source-of-truth/3-lifecycle-events): Entity lifecycle hooks - saving, saved, deleting, deleted, validation - with e.isNew, e.fields, and field.valueChanged().
-- [Entities as a single source of truth - Select Fields](https://learn.remult.dev/4-concepts/8-entities-as-a-single-source-of-truth/4-select-fields): Define a slimmer read-only entity over the same table via dbName to fetch only a subset of columns.
-- [Entities as a single source of truth - Extend Entity (add fields)](https://learn.remult.dev/4-concepts/8-entities-as-a-single-source-of-truth/5-add-fields-extends-entity): Split a wide entity into a base plus an extension entity sharing the same dbName for opt-in extra fields.
-- [Testing - Introduction to Testing with Remult](https://learn.remult.dev/4-concepts/9-testing/1-introduction): Swap remult.dataProvider to InMemoryDataProvider or in-memory SQLite (with ensureSchema) for fast entity tests.
-- [Testing - Testing Api Rules](https://learn.remult.dev/4-concepts/9-testing/2-testing-api-rules): Test API rules by wrapping a data provider with TestApiDataProvider and toggling remult.user across cases.
+
+#### Relations
+- [Many to One](https://learn.remult.dev/4-concepts/1-relations/1-many-to-one): Many-to-one relations via @Relations.toOne on the child entity, with include and defaultIncluded for eager loading.
+- [One to Many](https://learn.remult.dev/4-concepts/1-relations/2-one-to-many): One-to-many relations via @Relations.toMany, with repo.relations(parent).child.find/insert for scoped operations.
+- [Id Based Relations](https://learn.remult.dev/4-concepts/1-relations/3-id-based-relations): Expose the foreign key as a field and wire @Relations.toOne<Order, Customer> to it via the fields option.
+- [Many to Many](https://learn.remult.dev/4-concepts/1-relations/4-many-to-many): Many-to-many via a join entity with a composite primary key and @Relations.toOne on each side.
+
+#### Advanced Filtering
+- [Custom Filter](https://learn.remult.dev/4-concepts/4-filtering/1-custom-filters): Encapsulate reusable, parameterized server-side filters with Filter.createCustom and compose them via $and.
+- [Filter Based on Relation](https://learn.remult.dev/4-concepts/4-filtering/2-filter-based-on-relation): Filter by related-entity fields with a custom filter that queries the related repo and feeds IDs into the parent query.
+- [Filter Based on Relation Using SQL](https://learn.remult.dev/4-concepts/4-filtering/3-fitler-based-on-relation-sql): Custom filters that emit raw SQL via SqlDatabase.rawFilter, dbNamesOf, and filterToRaw for cross-table predicates.
+- [Sql Relations Filter](https://learn.remult.dev/4-concepts/4-filtering/4-sql-relations-filter): Filter by related entities declaratively with sqlRelationsFilter(...).relation.some(condition) compiled to SQL.
+
+#### Sql Expression Entity Field
+- [Introduction](https://learn.remult.dev/4-concepts/6-sql-expression/1-introduction): Computed fields via sqlExpression that aggregate from other tables and remain sortable and filterable.
+- [Getting a field from a relation](https://learn.remult.dev/4-concepts/6-sql-expression/2-getting-a-field-from-a-relation): Pull a related-entity column into a sqlExpression field via subquery for inline sort and filter.
+- [Sql Relations](https://learn.remult.dev/4-concepts/6-sql-expression/3-sql-relations): Derive fields from relations with sqlRelations, including .$count(filter) and .$subQuery for SQL aggregations.
+
+#### Access Control
+- [Intro & Field-Level Authorization](https://learn.remult.dev/4-concepts/7-access-control/1-field-level-control): Per-field access control with allowApiUpdate and includeInApi - booleans, roles, or row-aware arrow functions.
+- [Row-Level Authorization](https://learn.remult.dev/4-concepts/7-access-control/2-row-level-authorization): Row-level CRUD permissions via allowApiRead/Insert/Update/Delete using booleans, roles, or row-aware functions.
+- [Filtering Rows Based on User Permissions](https://learn.remult.dev/4-concepts/7-access-control/3-filtering-rows-based-on-User-Permissions): Scope API rows by user with apiPrefilter, and mirror to server code with backendPrefilter.
+- [Filtering Related Rows Based on User Permissions](https://learn.remult.dev/4-concepts/7-access-control/4-filtering-related-rows-based-on-user-permissions): Reuse a static custom filter (allowedTasks) across apiPrefilter on parent and child entities, with a rawFilter SQL variant.
+- [Sql Relations Filter for User Permissions](https://learn.remult.dev/4-concepts/7-access-control/5-sql-relations-filter-for-user-permissions): Row-level access control on related entities via sqlRelationsFilter(...).relation.some(allowedFilter()).
+
+#### Entities as a single source of truth
+- [Field Metadata](https://learn.remult.dev/4-concepts/8-entities-as-a-single-source-of-truth/1-field-meta-data): FieldMetadata for label and displayValue - drive consistent UI from repo(...).fields anywhere in the app.
+- [Forms and Validation](https://learn.remult.dev/4-concepts/8-entities-as-a-single-source-of-truth/2-using-field-metadata-in-forms): Bind ErrorInfo<T>.modelState to per-field error UI and render dynamic forms from FieldMetadata and getValueList.
+- [Lifecycle Hooks](https://learn.remult.dev/4-concepts/8-entities-as-a-single-source-of-truth/3-lifecycle-events): Entity lifecycle hooks - saving, saved, deleting, deleted, validation - with e.isNew, e.fields, and field.valueChanged().
+- [Select Fields](https://learn.remult.dev/4-concepts/8-entities-as-a-single-source-of-truth/4-select-fields): Define a slimmer read-only entity over the same table via dbName to fetch only a subset of columns.
+- [Extend Entity (add fields)](https://learn.remult.dev/4-concepts/8-entities-as-a-single-source-of-truth/5-add-fields-extends-entity): Split a wide entity into a base plus an extension entity sharing the same dbName for opt-in extra fields.
+
+#### Testing
+- [Introduction to Testing with Remult](https://learn.remult.dev/4-concepts/9-testing/1-introduction): Swap remult.dataProvider to InMemoryDataProvider or in-memory SQLite (with ensureSchema) for fast entity tests.
+- [Testing Api Rules](https://learn.remult.dev/4-concepts/9-testing/2-testing-api-rules): Test API rules by wrapping a data provider with TestApiDataProvider and toggling remult.user across cases.
 
 ### Examples
-- [Validations - Extending Existing Validations](https://learn.remult.dev/9-examples/1-validations/1-extending-existing-validation): Compose built-in validators (e.g. Validators.unique) inside a field's validate function for conditional rules.
+
+#### Validations
+- [Extending Existing Validations](https://learn.remult.dev/9-examples/1-validations/1-extending-existing-validation): Compose built-in validators (e.g. Validators.unique) inside a field's validate function for conditional rules.
 
 ## Agent Skill
 - [Remult Skill](https://remult.dev/.well-known/agent-skills/remult/SKILL.md): Install with `npx skills add https://remult.dev` so AI agents (Claude Code, Cursor, ...) know Remult conventions - @Entity, repo(), lifecycle hooks, permissions, ValueList enums, the dual-entity pattern.

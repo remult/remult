@@ -1,3 +1,7 @@
+---
+llm: false # nav stub - children are listed directly in llms.txt
+---
+
 <script setup>
   import Icon from '../../../components/Icon.vue'
 </script>

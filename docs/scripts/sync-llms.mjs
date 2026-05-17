@@ -34,7 +34,15 @@ const parseFrontmatter = (raw) => {
 	const fm = {}
 	for (const line of m[1].split(/\r?\n/)) {
 		const kv = line.match(/^([A-Za-z_][A-Za-z0-9_]*):\s*(.*)$/)
-		if (kv) fm[kv[1]] = kv[2].trim().replace(/^['"](.*)['"]$/, '$1')
+		if (!kv) continue
+		let v = kv[2].trim()
+		// Strip inline YAML comments on bare values only; quoted strings own
+		// everything between their quotes.
+		if (!v.startsWith('"') && !v.startsWith("'")) v = v.replace(/\s+#.*$/, '').trim()
+		// Parse YAML literals so `llm: false` is a real boolean, not the string "false".
+		if (v === 'false') fm[kv[1]] = false
+		else if (v === 'true') fm[kv[1]] = true
+		else fm[kv[1]] = v.replace(/^['"](.*)['"]$/, '$1')
 	}
 	return fm
 }
@@ -54,10 +62,12 @@ const capitalize = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s)
 const entry = (text, link) => {
 	const fm = readFrontmatter(linkToFile(link))
 	if (fm == null) return null
+	// Pages can opt out of the index with `llm: false` in frontmatter.
+	if (fm.llm === false) return null
 	const title = fm.title || text || link
 	const url = `${SITE}${link}`
-	// Ref pages are auto-generated API docs - title is the symbol name, so no
-	// summary is needed (the seed script also skips them).
+	// Ref pages are auto-generated API docs - the title is the symbol name,
+	// no summary is needed.
 	if (isRefPage(link)) return `- [${title}](${url})`
 	return fm.llm ? `- [${title}](${url}): ${fm.llm}` : `- [${title}](${url})`
 }
@@ -145,23 +155,30 @@ try {
 		for (const part of parts) {
 			const partDir = join(interactiveRoot, part)
 			const partTitle = metaTitle(partDir) ?? part
-			const lines = []
+			const chapters = []
 			for (const chapter of sortedDirs(partDir)) {
 				const chapterDir = join(partDir, chapter)
 				const chapterTitle = metaTitle(chapterDir) ?? chapter
+				const lines = []
 				for (const lesson of sortedDirs(chapterDir)) {
 					const file = join(chapterDir, lesson, 'content.md')
 					const fm = readFrontmatter(file)
 					if (fm == null) continue
+					if (fm.llm === false) continue
 					const url = `${LEARN_SITE}/${part}/${chapter}/${lesson}`
-					const linkText = `${chapterTitle} - ${fm.title ?? lesson}`
+					const linkText = fm.title ?? lesson
 					lines.push(fm.llm ? `- [${linkText}](${url}): ${fm.llm}` : `- [${linkText}](${url})`)
 				}
+				if (lines.length) chapters.push({ title: chapterTitle, lines })
 			}
-			if (lines.length === 0) continue
+			if (chapters.length === 0) continue
 			sections.push('')
 			sections.push(`### ${partTitle}`)
-			sections.push(...lines)
+			for (const { title, lines } of chapters) {
+				sections.push('')
+				sections.push(`#### ${title}`)
+				sections.push(...lines)
+			}
 		}
 	}
 } catch (e) {
