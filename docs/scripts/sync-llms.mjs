@@ -12,7 +12,9 @@ const docsRoot = resolve(__dirname, '..')
 
 const SITE = 'https://remult.dev'
 const LEARN_SITE = 'https://learn.remult.dev'
-const SUMMARY_MAX = 180
+// Soft cap - if a single sentence runs longer than this, hard-truncate with `...`.
+// First-sentence extraction usually keeps us well under this in practice.
+const SUMMARY_HARD_CAP = 350
 
 const linkToFile = (link) => {
 	const clean = link.split('#')[0].split('?')[0]
@@ -29,11 +31,22 @@ const cleanInline = (s) =>
 		.replace(/\s+/g, ' ')
 		.trim()
 
-const truncate = (s) => {
-	if (s.length <= SUMMARY_MAX) return s
-	const cut = s.slice(0, SUMMARY_MAX)
+// Keep just the first sentence of a paragraph. A sentence ends on `.`, `!`, or
+// `?` followed by whitespace (or end of string). Decimal numbers, abbreviations
+// like "e.g." and version refs like "v3.3" are avoided by requiring a space or
+// newline after the punctuation - the regex's last char must be \s or absent.
+const firstSentence = (s) => {
+	// Match up to and including the first sentence terminator that's followed by
+	// whitespace + an uppercase/digit (the next sentence), or end of string.
+	const m = s.match(/^[\s\S]*?[.!?](?=\s+[A-Z0-9“"'(]|\s*$)/)
+	return (m ? m[0] : s).trim()
+}
+
+const capSummary = (s) => {
+	if (s.length <= SUMMARY_HARD_CAP) return s
+	const cut = s.slice(0, SUMMARY_HARD_CAP)
 	const lastSpace = cut.lastIndexOf(' ')
-	return (lastSpace > 60 ? cut.slice(0, lastSpace) : cut).replace(/[.,;:!?\s]+$/, '') + '...'
+	return (lastSpace > 80 ? cut.slice(0, lastSpace) : cut).replace(/[.,;:!?\s]+$/, '') + '...'
 }
 
 const isProseLine = (line) => {
@@ -167,7 +180,7 @@ const summarizeFile = (file) => {
 		summary = cleanP
 		break
 	}
-	return { title, summary: summary ? truncate(summary) : null, missing: false }
+	return { title, summary: summary ? capSummary(firstSentence(summary)) : null, missing: false }
 }
 
 const summarize = (link) => summarizeFile(linkToFile(link))

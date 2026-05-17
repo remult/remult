@@ -19,32 +19,32 @@
 ## Documentation
 
 ### Getting Started
-- [Introduction](https://remult.dev/docs/): With Remult it is simple to keep your code DRY and increase development speed and maintainability by defining a single TypeScript model class (for each domain object) and sharing...
+- [Introduction](https://remult.dev/docs/): With Remult it is simple to keep your code DRY and increase development speed and maintainability by defining a single TypeScript model class (for each domain object) and sharing it between your frontend and backend code.
 - [Creating a Remult Project](https://remult.dev/docs/creating-a-project): The easiest way to start building a Remult app
-- [Quickstart](https://remult.dev/docs/quickstart): Jumpstart your development with this Quickstart guide. Learn to seamlessly integrate Remult in various stacks, from installation to defining entities for efficient data querying...
-- [Example Apps](https://remult.dev/docs/example-apps): We have already a ton of examples! Pick and choose the one that fits your needs 😊
+- [Quickstart](https://remult.dev/docs/quickstart): Jumpstart your development with this Quickstart guide.
+- [Example Apps](https://remult.dev/docs/example-apps): We have already a ton of examples!
 
 ### Entities
-- [Entities](https://remult.dev/docs/entities): Entities are THE key concept of Remult - your Single Source of Truth (SSoT) for data structure, api, validation, permissions, and more! In other languages, they can be called...
+- [Entities](https://remult.dev/docs/entities): Entities are THE key concept of Remult - your Single Source of Truth (SSoT) for data structure, api, validation, permissions, and more!
 - [Field Types](https://remult.dev/docs/field-types): There are also several built in Field decorators for common use case:
-- [Relations Between Entities](https://remult.dev/docs/entity-relations): In Remult, entity relations play a useful role in modeling and navigating the complex relationships that exist within your data. To illustrate this concept, we will use two...
-- [Filtering and Relations](https://remult.dev/docs/filtering-and-relations): In this article, we'll discuss several relevant techniques for one-to-many relations. Consider the following scenario where we have a customer entity and an Orders entity.
-- [Entity Lifecycle Hooks](https://remult.dev/docs/lifecycle-hooks): In Remult, you can take advantage of Entity Lifecycle Hooks to add custom logic and actions at specific stages of an entity's lifecycle. There are five lifecycle events available...
-- [Migrations](https://remult.dev/docs/migrations): Managing database schemas is crucial in web development. Traditional migration approaches introduce complexity and risks. Remult, designed for data-driven web apps with...
-- [Generate Entities from Existing Database](https://remult.dev/docs/entities-codegen-from-db-schema): Want to use Remult for full-stack CRUD with your existing database? Check out this video to see how to connect http://remult.dev to your existing database and start building...
-- [Offline Support](https://remult.dev/docs/offline-support): In modern web applications, providing a seamless user experience often involves enabling offline functionality. This ensures that users can continue to interact with the...
-- [Mutability and the Active Record Pattern](https://remult.dev/docs/active-record): The Active Record pattern is a concept in software architecture, particularly useful when working with mutable objects whose state may change over time. This design pattern...
-- [Entity Instance Backend Methods](https://remult.dev/docs/entity-backend-methods): When leveraging the Active Record pattern, backend methods for entity instances offer a powerful way to integrate client-side behavior with server-side logic. These methods, when...
-- [Introduction to Mutable Controllers and Backend Methods](https://remult.dev/docs/mutable-controllers): In web development architectures, mutable controllers offer a convenient way to manage state and facilitate interactions between the client (frontend) and the server (backend)...
+- [Relations Between Entities](https://remult.dev/docs/entity-relations): In Remult, entity relations play a useful role in modeling and navigating the complex relationships that exist within your data.
+- [Filtering and Relations](https://remult.dev/docs/filtering-and-relations): In this article, we'll discuss several relevant techniques for one-to-many relations.
+- [Entity Lifecycle Hooks](https://remult.dev/docs/lifecycle-hooks): In Remult, you can take advantage of Entity Lifecycle Hooks to add custom logic and actions at specific stages of an entity's lifecycle.
+- [Migrations](https://remult.dev/docs/migrations): Managing database schemas is crucial in web development.
+- [Generate Entities from Existing Database](https://remult.dev/docs/entities-codegen-from-db-schema): Want to use Remult for full-stack CRUD with your existing database?
+- [Offline Support](https://remult.dev/docs/offline-support): In modern web applications, providing a seamless user experience often involves enabling offline functionality.
+- [Mutability and the Active Record Pattern](https://remult.dev/docs/active-record): The Active Record pattern is a concept in software architecture, particularly useful when working with mutable objects whose state may change over time.
+- [Entity Instance Backend Methods](https://remult.dev/docs/entity-backend-methods): When leveraging the Active Record pattern, backend methods for entity instances offer a powerful way to integrate client-side behavior with server-side logic.
+- [Introduction to Mutable Controllers and Backend Methods](https://remult.dev/docs/mutable-controllers): In web development architectures, mutable controllers offer a convenient way to manage state and facilitate interactions between the client (frontend) and the server (backend).
 
 ### Stacks
 - [Stacks](https://remult.dev/docs/installation/)
 - [Select a framework](https://remult.dev/docs/installation/framework/)
 - [React](https://remult.dev/docs/installation/framework/react): To enable the use of decorators in your React app, modify the vite.config.ts file by adding the following to the defineConfig section:
-- [Angular](https://remult.dev/docs/installation/framework/angular): In development, your Angular app will be served from http://localhost:4200, while the API server will run on http://localhost:3002. To allow the Angular app to communicate with...
+- [Angular](https://remult.dev/docs/installation/framework/angular): In development, your Angular app will be served from http://localhost:4200, while the API server will run on http://localhost:3002.
 - [Vue](https://remult.dev/docs/installation/framework/vue): To enable the use of decorators in your React app, modify the vite.config.ts file by adding the following to the defineConfig section:
 - [SvelteKit](https://remult.dev/docs/installation/framework/sveltekit): Install Remult and any necessary dependencies by running:
-- [Next.js](https://remult.dev/docs/installation/framework/nextjs): Remult is bootstrapped in a Next.js app by creating a catch-all dynamic API route. This route will pass API requests to an object created using the remultApi function.
+- [Next.js](https://remult.dev/docs/installation/framework/nextjs): Remult is bootstrapped in a Next.js app by creating a catch-all dynamic API route.
 - [SolidStart](https://remult.dev/docs/installation/framework/solid): Once completed, navigate to the project directory:
 - [Nuxt](https://remult.dev/docs/installation/framework/nuxt): To enable the use of TypeScript decorators in your Nuxt project, modify the nuxt.config.ts file as follows:
 - [Select a server](https://remult.dev/docs/installation/server/)
@@ -55,10 +55,10 @@
 - [Hapi](https://remult.dev/docs/installation/server/hapi): Remult is integrated into your backend as a Hapi plugin.
 - [Koa](https://remult.dev/docs/installation/server/koa): Remult is integrated into your backend as middleware for Koa.
 - [Nest.js](https://remult.dev/docs/installation/server/nest): Your Nest.js app with Remult is now up and running on port 3002.
-- [Choose a Database](https://remult.dev/docs/installation/database/): By default, if no database provider is specified, Remult will use a simple JSON file-based database. This will store your data in JSON files located in the db folder at the root...
+- [Choose a Database](https://remult.dev/docs/installation/database/): By default, if no database provider is specified, Remult will use a simple JSON file-based database.
 - [PostgreSQL](https://remult.dev/docs/installation/database/postgresql): To set up PostgreSQL as the database provider for your Remult application, you'll need to configure the dataProvider property in the api.ts file.
 - [MySQL](https://remult.dev/docs/installation/database/mysql)
-- [MongoDB](https://remult.dev/docs/installation/database/mongodb): This setup connects to a MongoDB instance running on localhost and uses the test database. The MongoDataProvider manages the connection, allowing Remult to interact with MongoDB...
+- [MongoDB](https://remult.dev/docs/installation/database/mongodb): This setup connects to a MongoDB instance running on localhost and uses the test database.
 - [SQLite3](https://remult.dev/docs/installation/database/sqlite3): This version of SQLite3 works well even on platforms like StackBlitz.
 - [Better SQLite3](https://remult.dev/docs/installation/database/better-sqlite3): To use Better-sqlite3 as the database provider for your Remult application, follow these steps:
 - [sqljs](https://remult.dev/docs/installation/database/sqljs): This configuration allows you to use an in-memory SQLite database in your Remult application, powered by sql.js.
@@ -75,17 +75,17 @@
 - [Backend only code](https://remult.dev/docs/using-server-only-packages): One of the main advantages of remult is that you write code once, and it runs both on the server and in the browser.
 
 ### Guides
-- [Access Control](https://remult.dev/docs/access-control): Access control is essential for ensuring that users can only access resources they are authorized to in web applications. This article explores the various layers of access...
-- [Admin UI](https://remult.dev/docs/admin-ui): Enjoy a fully featured Admin UI for your entities, you can do CRUD operations on your entities, view their relationships via the Diagram entry, and ensure secure management with...
-- [Modules](https://remult.dev/docs/modules): The module system arrived in remult@3.0.6, the idea is to pack features in a single place. Like this, it will be possible to share features between projects in a more convinient...
-- [Community modules](https://remult.dev/docs/modules-community): This page showcases a list of recommended community made modules. We encourage you to create any missing modules and maybe get added to the list!
+- [Access Control](https://remult.dev/docs/access-control): Access control is essential for ensuring that users can only access resources they are authorized to in web applications.
+- [Admin UI](https://remult.dev/docs/admin-ui): Enjoy a fully featured Admin UI for your entities, you can do CRUD operations on your entities, view their relationships via the Diagram entry, and ensure secure management with the same validations and authorizations as your application.
+- [Modules](https://remult.dev/docs/modules): The module system arrived in remult@3.0.6, the idea is to pack features in a single place.
+- [Community modules](https://remult.dev/docs/modules-community): This page showcases a list of recommended community made modules.
 
 ### Escape Hatches
-- [Leveraging Custom Filters for Enhanced Data Filtering](https://remult.dev/docs/custom-filter): In modern web applications, efficiently filtering data is essential for providing a seamless user experience. Whether it's an e-commerce platform filtering products, a task...
-- [Accessing the Underlying Database in Remult](https://remult.dev/docs/running-sql-on-the-server): While Remult provides a powerful abstraction for working with databases, there might be scenarios where you need to access the underlying database directly. This could be for...
-- [Using Remult in Non-Remult Routes](https://remult.dev/docs/using-remult-in-custom-backend-code): When using the CRUD api or BackendMethods, remult is automatically available. Still, there are many use cases where you may want to user remult in your own routes or other code...
+- [Leveraging Custom Filters for Enhanced Data Filtering](https://remult.dev/docs/custom-filter): In modern web applications, efficiently filtering data is essential for providing a seamless user experience.
+- [Accessing the Underlying Database in Remult](https://remult.dev/docs/running-sql-on-the-server): While Remult provides a powerful abstraction for working with databases, there might be scenarios where you need to access the underlying database directly.
+- [Using Remult in Non-Remult Routes](https://remult.dev/docs/using-remult-in-custom-backend-code): When using the CRUD api or BackendMethods, remult is automatically available.
 - [Working without decorators](https://remult.dev/docs/working-without-decorators): If you prefer to work without decorators, or use remult in a javascript project (without typescript) you can use the following:
-- [Extensibility](https://remult.dev/docs/custom-options): Module Augmentation in TypeScript allows you to extend existing types with custom properties or methods. This enhances the functionality of third-party libraries like remult...
+- [Extensibility](https://remult.dev/docs/custom-options): Module Augmentation in TypeScript allows you to extend existing types with custom properties or methods.
 
 ### Integrations
 - [Adding Swagger and openApi](https://remult.dev/docs/adding-swagger): In short, swagger provides a quick UI that describes the api which is exposed by the application.
@@ -94,12 +94,12 @@
 - [Docs for LLMs](https://remult.dev/docs/llms): We support the llms.txt convention for making documentation available to large language models and the agents that wrap them.
 
 ### API Reference
-- [Entity](https://remult.dev/docs/ref_entity): Decorates classes that should be used as entities. Receives a key and an array of EntityOptions.
+- [Entity](https://remult.dev/docs/ref_entity): Decorates classes that should be used as entities.
 - [Field](https://remult.dev/docs/ref_field): Decorates fields that should be used as fields. for more info see: Field Types
 - [ValueConverter](https://remult.dev/docs/ref_valueconverter): Interface for converting values between different formats, such as in-memory objects, database storage, JSON data transfer objects (DTOs), and HTML input elements.
 - [Validation](https://remult.dev/docs/validation): Validation is a key part of any application, and you will see that it's builtin Remult !
 - [Validators](https://remult.dev/docs/ref_validators): Class containing various field validators.
-- [Relations](https://remult.dev/docs/ref_relations): Define a toMany relation between entities, indicating a one-to-many relationship. This method allows you to establish a relationship where one entity can have multiple related...
+- [Relations](https://remult.dev/docs/ref_relations): Define a toMany relation between entities, indicating a one-to-many relationship.
 - [RelationOptions](https://remult.dev/docs/ref_relationoptions): Options for configuring a relation between entities.
 - [Remult](https://remult.dev/docs/ref_remult): Return's a Repository of the specific entity type
 - [ApiClient](https://remult.dev/docs/ref_apiclient): Interface for configuring the API client used by Remult to perform HTTP calls to the backend.
@@ -109,13 +109,13 @@
 - [EntityMetadata](https://remult.dev/docs/ref_entitymetadata): Metadata for an Entity, this metadata can be used in the user interface to provide a richer UI experience
 - [FieldMetadata](https://remult.dev/docs/ref_fieldmetadata): Metadata for a Field, this metadata can be used in the user interface to provide a richer UI experience
 - [Allowed](https://remult.dev/docs/allowed): Throughout the api you'll see methods that use the Allowed data type, for example allowApiRead etc...
-- [BackendMethod](https://remult.dev/docs/ref_backendmethod): Decorator indicating that the decorated method runs on the backend. It allows the method to be invoked from the frontend while ensuring that the execution happens on the server...
+- [BackendMethod](https://remult.dev/docs/ref_backendmethod): Decorator indicating that the decorated method runs on the backend.
 - [QueryResult](https://remult.dev/docs/ref_queryresult): The result of a call to the query method in the Repository object.
 - [Paginator](https://remult.dev/docs/ref_paginator): An interface used to paginating using the query method in the Repository object
 - [LiveQuery](https://remult.dev/docs/ref_livequery): The LiveQuery interface represents a live query that allows subscribing to changes in the query results.
 - [LiveQueryChangeInfo](https://remult.dev/docs/ref_livequerychangeinfo): The LiveQueryChangeInfo interface represents information about changes in the results of a live query.
-- [Filter](https://remult.dev/docs/ref_filter): The Filter class is a helper class that focuses on filter-related concerns. It provides methods for creating and applying filters in queries.
-- [Sort](https://remult.dev/docs/ref_sort): The Sort class is used to describe sorting criteria for queries. It is mainly used internally, but it provides a few useful functions for working with sorting.
+- [Filter](https://remult.dev/docs/ref_filter): The Filter class is a helper class that focuses on filter-related concerns.
+- [Sort](https://remult.dev/docs/ref_sort): The Sort class is used to describe sorting criteria for queries.
 - [SqlDatabase](https://remult.dev/docs/ref_sqldatabase): A DataProvider for Sql Databases
 - [SubscriptionChannel](https://remult.dev/docs/ref_subscriptionchannel): The SubscriptionChannel class is used to send messages from the backend to the frontend, using the same mechanism used by live queries.
 - [generateMigrations](https://remult.dev/docs/ref_generatemigrations): Generates migration scripts based on changes in entities.
@@ -126,7 +126,7 @@
 - [IdEntity](https://remult.dev/docs/ref_identity)
 - [EntityRef](https://remult.dev/docs/ref_entityref)
 - [FieldRef](https://remult.dev/docs/ref_fieldref): Loads the related value - returns null if the related value is not found
-- [getEntityRef](https://remult.dev/docs/ref_getentityref): Retrieves the EntityRef object associated with the specified entity instance. The EntityRef provides methods for performing operations on the entity instance.
+- [getEntityRef](https://remult.dev/docs/ref_getentityref): Retrieves the EntityRef object associated with the specified entity instance.
 - [getFields](https://remult.dev/docs/ref_getfields)
 
 ## Tutorials
@@ -134,15 +134,15 @@
 Each framework tutorial walks through the same 10 lessons (Setup, Entities, Paging/Sorting/Filtering, CRUD, Validation, Live Queries, Backend methods, Auth, Database, Deployment) with framework-specific code samples.
 
 ### React Tutorial (canonical)
-- [Build a Full-Stack React Application](https://remult.dev/tutorials/react/): In this tutorial, we are going to create a simple app to manage a task list. We'll use React for the UI, Node.js + Express.js for the API server, and Remult as our full-stack CRUD...
+- [Build a Full-Stack React Application](https://remult.dev/tutorials/react/): In this tutorial, we are going to create a simple app to manage a task list.
 - [Entities](https://remult.dev/tutorials/react/entities): Let's start coding the app by defining the Task entity class.
-- [Paging, Sorting and Filtering](https://remult.dev/tutorials/react/sorting-filtering): The RESTful API created by Remult supports server-side paging, sorting, and filtering. Let's use that to limit, sort and filter the list of tasks.
+- [Paging, Sorting and Filtering](https://remult.dev/tutorials/react/sorting-filtering): The RESTful API created by Remult supports server-side paging, sorting, and filtering.
 - [CRUD Operations](https://remult.dev/tutorials/react/crud): Now that we can see the list of tasks, it's time to add a few more.
-- [Validation](https://remult.dev/tutorials/react/validation): Validating user entered data is usually required both on the client-side and on the server-side, often causing a violation of the DRY design principle. With Remult, validation...
-- [Live Queries](https://remult.dev/tutorials/react/live-queries): Our todo list app can have multiple users using it at the same time. However, changes made by one user are not seen by others unless they manually refresh the browser.
-- [Backend methods](https://remult.dev/tutorials/react/backend-methods): When performing operations on multiple entity objects, performance considerations may necessitate running them on the server. With Remult, moving client-side logic to run on the...
+- [Validation](https://remult.dev/tutorials/react/validation): Validating user entered data is usually required both on the client-side and on the server-side, often causing a violation of the DRY design principle.
+- [Live Queries](https://remult.dev/tutorials/react/live-queries): Our todo list app can have multiple users using it at the same time.
+- [Backend methods](https://remult.dev/tutorials/react/backend-methods): When performing operations on multiple entity objects, performance considerations may necessitate running them on the server.
 - [Authentication and Authorization](https://remult.dev/tutorials/react/auth): Our todo app is nearly functionally complete, but it still doesn't fulfill a very basic requirement - that users should log in before they can view, create or modify tasks.
-- [Database](https://remult.dev/tutorials/react/database): Up until now the todo app has been using a plain JSON file to store the list of tasks. In production, we'd like to use a Postgres database table instead.
+- [Database](https://remult.dev/tutorials/react/database): Up until now the todo app has been using a plain JSON file to store the list of tasks.
 - [Deployment](https://remult.dev/tutorials/react/deployment): Let's deploy the todo app to railway.app.
 
 ### Same tutorial, other frameworks
@@ -157,56 +157,56 @@ Each framework tutorial walks through the same 10 lessons (Setup, Entities, Pagi
 
 ### Basics
 - [Introduction - Welcome to the Remult Tutorial](https://learn.remult.dev/1-basics/1-introduction/0-intro): Hey there, and welcome to the Remult Tutorial! 👋
-- [Introduction - Entity](https://learn.remult.dev/1-basics/1-introduction/1-entity): In Remult, the core element is an entity. An entity represents a business object, such as an order or customer. In our tutorial, we'll use a Task entity for our todo application.
+- [Introduction - Entity](https://learn.remult.dev/1-basics/1-introduction/1-entity): In Remult, the core element is an entity.
 - [Introduction - Rest Api](https://learn.remult.dev/1-basics/1-introduction/2-rest-api): For this tutorial, we'll use Express (Remult works with many JavaScript web frameworks including Express, Fastify, Next.js, Sveltekit, nuxt.js, Hapi, Hono, Nest, and Koa).
 - [Introduction - Insert Data on the Backend](https://learn.remult.dev/1-basics/1-introduction/3-insert-data-on-the-backend): Next, we'll add some tasks on the backend so we can use them later.
-- [Introduction - Display the Task List](https://learn.remult.dev/1-basics/1-introduction/4-display-the-task-list): Next, we'll use the tasks from the backend and display them in the frontend. We've prepared a Todo React component that displays an array of Task. Note that we're using the same...
-- [Querying Data - Paging](https://learn.remult.dev/1-basics/2-querying-data/1-paging): The RESTful API created by Remult supports server-side paging, sorting, and filtering. Let's use these features to limit, sort, and filter the list of tasks.
-- [Querying Data - Sorting](https://learn.remult.dev/1-basics/2-querying-data/2-sorting): Remult's RESTful API also supports server-side sorting. Let's sort the list of tasks by their title.
-- [Querying Data - Filtering](https://learn.remult.dev/1-basics/2-querying-data/3-filtering): Remult's RESTful API also supports server-side filtering. Let's filter the list of tasks to show only the completed ones.
+- [Introduction - Display the Task List](https://learn.remult.dev/1-basics/1-introduction/4-display-the-task-list): Next, we'll use the tasks from the backend and display them in the frontend.
+- [Querying Data - Paging](https://learn.remult.dev/1-basics/2-querying-data/1-paging): The RESTful API created by Remult supports server-side paging, sorting, and filtering.
+- [Querying Data - Sorting](https://learn.remult.dev/1-basics/2-querying-data/2-sorting): Remult's RESTful API also supports server-side sorting.
+- [Querying Data - Filtering](https://learn.remult.dev/1-basics/2-querying-data/3-filtering): Remult's RESTful API also supports server-side filtering.
 - [Manipulating Data - Insert](https://learn.remult.dev/1-basics/3-manipulating-data/1-Insert): First, let's add the React code for adding a new task.
-- [Manipulating Data - Update](https://learn.remult.dev/1-basics/3-manipulating-data/2-update): Let's add the functionality to update a task's completion status. We'll start by defining a function to handle the update.
-- [Manipulating Data - Delete](https://learn.remult.dev/1-basics/3-manipulating-data/3-delete): Let's add the functionality to delete a task. We'll start by defining a function to handle the deletion.
-- [Validation - Required](https://learn.remult.dev/1-basics/4-validation/1-required): In most web applications, validation code is spread and duplicated across multiple places. You need frontend validation, and you need API validation, all in various forms...
-- [Validation - Built-In Validations](https://learn.remult.dev/1-basics/4-validation/2-built-in-validations): Remult comes with a set of built-in validations that you can easily choose from. These validations are defined in the Validators class.
-- [Validation - Custom Validations](https://learn.remult.dev/1-basics/4-validation/3-custom-validations): You can also define custom validation logic for your fields. Let's add a custom validation to the title field to ensure it is longer than 2 characters.
-- [Live Query - Live Query](https://learn.remult.dev/1-basics/5-live-query/1-introduction): Our todo list app can have multiple users using it at the same time. However, changes made by one user are not seen by others unless they manually refresh the browser.
+- [Manipulating Data - Update](https://learn.remult.dev/1-basics/3-manipulating-data/2-update): Let's add the functionality to update a task's completion status.
+- [Manipulating Data - Delete](https://learn.remult.dev/1-basics/3-manipulating-data/3-delete): Let's add the functionality to delete a task.
+- [Validation - Required](https://learn.remult.dev/1-basics/4-validation/1-required): In most web applications, validation code is spread and duplicated across multiple places.
+- [Validation - Built-In Validations](https://learn.remult.dev/1-basics/4-validation/2-built-in-validations): Remult comes with a set of built-in validations that you can easily choose from.
+- [Validation - Custom Validations](https://learn.remult.dev/1-basics/4-validation/3-custom-validations): You can also define custom validation logic for your fields.
+- [Live Query - Live Query](https://learn.remult.dev/1-basics/5-live-query/1-introduction): Our todo list app can have multiple users using it at the same time.
 - [Live Query - Realtime Updates](https://learn.remult.dev/1-basics/5-live-query/2-realtime-updates): To enable real-time updates, we'll modify the useEffect hook to use liveQuery.
-- [Backend Methods - Updating Multiple Tasks](https://learn.remult.dev/1-basics/6-backend-methods/1-introduction): When performing operations on multiple entity objects, performance considerations may necessitate running them on the server. With Remult, moving client-side logic to run on the...
+- [Backend Methods - Updating Multiple Tasks](https://learn.remult.dev/1-basics/6-backend-methods/1-introduction): When performing operations on multiple entity objects, performance considerations may necessitate running them on the server.
 - [Backend Methods - Refactor to Backend](https://learn.remult.dev/1-basics/6-backend-methods/2-refactor-to-backend): To improve performance, let's refactor the frontend code and move it to the backend.
 - [Authentication & Authorization - Authentication and Authorization](https://learn.remult.dev/1-basics/7-auth/1-introduction): Our todo app is nearly functionally complete, but it still doesn't fulfill a very basic requirement - that users should log in before they can view, create, or modify tasks.
 - [Authentication & Authorization - Authentication](https://learn.remult.dev/1-basics/7-auth/2-user-authentication): In this lesson, we'll implement a basic sign-in mechanism using cookie session.
-- [Authentication & Authorization - Role-based Authorization](https://learn.remult.dev/1-basics/7-auth/3-authorization): In most applications, different users have different levels of access. Let's define an admin role for our todo app and enforce the following authorization rules:
-- [Authentication & Authorization - Role-based Authorization on the Frontend](https://learn.remult.dev/1-basics/7-auth/4-role-based-authorization-on-frontend): From a user experience perspective, it only makes sense that users who can't add or delete tasks shouldn't see the buttons for those actions. Let's reuse the same authorization...
-- [Database - Database](https://learn.remult.dev/1-basics/8-Database/1-connection-to-a-database): Up until now the todo app has been using a plain JSON file to store the list of tasks. In this lesson we'll demontstrate how easy it is to switch to one of the many databases that...
+- [Authentication & Authorization - Role-based Authorization](https://learn.remult.dev/1-basics/7-auth/3-authorization): In most applications, different users have different levels of access.
+- [Authentication & Authorization - Role-based Authorization on the Frontend](https://learn.remult.dev/1-basics/7-auth/4-role-based-authorization-on-frontend): From a user experience perspective, it only makes sense that users who can't add or delete tasks shouldn't see the buttons for those actions.
+- [Database - Database](https://learn.remult.dev/1-basics/8-Database/1-connection-to-a-database): Up until now the todo app has been using a plain JSON file to store the list of tasks.
 
 ### In Depth
 - [Relations - Many to One](https://learn.remult.dev/4-concepts/1-relations/1-many-to-one): In this chapter, we’ll explore how to work with entity relations in Remult using customers and orders as our example.
 - [Relations - One to Many](https://learn.remult.dev/4-concepts/1-relations/2-one-to-many): In this lesson, we'll explore how to set up and work with a one-to-many relation in Remult, where one Customer can have many Order records.
-- [Relations - Id Based Relations](https://learn.remult.dev/4-concepts/1-relations/3-id-based-relations): ID-based relations provide more control over how related entities are managed. By explicitly including the foreign key (such as customerId) in the entity, you gain more...
-- [Relations - Many to Many](https://learn.remult.dev/4-concepts/1-relations/4-many-to-many): In some applications, an entity might need to have a relationship with multiple entities from another table, and vice versa. In our case, an Order can contain many Products, and...
+- [Relations - Id Based Relations](https://learn.remult.dev/4-concepts/1-relations/3-id-based-relations): ID-based relations provide more control over how related entities are managed.
+- [Relations - Many to Many](https://learn.remult.dev/4-concepts/1-relations/4-many-to-many): In some applications, an entity might need to have a relationship with multiple entities from another table, and vice versa.
 - [Advanced Filtering - Custom Filter](https://learn.remult.dev/4-concepts/4-filtering/1-custom-filters): In this lesson, we'll explore how to simplify and reuse filtering logic in your application using Custom Filters.
-- [Advanced Filtering - Filter Based on Relation](https://learn.remult.dev/4-concepts/4-filtering/2-filter-based-on-relation): When working with relational data, you might encounter scenarios where you need to filter records based on data from related entities. A common example is retrieving all orders...
-- [Advanced Filtering - Filter Based on Relation Using SQL](https://learn.remult.dev/4-concepts/4-filtering/3-fitler-based-on-relation-sql): In this lesson, we'll explore how to perform advanced filtering using SQL directly within custom filters. While Remult allows us to define filters using high-level syntax, there...
-- [Advanced Filtering - Sql Relations Filter](https://learn.remult.dev/4-concepts/4-filtering/4-sql-relations-filter): Filtering based on relations can be a powerful tool when querying data that involves multiple interconnected entities. The new sqlRelationsFilter function is designed to simplify...
-- [Sql Expression Entity Field - Introduction](https://learn.remult.dev/4-concepts/6-sql-expression/1-introduction): In Remult, sqlExpression fields provide a convenient way to bring SQL’s computational power directly into your entity fields. This allows you to define fields based on SQL...
-- [Sql Expression Entity Field - Getting a field from a relation](https://learn.remult.dev/4-concepts/6-sql-expression/2-getting-a-field-from-a-relation): With Remult’s sqlExpression feature, you can create fields that pull data from related entities. This approach is especially useful when you want to sort, filter, or display...
-- [Sql Expression Entity Field - Sql Relations](https://learn.remult.dev/4-concepts/6-sql-expression/3-sql-relations): The sqlRelations API (currently experimental) enhances the way you handle relationships in Remult by enabling SQL-like expressions directly on related entities. This allows for...
-- [Access Control - Intro & Field-Level Authorization](https://learn.remult.dev/4-concepts/7-access-control/1-field-level-control): This lesson builds upon the foundational Authentication & Authorization article, so please review that if you haven't yet. Now, let’s dive into adding fine-grained access control...
-- [Access Control - Row-Level Authorization](https://learn.remult.dev/4-concepts/7-access-control/2-row-level-authorization): Row-level authorization enables control over specific rows of an entity based on user roles, ownership, or custom logic. This feature is essential for applications that need...
-- [Access Control - Filtering Rows Based on User Permissions](https://learn.remult.dev/4-concepts/7-access-control/3-filtering-rows-based-on-User-Permissions): Filtering rows based on user permissions ensures that users only access the rows they are authorized to see, update, or delete. This lesson covers using apiPrefilter to define...
-- [Access Control - Filtering Related Rows Based on User Permissions](https://learn.remult.dev/4-concepts/7-access-control/4-filtering-related-rows-based-on-user-permissions): In this lesson, we’ll explore how to apply user-based access controls to related rows in your data model. Specifically, we’ll filter the TimeEntry API to ensure that only entries...
-- [Access Control - Sql Relations Filter for User Permissions](https://learn.remult.dev/4-concepts/7-access-control/5-sql-relations-filter-for-user-permissions): The sqlRelationsFilter function provides an efficient way to apply row-level filters across related entities directly within SQL, streamlining access control for related rows. In...
-- [Entities as a single source of truth - Field Metadata](https://learn.remult.dev/4-concepts/8-entities-as-a-single-source-of-truth/1-field-meta-data): Entities in Remult are not just a single source of truth for storage, APIs, and authentication—they can serve as a central point for managing any entity-related aspect across your...
-- [Entities as a single source of truth - Forms and Validation](https://learn.remult.dev/4-concepts/8-entities-as-a-single-source-of-truth/2-using-field-metadata-in-forms): This lesson will guide you through creating a form with field-level error handling and dynamic field labels using metadata. You’ll learn how to capture validation errors, display...
-- [Entities as a single source of truth - Lifecycle Hooks](https://learn.remult.dev/4-concepts/8-entities-as-a-single-source-of-truth/3-lifecycle-events): Entity Lifecycle Hooks in Remult provide a powerful way to add custom actions and validations at key stages of an entity’s lifecycle. These hooks allow you to execute specific...
-- [Entities as a single source of truth - Select Fields](https://learn.remult.dev/4-concepts/8-entities-as-a-single-source-of-truth/4-select-fields): Select fields in Remult allows you to select only the fields you need from an entity. This is useful when you want to reduce the amount of data groing from client to server.
-- [Entities as a single source of truth - Extend Entity (add fields)](https://learn.remult.dev/4-concepts/8-entities-as-a-single-source-of-truth/5-add-fields-extends-entity): When you application grows, you entities will grow too. At some point, it could be useful to refactor your entities to make them more readable and maintainable by making them...
-- [Testing - Introduction to Testing with Remult](https://learn.remult.dev/4-concepts/9-testing/1-introduction): Remult makes it simple to replace your production database with a test database, enabling you to easily write and execute automated tests. The flexibility of switching between...
-- [Testing - Testing Api Rules](https://learn.remult.dev/4-concepts/9-testing/2-testing-api-rules): In Remult, automated tests run as if they are executing directly on the backend. This can make it challenging to test API rules, which typically involve permissions and access...
+- [Advanced Filtering - Filter Based on Relation](https://learn.remult.dev/4-concepts/4-filtering/2-filter-based-on-relation): When working with relational data, you might encounter scenarios where you need to filter records based on data from related entities.
+- [Advanced Filtering - Filter Based on Relation Using SQL](https://learn.remult.dev/4-concepts/4-filtering/3-fitler-based-on-relation-sql): In this lesson, we'll explore how to perform advanced filtering using SQL directly within custom filters.
+- [Advanced Filtering - Sql Relations Filter](https://learn.remult.dev/4-concepts/4-filtering/4-sql-relations-filter): Filtering based on relations can be a powerful tool when querying data that involves multiple interconnected entities.
+- [Sql Expression Entity Field - Introduction](https://learn.remult.dev/4-concepts/6-sql-expression/1-introduction): In Remult, sqlExpression fields provide a convenient way to bring SQL’s computational power directly into your entity fields.
+- [Sql Expression Entity Field - Getting a field from a relation](https://learn.remult.dev/4-concepts/6-sql-expression/2-getting-a-field-from-a-relation): With Remult’s sqlExpression feature, you can create fields that pull data from related entities.
+- [Sql Expression Entity Field - Sql Relations](https://learn.remult.dev/4-concepts/6-sql-expression/3-sql-relations): The sqlRelations API (currently experimental) enhances the way you handle relationships in Remult by enabling SQL-like expressions directly on related entities.
+- [Access Control - Intro & Field-Level Authorization](https://learn.remult.dev/4-concepts/7-access-control/1-field-level-control): This lesson builds upon the foundational Authentication & Authorization article, so please review that if you haven't yet.
+- [Access Control - Row-Level Authorization](https://learn.remult.dev/4-concepts/7-access-control/2-row-level-authorization): Row-level authorization enables control over specific rows of an entity based on user roles, ownership, or custom logic.
+- [Access Control - Filtering Rows Based on User Permissions](https://learn.remult.dev/4-concepts/7-access-control/3-filtering-rows-based-on-User-Permissions): Filtering rows based on user permissions ensures that users only access the rows they are authorized to see, update, or delete.
+- [Access Control - Filtering Related Rows Based on User Permissions](https://learn.remult.dev/4-concepts/7-access-control/4-filtering-related-rows-based-on-user-permissions): In this lesson, we’ll explore how to apply user-based access controls to related rows in your data model.
+- [Access Control - Sql Relations Filter for User Permissions](https://learn.remult.dev/4-concepts/7-access-control/5-sql-relations-filter-for-user-permissions): The sqlRelationsFilter function provides an efficient way to apply row-level filters across related entities directly within SQL, streamlining access control for related rows.
+- [Entities as a single source of truth - Field Metadata](https://learn.remult.dev/4-concepts/8-entities-as-a-single-source-of-truth/1-field-meta-data): Entities in Remult are not just a single source of truth for storage, APIs, and authentication—they can serve as a central point for managing any entity-related aspect across your application.
+- [Entities as a single source of truth - Forms and Validation](https://learn.remult.dev/4-concepts/8-entities-as-a-single-source-of-truth/2-using-field-metadata-in-forms): This lesson will guide you through creating a form with field-level error handling and dynamic field labels using metadata.
+- [Entities as a single source of truth - Lifecycle Hooks](https://learn.remult.dev/4-concepts/8-entities-as-a-single-source-of-truth/3-lifecycle-events): Entity Lifecycle Hooks in Remult provide a powerful way to add custom actions and validations at key stages of an entity’s lifecycle.
+- [Entities as a single source of truth - Select Fields](https://learn.remult.dev/4-concepts/8-entities-as-a-single-source-of-truth/4-select-fields): Select fields in Remult allows you to select only the fields you need from an entity.
+- [Entities as a single source of truth - Extend Entity (add fields)](https://learn.remult.dev/4-concepts/8-entities-as-a-single-source-of-truth/5-add-fields-extends-entity): When you application grows, you entities will grow too.
+- [Testing - Introduction to Testing with Remult](https://learn.remult.dev/4-concepts/9-testing/1-introduction): Remult makes it simple to replace your production database with a test database, enabling you to easily write and execute automated tests.
+- [Testing - Testing Api Rules](https://learn.remult.dev/4-concepts/9-testing/2-testing-api-rules): In Remult, automated tests run as if they are executing directly on the backend.
 
 ### Examples
-- [Validations - Extending Existing Validations](https://learn.remult.dev/9-examples/1-validations/1-extending-existing-validation): In this lesson, you'll learn how to extend and customize existing validations in Remult. Validations in Remult are simply functions that you can call and combine as needed.
+- [Validations - Extending Existing Validations](https://learn.remult.dev/9-examples/1-validations/1-extending-existing-validation): In this lesson, you'll learn how to extend and customize existing validations in Remult.
 
 ## Agent Skill
 - [Remult Skill](https://remult.dev/.well-known/agent-skills/remult/SKILL.md): Install with `npx skills add https://remult.dev` so AI agents (Claude Code, Cursor, ...) know Remult conventions - @Entity, repo(), lifecycle hooks, permissions, ValueList enums, the dual-entity pattern.
