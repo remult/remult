@@ -1,3 +1,7 @@
+---
+llm: "PostgreSQL via createPostgresDataProvider on the dataProvider option, or reuse an existing pg.Pool."
+---
+
 # PostgreSQL
 
 To set up PostgreSQL as the database provider for your Remult application, you'll need to configure the `dataProvider` property in the `api.ts` file.

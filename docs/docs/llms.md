@@ -1,3 +1,7 @@
+---
+llm: "llms.txt index of every doc page and the official remult agent skill for AI coding tools."
+---
+
 # Docs for LLMs
 
 We support the [llms.txt](https://llmstxt.org/) convention for making documentation available to large language models and the agents that wrap them.

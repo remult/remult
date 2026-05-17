@@ -3,6 +3,7 @@ type: lesson
 title: Authentication
 template: auth
 focus: /shared/AuthController.ts
+llm: "Build an AuthController with signIn/signOut @BackendMethods backed by cookie-session and getUser."
 ---
 
 ## Authentication

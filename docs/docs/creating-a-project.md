@@ -1,3 +1,7 @@
+---
+llm: "Scaffold a new project with npm init remult@latest - 180+ framework/server/DB/auth combinations."
+---
+
 <script setup>
   import Example from '../components/Example.vue'
 </script>

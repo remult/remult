@@ -3,6 +3,7 @@ type: lesson
 title: Authentication and Authorization
 template: after-backend-methods
 focus: /shared/Task.ts
+llm: "Gate CRUD with allowApiCrud: remult.authenticated and lock the @BackendMethod with allowed: remult.authenticated."
 ---
 
 # Authentication and Authorization

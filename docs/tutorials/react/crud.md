@@ -1,3 +1,7 @@
+---
+llm: "Wire repo.insert, repo.save and repo.delete to add, toggle, rename and remove tasks from the UI."
+---
+
 # CRUD Operations
 
 ## Adding new tasks

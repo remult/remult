@@ -1,3 +1,7 @@
+---
+llm: "Run raw SQL via SqlDatabase.getDb(), dbNamesOf for safe identifiers, and param() for bound parameters."
+---
+
 # Accessing the Underlying Database in Remult
 
 While Remult provides a powerful abstraction for working with databases, there might be scenarios where you need to access the underlying database directly. This could be for performing complex queries, optimizations, or other database-specific operations that are not covered by Remult's API.

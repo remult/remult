@@ -1,3 +1,7 @@
+---
+llm: "Fastify integration via the remult-fastify plugin registered on the Fastify app."
+---
+
 # Fastify
 
 ### Install Required Packages

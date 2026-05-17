@@ -1,3 +1,7 @@
+---
+llm: "Gate entities and BackendMethods with allowApiCrud, Allow.authenticated and role-based rules via cookie-session."
+---
+
 # Authentication and Authorization
 
 Our todo app is nearly functionally complete, but it still doesn't fulfill a very basic requirement - that users should log in before they can view, create or modify tasks.

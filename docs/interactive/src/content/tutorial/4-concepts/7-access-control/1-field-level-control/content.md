@@ -3,6 +3,7 @@ type: lesson
 title: Intro & Field-Level Authorization
 template: access-control
 focus: /shared/Task.ts
+llm: "Per-field access control with allowApiUpdate and includeInApi - booleans, roles, or row-aware arrow functions."
 ---
 
 # Field-Level Authorization in Remult

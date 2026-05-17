@@ -3,6 +3,7 @@ type: lesson
 title: Sql Relations
 template: relations
 focus: /shared/Order.ts
+llm: "Derive fields from relations with sqlRelations, including .$count(filter) and .$subQuery for SQL aggregations."
 ---
 
 ### Leveraging `sqlRelations` for Advanced SQL-Based Relationships

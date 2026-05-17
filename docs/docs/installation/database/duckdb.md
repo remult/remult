@@ -1,3 +1,7 @@
+---
+llm: "DuckDB via DuckDBDataProvider wrapped in SqlDatabase on the dataProvider option."
+---
+
 ## DuckDB
 
 To use DuckDB as the database provider in your Remult-based application, follow these steps:

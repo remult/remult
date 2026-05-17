@@ -1,3 +1,7 @@
+---
+llm: "Keep Node-only deps (fs, etc.) out of client bundles via import.meta.env.SSR, dynamic import, or build aliases."
+---
+
 # Backend only code
 
 One of the main advantages of remult is that you write code once, and it runs both on the server and in the browser.

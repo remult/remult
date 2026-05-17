@@ -3,6 +3,7 @@ type: lesson
 title: Custom Filter
 template: relations
 focus: /frontend/Page.tsx
+llm: "Encapsulate reusable, parameterized server-side filters with Filter.createCustom and compose them via $and."
 ---
 
 # Custom Filter

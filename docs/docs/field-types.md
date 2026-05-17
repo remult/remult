@@ -1,3 +1,7 @@
+---
+llm: "Built-in @Fields decorators - string, number, integer, boolean, date, dateOnly, json, object, literal."
+---
+
 # Field Types
 
 ## Common field types

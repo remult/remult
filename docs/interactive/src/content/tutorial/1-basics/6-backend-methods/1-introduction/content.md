@@ -2,6 +2,7 @@
 type: lesson
 title: Updating Multiple Tasks
 focus: /frontend/Todo.tsx
+llm: "Add a setAllCompleted loop on the client that updates every task one PUT at a time."
 ---
 
 # Backend Methods

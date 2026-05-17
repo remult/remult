@@ -1,3 +1,7 @@
+---
+llm: "The SSOT class - schema, REST API, validation, and permissions in one @Entity decorator."
+---
+
 <script setup>
   import Remultor from '../.vitepress/components/Remultor.vue'
 </script>

@@ -1,3 +1,7 @@
+---
+llm: "Automatic ensureSchema sync vs. explicit migration files generated and applied via the migrations CLI."
+---
+
 # Migrations
 
 Managing database schemas is crucial in web development. Traditional migration approaches introduce complexity and risks. Remult, designed for data-driven web apps with TypeScript, offers a simpler method.

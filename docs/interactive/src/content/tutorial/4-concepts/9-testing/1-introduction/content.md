@@ -2,6 +2,7 @@
 type: lesson
 title: Introduction to Testing with Remult
 focus: /tests/validations.test.ts
+llm: "Swap remult.dataProvider to InMemoryDataProvider or in-memory SQLite (with ensureSchema) for fast entity tests."
 ---
 
 ---

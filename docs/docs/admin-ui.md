@@ -1,3 +1,7 @@
+---
+llm: "Built-in /api/admin CRUD UI with entity diagram, gated by allow and configurable via the admin option."
+---
+
 # Admin UI
 
 Enjoy a fully featured Admin UI for your entities, you can do CRUD operations on your entities, view their relationships via the Diagram entry, and ensure secure management with the same validations and authorizations as your application.

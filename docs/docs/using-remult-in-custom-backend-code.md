@@ -4,6 +4,7 @@ keywords:
     Error: remult object was requested outside of a valid context,
     try running it within initApi or a remult request cycle,
   ]
+llm: "withRemult / withRemultAsync to use repo() and remult.user in custom routes outside the CRUD/BackendMethod flow."
 ---
 
 # Using Remult in Non-Remult Routes

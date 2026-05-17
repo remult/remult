@@ -1,3 +1,7 @@
+---
+llm: "@BackendMethod on entity instances - round-trips the full (possibly unsaved) entity state to the server."
+---
+
 # Entity Instance Backend Methods
 
 When leveraging the Active Record pattern, backend methods for entity instances offer a powerful way to integrate client-side behavior with server-side logic. These methods, when invoked, transport the entire entity's state from the client to the server and vice versa, even if the data has not yet been saved. This feature is particularly useful for executing entity-specific operations that require a round-trip to the server to maintain consistency and integrity.

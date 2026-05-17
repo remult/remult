@@ -3,6 +3,7 @@ type: lesson
 title: Forms and Validation
 focus: /frontend/TodoItem.tsx
 template: metadata
+llm: "Bind ErrorInfo<T>.modelState to per-field error UI and render dynamic forms from FieldMetadata and getValueList."
 ---
 
 ### Forms and Validation

@@ -3,6 +3,7 @@ type: lesson
 title: Id Based Relations
 template: relations
 focus: /shared/Order.ts
+llm: "Expose the foreign key as a field and wire @Relations.toOne<Order, Customer> to it via the fields option."
 ---
 
 # ID-Based Relations

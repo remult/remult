@@ -1,3 +1,7 @@
+---
+llm: "Replace repo.find with repo.liveQuery().subscribe in useEffect for realtime multi-user updates."
+---
+
 # Live Queries
 
 Our todo list app can have multiple users using it at the same time. However, changes made by one user are not seen by others unless they manually refresh the browser.

@@ -1,3 +1,7 @@
+---
+llm: "SQLite3 via Sqlite3DataProvider wrapped in SqlDatabase on the dataProvider option, works on StackBlitz."
+---
+
 Here’s the polished version of the **sqlite3** setup:
 
 ### SQLite3 Setup

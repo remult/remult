@@ -2,6 +2,7 @@
 type: lesson
 title: Live Query
 focus: /frontend/Todo.tsx
+llm: "Demonstrate the stale-data problem when multiple users edit without real-time sync."
 ---
 
 # Introduction

@@ -1,3 +1,7 @@
+---
+llm: "Oracle via createKnexDataProvider with the oracledb client on the dataProvider option."
+---
+
 ## Oracle Database
 
 To use an Oracle database as the data provider for your Remult-based application, follow these steps:

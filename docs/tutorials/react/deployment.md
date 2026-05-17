@@ -1,3 +1,7 @@
+---
+llm: "Deploy the unified React + Express app to railway.app with compression, helmet and DATABASE_URL."
+---
+
 # Deployment
 
 Let's deploy the todo app to [railway.app](https://railway.app/).

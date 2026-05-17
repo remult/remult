@@ -1,3 +1,7 @@
+---
+llm: "Nuxt integration via a server/api catch-all route using remultApi from remult/remult-nuxt."
+---
+
 ### Create a Nuxt Project
 
 To create a new Nuxt project, run the following command:

@@ -3,6 +3,7 @@ type: lesson
 title: Database
 focus: /backend/index.ts
 template: after-backend-methods
+llm: "Switch storage from JSON file to SQLite by setting dataProvider to SqlDatabase with Sqlite3DataProvider."
 ---
 
 # Database

@@ -1,3 +1,7 @@
+---
+llm: "Active Record pattern via EntityBase/IdEntity - mutable instances with save/delete methods bound to rows."
+---
+
 # Mutability and the Active Record Pattern
 
 The Active Record pattern is a concept in software architecture, particularly useful when working with mutable objects whose state may change over time. This design pattern facilitates direct interaction with the database through the object representing a row of the data table. In this article, we'll delve into the fundamentals of the Active Record pattern, contrasting it with immutable patterns, and exploring its implementation and advantages in software development.

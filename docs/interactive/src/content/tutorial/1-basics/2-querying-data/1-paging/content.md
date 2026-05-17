@@ -2,6 +2,7 @@
 type: lesson
 title: Paging
 focus: /frontend/Todo.tsx
+llm: "Page results server-side by passing limit and page to repo(Task).find()."
 ---
 
 # Paging

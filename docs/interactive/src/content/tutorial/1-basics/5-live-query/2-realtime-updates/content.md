@@ -2,6 +2,7 @@
 type: lesson
 title: Realtime Updates
 focus: /frontend/Todo.tsx
+llm: "Swap the one-shot find for repo(Task).liveQuery().subscribe and drop manual state updates."
 ---
 
 # Realtime Updates

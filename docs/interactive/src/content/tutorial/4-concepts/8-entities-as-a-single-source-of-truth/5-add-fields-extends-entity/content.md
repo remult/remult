@@ -3,6 +3,7 @@ type: lesson
 title: Extend Entity (add fields)
 focus: /shared/TaskExtra.ts
 template: select-fields
+llm: "Split a wide entity into a base plus an extension entity sharing the same dbName for opt-in extra fields."
 ---
 
 ## Introduction Extend Entity

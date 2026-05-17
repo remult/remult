@@ -1,3 +1,7 @@
+---
+llm: "SolidStart integration via a catch-all dynamic API route calling remultApi from remult/remult-solid-start."
+---
+
 # SolidStart
 
 ### Step 1: Create a New SolidStart Project

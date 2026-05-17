@@ -2,6 +2,7 @@
 type: lesson
 title: Refactor to Backend
 focus: /shared/TasksController.ts
+llm: "Move setAllCompleted into a @BackendMethod on TasksController and call it from the client."
 ---
 
 # Refactor from Frontend to Backend

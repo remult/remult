@@ -1,3 +1,7 @@
+---
+llm: "Generate entity classes from an existing database schema using remult-kit."
+---
+
 # Generate Entities from Existing Database
 
 ## Remult kit

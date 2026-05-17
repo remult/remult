@@ -3,6 +3,7 @@ type: lesson
 title: Select Fields
 focus: /shared/TaskLight.ts
 template: select-fields
+llm: "Define a slimmer read-only entity over the same table via dbName to fetch only a subset of columns."
 ---
 
 ## Introduction Select Fields

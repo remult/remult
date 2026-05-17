@@ -1,3 +1,7 @@
+---
+llm: "sql.js in-memory SQLite via SqlJsDataProvider wrapped in SqlDatabase on the dataProvider option."
+---
+
 ### sql.js
 
 ### Step 1: Install sql.js

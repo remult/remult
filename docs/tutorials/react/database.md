@@ -1,3 +1,7 @@
+---
+llm: "Swap the JSON-file store for Postgres via createPostgresDataProvider in the remultApi config."
+---
+
 # Database
 
 Up until now the todo app has been using a plain JSON file to store the list of tasks. **In production, we'd like to use a `Postgres` database table instead.**
