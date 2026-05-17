@@ -2,6 +2,20 @@
 
 > Remult is a TypeScript library for building full-stack apps without boilerplate. Define entities once and use them on the frontend, the backend, and in the database, with a single SSOT (Single Source of Truth) for schema, validation, permissions, and CRUD.
 
+## Core Concepts
+
+- **Entity** - a TypeScript class decorated with `@Entity('key', options)` is your SSOT: schema, REST API, validation, permissions, and lifecycle in one place.
+- **Fields** - `@Fields.string()`, `.number()`, `.boolean()`, `.date()`, `.json()`, `.uuid()`, `.cuid()`, `.autoIncrement()`, plus `@Relations.toOne()` / `.toMany()` for entity links.
+- **Repository (`repo(Entity)`)** - universal CRUD: `.find()`, `.findFirst()`, `.findId()`, `.insert()`, `.update()`, `.delete()`, `.save()`, `.count()`, `.query()`, `.liveQuery()`. Same API on frontend and backend.
+- **Permissions** - entity-level `allowApiRead/Insert/Update/Delete/Crud` and per-field `allowApiUpdate`; values are boolean, role string, role array, or `(entity, remult) => boolean`. Use `apiPrefilter` / `backendPrefilter` for row-level filtering.
+- **Lifecycle hooks** - `validation`, `saving`, `saved`, `deleting`, `deleted` run on the server before/after persistence; `saving` mutates the entity in place.
+- **BackendMethod** - `@BackendMethod({ allowed })` exposes a server-only function callable from the client; runs in the server context with `remult.user` populated.
+- **Live queries** - `repo(X).liveQuery(options).subscribe(({ items, changes }) => ...)` pushes inserts/updates/deletes to all connected clients over SSE.
+- **Custom filters** - `Filter.createCustom` / `SqlDatabase.filterToRaw` to express complex queries that round-trip to the server safely.
+- **Validators** - built-ins under `Validators.*` (`required`, `min`, `max`, `email`, `url`, `unique`, `regex`, `enum`, ...) or `validate: (entity) => string | undefined` for custom logic.
+- **Admin UI** - turnkey `/api/admin` panel via `admin: true` (or `admin: { allow: 'admin' }`) in `remultApi()`.
+- **Stacks** - frameworks: React, Angular, Vue, SvelteKit, Next.js, SolidStart, Nuxt. Servers: Express, Fastify, Hono, Elysia, Hapi, Koa, NestJS. Databases: PostgreSQL, MySQL, MongoDB, SQLite (better/sqljs/bun), MSSQL, Turso, DuckDB, Oracle, Cloudflare D1, JSON files.
+
 ## Documentation
 
 ### Getting Started
@@ -13,8 +27,8 @@
 ### Entities
 - [Entities](https://remult.dev/docs/entities): Entities are THE key concept of Remult - your Single Source of Truth (SSoT) for data structure, api, validation, permissions, and more! In other languages, they can be called...
 - [Field Types](https://remult.dev/docs/field-types): There are also several built in Field decorators for common use case:
-- [Relations Between Entities](https://remult.dev/docs/entity-relations): Looking to get hands-on with this topic? Try out our new interactive tutorial on Relations, where you can explore and practice directly in the browser. This guided experience...
-- [Filtering and Relations](https://remult.dev/docs/filtering-and-relations): Looking to get hands-on with this topic? Try out our new interactive tutorial on Filtering relations, where you can explore and practice directly in the browser. This guided...
+- [Relations Between Entities](https://remult.dev/docs/entity-relations): In Remult, entity relations play a useful role in modeling and navigating the complex relationships that exist within your data. To illustrate this concept, we will use two...
+- [Filtering and Relations](https://remult.dev/docs/filtering-and-relations): In this article, we'll discuss several relevant techniques for one-to-many relations. Consider the following scenario where we have a customer entity and an Orders entity.
 - [Entity Lifecycle Hooks](https://remult.dev/docs/lifecycle-hooks): In Remult, you can take advantage of Entity Lifecycle Hooks to add custom logic and actions at specific stages of an entity's lifecycle. There are five lifecycle events available...
 - [Migrations](https://remult.dev/docs/migrations): Managing database schemas is crucial in web development. Traditional migration approaches introduce complexity and risks. Remult, designed for data-driven web apps with...
 - [Generate Entities from Existing Database](https://remult.dev/docs/entities-codegen-from-db-schema): Want to use Remult for full-stack CRUD with your existing database? Check out this video to see how to connect http://remult.dev to your existing database and start building...
@@ -26,42 +40,42 @@
 ### Stacks
 - [Stacks](https://remult.dev/docs/installation/)
 - [Select a framework](https://remult.dev/docs/installation/framework/)
-- [React](https://remult.dev/docs/installation/framework/react): To set up a new React project using Vite, run the following commands:
-- [Angular](https://remult.dev/docs/installation/framework/angular): To set up a new Angular project, use the Angular CLI:
-- [Vue](https://remult.dev/docs/installation/framework/vue): To set up a new Vue project using Vite, run the following commands:
-- [SvelteKit](https://remult.dev/docs/installation/framework/sveltekit): To create a new SvelteKit project, run the following command:
-- [Next.js](https://remult.dev/docs/installation/framework/nextjs): To create a new Next.js project, run the following command:
-- [SolidStart](https://remult.dev/docs/installation/framework/solid): Run the following command to initialize a new SolidStart project:
-- [Nuxt](https://remult.dev/docs/installation/framework/nuxt): To create a new Nuxt project, run the following command:
+- [React](https://remult.dev/docs/installation/framework/react): To enable the use of decorators in your React app, modify the vite.config.ts file by adding the following to the defineConfig section:
+- [Angular](https://remult.dev/docs/installation/framework/angular): In development, your Angular app will be served from http://localhost:4200, while the API server will run on http://localhost:3002. To allow the Angular app to communicate with...
+- [Vue](https://remult.dev/docs/installation/framework/vue): To enable the use of decorators in your React app, modify the vite.config.ts file by adding the following to the defineConfig section:
+- [SvelteKit](https://remult.dev/docs/installation/framework/sveltekit): Install Remult and any necessary dependencies by running:
+- [Next.js](https://remult.dev/docs/installation/framework/nextjs): Remult is bootstrapped in a Next.js app by creating a catch-all dynamic API route. This route will pass API requests to an object created using the remultApi function.
+- [SolidStart](https://remult.dev/docs/installation/framework/solid): Once completed, navigate to the project directory:
+- [Nuxt](https://remult.dev/docs/installation/framework/nuxt): To enable the use of TypeScript decorators in your Nuxt project, modify the nuxt.config.ts file as follows:
 - [Select a server](https://remult.dev/docs/installation/server/)
-- [Express](https://remult.dev/docs/installation/server/express): To set up your Express server with Remult, run the following commands to install the necessary packages:
-- [Fastify](https://remult.dev/docs/installation/server/fastify): To set up your Fastify server with Remult, run the following commands to install the necessary packages:
-- [Hono](https://remult.dev/docs/installation/server/hono): To set up your Hono server with Remult, install the necessary packages:
-- [Elysia](https://remult.dev/docs/installation/server/elysia): To set up your Elysia server with Remult, install the necessary packages:
-- [Hapi](https://remult.dev/docs/installation/server/hapi): To set up your Hapi server with Remult, install the necessary packages:
-- [Koa](https://remult.dev/docs/installation/server/koa): To set up your Koa server with Remult, run the following commands to install the necessary packages:
-- [Nest.js](https://remult.dev/docs/installation/server/nest): 1. Create a main.ts file in the src/ folder with the following code:
+- [Express](https://remult.dev/docs/installation/server/express): Remult is integrated into your backend as an Express middleware.
+- [Fastify](https://remult.dev/docs/installation/server/fastify): Remult is integrated into your backend as Fastify middleware.
+- [Hono](https://remult.dev/docs/installation/server/hono): Remult is integrated into your backend using the remultApi adapter for Hono.
+- [Elysia](https://remult.dev/docs/installation/server/elysia): Remult is integrated into your backend using the remultApi adapter for Hono
+- [Hapi](https://remult.dev/docs/installation/server/hapi): Remult is integrated into your backend as a Hapi plugin.
+- [Koa](https://remult.dev/docs/installation/server/koa): Remult is integrated into your backend as middleware for Koa.
+- [Nest.js](https://remult.dev/docs/installation/server/nest): Your Nest.js app with Remult is now up and running on port 3002.
 - [Choose a Database](https://remult.dev/docs/installation/database/): By default, if no database provider is specified, Remult will use a simple JSON file-based database. This will store your data in JSON files located in the db folder at the root...
 - [PostgreSQL](https://remult.dev/docs/installation/database/postgresql): To set up PostgreSQL as the database provider for your Remult application, you'll need to configure the dataProvider property in the api.ts file.
-- [MySQL](https://remult.dev/docs/installation/database/mysql): Run the following command to install the required packages:
-- [MongoDB](https://remult.dev/docs/installation/database/mongodb): To use MongoDB as the database provider for your Remult application, follow the steps below.
-- [SQLite3](https://remult.dev/docs/installation/database/sqlite3): Here’s the polished version of the sqlite3 setup:
-- [Better SQLite3](https://remult.dev/docs/installation/database/better-sqlite3): Here’s the polished version of the Better-sqlite3 setup:
-- [sqljs](https://remult.dev/docs/installation/database/sqljs): Run the following command to install the sql.js package:
-- [Microsoft SQL Server](https://remult.dev/docs/installation/database/mssql): Install knex and tedious to enable Microsoft SQL Server integration.
-- [Bun SQLite](https://remult.dev/docs/installation/database/bun-sqlite): In your api.ts or server file, configure the dataProvider to use bun:sqlite as follows:
-- [Turso](https://remult.dev/docs/installation/database/turso): Here’s the polished version of the Turso setup:
-- [DuckDb](https://remult.dev/docs/installation/database/duckdb): To use DuckDB as the database provider in your Remult-based application, follow these steps:
-- [Oracle](https://remult.dev/docs/installation/database/oracle): To use an Oracle database as the data provider for your Remult-based application, follow these steps:
-- [D1](https://remult.dev/docs/installation/database/d1): To use D1 as the database provider in your Remult-based application meant for deployment on Cloudflare, you'll need to setup the remult-d1 data provider.
-- [Json files](https://remult.dev/docs/installation/database/json): You can store data in JSON files using Remult. Here's how to configure your server:
+- [MySQL](https://remult.dev/docs/installation/database/mysql)
+- [MongoDB](https://remult.dev/docs/installation/database/mongodb): This setup connects to a MongoDB instance running on localhost and uses the test database. The MongoDataProvider manages the connection, allowing Remult to interact with MongoDB...
+- [SQLite3](https://remult.dev/docs/installation/database/sqlite3): This version of SQLite3 works well even on platforms like StackBlitz.
+- [Better SQLite3](https://remult.dev/docs/installation/database/better-sqlite3): To use Better-sqlite3 as the database provider for your Remult application, follow these steps:
+- [sqljs](https://remult.dev/docs/installation/database/sqljs): This configuration allows you to use an in-memory SQLite database in your Remult application, powered by sql.js.
+- [Microsoft SQL Server](https://remult.dev/docs/installation/database/mssql): This setup lets you easily connect Remult to Microsoft SQL Server using knex for query building and tedious as the driver.
+- [Bun SQLite](https://remult.dev/docs/installation/database/bun-sqlite): This setup allows you to use Bun's SQLite implementation as the database provider for your Remult application, leveraging Bun’s performance benefits with SQLite.
+- [Turso](https://remult.dev/docs/installation/database/turso): This setup allows you to use Turso as the backend database for your application.
+- [DuckDb](https://remult.dev/docs/installation/database/duckdb): This setup allows you to use DuckDB as your database provider in a Remult project.
+- [Oracle](https://remult.dev/docs/installation/database/oracle): This setup integrates Oracle into your Remult-based application.
+- [D1](https://remult.dev/docs/installation/database/d1)
+- [Json files](https://remult.dev/docs/installation/database/json): This configuration allows you to store and manage your application data in JSON files, ideal for small projects or quick setups.
 
 ### Server-side Code
 - [Backend Methods](https://remult.dev/docs/backendMethods): Backend methods run on the backend and are used to improve performance, execute server-only code (e.g., sending emails), or perform operations not accessible through the API.
 - [Backend only code](https://remult.dev/docs/using-server-only-packages): One of the main advantages of remult is that you write code once, and it runs both on the server and in the browser.
 
 ### Guides
-- [Access Control](https://remult.dev/docs/access-control): Looking to get hands-on with this topic? Try out our new interactive tutorial on Access Control, where you can explore and practice directly in the browser. This guided experience...
+- [Access Control](https://remult.dev/docs/access-control): Access control is essential for ensuring that users can only access resources they are authorized to in web applications. This article explores the various layers of access...
 - [Admin UI](https://remult.dev/docs/admin-ui): Enjoy a fully featured Admin UI for your entities, you can do CRUD operations on your entities, view their relationships via the Diagram entry, and ensure secure management with...
 - [Modules](https://remult.dev/docs/modules): The module system arrived in remult@3.0.6, the idea is to pack features in a single place. Like this, it will be possible to share features between projects in a more convinient...
 - [Community modules](https://remult.dev/docs/modules-community): This page showcases a list of recommended community made modules. We encourage you to create any missing modules and maybe get added to the list!
@@ -75,7 +89,7 @@
 
 ### Integrations
 - [Adding Swagger and openApi](https://remult.dev/docs/adding-swagger): In short, swagger provides a quick UI that describes the api which is exposed by the application.
-- [Adding Graphql](https://remult.dev/docs/adding-graphql): To add graphql to a remult application follow these steps:
+- [Adding Graphql](https://remult.dev/docs/adding-graphql): In the /src/server/index.ts file add the following code:
 - [Standard Schema](https://remult.dev/docs/standard-schema): Remult now supports the Standard Schema specification, allowing you to use your Remult entities as type-safe validators that are compatible with any Standard Schema library.
 - [Docs for LLMs](https://remult.dev/docs/llms): We support the llms.txt convention for making documentation available to large language models and the agents that wrap them.
 
@@ -111,38 +125,15 @@
 - [EntityBase](https://remult.dev/docs/ref_entitybase)
 - [IdEntity](https://remult.dev/docs/ref_identity)
 - [EntityRef](https://remult.dev/docs/ref_entityref)
-- [FieldRef](https://remult.dev/docs/ref_fieldref)
+- [FieldRef](https://remult.dev/docs/ref_fieldref): Loads the related value - returns null if the related value is not found
 - [getEntityRef](https://remult.dev/docs/ref_getentityref): Retrieves the EntityRef object associated with the specified entity instance. The EntityRef provides methods for performing operations on the entity instance.
 - [getFields](https://remult.dev/docs/ref_getfields)
 
 ## Tutorials
 
-### Angular Tutorial
-- [Build a Full-Stack Angular Application](https://remult.dev/tutorials/angular/): In this tutorial, we are going to create a simple app to manage a task list. We'll use Angular for the UI, Node.js + Express.js for the API server, and Remult as our full-stack...
-- [Entities](https://remult.dev/tutorials/angular/entities): Let's start coding the app by defining the Task entity class.
-- [Paging, Sorting and Filtering](https://remult.dev/tutorials/angular/sorting-filtering): The RESTful API created by Remult supports server-side paging, sorting, and filtering. Let's use that to limit, sort and filter the list of tasks.
-- [CRUD Operations](https://remult.dev/tutorials/angular/crud): Now that we can see the list of tasks, it's time to add a few more.
-- [Validation](https://remult.dev/tutorials/angular/validation): Validating user entered data is usually required both on the client-side and on the server-side, often causing a violation of the DRY design principle. With Remult, validation...
-- [Live Queries](https://remult.dev/tutorials/angular/live-queries): Our todo list app can have multiple users using it at the same time. However, changes made by one user are not seen by others unless they manually refresh the browser.
-- [Backend methods](https://remult.dev/tutorials/angular/backend-methods): When performing operations on multiple entity objects, performance considerations may necessitate running them on the server. With Remult, moving client-side logic to run on the...
-- [Authentication and Authorization](https://remult.dev/tutorials/angular/auth): Our todo app is nearly functionally complete, but it still doesn't fulfill a very basic requirement - that users should log in before they can view, create or modify tasks.
-- [Database](https://remult.dev/tutorials/angular/database): Up until now the todo app has been using a plain JSON file to store the list of tasks. In production, we'd like to use a Postgres database table instead.
-- [Deployment](https://remult.dev/tutorials/angular/deployment): Let's deploy the todo app to railway.app.
-- [Appendix - Observable Live Query](https://remult.dev/tutorials/angular/appendix-observable-live-query): To use liveQuery as an observable add the following utility function to your code
+Each framework tutorial walks through the same 10 lessons (Setup, Entities, Paging/Sorting/Filtering, CRUD, Validation, Live Queries, Backend methods, Auth, Database, Deployment) with framework-specific code samples.
 
-### Next.js Tutorial
-- [Build a Full-Stack Next.js Application](https://remult.dev/tutorials/react-next/): In this tutorial, we are going to create a simple app to manage a task list. We'll use Next.js, and Remult as our full-stack CRUD framework. For deployment to production, we'll...
-- [Entities](https://remult.dev/tutorials/react-next/entities): Let's start coding the app by defining the Task entity class.
-- [Paging, Sorting and Filtering](https://remult.dev/tutorials/react-next/sorting-filtering): The RESTful API created by Remult supports server-side paging, sorting, and filtering. Let's use that to limit, sort and filter the list of tasks.
-- [CRUD Operations](https://remult.dev/tutorials/react-next/crud): Now that we can see the list of tasks, it's time to add a few more.
-- [Validation](https://remult.dev/tutorials/react-next/validation): Validating user entered data is usually required both on the client-side and on the server-side, often causing a violation of the DRY design principle. With Remult, validation...
-- [Live Queries :rocket:](https://remult.dev/tutorials/react-next/live-queries): Live queries are a new feature introduced in version 0.18.
-- [Backend methods](https://remult.dev/tutorials/react-next/backend-methods): When performing operations on multiple entity objects, performance considerations may necessitate running them on the server. With Remult, moving client-side logic to run on the...
-- [Authentication and Authorization](https://remult.dev/tutorials/react-next/auth): Our todo app is nearly functionally complete, but it still doesn't fulfill a very basic requirement - that users should log in before they can view, create or modify tasks.
-- [Database](https://remult.dev/tutorials/react-next/database): Up until now the todo app has been using a plain JSON file to store the list of tasks. In production, we'd like to use a Postgres database table instead.
-- [Deployment](https://remult.dev/tutorials/react-next/deployment): You can deploy the application to a standard node.js server, or a server-less server.
-
-### React Tutorial
+### React Tutorial (canonical)
 - [Build a Full-Stack React Application](https://remult.dev/tutorials/react/): In this tutorial, we are going to create a simple app to manage a task list. We'll use React for the UI, Node.js + Express.js for the API server, and Remult as our full-stack CRUD...
 - [Entities](https://remult.dev/tutorials/react/entities): Let's start coding the app by defining the Task entity class.
 - [Paging, Sorting and Filtering](https://remult.dev/tutorials/react/sorting-filtering): The RESTful API created by Remult supports server-side paging, sorting, and filtering. Let's use that to limit, sort and filter the list of tasks.
@@ -154,42 +145,12 @@
 - [Database](https://remult.dev/tutorials/react/database): Up until now the todo app has been using a plain JSON file to store the list of tasks. In production, we'd like to use a Postgres database table instead.
 - [Deployment](https://remult.dev/tutorials/react/deployment): Let's deploy the todo app to railway.app.
 
-### SolidStart Tutorial
-- [Build a Full-Stack SolidStart Application](https://remult.dev/tutorials/solid-start/): In this tutorial, we are going to create a simple app to manage a task list. We'll use SolidStart, and Remult as our full-stack CRUD framework. For deployment to production, we'll...
-- [Entities](https://remult.dev/tutorials/solid-start/entities): Let's start coding the app by defining the Task entity class.
-- [Paging, Sorting and Filtering](https://remult.dev/tutorials/solid-start/sorting-filtering): The RESTful API created by Remult supports server-side paging, sorting, and filtering. Let's use that to limit, sort and filter the list of tasks.
-- [CRUD Operations](https://remult.dev/tutorials/solid-start/crud): Now that we can see the list of tasks, it's time to add a few more.
-- [Validation](https://remult.dev/tutorials/solid-start/validation): Validating user entered data is usually required both on the client-side and on the server-side, often causing a violation of the DRY design principle. With Remult, validation...
-- [Live Queries :rocket:](https://remult.dev/tutorials/solid-start/live-queries): Our todo list app can have multiple users using it at the same time. However, changes made by one user are not seen by others unless they manually refresh the browser.
-- [Backend methods](https://remult.dev/tutorials/solid-start/backend-methods): When performing operations on multiple entity objects, performance considerations may necessitate running them on the server. With Remult, moving client-side logic to run on the...
-- [Authentication and Authorization](https://remult.dev/tutorials/solid-start/auth): Our todo app is nearly functionally complete, but it still doesn't fulfill a very basic requirement - that users should log in before they can view, create or modify tasks.
-- [Database](https://remult.dev/tutorials/solid-start/database): Up until now the todo app has been using a plain JSON file to store the list of tasks. In production, we'd like to use a Postgres database table instead.
-- [Deployment](https://remult.dev/tutorials/solid-start/deployment): Let's deploy the todo app to railway.app.
-
-### SvelteKit Tutorial
-- [Build a Full-Stack SvelteKit Application](https://remult.dev/tutorials/sveltekit/): In this tutorial, we are going to create a simple app to manage a task list. We'll use SvelteKit for the UI & the backend and Remult as our full-stack CRUD framework.
-- [Entities](https://remult.dev/tutorials/sveltekit/entities): Let's start coding the app by defining the Task entity class.
-- [Paging, Sorting and Filtering](https://remult.dev/tutorials/sveltekit/sorting-filtering): The RESTful API created by Remult supports server-side paging, sorting, and filtering. Let's use that to limit, sort and filter the list of tasks.
-- [CRUD Operations](https://remult.dev/tutorials/sveltekit/crud): Now that we can see the list of tasks, it's time to add a few more. We create a form which executes the addTask function that invokes taskRepo.insert(). Update your +page.svelte...
-- [Validation](https://remult.dev/tutorials/sveltekit/validation): Validating user input is usually required both on the client-side and on the server-side, often causing a violation of the DRY design principle. With Remult, validation code can...
-- [Live Queries](https://remult.dev/tutorials/sveltekit/live-queries): Our todo list app can have multiple users using it at the same time. However, changes made by one user are not seen by others unless they manually refresh their browser.
-- [Backend methods](https://remult.dev/tutorials/sveltekit/backend-methods): When performing operations on multiple entity objects, performance considerations may necessitate running them on the server. With Remult, moving client-side logic to run on the...
-- [Authentication and Authorization](https://remult.dev/tutorials/sveltekit/auth): Our todo app is nearly functionally complete, but it still doesn't fulfill a very basic requirement - that users should log in before they can view, create or modify tasks.
-- [Database](https://remult.dev/tutorials/sveltekit/database): Up until now the todo app has been using a plain JSON file to store the list of tasks. In production, you will often want to use a proper database. Remult supports a (long) list...
-- [Deployment](https://remult.dev/tutorials/sveltekit/deployment): Let's deploy the todo app to railway.app.
-- [SvelteKit](https://remult.dev/docs/installation/framework/sveltekit#extra): To create a new SvelteKit project, run the following command:
-
-### Vue Tutorial
-- [Build a Full-Stack Vue Application](https://remult.dev/tutorials/vue/): In this tutorial, we are going to create a simple app to manage a task list. We'll use Vue for the UI, Node.js + Express.js for the API server, and Remult as our full-stack CRUD...
-- [Entities](https://remult.dev/tutorials/vue/entities): Let's start coding the app by defining the Task entity class.
-- [Paging, Sorting and Filtering](https://remult.dev/tutorials/vue/sorting-filtering): The RESTful API created by Remult supports server-side paging, sorting, and filtering. Let's use that to limit, sort and filter the list of tasks.
-- [CRUD Operations](https://remult.dev/tutorials/vue/crud): Now that we can see the list of tasks, it's time to add a few more.
-- [Validation](https://remult.dev/tutorials/vue/validation): Validating user entered data is usually required both on the client-side and on the server-side, often causing a violation of the DRY design principle. With Remult, validation...
-- [Live Queries](https://remult.dev/tutorials/vue/live-queries): Our todo list app can have multiple users using it at the same time. However, changes made by one user are not seen by others unless they manually refresh the browser.
-- [Backend methods](https://remult.dev/tutorials/vue/backend-methods): When performing operations on multiple entity objects, performance considerations may necessitate running them on the server. With Remult, moving client-side logic to run on the...
-- [Authentication and Authorization](https://remult.dev/tutorials/vue/auth): Our todo app is nearly functionally complete, but it still doesn't fulfill a very basic requirement - that users should log in before they can view, create or modify tasks.
-- [Database](https://remult.dev/tutorials/vue/database): Up until now the todo app has been using a plain JSON file to store the list of tasks. In production, we'd like to use a Postgres database table instead.
-- [Deployment](https://remult.dev/tutorials/vue/deployment): Let's deploy the todo app to railway.app.
+### Same tutorial, other frameworks
+- [Angular Tutorial](https://remult.dev/tutorials/angular/): Same 10-lesson structure as the React tutorial above, with Angular-specific code samples.
+- [Vue Tutorial](https://remult.dev/tutorials/vue/): Same 10-lesson structure as the React tutorial above, with Vue-specific code samples.
+- [SvelteKit Tutorial](https://remult.dev/tutorials/sveltekit/): Same 10-lesson structure as the React tutorial above, with SvelteKit-specific code samples.
+- [Next.js Tutorial](https://remult.dev/tutorials/react-next/): Same 10-lesson structure as the React tutorial above, with Next.js-specific code samples.
+- [SolidStart Tutorial](https://remult.dev/tutorials/solid-start/): Same 10-lesson structure as the React tutorial above, with SolidStart-specific code samples.
 
 ## Interactive Tutorial
 > Hands-on, browser-based tutorial at https://learn.remult.dev
