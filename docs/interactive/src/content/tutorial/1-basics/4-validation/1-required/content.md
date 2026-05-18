@@ -2,6 +2,7 @@
 type: lesson
 title: Required
 focus: /shared/Task.ts
+llm: "Mark the title field required: true so the same rule runs on frontend and API."
 ---
 
 # Validation Introduction

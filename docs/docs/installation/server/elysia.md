@@ -1,3 +1,7 @@
+---
+llm: "Elysia integration via the remult/remult-hono adapter mounted on the Elysia app."
+---
+
 # Elysia
 
 ### Install Required Packages

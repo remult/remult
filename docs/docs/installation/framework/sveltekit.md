@@ -1,3 +1,7 @@
+---
+llm: "SvelteKit integration via a [...remult] +server.ts route using remultApi from remult/remult-sveltekit."
+---
+
 # SvelteKit
 
 ## Create a SvelteKit Project

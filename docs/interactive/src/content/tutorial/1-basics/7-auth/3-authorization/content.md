@@ -3,6 +3,7 @@ type: lesson
 title: Role-based Authorization
 template: auth-3
 focus: /shared/Task.ts
+llm: "Restrict insert/delete to the 'admin' role via allowApiInsert and allowApiDelete, plus assign roles on signIn."
 ---
 
 ## Role-based Authorization

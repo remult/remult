@@ -3,6 +3,7 @@ type: lesson
 title: Rest Api
 focus: /backend/index.ts
 template: before-frontend
+llm: "Wire the Task entity into an Express server via remultApi({ entities: [Task] })."
 ---
 
 ## The Rest Api

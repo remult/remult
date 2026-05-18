@@ -2,6 +2,7 @@
 type: lesson
 title: Built-In Validations
 focus: /shared/Task.ts
+llm: "Apply built-in Validators (minLength, maxLength) and chain them with custom messages."
 ---
 
 # Built-In Validations

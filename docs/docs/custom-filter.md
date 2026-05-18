@@ -1,3 +1,7 @@
+---
+llm: "Filter.createCustom - reusable, parameterized server-side filters callable from the frontend."
+---
+
 # Leveraging Custom Filters for Enhanced Data Filtering
 
 In modern web applications, efficiently filtering data is essential for providing a seamless user experience. Whether it's an e-commerce platform filtering products, a task management system sorting tasks, or any other application that requires data manipulation, the ability to apply complex filters is crucial. Custom filters offer a powerful solution, enabling developers to create reusable, declarative, and versatile filters that are executed on the backend and easily utilized from the frontend. This article delves into the concept of custom filters, illustrating their advantages and practical applications.

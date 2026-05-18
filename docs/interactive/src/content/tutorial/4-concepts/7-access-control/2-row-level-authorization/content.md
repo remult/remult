@@ -3,6 +3,7 @@ type: lesson
 title: Row-Level Authorization
 template: access-control
 focus: /shared/Task.ts
+llm: "Row-level CRUD permissions via allowApiRead/Insert/Update/Delete using booleans, roles, or row-aware functions."
 ---
 
 # Row-Level Authorization

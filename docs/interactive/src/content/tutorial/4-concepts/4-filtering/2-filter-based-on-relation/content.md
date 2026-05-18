@@ -3,6 +3,7 @@ type: lesson
 title: Filter Based on Relation
 template: relations
 focus: /shared/Order.ts
+llm: "Filter by related-entity fields with a custom filter that queries the related repo and feeds IDs into the parent query."
 ---
 
 # Filter Based on Relation

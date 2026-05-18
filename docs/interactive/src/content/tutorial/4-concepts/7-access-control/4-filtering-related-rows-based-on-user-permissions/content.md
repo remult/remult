@@ -3,6 +3,7 @@ type: lesson
 title: Filtering Related Rows Based on User Permissions
 template: access-control-2
 focus: /shared/TimeEntry.ts
+llm: "Reuse a static custom filter (allowedTasks) across apiPrefilter on parent and child entities, with a rawFilter SQL variant."
 ---
 
 # Filtering Related Rows Based on User Permissions

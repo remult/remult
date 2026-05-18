@@ -3,6 +3,7 @@ type: lesson
 title: Sql Relations Filter for User Permissions
 template: access-control-2
 focus: /shared/TimeEntry.ts
+llm: "Row-level access control on related entities via sqlRelationsFilter(...).relation.some(allowedFilter())."
 ---
 
 ### SQL Relations Filter for User Permissions

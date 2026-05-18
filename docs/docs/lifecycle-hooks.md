@@ -1,3 +1,7 @@
+---
+llm: "Entity hooks - validation, saving, saved, deleting, deleted - for custom logic at persistence boundaries."
+---
+
 # Entity Lifecycle Hooks
 
 In Remult, you can take advantage of Entity Lifecycle Hooks to add custom logic and actions at specific stages of an entity's lifecycle. There are five lifecycle events available: `validation`, `saving`, `saved`, `deleting`, and `deleted`. These hooks allow you to perform actions or validations when specific events occur in the entity's lifecycle.

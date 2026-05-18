@@ -2,6 +2,7 @@
 type: lesson
 title: Custom Validations
 focus: /shared/Task.ts
+llm: "Write a custom validate function on a field that returns true or an error message."
 ---
 
 # Custom Validations

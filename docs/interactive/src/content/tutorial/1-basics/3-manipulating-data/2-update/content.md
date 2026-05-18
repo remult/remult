@@ -2,6 +2,7 @@
 type: lesson
 title: Update
 focus: /frontend/Todo.tsx
+llm: "Toggle completion via repo(Task).update() bound to the checkbox onChange."
 ---
 
 # Updating Data

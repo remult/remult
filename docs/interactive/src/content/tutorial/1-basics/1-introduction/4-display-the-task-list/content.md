@@ -3,6 +3,7 @@ type: lesson
 title: Display the Task List
 focus: /frontend/Todo.tsx
 autoReload: true
+llm: "Fetch tasks from the frontend with repo(Task).find() inside useEffect and render them."
 ---
 
 ## Display the Task List

@@ -1,3 +1,7 @@
+---
+llm: "Expose entities as a GraphQL schema via remultGraphql + graphql-yoga (Express, Next.js, SvelteKit)."
+---
+
 # Adding Graphql
 
 To add graphql to a `remult` application follow these steps:

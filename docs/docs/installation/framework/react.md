@@ -1,3 +1,7 @@
+---
+llm: "React + Vite frontend integration with experimentalDecorators and a /api proxy to the API server."
+---
+
 # React
 
 ## Create a React Project with Vite

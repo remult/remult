@@ -1,3 +1,7 @@
+---
+llm: "MongoDB integration via MongoDataProvider on the dataProvider option, no schema migrations needed."
+---
+
 ## MongoDB
 
 To use MongoDB as the database provider for your Remult application, follow the steps below.

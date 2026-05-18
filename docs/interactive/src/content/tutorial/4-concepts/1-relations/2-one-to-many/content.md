@@ -3,6 +3,7 @@ type: lesson
 title: One to Many
 template: relations
 focus: /shared/Customer.ts
+llm: "One-to-many relations via @Relations.toMany, with repo.relations(parent).child.find/insert for scoped operations."
 ---
 
 # One to Many

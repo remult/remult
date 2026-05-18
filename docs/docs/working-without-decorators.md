@@ -1,3 +1,7 @@
+---
+llm: "Define entities, controllers, and backend methods without decorators using describeEntity / describeClass / describeBackendMethods."
+---
+
 # Working without decorators
 
 If you prefer to work without decorators, or use `remult` in a javascript project (without typescript) you can use the following:

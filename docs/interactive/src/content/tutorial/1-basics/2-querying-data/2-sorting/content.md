@@ -2,6 +2,7 @@
 type: lesson
 title: Sorting
 focus: /frontend/Todo.tsx
+llm: "Sort results server-side via the orderBy option of repo(Task).find()."
 ---
 
 # Sorting

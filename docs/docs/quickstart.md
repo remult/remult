@@ -1,3 +1,7 @@
+---
+llm: "Install remult and wire remultApi middleware into Express, Fastify, Next.js, SvelteKit, and friends."
+---
+
 # Quickstart
 
 Jumpstart your development with this Quickstart guide. Learn to seamlessly integrate Remult in various stacks, from installation to defining entities for efficient data querying and manipulation.

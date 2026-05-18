@@ -1,3 +1,7 @@
+---
+llm: "Curated list of community modules - Better-Auth, ChangeLog, Cron, Mail."
+---
+
 # Community modules
 
 This page showcases a list of recommended community made modules.

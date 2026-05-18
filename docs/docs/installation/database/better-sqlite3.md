@@ -1,3 +1,7 @@
+---
+llm: "Better-sqlite3 via BetterSqlite3DataProvider wrapped in SqlDatabase on the dataProvider option."
+---
+
 Here’s the polished version of the **Better-sqlite3** setup:
 
 ### Better-sqlite3

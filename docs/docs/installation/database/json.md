@@ -1,3 +1,7 @@
+---
+llm: "JSON file storage via JsonDataProvider + JsonEntityFileStorage on the dataProvider option."
+---
+
 ## JSON Files
 
 You can store data in JSON files using Remult. Here's how to configure your server:

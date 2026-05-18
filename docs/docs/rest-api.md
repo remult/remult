@@ -1,3 +1,7 @@
+---
+llm: "Auto-generated REST endpoints per entity - GET/POST/PUT/DELETE with sort, filter, select, paging."
+---
+
 # Entity Rest Api Breakdown
 
 All entities automatically expose a rest API based on the parameters defined in its decorator.

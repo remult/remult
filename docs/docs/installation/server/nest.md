@@ -1,3 +1,7 @@
+---
+llm: "Nest.js integration via app.use(remultApi({})) using the remult/remult-express adapter."
+---
+
 # Nest.js
 
 ### Bootstrap Remult in the Nest.js back-end

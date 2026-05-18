@@ -1,3 +1,7 @@
+---
+llm: "Define the Task @Entity with @Fields.id, .string, .boolean, .createdAt and register it via remultApi."
+---
+
 # Entities
 
 Let's start coding the app by defining the `Task` entity class.

@@ -4,6 +4,7 @@ tags:
   - Filter
   - Entity Where
   - Entity Filter
+llm: "EntityFilter operators - $in, $ne, $gt/$gte/$lt/$lte, contains, $and/$or, $not - for where clauses."
 ---
 
 # EntityFilter

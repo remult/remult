@@ -1,3 +1,7 @@
+---
+llm: "Hapi integration via the remult-hapi plugin registered on the Hapi server."
+---
+
 # Hapi
 
 ### Install Required Packages

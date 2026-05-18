@@ -1,3 +1,7 @@
+---
+llm: "Gallery of example apps - TodoMVC, CRM, shadcn/TanStack tables, ready-to-play sandboxes."
+---
+
 <script setup>
   import Example from '../components/Example.vue'
   import Icon from '../components/Icon.vue'

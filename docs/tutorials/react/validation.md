@@ -1,3 +1,7 @@
+---
+llm: "Field-level Validators.required and custom validate arrow functions enforced on client and server."
+---
+
 # Validation
 
 Validating user entered data is usually required both on the client-side and on the server-side, often causing a violation of the [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) design principle. **With Remult, validation code can be placed within the entity class, and Remult will run the validation logic on both the frontend and the relevant API requests.**

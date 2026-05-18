@@ -2,6 +2,7 @@
 type: lesson
 title: Testing Api Rules
 focus: /tests/authorization.test.ts
+llm: "Test API rules by wrapping a data provider with TestApiDataProvider and toggling remult.user across cases."
 ---
 
 # Testing API Rules
