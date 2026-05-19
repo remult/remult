@@ -1,5 +1,9 @@
 All notable changes to this project will be documented in this file.
 
+## [3.3.10] - 2026-05-19
+
+- Improve Indexed db connection error further
+
 ## [3.3.9] - 2026-05-15
 
 - Change Postgres Table Alter Autoincrement to Use Serial, by @jckwik - https://github.com/remult/remult/pull/968

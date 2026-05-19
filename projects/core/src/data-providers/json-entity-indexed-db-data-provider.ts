@@ -1,11 +1,5 @@
 import type { JsonEntityStorage } from './json-data-provider.js'
 
-const connectionLostNames = new Set([
-  'InvalidStateError',
-  'UnknownError',
-  'AbortError',
-])
-
 export class JsonEntityIndexedDbStorage implements JsonEntityStorage {
   constructor(
     private dbName: string = 'db',
@@ -48,7 +42,6 @@ export class JsonEntityIndexedDbStorage implements JsonEntityStorage {
     try {
       return await attempt()
     } catch (err) {
-      if (!connectionLostNames.has((err as DOMException)?.name)) throw err
       this.db = undefined
       return await attempt()
     }
