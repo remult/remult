@@ -1,3 +1,7 @@
+---
+llm: "Turso via TursoDataProvider over @libsql/client wrapped in SqlDatabase on the dataProvider option."
+---
+
 Here’s the polished version of the **Turso** setup:
 
 ### Turso Setup

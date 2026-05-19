@@ -3,6 +3,7 @@ type: lesson
 title: Entity
 focus: /shared/Task.ts
 template: before-entity
+llm: "Define the Task @Entity with @Fields.id, @Fields.string, @Fields.boolean, and @Fields.createdAt."
 ---
 
 # The Entity

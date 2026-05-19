@@ -3,6 +3,7 @@ type: lesson
 title: Many to Many
 template: relations-with-products
 focus: /shared/ProductInOrder.ts
+llm: "Many-to-many via a join entity with a composite primary key and @Relations.toOne on each side."
 ---
 
 # Many-to-Many Relations

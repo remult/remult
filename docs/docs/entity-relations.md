@@ -1,5 +1,6 @@
 ---
 outline: [2, 3]
+llm: "@Relations.toOne / @Relations.toMany - define and navigate one-to-one, one-to-many, many-to-many associations."
 ---
 
 # Relations Between Entities

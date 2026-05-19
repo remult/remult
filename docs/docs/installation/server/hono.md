@@ -1,3 +1,7 @@
+---
+llm: "Hono integration via the remult-hono adapter mounted as a route on the Hono app."
+---
+
 # Hono
 
 ### Install Required Packages

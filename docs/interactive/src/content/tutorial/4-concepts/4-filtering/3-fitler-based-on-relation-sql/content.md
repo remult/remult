@@ -3,6 +3,7 @@ type: lesson
 title: Filter Based on Relation Using SQL
 template: relations
 focus: /shared/Order.ts
+llm: "Custom filters that emit raw SQL via SqlDatabase.rawFilter, dbNamesOf, and filterToRaw for cross-table predicates."
 ---
 
 # Filter Based on Relation Using SQL

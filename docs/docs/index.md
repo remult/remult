@@ -1,3 +1,7 @@
+---
+llm: "Introduction - fullstack CRUD framework deriving REST API, type-safe client, and query builder from TS model classes."
+---
+
 <script setup>
   import Icon from '../components/Icon.vue'
 </script>

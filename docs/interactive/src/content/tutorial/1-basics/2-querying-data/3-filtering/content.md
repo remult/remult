@@ -2,6 +2,7 @@
 type: lesson
 title: Filtering
 focus: /frontend/Todo.tsx
+llm: "Filter results server-side with the where option of repo(Task).find()."
 ---
 
 # Filtering

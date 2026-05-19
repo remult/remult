@@ -2,6 +2,7 @@
 type: lesson
 title: Delete
 focus: /frontend/Todo.tsx
+llm: "Delete a task via repo(Task).delete() wired to a Delete button."
 ---
 
 # Deleting Data

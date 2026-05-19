@@ -1,3 +1,7 @@
+---
+llm: "Bun:SQLite via BunSqliteDataProvider wrapped in SqlDatabase on the dataProvider option."
+---
+
 ### Bun:SQLite
 
 ### Step 1: Configure the `dataProvider`

@@ -1,3 +1,7 @@
+---
+llm: "@BackendMethod - typed RPC calls that auto-expose REST endpoints and run server-only logic."
+---
+
 # Backend Methods
 
 Backend methods run on the backend and are used to improve performance, execute server-only code (e.g., sending emails), or perform operations not accessible through the API.

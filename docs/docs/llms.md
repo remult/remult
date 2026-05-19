@@ -1,3 +1,7 @@
+---
+llm: false # meta page about llms.txt itself - excluded from the index
+---
+
 # Docs for LLMs
 
 We support the [llms.txt](https://llmstxt.org/) convention for making documentation available to large language models and the agents that wrap them.

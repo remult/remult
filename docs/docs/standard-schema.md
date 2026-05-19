@@ -1,3 +1,7 @@
+---
+llm: "standardSchema(repo(Entity)) - use entities as Standard Schema validators interoperable with zod, valibot, ArkType."
+---
+
 # Standard Schema
 
 Remult now supports the [Standard Schema](https://standardschema.dev/) specification, allowing you to use your Remult entities as type-safe validators that are compatible with any Standard Schema library.

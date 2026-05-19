@@ -3,6 +3,7 @@ type: lesson
 title: Role-based Authorization on the Frontend
 template: auth-3
 focus: /frontend/Todo.tsx
+llm: "Conditionally render the form and Delete button using repo.metadata.apiInsertAllowed and apiDeleteAllowed."
 ---
 
 ## Role-based Authorization on the Frontend

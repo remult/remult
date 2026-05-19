@@ -1,3 +1,7 @@
+---
+llm: "Browser-side dataProviders - JsonDataProvider over localStorage, sessionStorage, IndexedDB, or OPFS."
+---
+
 # Offline Support
 
 In modern web applications, providing a seamless user experience often involves enabling offline functionality. This ensures that users can continue to interact with the application even without an active internet connection. Remult supports several offline databases that can be used to store data in the browser for offline scenarios, enhancing the application's resilience and usability.

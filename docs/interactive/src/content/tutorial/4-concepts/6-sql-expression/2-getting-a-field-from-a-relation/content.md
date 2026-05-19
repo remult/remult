@@ -3,6 +3,7 @@ type: lesson
 title: Getting a field from a relation
 template: relations
 focus: /shared/Order.ts
+llm: "Pull a related-entity column into a sqlExpression field via subquery for inline sort and filter."
 ---
 
 ### SQL Expressions for Fields Based on Relations

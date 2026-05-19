@@ -1,3 +1,7 @@
+---
+llm: "Generate OpenAPI doc from entities and serve a Swagger UI for the REST API."
+---
+
 # Adding Swagger and openApi
 
 In short, swagger provides a quick UI that describes the api which is exposed by the application.

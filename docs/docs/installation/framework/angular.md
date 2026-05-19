@@ -1,3 +1,7 @@
+---
+llm: "Angular frontend integration with proxy.conf.json forwarding /api calls to the separate API server."
+---
+
 # Angular
 
 ## Create an Angular Project

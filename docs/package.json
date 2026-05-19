@@ -7,8 +7,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "sync-skills": "node scripts/sync-skills.mjs",
-    "dev": "npm run sync-skills && vitepress dev",
-    "build": "npm run sync-skills && vitepress build",
+    "sync-llms": "node scripts/sync-llms.mjs",
+    "sync": "npm run sync-skills && npm run sync-llms",
+    "dev": "npm run sync && vitepress dev",
+    "build": "npm run sync && vitepress build",
     "preview": "vitepress preview",
     "publish": "npm run build && cd .vitepress/dist && git init && git add -A && git commit -m 'deploy' && git push -f https://github.com/remult/remult.github.io.git master"
   },

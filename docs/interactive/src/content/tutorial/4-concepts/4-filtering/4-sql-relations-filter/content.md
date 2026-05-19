@@ -3,6 +3,7 @@ type: lesson
 title: Sql Relations Filter
 template: relations
 focus: /shared/Order.ts
+llm: "Filter by related entities declaratively with sqlRelationsFilter(...).relation.some(condition) compiled to SQL."
 ---
 
 ### SQL Relations Filter

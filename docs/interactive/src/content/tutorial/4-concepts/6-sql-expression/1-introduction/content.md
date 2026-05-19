@@ -3,6 +3,7 @@ type: lesson
 title: Introduction
 template: relations
 focus: /shared/Customer.ts
+llm: "Computed fields via sqlExpression that aggregate from other tables and remain sortable and filterable."
 ---
 
 ### SQL Expressions for Entity Fields

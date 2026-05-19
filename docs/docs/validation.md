@@ -1,3 +1,7 @@
+---
+llm: "Field validation - required/minLength shortcuts, custom validate functions, and the built-in Validators set."
+---
+
 # Validation
 
 Validation is a key part of any application, and you will see that it's builtin Remult !

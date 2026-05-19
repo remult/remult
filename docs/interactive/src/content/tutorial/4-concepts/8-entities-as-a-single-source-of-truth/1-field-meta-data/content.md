@@ -3,6 +3,7 @@ type: lesson
 title: Field Metadata
 focus: /shared/Task.ts
 template: metadata
+llm: "FieldMetadata for label and displayValue - drive consistent UI from repo(...).fields anywhere in the app."
 ---
 
 # Field Metadata

@@ -3,6 +3,7 @@ type: lesson
 title: Many to One
 template: relations
 focus: /shared/Order.ts
+llm: "Many-to-one relations via @Relations.toOne on the child entity, with include and defaultIncluded for eager loading."
 ---
 
 # Relations

@@ -3,6 +3,7 @@ type: lesson
 title: Filtering Rows Based on User Permissions
 template: access-control
 focus: /shared/Task.ts
+llm: "Scope API rows by user with apiPrefilter, and mirror to server code with backendPrefilter."
 ---
 
 # Filtering Rows Based on User Permissions

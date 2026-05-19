@@ -1,3 +1,7 @@
+---
+llm: "Bootstrap a React + Vite + Express + Remult todo app, via starter clone or step-by-step setup."
+---
+
 # Build a Full-Stack React Application
 
 ### Create a simple todo app with Remult using a React frontend

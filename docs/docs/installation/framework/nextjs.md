@@ -1,3 +1,7 @@
+---
+llm: "Next.js integration via a catch-all dynamic API route calling remultApi from remult/remult-next."
+---
+
 # Next.js
 
 ## Create a Next.js Project

@@ -3,6 +3,7 @@ type: lesson
 title: Welcome to the Remult Tutorial
 template: after-backend-methods
 focus: /frontend/Todo.tsx
+llm: "Tutorial overview and what you'll build (a real-time todo app)."
 ---
 
 # Welcome to the Remult Tutorial

@@ -8,6 +8,7 @@ tags:
   - UserInfo
   - RemultContext
   - context
+llm: "Augment UserInfo, FieldOptions, EntityOptions, and RemultContext via TypeScript declaration merging."
 ---
 
 # Extensibility

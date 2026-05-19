@@ -1,3 +1,7 @@
+---
+llm: "@Controller classes with stateful fields that round-trip between client and server on BackendMethod calls."
+---
+
 # Introduction to Mutable Controllers and Backend Methods
 
 In web development architectures, mutable controllers offer a convenient way to manage state and facilitate interactions between the client (frontend) and the server (backend). These controllers are useful in scenarios where state needs to be maintained and manipulated across server calls, providing a streamlined approach to handling data.

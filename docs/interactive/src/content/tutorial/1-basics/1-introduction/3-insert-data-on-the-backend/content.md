@@ -3,6 +3,7 @@ type: lesson
 title: Insert Data on the Backend
 focus: /backend/index.ts
 template: before-frontend
+llm: "Seed sample tasks in initApi using repo(Task).insert() when the table is empty."
 ---
 
 ## Insert Data on the Backend

@@ -1,3 +1,7 @@
+---
+llm: "Database picker - defaults to a JSON file store in ./db when no dataProvider is configured."
+---
+
 <script setup>
   import Icon from '../../../components/Icon.vue'
 </script>

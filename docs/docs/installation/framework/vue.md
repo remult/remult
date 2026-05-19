@@ -1,3 +1,7 @@
+---
+llm: "Vue + Vite frontend integration with experimentalDecorators and a /api proxy to the API server."
+---
+
 # Vue
 
 ## Create a Vue Project with Vite

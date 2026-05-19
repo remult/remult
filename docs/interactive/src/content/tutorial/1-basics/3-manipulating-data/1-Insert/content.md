@@ -2,6 +2,7 @@
 type: lesson
 title: Insert
 focus: /frontend/Todo.tsx
+llm: "Add a new task via repo(Task).insert() from the form submit handler."
 ---
 
 # Inserting Data

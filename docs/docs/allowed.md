@@ -1,3 +1,7 @@
+---
+llm: "The Allowed type - boolean, role, role array, or predicate - used by allowApi* and BackendMethod permissions."
+---
+
 # Allowed
 
 Throughout the api you'll see methods that use the `Allowed` data type, for example `allowApiRead` etc...

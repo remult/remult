@@ -1,3 +1,7 @@
+---
+llm: "Modules system (3.0.6+) - bundle entities, controllers, and server code as local, library, or cloned packages."
+---
+
 # Modules
 
 The module system arrived in `remult@3.0.6`, the idea is to pack features in a single place.

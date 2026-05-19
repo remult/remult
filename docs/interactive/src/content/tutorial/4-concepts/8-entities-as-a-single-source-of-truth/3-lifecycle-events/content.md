@@ -2,6 +2,7 @@
 type: lesson
 title: Lifecycle Hooks
 focus: /shared/Task.ts
+llm: "Entity lifecycle hooks - saving, saved, deleting, deleted, validation - with e.isNew, e.fields, and field.valueChanged()."
 ---
 
 ## Introduction to Entity Lifecycle Hooks

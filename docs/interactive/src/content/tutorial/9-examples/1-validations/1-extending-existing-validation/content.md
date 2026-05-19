@@ -2,6 +2,7 @@
 type: lesson
 title: Extending Existing Validations
 focus: /shared/Task.ts
+llm: "Compose built-in validators (e.g. Validators.unique) inside a field's validate function for conditional rules."
 ---
 
 # Extending Existing Validations

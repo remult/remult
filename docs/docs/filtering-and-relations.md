@@ -1,3 +1,7 @@
+---
+llm: "Querying across one-to-many relations - inline where, nested filters, and reusable custom filters."
+---
+
 # Filtering and Relations
 
 ::: tip **Interactive Learning Available! 🚀**

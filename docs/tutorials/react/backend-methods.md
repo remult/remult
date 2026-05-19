@@ -1,3 +1,7 @@
+---
+llm: "Refactor a bulk client loop into a static @BackendMethod on a TasksController to run server-side."
+---
+
 # Backend methods
 
 When performing operations on multiple entity objects, performance considerations may necessitate running them on the server. **With Remult, moving client-side logic to run on the server is a simple refactoring**.

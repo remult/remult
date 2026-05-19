@@ -1,3 +1,7 @@
+---
+llm: "Entity-level (allowApi*), row-level (apiPrefilter), and field-level (includeInApi, allowApiUpdate) authorization patterns."
+---
+
 # Access Control
 
 ::: tip **Interactive Learning Available! 🚀**

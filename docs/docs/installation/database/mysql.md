@@ -1,3 +1,7 @@
+---
+llm: "MySQL via createKnexDataProvider with the mysql2 client on the dataProvider option."
+---
+
 # MySQL
 
 ### Step 1: Install `knex` and `mysql2`
