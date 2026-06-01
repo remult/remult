@@ -355,9 +355,10 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
       !(idf instanceof CompoundIdField) &&
       idf.valueConverter.fieldTypeInDb === 'autoincrement'
     ) {
-      j[names.$dbNameOf(idf)] = 1
+      const idDbName = names.$dbNameOf(idf)
+      j[idDbName] = 1
       for (const row of this.rows()) {
-        if (row[idf.key] >= j[idf.key]) j[idf.key] = row[idf.key] + 1
+        if (row[idDbName] >= j[idDbName]) j[idDbName] = row[idDbName] + 1
       }
     } else {
       if (

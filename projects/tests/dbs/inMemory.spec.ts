@@ -69,6 +69,8 @@ describe('In Memory Tests', () => {
     }
     const x = await remult.repo(AutoIncrementEntity).insert({ name: 'a' })
     expect(x.id).toBe(1)
+    const y = await remult.repo(AutoIncrementEntity).insert({ name: 'b' })
+    expect(y.id).toBe(2)
   })
   it('test db names are respected', async () => {
     const c = class {
