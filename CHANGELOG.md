@@ -1,5 +1,9 @@
 All notable changes to this project will be documented in this file.
 
+## [3.3.11] - 2026-06-01
+
+- Fixed issue with auto increment in ArrayEntityDataProvider where the dbname of the auto increment field was different than the member key
+
 ## [3.3.10] - 2026-05-19
 
 - Improve Indexed db connection error further

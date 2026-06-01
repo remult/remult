@@ -355,7 +355,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
       !(idf instanceof CompoundIdField) &&
       idf.valueConverter.fieldTypeInDb === 'autoincrement'
     ) {
-      j[idf.key] = 1
+      j[names.$dbNameOf(idf)] = 1
       for (const row of this.rows()) {
         if (row[idf.key] >= j[idf.key]) j[idf.key] = row[idf.key] + 1
       }

@@ -59,6 +59,17 @@ describe('In Memory Tests', () => {
       }
     `)
   })
+  it('test auto increment with db name', async () => {
+    @Entity('autoIncrementEntity')
+    class AutoIncrementEntity {
+      @Fields.autoIncrement({ dbName: 'Id' })
+      id!: number
+      @Fields.string()
+      name!: string
+    }
+    const x = await remult.repo(AutoIncrementEntity).insert({ name: 'a' })
+    expect(x.id).toBe(1)
+  })
   it('test db names are respected', async () => {
     const c = class {
       id = 0
@@ -80,7 +91,7 @@ describe('In Memory Tests', () => {
       }
     `)
     expect(await remult.repo(c).count({ a: 'a' })).toBe(1)
-    await remult.repo(c).update(1, { a: 'b' }) 
+    await remult.repo(c).update(1, { a: 'b' })
     expect(db.rows).toMatchInlineSnapshot(`
       {
         "c": [
