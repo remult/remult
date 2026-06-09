@@ -582,6 +582,39 @@ export function aggregateTest(
       expect(results.length).toBe(2)
     })
 
+    it('should support limit and page without an explicit orderBy', async () => {
+      // Regression: groupBy paging without an orderBy produced invalid SQL on
+      // SQL Server (OFFSET/FETCH requires an ORDER BY).
+      const r = await repo()
+      const page1 = await r.groupBy({
+        group: ['country'],
+        limit: 2,
+        page: 1,
+      })
+      expect(page1.length).toBe(2)
+      const page2 = await r.groupBy({
+        group: ['country'],
+        limit: 2,
+        page: 2,
+      })
+      expect(page2.length).toBe(2)
+      // paging must be deterministic - the two pages should not overlap
+      expect(
+        page1.some((a) => page2.some((b) => a.country === b.country)),
+      ).toBe(false)
+    })
+
+    it('should support limit without an orderBy for a pure aggregate', async () => {
+      // A pure aggregate returns a single row, so paging must be skipped.
+      const r = await repo()
+      const results = await r.groupBy({
+        sum: ['salary'],
+        limit: 2,
+        page: 1,
+      })
+      expect(results.length).toBe(1)
+    })
+
     it('should order results by distinct count of cities', async () => {
       const r = await repo()
 

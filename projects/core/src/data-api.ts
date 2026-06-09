@@ -150,9 +150,17 @@ export class DataApi<T = unknown> {
     }
     try {
       let { aggregate, ...rest } = body
+      // The aggregate summarizes the whole filtered set, so it must not inherit
+      // the items query's paging/sorting/selection.
+      const aggregateRequest: DataApiRequest = {
+        get: (key: string) =>
+          ['_limit', '_page', '_sort', '_order', '_select'].includes(key)
+            ? undefined
+            : request?.get(key),
+      }
       let [{ r }, [aggregates]] = await Promise.all([
         this.getArrayImpl(request, rest),
-        this.groupBy(request, { ...aggregate, where: body.where }),
+        this.groupBy(aggregateRequest, { ...aggregate, where: body.where }),
       ])
       return {
         items: r,

@@ -1,5 +1,10 @@
 All notable changes to this project will be documented in this file.
 
+## [3.3.13] - 2026-06-09
+
+- Fixed `groupBy`/`aggregate` with `limit`/`page` but no `orderBy` emitting `OFFSET/FETCH` without an `ORDER BY`, which is invalid on SQL Server. A grouped query now falls back to ordering by the group columns, and a pure aggregate skips paging entirely.
+- The `query` api action no longer leaks the items' paging into the aggregate, so the aggregate summarizes the whole filtered set.
+
 ## [3.3.12] - 2026-06-01
 
 - Fixed issue with auto increment in ArrayEntityDataProvider where the dbname of the auto increment field was different than the member key

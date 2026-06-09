@@ -679,6 +679,7 @@ export async function groupByImpl(
 ) {
   let select = 'select count(*) as count'
   let groupBy = ''
+  const groupByCols: string[] = []
   const processResultRow: ((sqlResult: any, theResult: any) => void)[] = []
   processResultRow.push((sqlVal, theResult) => {
     theResult[GroupByCountMember] = Number(sqlVal)
@@ -693,6 +694,7 @@ export async function groupByImpl(
         if (groupBy == '') groupBy = ' group by '
         else groupBy += ', '
         groupBy += e.$dbNameOf(x)
+        groupByCols.push(e.$dbNameOf(x))
       }
       processResultRow.push((sqlResult, theResult) => {
         theResult[x.key] = x.valueConverter.fromDb(sqlResult)
@@ -752,7 +754,12 @@ export async function groupByImpl(
     }
     if (orderBy) select += orderBy
   }
-  if (options?.limit) {
+  // Skip paging for a pure aggregate (single row); OFFSET/FETCH without an
+  // ORDER BY is also invalid on SQL Server.
+  if (options?.limit && groupByCols.length) {
+    // SQL Server requires an ORDER BY alongside OFFSET/FETCH; default to the
+    // group columns so paging is valid and deterministic on every dialect.
+    if (!orderBy) select += ' order by ' + groupByCols.join(', ')
     let page = 1
     if (options.page) page = options.page
     if (page < 1) page = 1
