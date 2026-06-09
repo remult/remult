@@ -64,7 +64,7 @@
     "@types/websql": "0.0.27",
     "@typescript-eslint/eslint-plugin": "^6.4.1",
     "@typescript-eslint/parser": "^6.4.1",
-    "@vitest/browser": "3.1.2",
+    "@vitest/browser": "4.1.8",
     "@vitest/coverage-v8": "3.1.2",
     "@vitest/ui": "3.1.2",
     "ably": "^1.2.33",
