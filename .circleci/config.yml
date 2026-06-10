@@ -3,7 +3,6 @@
 version: 2.1
 
 orbs:
-  codecov: codecov/codecov@5
   node: circleci/node@7.1.0
   browser-tools: circleci/browser-tools@1.2.5
 # Define a job to be invoked later in a workflow.
@@ -50,7 +49,12 @@ jobs:
       - run:
           name: Run Tests
           command: npm run test:ci
-      - codecov/upload
+      - run:
+          name: Upload coverage to Codecov
+          command: |
+            curl -Os https://cli.codecov.io/latest/linux/codecov
+            chmod +x codecov
+            ./codecov upload-process -t "$CODECOV_TOKEN" || true
       - store_test_results:
           path: ./test-results.xml
 
