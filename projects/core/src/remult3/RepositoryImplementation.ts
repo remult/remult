@@ -79,6 +79,7 @@ import type { RemultProxy } from '../remult-proxy.js'
 import { remult as defaultRemult } from '../remult-proxy.js'
 import {
   entityMember,
+  entityInfo_tc39,
   getEntityKey,
   getEntityRef,
   getEntitySettings,
@@ -1464,6 +1465,16 @@ export function createOldEntity<T>(entity: ClassType<T>, remult: Remult) {
   let r: columnInfo[] = remultStatic.columnsOfType.get(entity)!
   if (!r) remultStatic.columnsOfType.set(entity, (r = []))
 
+  // tc39 standard decorators register their field metadata only when an
+  // instance is constructed (the field decorator never sees the class). Build
+  // one throwaway instance so the columns get registered before we read them.
+  if ((entity as any)[entityInfo_tc39] && r.length === 0) {
+    try {
+      new (entity as any)(remult)
+    } catch {}
+    r = remultStatic.columnsOfType.get(entity) ?? r
+  }
+
   let info = getEntitySettings(entity)!(remult)
   let key = getEntityKey(entity)
 
@@ -1577,6 +1588,13 @@ abstract class rowHelperBase<T> {
             refImpl._subscribers!.reportChanged()
           },
           enumerable: !excludeRelationMembers?.has(col.key),
+          // Non-configurable so it survives the Reflect.deleteProperty for
+          // non-included relations (_populateRelationsForFields). Under
+          // useDefineForClassFields (tc39 decorators) the field pre-exists as a
+          // configurable property, so defineProperty would otherwise inherit
+          // configurable:true and the accessor could be deleted - set it
+          // explicitly to match the legacy-decorator behavior.
+          configurable: false,
         })
         lookup.set(val as any)
       } else {
@@ -1610,6 +1628,7 @@ abstract class rowHelperBase<T> {
               }
             },
             enumerable: !excludeRelationMembers?.has(col.key),
+            configurable: false,
           })
           if (hasVal) instance[col.key as keyof T] = val
         }

@@ -13,6 +13,9 @@ let x = {
   columnsOfType: new Map<any, columnInfo[]>(),
   allEntities: [] as ClassType<any>[],
   classHelpers: new Map<any, ClassHelper>(),
+  // tc39 instance @BackendMethod decorators can't see their class; they queue a
+  // registration callback here, drained by the class decorator (setControllerSettings).
+  pendingInstanceBackendMethods: [] as ((cls: any) => void)[],
   actionInfo: {
     allActions: [] as any[],
     runningOnServer: false,

@@ -30,6 +30,10 @@ export const entityMember = Symbol.for('entityMember')
 
 export const entityInfo = Symbol.for('entityInfo')
 export const entityInfo_key = Symbol.for('entityInfo_key')
+/** Set on classes decorated with `@Entity` using tc39 standard decorators.
+ * For those, field metadata is only registered once an instance is constructed,
+ * so the column collection logic must instantiate the class first. */
+export const entityInfo_tc39 = Symbol.for('entityInfo_tc39')
 
 export function getEntitySettings<T>(
   entity: ClassType<T>,

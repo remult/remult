@@ -26,7 +26,7 @@ import {
 } from './remult3/RepositoryImplementation.js'
 import { getEntityRef, getEntitySettings } from './remult3/getEntityRef.js'
 import { serverActionField } from './server-action-info.js'
-import { checkTarget } from './remult3/Fields.js'
+import { checkTarget, isStandardDecoratorContext } from './remult3/Fields.js'
 import { remultStatic } from './remult-static.js'
 
 interface inArgs {
@@ -213,9 +213,11 @@ export interface ClassMethodDecoratorContextStub<
 > {
   readonly kind: 'method'
   readonly name: string | symbol
+  readonly static: boolean
   readonly access: {
     has(object: This): boolean
   }
+  addInitializer(initializer: (this: This) => void): void
 }
 
 /**
@@ -244,10 +246,17 @@ export function BackendMethod<type = unknown>(
     context: ClassMethodDecoratorContextStub<type> | string,
     descriptor?: any,
   ) => {
+    const std = isStandardDecoratorContext(context)
     const key = typeof context === 'string' ? context : context.name.toString()
     const originalMethod = descriptor ? descriptor.value : target
     let result = originalMethod
-    checkTarget(target)
+    if (!std) checkTarget(target)
+    // tc39 standard decorators don't expose the class to a method decorator, and
+    // a concise method has no `.prototype`, so static-vs-instance comes from the
+    // decorator context (`context.static`) rather than `target.prototype`.
+    const isStatic = std
+      ? (context as ClassMethodDecoratorContextStub<type>).static
+      : target.prototype !== undefined
     function getTypes() {
       // removing import 'reflect-metadata' from server-action.ts, so we return an empty array
       var types: any[] = []
@@ -261,7 +270,7 @@ export function BackendMethod<type = unknown>(
             : options.paramTypes
       return types
     }
-    if (target.prototype !== undefined) {
+    if (isStatic) {
       // if types are undefined - you've forgot to set: "emitDecoratorMetadata":true
 
       let serverAction = new myServerAction(
@@ -289,19 +298,29 @@ export function BackendMethod<type = unknown>(
             args,
           )
       }
-      registerAction(target, result)
       result[serverActionField] = serverAction
+      if (std) {
+        // a static method's addInitializer runs at class-definition time with
+        // `this` bound to the class - exactly what registerAction needs.
+        ;(context as ClassMethodDecoratorContextStub<type>).addInitializer(
+          function (this: any) {
+            registerAction(this, result)
+          },
+        )
+        return result
+      }
+      registerAction(target, result)
       if (descriptor) {
         descriptor.value = result
         return descriptor
       } else return result
     }
 
-    let x = remultStatic.classHelpers.get(target.constructor)!
-    if (!x) {
-      x = new ClassHelper()
-      remultStatic.classHelpers.set(target.constructor, x)
-    }
+    // Instance method. `x` (the controller's ClassHelper) and the action
+    // registration need the class, which tc39 doesn't give us here - so we
+    // assign them in `finishInstanceRegistration`, called synchronously for
+    // legacy and (for tc39) from the class decorator via setControllerSettings.
+    let x: ClassHelper
     let serverAction: ActionInterface = {
       __register(
         reg: (
@@ -424,7 +443,7 @@ export function BackendMethod<type = unknown>(
       ): Promise<any> {
         args = prepareArgsToSend(getTypes(), args)
 
-        if (remultStatic.allEntities.includes(target.constructor)) {
+        if (remultStatic.allEntities.includes(self.constructor)) {
           let defs = getEntityRef(self) as rowHelperImplementation<any>
           await defs.__validateEntity()
           let classOptions = x.classes.get(self.constructor)!
@@ -514,9 +533,17 @@ export function BackendMethod<type = unknown>(
         return serverAction.doWork(args, self)
       } else return await originalMethod.apply(self, args)
     }
-    registerAction(target.constructor, result)
     result[serverActionField] = serverAction
-
+    const finishInstanceRegistration = (cls: any) => {
+      x = remultStatic.classHelpers.get(cls)!
+      if (!x) remultStatic.classHelpers.set(cls, (x = new ClassHelper()))
+      registerAction(cls, result)
+    }
+    if (std) {
+      remultStatic.pendingInstanceBackendMethods.push(finishInstanceRegistration)
+      return result
+    }
+    finishInstanceRegistration(target.constructor)
     if (descriptor) {
       descriptor.value = result
       return descriptor

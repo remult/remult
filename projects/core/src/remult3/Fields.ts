@@ -589,6 +589,10 @@ export function Field<entityType = unknown, valueType = unknown>(
     c?: any,
   ) => {
     const key = typeof context === 'string' ? context : context.name.toString()
+    // In legacy decorators `target` is the prototype. In tc39 standard
+    // decorators the field decorator doesn't receive the class, so we capture
+    // the prototype later from the constructed instance (see below).
+    let fieldTarget = target
     let factory = (remult: Remult) => {
       let r = buildOptions(options, remult)
       if (r.required) {
@@ -633,31 +637,65 @@ export function Field<entityType = unknown, valueType = unknown>(
         //     : []
         r.valueType = type
       }
-      if (!r.target) r.target = target
+      if (!r.target) r.target = fieldTarget
       return r
     }
-    checkTarget(target)
-    let names: columnInfo[] = remultStatic.columnsOfType.get(
-      target.constructor,
-    )!
-    if (!names) {
-      names = []
-      remultStatic.columnsOfType.set(target.constructor, names)
-    }
-
-    let set = names.find((x) => x.key == key)
-    if (!set)
-      names.push({
-        key,
-        settings: factory as any,
+    if (isStandardDecoratorContext(context)) {
+      // tc39 standard decorators: the field decorator has no access to the
+      // class, only to the field name. We defer registration to the first time
+      // an instance is constructed, where `this.constructor` gives us the class.
+      // A per-class guard keeps registration idempotent across instances (and
+      // across subclasses for inherited fields).
+      const registeredFor = new WeakSet<any>()
+      context.addInitializer(function (this: any) {
+        const ctor = this.constructor
+        if (registeredFor.has(ctor)) return
+        registeredFor.add(ctor)
+        fieldTarget = Object.getPrototypeOf(this)
+        registerFieldOnClass(ctor, key, factory)
       })
-    else {
-      let prev = set.settings
-      set.settings = (c) => {
-        let prevO = prev(c)
-        let curr = factory(c)
-        return Object.assign(prevO, curr)
-      }
+    } else {
+      checkTarget(target)
+      registerFieldOnClass(target.constructor, key, factory)
+    }
+  }
+}
+
+/** Detects a tc39 standard decorator context (as opposed to the legacy
+ * `experimentalDecorators` calling convention, where the second argument is the
+ * property-key string). */
+export function isStandardDecoratorContext(
+  context: unknown,
+): context is {
+  name: string | symbol
+  addInitializer: (initializer: (this: any) => void) => void
+} {
+  return (
+    typeof context === 'object' &&
+    context !== null &&
+    typeof (context as any).addInitializer === 'function'
+  )
+}
+
+function registerFieldOnClass(classType: any, key: string, factory: any) {
+  let names: columnInfo[] = remultStatic.columnsOfType.get(classType)!
+  if (!names) {
+    names = []
+    remultStatic.columnsOfType.set(classType, names)
+  }
+
+  let set = names.find((x) => x.key == key)
+  if (!set)
+    names.push({
+      key,
+      settings: factory as any,
+    })
+  else {
+    let prev = set.settings
+    set.settings = (c) => {
+      let prevO = prev(c)
+      let curr = factory(c)
+      return Object.assign(prevO, curr)
     }
   }
 }

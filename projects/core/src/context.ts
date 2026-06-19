@@ -453,6 +453,13 @@ export class ClassHelper {
 }
 
 export function setControllerSettings(target: any, options: ControllerOptions) {
+  // Class decorators run after member decorators, so any tc39 instance
+  // @BackendMethod that queued a registration for this class is drained here -
+  // associating each pending method with the class now being decorated.
+  if (remultStatic.pendingInstanceBackendMethods.length) {
+    const pending = remultStatic.pendingInstanceBackendMethods.splice(0)
+    for (const register of pending) register(target)
+  }
   let r = target
   while (true) {
     let helper = remultStatic.classHelpers.get(r)

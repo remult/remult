@@ -5,6 +5,7 @@ import type { customFilterInfo } from '../filter/filter-interfaces.js'
 import {
   entityInfo,
   entityInfo_key,
+  entityInfo_tc39,
   getEntitySettings,
 } from './getEntityRef.js'
 import type { EntityOptionsFactory } from './RepositoryImplementation.js'
@@ -64,19 +65,29 @@ export function Entity<entityType>(
       entityType extends new (...args: any) => any ? entityType : never
     >,
   ) => {
-    let theClass = target
-    while (theClass != null) {
-      for (const rawFilterMember in theClass) {
-        if (Object.prototype.hasOwnProperty.call(theClass, rawFilterMember)) {
-          const element = target[rawFilterMember] as customFilterInfo<any>
-          if (element?.rawFilterInfo) {
-            if (!element.rawFilterInfo.key)
-              element.rawFilterInfo.key = rawFilterMember
+    const isTc39 = !!(info && (info as any).kind === 'class')
+    // Assign keys to static custom-filter members. With legacy decorators the
+    // class decorator runs *after* static fields are initialized, so we can walk
+    // them right away. With tc39 standard decorators the class decorator runs
+    // *before* static field initializers, so we defer the walk to the class
+    // addInitializer (which runs once static fields are set).
+    const assignCustomFilterKeys = () => {
+      let theClass = target
+      while (theClass != null) {
+        for (const rawFilterMember in theClass) {
+          if (Object.prototype.hasOwnProperty.call(theClass, rawFilterMember)) {
+            const element = target[rawFilterMember] as customFilterInfo<any>
+            if (element?.rawFilterInfo) {
+              if (!element.rawFilterInfo.key)
+                element.rawFilterInfo.key = rawFilterMember
+            }
           }
         }
+        theClass = Object.getPrototypeOf(theClass)
       }
-      theClass = Object.getPrototypeOf(theClass)
     }
+    if (isTc39) info!.addInitializer(assignCustomFilterKeys)
+    else assignCustomFilterKeys()
     let factory: EntityOptionsFactory = (remult) => {
       let r = {} as EntityOptions<
         entityType extends new (...args: any) => any
@@ -110,6 +121,7 @@ export function Entity<entityType>(
     setControllerSettings(target, { key })
     target[entityInfo] = factory
     target[entityInfo_key] = key
+    if (isTc39) target[entityInfo_tc39] = true
     return target
   }
 }

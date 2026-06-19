@@ -99,13 +99,17 @@ describe('test sql implementation', () => {
   })
   it('test argument', async () => {
     type args = { testNumber: number }
+    // helper held in a local (not referenced via `myEntity.args` inside the
+    // decorator) so it also works under tc39 standard decorators, where a
+    // class's own static isn't initialized yet when the decorator is evaluated
+    const argHelper = prepareArg<any, args>()
     @Entity('myEntity')
     class myEntity {
-      static args = prepareArg<myEntity, args>()
+      static args = argHelper
       @Fields.string()
       id = ''
       @Fields.integer({
-        sqlExpression: myEntity.args.sqlExpression((_, args, c) => {
+        sqlExpression: argHelper.sqlExpression((_, args, c) => {
           if (!c || !args) return `111`
           return `3 + ${c.param(args.testNumber)}`
         }),

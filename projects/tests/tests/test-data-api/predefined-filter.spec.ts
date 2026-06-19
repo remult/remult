@@ -510,7 +510,9 @@ class CategoriesForThisTestThatInherits extends CategoriesForThisTest2 {}
 @EntityDecorator<CategoriesForThisTest3>(undefined!, {
   allowApiUpdate: true,
   allowApiDelete: true,
-  apiPrefilter: CategoriesForThisTest3.myFilter(),
+  // lazy form so it works under both legacy and tc39 standard decorators
+  // (a class's own static can't be read eagerly in a tc39 decorator argument)
+  apiPrefilter: () => CategoriesForThisTest3.myFilter(),
 })
 class CategoriesForThisTest3 extends newCategories {
   static myFilter = Filter.createCustom<CategoriesForThisTest3>(
