@@ -229,6 +229,17 @@ function testPaging(
       expect((await p.getPage()).map((x) => x.id)).toEqual([1, 2, 3])
       expect((await p.getPage(2)).map((x) => x.id)).toEqual([4, 5])
     })
+    // NOTE: `hasNextPage` is derived purely from the page that was fetched:
+    // `hasNextPage === (items.length === pageSize)`. The paginator deliberately
+    // fetches exactly `pageSize` rows, so when the total count is an exact
+    // multiple of the page size it cannot know the next page is empty without
+    // paying for it. The trade-off (cheaper: no extra row, no extra COUNT query)
+    // is one "phantom" `hasNextPage === true` on the last full page: navigating
+    // to it returns an empty page and `hasNextPage` then becomes false.
+    //
+    // If you need an exact "is this the last page" on the client and you already
+    // have the total (e.g. you called `count()`), compute it yourself, e.g.
+    // `hasNextPageClient = loadedSoFar < total`.
     it('paginate on boundries', async () => {
       const [c] = await createData(async (insert) => {
         await insert(1, 'noam')
@@ -243,6 +254,7 @@ function testPaging(
       expect(p.hasNextPage).toBe(true)
       p = await p.nextPage()
       expect(p.items.map((x) => x.id)).toEqual([3, 4])
+      // phantom next page: total (4) is an exact multiple of pageSize (2)
       expect(p.hasNextPage).toBe(true)
       p = await p.nextPage()
       expect(p.items.map((x) => x.id)).toEqual([])
