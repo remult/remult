@@ -11,7 +11,7 @@ class Task {
 
 export const api = remultApi({
   entities: [Task],
-  admin: true,
+  admin: false,
 });
 
 export default defineEventHandler(api);
