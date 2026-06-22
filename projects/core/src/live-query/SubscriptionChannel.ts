@@ -43,20 +43,31 @@ export class LiveQuerySubscriber<entityType> {
     ]
   }
 
+  // the order the query's results actually come back in: the explicit orderBy,
+  // falling back to the entity's defaultOrderBy
+  private effectiveOrderBy() {
+    return (
+      this.query.options.orderBy ?? this.repo.metadata.options.defaultOrderBy
+    )
+  }
+
   forListeners(
     what: (
-      listener: (reducer: (prevState: entityType[]) => entityType[]) => void,
+      listener: (
+        reducer: (
+          prevState: entityType[],
+          options?: { pos?: 'auto' | 'first' | 'last' },
+        ) => entityType[],
+      ) => void,
     ) => void,
     changes: LiveQueryChange[],
   ) {
     what((reducer) => {
       this.defaultQueryState = reducer(this.defaultQueryState)
       if (changes.find((c) => c.type === 'add' || c.type === 'replace')) {
-        if (this.query.options.orderBy) {
-          const o = Sort.translateOrderByToSort(
-            this.repo.metadata,
-            this.query.options.orderBy,
-          )
+        const orderBy = this.effectiveOrderBy()
+        if (orderBy) {
+          const o = Sort.translateOrderByToSort(this.repo.metadata, orderBy)
           this.defaultQueryState.sort((a: any, b: any) => o.compare(a, b))
         }
       }
@@ -70,7 +81,10 @@ export class LiveQuerySubscriber<entityType> {
   }
 
   private createReducerType(
-    applyChanges: (prevState: entityType[]) => entityType[],
+    applyChanges: (
+      prevState: entityType[],
+      options?: { pos?: 'auto' | 'first' | 'last' },
+    ) => entityType[],
     changes: LiveQueryChange[],
   ): LiveQueryChangeInfo<entityType> {
     return {
@@ -94,14 +108,17 @@ export class LiveQuerySubscriber<entityType> {
     }
 
     this.forListeners((listener) => {
-      listener((items) => {
+      listener((items, options) => {
+        const pos = options?.pos ?? 'auto'
         if (!items) items = []
+        let addedOrReplaced = false
         for (const message of messages) {
           switch (message.type) {
             case 'all':
               this.setAllItems(message.data)
               break
             case 'replace': {
+              addedOrReplaced = true
               items = items.map((x) =>
                 this.repo.metadata.idMetadata.getId(x) === message.data.oldId
                   ? message.data.item
@@ -110,12 +127,14 @@ export class LiveQuerySubscriber<entityType> {
               break
             }
             case 'add':
+              addedOrReplaced = true
               items = items.filter(
                 (x) =>
                   this.repo.metadata.idMetadata.getId(x) !==
                   this.repo.metadata.idMetadata.getId(message.data.item),
               )
-              items.push(message.data.item)
+              if (pos === 'first') items = [message.data.item, ...items]
+              else items = [...items, message.data.item]
               break
             case 'remove':
               items = items.filter(
@@ -124,6 +143,14 @@ export class LiveQuerySubscriber<entityType> {
               )
               break
           }
+        }
+        // 'auto' keeps the array ordered like `info.items` (the query's orderBy,
+        // or the entity's defaultOrderBy); explicit 'first'/'last' leave
+        // placement untouched
+        const orderBy = pos === 'auto' && this.effectiveOrderBy()
+        if (orderBy && addedOrReplaced) {
+          const o = Sort.translateOrderByToSort(this.repo.metadata, orderBy)
+          items = [...items].sort((a: any, b: any) => o.compare(a, b))
         }
         return items
       })

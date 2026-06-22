@@ -13,7 +13,7 @@ import {
   LiveQueryPublisher,
 } from '../../core/src/live-query/SubscriptionServer'
 import { remult } from '../../core/src/remult-proxy'
-import type { FindOptions } from '../../core'
+import type { ClassType, FindOptions } from '../../core'
 import { Entity, Fields, Relations, getEntityRef } from '../../core'
 
 import { createMockHttpDataProvider } from '../tests/testHelper'
@@ -52,6 +52,16 @@ export class Category {
   id = 0
   @Fields.string()
   name = ''
+}
+@Entity<defaultOrderByEntity>('default-order-by-test', {
+  allowApiCrud: true,
+  defaultOrderBy: { title: 'desc' },
+})
+export class defaultOrderByEntity {
+  @Fields.integer()
+  id = 0
+  @Fields.string()
+  title = ''
 }
 
 async function setup1() {
@@ -319,12 +329,14 @@ describe('test live query full cycle', () => {
   afterEach(() => {
     queryConfig.defaultPageSize = 2
   })
-  function setup2() {
+  function setup2<T = eventTestEntity>(
+    entity: ClassType<T> = eventTestEntity as any,
+  ) {
     const mem = new InMemoryDataProvider()
     const remult = new Remult(mem)
-    const repo = remult.repo(eventTestEntity)
+    const repo = remult.repo(entity)
     const remult2 = new Remult(mem)
-    const repo2 = remult2.repo(eventTestEntity)
+    const repo2 = remult2.repo(entity)
 
     const mh: ((channel: string, message: LiveQueryChange) => void)[] = []
     let messageCount = 0
@@ -512,7 +524,59 @@ describe('test live query full cycle', () => {
     await pm.flush()
     await repo2.insert({ id: 2, title: 'yael' })
     await pm.flush()
-    expect(result1.map((r) => r.id)).toEqual([1, 2])
+    // applyChanges now keeps the array ordered by orderBy by default ('auto'),
+    // so it matches info.items (title desc => yael, noam)
+    expect(result1.map((r) => r.id)).toEqual([2, 1])
+    expect(items.map((r) => r.id)).toEqual([2, 1])
+    u()
+  })
+  it('test applyChanges pos option overrides ordering', async () => {
+    var { repo, pm, repo2 } = setup2()
+    let auto: eventTestEntity[] = []
+    let last: eventTestEntity[] = []
+    let first: eventTestEntity[] = []
+    const u = repo
+      .liveQuery({
+        orderBy: { title: 'desc' },
+      })
+      .subscribe((info) => {
+        auto = info.applyChanges(auto)
+        last = info.applyChanges(last, { pos: 'last' })
+        first = info.applyChanges(first, { pos: 'first' })
+      })
+    await pm.flush()
+    await repo.insert({ id: 1, title: 'noam' })
+    await pm.flush()
+    await repo2.insert({ id: 2, title: 'yael' })
+    await pm.flush()
+    await repo.insert({ id: 3, title: 'abc' })
+    await pm.flush()
+    // 'auto' (default): ordered by title desc -> yael, noam, abc
+    expect(auto.map((r) => r.id)).toEqual([2, 1, 3])
+    // 'last': appended in arrival order
+    expect(last.map((r) => r.id)).toEqual([1, 2, 3])
+    // 'first': each added item prepended
+    expect(first.map((r) => r.id)).toEqual([3, 2, 1])
+    u()
+  })
+  it('test applyChanges falls back to entity defaultOrderBy', async () => {
+    var { repo, pm, repo2 } = setup2(defaultOrderByEntity)
+    let result1: defaultOrderByEntity[] = []
+    let items: defaultOrderByEntity[] = []
+    const u = repo
+      // no explicit orderBy -> uses the entity's defaultOrderBy { title: 'desc' }
+      .liveQuery({})
+      .subscribe((info) => {
+        result1 = info.applyChanges(result1)
+        items = info.items
+      })
+    await pm.flush()
+    await repo.insert({ id: 1, title: 'noam' })
+    await pm.flush()
+    await repo2.insert({ id: 2, title: 'yael' })
+    await pm.flush()
+    // title desc => yael(2), noam(1)
+    expect(result1.map((r) => r.id)).toEqual([2, 1])
     expect(items.map((r) => r.id)).toEqual([2, 1])
     u()
   })

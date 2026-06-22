@@ -348,6 +348,18 @@ export class Comment extends Auditable {
 
 For shared _options_ (permissions, hooks), extract a typed helper returning `EntityOptions<T>` and spread it into each `@Entity({...})`.
 
+## Live Queries
+
+`repo.liveQuery(options).subscribe(info => ...)` streams realtime updates over SSE. Same `find` options (`where`, `orderBy`, `limit`...). Use `info.applyChanges(prevState)` to fold changes into your existing array - it keeps the array sorted like `info.items`. `subscribe` returns an unsubscribe fn. See <https://remult.dev/docs/live-queries>.
+
+```ts
+const unsub = repo
+  .liveQuery({ orderBy: { createdAt: 'desc' } })
+  .subscribe((info) => setTasks(info.applyChanges))
+```
+
+`applyChanges(prev, { pos })` - `pos: 'first' | 'last'` overrides placement of added items (default `'auto'` re-sorts).
+
 ## Module Pattern
 
 Bundle related entities + init logic into a module so apps register them in one line. See <https://remult.dev/docs/modules>.
