@@ -1,5 +1,9 @@
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+- `LiveQueryChangeInfo.applyChanges` now keeps the array ordered by the query's `orderBy` (or the entity's `defaultOrderBy`) by default, and accepts a `{ pos: 'auto' | 'first' | 'last' }` option to control placement of added items.
+
 ## [3.3.13] - 2026-06-09
 
 - Fixed `groupBy`/`aggregate` with `limit`/`page` but no `orderBy` emitting `OFFSET/FETCH` without an `ORDER BY`, which is invalid on SQL Server. A grouped query now falls back to ordering by the group columns, and a pure aggregate skips paging entirely.

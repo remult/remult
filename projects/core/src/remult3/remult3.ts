@@ -949,6 +949,9 @@ export interface LiveQueryChangeInfo<entityType> {
    * to update the component's state based on the live query changes.
    *
    * @param {entityType[] | undefined} prevState The previous state of the array of result items.
+   * @param {{ pos?: 'auto' | 'first' | 'last' }} [options] Controls where added items are placed.
+   * `'auto'` (default) keeps the array sorted by the query's `orderBy` (or the entity's `defaultOrderBy`, falling back to `'last'` when neither is set);
+   * `'first'` prepends added items; `'last'` appends them.
    * @returns {entityType[]} The updated array of result items after applying the changes.
    *
    * @example
@@ -963,7 +966,10 @@ export interface LiveQueryChangeInfo<entityType> {
    *     .subscribe(info => setTasks(info.applyChanges));
    * }, []);
    */
-  applyChanges(prevState: entityType[] | undefined): entityType[]
+  applyChanges(
+    prevState: entityType[] | undefined,
+    options?: { pos?: 'auto' | 'first' | 'last' },
+  ): entityType[]
 }
 export interface FindOptions<entityType> extends FindOptionsBase<entityType> {
   /** Number of rows returned. _(Defaults to 100 in the browser)_
