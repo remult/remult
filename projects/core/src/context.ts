@@ -487,16 +487,10 @@ export interface UserInfo {
 }
 
 export declare type Allowed =
-  | boolean
-  | string
-  | string[]
-  | ((c?: Remult) => boolean)
+  boolean | string | string[] | ((c?: Remult) => boolean)
 
 export declare type AllowedForInstance<T> =
-  | boolean
-  | string
-  | string[]
-  | ((entity?: T, c?: Remult) => boolean)
+  boolean | string | string[] | ((entity?: T, c?: Remult) => boolean)
 export class Allow {
   static everyone = () => true
   static authenticated = (...args: any[]) => {
