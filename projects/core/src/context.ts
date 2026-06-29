@@ -104,6 +104,8 @@ export function isBackend() {
   return remultStatic.actionInfo.runningOnServer || !remult.dataProvider.isProxy
 }
 
+let warnedUseFetchDeprecated = false
+
 export class Remult {
   /**Return's a `Repository` of the specific entity type
    * @example
@@ -233,7 +235,21 @@ export class Remult {
     } else return this.isAllowed(allowed as Allowed)
     return undefined!
   }
+  /**
+   * @deprecated Mutating the shared request `remult` is unsafe: on the server a
+   * universal `load` runs concurrently with a `+page.server.ts`, and reassigning
+   * the data provider here affects that other load. Instead, scope the rest fetch to
+   * the read with `withRemult`, e.g.
+   * `withRemult((r) => r.repo(X).find(), { dataProvider: new RestDataProvider(() => ({ httpClient: event.fetch })) })`.
+   * See the SvelteKit "Universal load & SSR" doc and firstly's `remultApiUniversalLoad`.
+   */
   useFetch(fetch: ApiClient['httpClient']) {
+    if (!warnedUseFetchDeprecated) {
+      warnedUseFetchDeprecated = true
+      console.warn(
+        '[remult] `useFetch` is deprecated, see https://remult.dev/docs/installation/framework/sveltekit#extra-universal-load-ssr',
+      )
+    }
     this.dataProvider = new RestDataProvider(() => ({
       httpClient: fetch,
     }))

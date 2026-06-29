@@ -53,7 +53,12 @@ static async log(msg: string) {
   if (import.meta.env.SSR) {
     const { appendFileSync } = await import('fs')
     appendFileSync('./logs/log.txt', `${new Date().toISOString()} ${msg}\n`)
+    return { status: 'ok' }
   }
+  // `import.meta.env.SSR` is build-time `true` on the server, so this line is never
+  // reached. When the method returns a value, `return` inside the block and `throw`
+  // here - it keeps the inferred return type clean (no `| undefined`).
+  throw new Error('server-only')
 }
 ```
 
