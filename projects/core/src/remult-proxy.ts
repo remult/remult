@@ -94,6 +94,11 @@ export class RemultProxy implements Remult {
   clearAllCache() {
     return remultStatic.remultFactory().clearAllCache()
   }
+  /**
+   * @deprecated Mutating the shared request `remult` is unsafe (it can affect a
+   * concurrent `+page.server.ts` on the server). Scope the rest fetch to the read
+   * with `withRemult` instead - see the SvelteKit "Universal load & SSR" doc.
+   */
   useFetch(args: typeof fetch) {
     return remultStatic.remultFactory().useFetch(args)
   }

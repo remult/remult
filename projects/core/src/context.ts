@@ -233,7 +233,17 @@ export class Remult {
     } else return this.isAllowed(allowed as Allowed)
     return undefined!
   }
+  /**
+   * @deprecated In SvelteKit, loads run in parallel, so reassigning the shared
+   * `remult` data provider here leaks across loads. Scope the fetch to the read
+   * with `withRemult` instead, e.g.
+   * `withRemult((r) => r.repo(X).find(), { dataProvider: new RestDataProvider(() => ({ httpClient: event.fetch })) })`.
+   * See the SvelteKit "Universal load & SSR" doc.
+   */
   useFetch(fetch: ApiClient['httpClient']) {
+    console.warn(
+      '[remult] `useFetch` is deprecated, see https://remult.dev/docs/installation/framework/sveltekit#extra-universal-load-ssr',
+    )
     this.dataProvider = new RestDataProvider(() => ({
       httpClient: fetch,
     }))
@@ -471,16 +481,10 @@ export interface UserInfo {
 }
 
 export declare type Allowed =
-  | boolean
-  | string
-  | string[]
-  | ((c?: Remult) => boolean)
+  boolean | string | string[] | ((c?: Remult) => boolean)
 
 export declare type AllowedForInstance<T> =
-  | boolean
-  | string
-  | string[]
-  | ((entity?: T, c?: Remult) => boolean)
+  boolean | string | string[] | ((entity?: T, c?: Remult) => boolean)
 export class Allow {
   static everyone = () => true
   static authenticated = (...args: any[]) => {

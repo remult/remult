@@ -107,27 +107,27 @@ export const handle = sequence(
 
 ## Extra - Universal load & SSR
 
-To Use remult in ssr `PageLoad` - this will leverage the `event`'s fetch to load data on the server
-without reloading it on the frontend, and abiding to all api rules even when it runs on the server
+To use remult in an SSR `PageLoad`, route the read through the API using the `event`'s fetch: it works on SSR and CSR (no double fetch on the client), and applies all API rules even when it runs on the server.
+
+Scope it to the read with `withRemult` rather than mutating the shared request `remult`. A universal `load` runs **concurrently** with any `+page.server.ts`, so reassigning the global data provider there (as the deprecated `remult.useFetch` does) would change the provider that other load is using.
 
 ::: code-group
 
 ```ts [src/routes/+page.ts]
-import { remult } from 'remult'
+import { RestDataProvider, withRemult } from 'remult'
 import type { PageLoad } from './$types'
 
 export const load = (async (event) => {
-  // Instruct remult to use the special svelte fetch
-  // Like this univeral load will work in SSR & CSR
-  remult.useFetch(event.fetch)
-  return repo(Task).find()
+  return withRemult((remult) => remult.repo(Task).find(), {
+    dataProvider: new RestDataProvider(() => ({ httpClient: event.fetch })),
+  })
 }) satisfies PageLoad
 ```
 
 :::
 
 ::: tip
-You can add this in `+layout.ts` as well and all routes **under** will have the correct fetch out of the box.
+firstly ships a ready-made wrapper (`remultApiUniversalLoad`) that also handles CSR/hydration reuse - see [remultApiLoad.ts](https://github.com/jycouet/firstly/blob/main/packages/firstly/src/lib/svelte/remultApiLoad.ts).
 :::
 
 ## Extra - Server load
