@@ -77,6 +77,13 @@ export class RemultAsyncLocalStorage {
   isInInitRequest() {
     return this.remultObjectStorage?.getStore()?.inInitRequest
   }
+  /** Backed by a real AsyncLocalStorage (not a stub) - nested `run` is concurrency-safe. */
+  hasRealAsyncStorage() {
+    return (
+      this.remultObjectStorage?.wasImplemented === 'yes' &&
+      !this.remultObjectStorage.isStub
+    )
+  }
   setInInitRequest(val: boolean) {
     const store = this.remultObjectStorage?.getStore()
     if (!store) return

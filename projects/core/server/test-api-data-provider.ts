@@ -2,10 +2,8 @@ import {
   InMemoryDataProvider,
   remult,
   RestDataProvider,
-  SqlDatabase,
-  type DataProvider,
   type EntityMetadata,
-  type Remult,
+  Remult,
 } from '../index.js'
 import type { RemultServerOptions } from './index.js'
 import {
@@ -39,21 +37,28 @@ export function TestApiDataProvider(
   ) as RemultServerImplementation<GenericRequestInfo & { body?: any }>
 
   const lock = new AsyncLock()
-  async function handleOnServer(req: GenericRequestInfo & { body?: any }) {
+  async function handleOnServer(
+    req: GenericRequestInfo & { body?: any; user?: unknown },
+  ) {
+    const call = async () => {
+      if (newEntities.length > 0 && options?.ensureSchema != false) {
+        await (await dp).ensureSchema?.(newEntities)
+        newEntities = []
+      }
+      var result = await server.handle(req)
+      if ((result?.statusCode ?? 200) >= 400) {
+        throw { ...result?.data, status: result?.statusCode ?? 500 }
+      }
+      return result?.data ? JSON.parse(JSON.stringify(result.data)) : undefined
+    }
     return lock.runExclusive(async () => {
-      return await MakeServerCallWithDifferentStaticRemult(async () => {
-        if (newEntities.length > 0 && options?.ensureSchema != false) {
-          await (await dp).ensureSchema?.(newEntities)
-          newEntities = []
-        }
-        var result = await server.handle(req)
-        if ((result?.statusCode ?? 200) >= 400) {
-          throw { ...result?.data, status: result?.statusCode ?? 500 }
-        }
-        return result?.data
-          ? JSON.parse(JSON.stringify(result.data))
-          : undefined
-      })
+      if (remultStatic.asyncContext.hasRealAsyncStorage()) {
+        // Nest in the real AsyncLocalStorage instead of swapping process-global
+        // statics, which corrupts concurrent requests' remult contexts.
+        req.user = { ...remult.user! }
+        return remultStatic.asyncContext.run(new Remult(), call)
+      }
+      return MakeServerCallWithDifferentStaticRemult(call)
     })
   }
 
@@ -133,6 +138,7 @@ async function MakeServerCallWithDifferentStaticRemult<T>(what: () => T) {
         return callback()
       },
       wasImplemented: 'yes',
+      isStub: true, // keep hasRealAsyncStorage() false while this fake is installed
     })
     return await what()
   } finally {

@@ -1,5 +1,9 @@
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+- Fixed `TestApiDataProvider` corrupting concurrent `withRemult` contexts (crash or cross-request user leak): when a real `AsyncLocalStorage` is available, calls now nest in it instead of swapping process-global statics.
+
 ## [3.3.13] - 2026-06-09
 
 - Fixed `groupBy`/`aggregate` with `limit`/`page` but no `orderBy` emitting `OFFSET/FETCH` without an `ORDER BY`, which is invalid on SQL Server. A grouped query now falls back to ordering by the group columns, and a pure aggregate skips paging entirely.
