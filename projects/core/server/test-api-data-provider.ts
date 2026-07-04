@@ -37,29 +37,38 @@ export function TestApiDataProvider(
   ) as RemultServerImplementation<GenericRequestInfo & { body?: any }>
 
   const lock = new AsyncLock()
+  // serialized so concurrent first calls don't race ensureSchema
+  let schemaQueue: Promise<void> = Promise.resolve()
+  function ensureSchemaSerialized() {
+    const run = schemaQueue
+      .catch(() => {})
+      .then(async () => {
+        if (newEntities.length > 0 && options?.ensureSchema != false) {
+          await (await dp).ensureSchema?.(newEntities)
+          newEntities = []
+        }
+      })
+    schemaQueue = run
+    return run
+  }
   async function handleOnServer(
     req: GenericRequestInfo & { body?: any; user?: unknown },
   ) {
     const call = async () => {
-      if (newEntities.length > 0 && options?.ensureSchema != false) {
-        await (await dp).ensureSchema?.(newEntities)
-        newEntities = []
-      }
+      await ensureSchemaSerialized()
       var result = await server.handle(req)
       if ((result?.statusCode ?? 200) >= 400) {
         throw { ...result?.data, status: result?.statusCode ?? 500 }
       }
       return result?.data ? JSON.parse(JSON.stringify(result.data)) : undefined
     }
-    return lock.runExclusive(async () => {
-      if (remultStatic.asyncContext.hasRealAsyncStorage()) {
-        // Nest in the real AsyncLocalStorage instead of swapping process-global
-        // statics, which corrupts concurrent requests' remult contexts.
-        req.user = { ...remult.user! }
-        return remultStatic.asyncContext.run(new Remult(), call)
-      }
-      return MakeServerCallWithDifferentStaticRemult(call)
-    })
+    if (remultStatic.asyncContext.hasRealAsyncStorage()) {
+      // nested ALS run is concurrency-safe, no lock needed
+      req.user = { ...remult.user! }
+      return remultStatic.asyncContext.run(new Remult(), call)
+    }
+    // no ALS (e.g. StackBlitz): swapping globals is only safe one call at a time
+    return lock.runExclusive(() => MakeServerCallWithDifferentStaticRemult(call))
   }
 
   const registeredEntities = new Set<string>()
