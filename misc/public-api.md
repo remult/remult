@@ -2462,9 +2462,17 @@ export declare class Remult {
     instance: any,
     allowed?: AllowedForInstance<any>,
   ): boolean
+  /**
+   * @deprecated In SvelteKit, loads run in parallel, so reassigning the shared
+   * `remult` data provider here leaks across loads. Scope the fetch to the read
+   * with `withFetch` instead, e.g.
+   * `withFetch(event.fetch, () => repo(Task).find())`.
+   * See the SvelteKit "Universal load & SSR" doc.
+   */
   useFetch(fetch: ApiClient["httpClient"]): void
-  /** The current data provider */
-  dataProvider: DataProvider
+  /** The current data provider - reads honor an enclosing `withDataProvider` scope, assignment sets the instance default */
+  get dataProvider(): DataProvider
+  set dataProvider(provider: DataProvider)
   /** Creates a new instance of the `remult` object.
    *
    * Can receive either an HttpProvider or a DataProvider as a parameter - which will be used to fetch data from.
@@ -3624,6 +3632,17 @@ export declare function valueValidator<valueType>(
   entity: any,
   e: ValidateFieldEvent<any, valueType>,
 ) => string | boolean | Promise<string | boolean>
+export declare function withDataProvider<T>(
+  dataProvider: DataProvider,
+  callback: () => Promise<T>,
+): Promise<T>
+export declare function withFetch<T>(
+  fetch: ApiClient["httpClient"],
+  callback: () => Promise<T>,
+  options?: {
+    url?: string
+  },
+): Promise<T>
 export declare function withRemult<T>(
   callback: (remult: Remult) => Promise<T>,
   options?: {

@@ -44,6 +44,12 @@ import { initDataProvider } from '../server/initDataProvider.js'
 import { SubscribableImp } from './remult3/SubscribableImp.js'
 import { getEntitySettings } from './remult3/getEntityRef.js'
 
+export type RemultAsyncStore = {
+  remult: Remult
+  inInitRequest?: boolean
+  /** scoped override set by `withDataProvider` - applies to `remult` of this store only */
+  dataProvider?: DataProvider
+}
 export class RemultAsyncLocalStorage {
   static enable() {
     remultStatic.remultFactory = () => {
@@ -60,10 +66,7 @@ export class RemultAsyncLocalStorage {
   }
   constructor(
     private readonly remultObjectStorage:
-      | RemultAsyncLocalStorageCore<{
-          remult: Remult
-          inInitRequest?: boolean
-        }>
+      | RemultAsyncLocalStorageCore<RemultAsyncStore>
       | undefined,
   ) {}
   async run<T>(
@@ -90,6 +93,19 @@ export class RemultAsyncLocalStorage {
     }
     return this.remultObjectStorage.getStore()
   }
+  /** Like getStore, but returns undefined when async_hooks were never initialized. */
+  tryGetStore() {
+    return this.remultObjectStorage?.getStore()
+  }
+  /** Backed by a real AsyncLocalStorage (not the stub) - nested `run` restores the previous store. */
+  hasRealAsyncStorage() {
+    return !!this.remultObjectStorage && !this.remultObjectStorage.isStub
+  }
+  runWith<T>(store: RemultAsyncStore, callback: () => Promise<T>): Promise<T> {
+    if (this.remultObjectStorage)
+      return this.remultObjectStorage.run(store, callback)
+    return callback()
+  }
 }
 if (!remultStatic.asyncContext)
   remultStatic.asyncContext = new RemultAsyncLocalStorage(undefined!)
@@ -103,6 +119,9 @@ export type RemultAsyncLocalStorageCore<T> = {
 export function isBackend() {
   return remultStatic.actionInfo.runningOnServer || !remult.dataProvider.isProxy
 }
+
+// instance default kept off the class so RemultProxy's `implements Remult` shape is unchanged
+const instanceDataProvider = new WeakMap<Remult, DataProvider>()
 
 export class Remult {
   /**Return's a `Repository` of the specific entity type
@@ -236,8 +255,8 @@ export class Remult {
   /**
    * @deprecated In SvelteKit, loads run in parallel, so reassigning the shared
    * `remult` data provider here leaks across loads. Scope the fetch to the read
-   * with `withRemult` instead, e.g.
-   * `withRemult((r) => r.repo(X).find(), { dataProvider: new RestDataProvider(() => ({ httpClient: event.fetch })) })`.
+   * with `withFetch` instead, e.g.
+   * `withFetch(event.fetch, () => repo(Task).find())`.
    * See the SvelteKit "Universal load & SSR" doc.
    */
   useFetch(fetch: ApiClient['httpClient']) {
@@ -248,8 +267,20 @@ export class Remult {
       httpClient: fetch,
     }))
   }
-  /** The current data provider */
-  dataProvider: DataProvider = new RestDataProvider(() => this.apiClient)
+  /** The current data provider - reads honor an enclosing `withDataProvider` scope, assignment sets the instance default */
+  get dataProvider(): DataProvider {
+    const store = remultStatic.asyncContext?.tryGetStore()
+    if (store?.dataProvider && store.remult === this) return store.dataProvider
+    let dp = instanceDataProvider.get(this)
+    if (!dp) {
+      dp = new RestDataProvider(() => this.apiClient)
+      instanceDataProvider.set(this, dp)
+    }
+    return dp
+  }
+  set dataProvider(provider: DataProvider) {
+    instanceDataProvider.set(this, provider)
+  }
   /* @internal */
   repCache = new Map<DataProvider, Map<ClassType<any>, Repository<unknown>>>()
   /** Creates a new instance of the `remult` object.
@@ -535,18 +566,26 @@ export async function doTransaction(
 ) {
   const trans = new transactionLiveQueryPublisher(remult.liveQueryPublisher)
   let ok = true
+  // scope the tx provider when `remult` is the ambient context; mutate + restore otherwise
+  const scoped =
+    remultStatic.asyncContext.hasRealAsyncStorage() &&
+    remultStatic.asyncContext.tryGetStore()?.remult === remult
   const prev = remult.dataProvider
   try {
-    await remult.dataProvider.transaction(async (ds) => {
-      remult.dataProvider = ds
+    await prev.transaction(async (ds) => {
       remult.liveQueryPublisher = trans
-      await what(ds)
+      if (scoped) {
+        await withDataProvider(ds, () => what(ds))
+      } else {
+        remult.dataProvider = ds
+        await what(ds)
+      }
       ok = true
     })
 
     if (ok) await trans.flush()
   } finally {
-    remult.dataProvider = prev
+    if (!scoped) remult.dataProvider = prev
   }
 }
 class transactionLiveQueryPublisher implements LiveQueryChangesListener {
@@ -591,4 +630,48 @@ export async function withRemult<T>(
   )
 
   return remultStatic.asyncContext.run(remult, (r) => callback(r))
+}
+
+/**
+ * Runs `callback` with `dataProvider` scoped to the current async context.
+ * The ambient `remult` (user, context) stays the same - only data access is
+ * rerouted - and concurrent requests are unaffected.
+ * Without AsyncLocalStorage (browser, plain scripts) it swaps the current
+ * remult's provider and restores it - single-context environments only.
+ */
+export async function withDataProvider<T>(
+  dataProvider: DataProvider,
+  callback: () => Promise<T>,
+): Promise<T> {
+  const storage = remultStatic.asyncContext
+  const store = storage.tryGetStore()
+  if (store && storage.hasRealAsyncStorage()) {
+    return storage.runWith({ ...store, dataProvider }, callback)
+  }
+  const r = remultStatic.remultFactory()
+  const prev = r.dataProvider
+  r.dataProvider = dataProvider
+  try {
+    return await callback()
+  } finally {
+    r.dataProvider = prev
+  }
+}
+
+/**
+ * Runs `callback` with data access going through the API via `fetch` - the
+ * scoped replacement for the deprecated `remult.useFetch`.
+ * @example
+ * export const load = async (event) =>
+ *   withFetch(event.fetch, () => repo(Task).find())
+ */
+export function withFetch<T>(
+  fetch: ApiClient['httpClient'],
+  callback: () => Promise<T>,
+  options?: { url?: string },
+): Promise<T> {
+  return withDataProvider(
+    new RestDataProvider(() => ({ httpClient: fetch, url: options?.url })),
+    callback,
+  )
 }
