@@ -28,7 +28,7 @@ class Task {
   title = ''
 }
 
-@Entity('gatedTasks', {
+@Entity<GatedTask>('gatedTasks', {
   allowApiCrud: true,
   allowApiDelete: false,
   apiPrefilter: { pub: true },
