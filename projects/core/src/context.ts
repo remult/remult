@@ -100,10 +100,9 @@ export class RemultAsyncLocalStorage {
   hasRealAsyncStorage() {
     return !!this.remultObjectStorage && !this.remultObjectStorage.isStub
   }
+  /** callers must check hasRealAsyncStorage() first */
   runWith<T>(store: RemultAsyncStore, callback: () => Promise<T>): Promise<T> {
-    if (this.remultObjectStorage)
-      return this.remultObjectStorage.run(store, callback)
-    return callback()
+    return this.remultObjectStorage!.run(store, callback)
   }
 }
 if (!remultStatic.asyncContext)
