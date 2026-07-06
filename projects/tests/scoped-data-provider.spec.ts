@@ -1,9 +1,9 @@
 import { beforeEach, afterEach, describe, expect, it } from 'vitest'
 import {
+  BackendMethod,
   Entity,
   Fields,
   InMemoryDataProvider,
-  Remult,
   remult,
   repo,
   withRemult,
@@ -14,6 +14,11 @@ import {
 import { RemultAsyncLocalStorage, doTransaction } from '../core/src/context.js'
 import { remultStatic } from '../core/src/remult-static.js'
 import { AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore } from '../core/server/initAsyncHooks.js'
+import {
+  createRemultServerCore,
+  type GenericRequestInfo,
+  type RemultServerImplementation,
+} from '../core/server/remult-api-server.js'
 
 @Entity('scopedDpTasks', { allowApiCrud: true })
 class Task {
@@ -21,6 +26,56 @@ class Task {
   id = 0
   @Fields.string()
   title = ''
+}
+
+@Entity('gatedTasks', {
+  allowApiCrud: true,
+  allowApiDelete: false,
+  apiPrefilter: { pub: true },
+})
+class GatedTask {
+  @Fields.integer()
+  id = 0
+  @Fields.string()
+  title = ''
+  @Fields.boolean()
+  pub = false
+  @Fields.string({ includeInApi: false })
+  secret = ''
+}
+
+class GatedMethods {
+  @BackendMethod({ allowed: false })
+  static async visibleCount() {
+    return await repo(GatedTask).count()
+  }
+}
+
+// http client backed by a full in-process api pipeline
+function apiHttpClient(dataProvider: DataProvider) {
+  const server = createRemultServerCore<GenericRequestInfo & { body?: any }>(
+    { entities: [GatedTask], dataProvider },
+    {
+      getRequestBody: async (req) => req.body,
+      buildGenericRequestInfo: (req) => ({
+        internal: req,
+        public: { headers: new Headers() },
+      }),
+      ignoreAsyncStorage: true,
+    },
+  ) as RemultServerImplementation<GenericRequestInfo & { body?: any }>
+  const call = async (method: string, url: string, body?: any) => {
+    const r = await server.handle({ url, method, body })
+    if ((r?.statusCode ?? 200) >= 400)
+      throw { ...r?.data, status: r?.statusCode ?? 500 }
+    return r?.data
+  }
+  return {
+    get: (url: string) => call('GET', url),
+    post: (url: string, body: any) => call('POST', url, body),
+    put: (url: string, body: any) => call('PUT', url, body),
+    delete: (url: string) => call('DELETE', url),
+  }
 }
 
 function deferred() {
@@ -50,12 +105,12 @@ describe('withDataProvider with real async storage', () => {
         await repo(Task).insert({ id: 1, title: 'in A' })
 
         await withDataProvider(dbB, async () => {
-          expect(remult.user?.id).toBe('u1') // same remult, same user
-          expect(await repo(Task).count()).toBe(0) // reads B, not A
+          expect(remult.user?.id).toBe('u1')
+          expect(await repo(Task).count()).toBe(0)
           await repo(Task).insert({ id: 2, title: 'in B' })
         })
 
-        expect(await repo(Task).count()).toBe(1) // back to A
+        expect(await repo(Task).count()).toBe(1)
       },
       { dataProvider: dbA },
     )
@@ -74,14 +129,14 @@ describe('withDataProvider with real async storage', () => {
           await repo(Task).insert({ id: 1 })
           await withRemult(
             async () => {
-              expect(await repo(Task).count()).toBe(0) // sees C, not B
+              expect(await repo(Task).count()).toBe(0)
               await repo(Task).insert({ id: 2 })
             },
             { dataProvider: dbC },
           )
-          expect(await repo(Task).count()).toBe(1) // back to B
+          expect(await repo(Task).count()).toBe(1)
         })
-        expect(await repo(Task).count()).toBe(0) // back to A
+        expect(await repo(Task).count()).toBe(0)
       },
       { dataProvider: dbA },
     )
@@ -95,8 +150,8 @@ describe('withDataProvider with real async storage', () => {
       async () => {
         await withDataProvider(dbB, async () => {
           expect(remult.dataProvider).toBe(dbB)
-          remult.dataProvider = dbC // writes the instance default
-          expect(remult.dataProvider).toBe(dbB) // scope still wins for reads
+          remult.dataProvider = dbC
+          expect(remult.dataProvider).toBe(dbB) // scope wins over the assignment above
         })
         expect(remult.dataProvider).toBe(dbC)
       },
@@ -119,13 +174,13 @@ describe('withDataProvider with real async storage', () => {
       async (r) => {
         await withDataProvider(trackedB, async () => {
           await doTransaction(r, async () => {
-            expect(remult.dataProvider).toBe(dbB) // tx provider, innermost scope
+            expect(remult.dataProvider).toBe(dbB)
             await repo(Task).insert({ id: 1 })
             await repo(Task).insert({ id: 2 })
           })
-          expect(remult.dataProvider).toBe(trackedB) // outer scope restored
+          expect(remult.dataProvider).toBe(trackedB)
         })
-        expect(await repo(Task).count()).toBe(0) // nothing landed in A
+        expect(await repo(Task).count()).toBe(0)
       },
       { dataProvider: dbA },
     )
@@ -194,7 +249,7 @@ describe('withDataProvider with real async storage', () => {
     )
 
     const requestB = (async () => {
-      await aStarted.promise // enter while A's scoped find is in flight
+      await aStarted.promise
       return withRemult(
         async () => {
           remult.user = { id: 'B' }
@@ -209,8 +264,8 @@ describe('withDataProvider with real async storage', () => {
     releaseA.resolve()
     const a = await requestA
 
-    expect(a).toEqual({ user: 'A', rows: 0 }) // A saw gated dbB, kept its user
-    expect(b).toEqual({ user: 'B', count: 1 }) // B unaffected by A's scope
+    expect(a).toEqual({ user: 'A', rows: 0 })
+    expect(b).toEqual({ user: 'B', count: 1 })
   })
 
   it('withFetch routes reads through the http client, same user', async () => {
@@ -234,7 +289,7 @@ describe('withDataProvider with real async storage', () => {
         })
         expect(rows.map((r) => r.id)).toEqual([7])
         expect(calls).toEqual(['/api/scopedDpTasks'])
-        expect(await repo(Task).count()).toBe(0) // back to A
+        expect(await repo(Task).count()).toBe(0)
       },
       { dataProvider: dbA },
     )
@@ -257,6 +312,61 @@ describe('withDataProvider with real async storage', () => {
         expect(calls).toEqual(['/custom/scopedDpTasks'])
       },
       { dataProvider: new InMemoryDataProvider() },
+    )
+  })
+
+  it('withFetch applies the api rules of the endpoint', async () => {
+    const db = new InMemoryDataProvider()
+    await withRemult(
+      async () => {
+        await repo(GatedTask).insert([
+          { id: 1, title: 'public', pub: true, secret: 's1' },
+          { id: 2, title: 'private', pub: false, secret: 's2' },
+        ])
+      },
+      { dataProvider: db },
+    )
+
+    const http = apiHttpClient(db)
+    await withRemult(
+      async () => {
+        await withFetch(http, async () => {
+          const rows = await repo(GatedTask).find()
+          expect(rows.map((r) => r.id)).toEqual([1]) // apiPrefilter
+          expect(rows[0].secret).toBeFalsy() // includeInApi: false
+          await expect(repo(GatedTask).delete(1)).rejects.toMatchObject({
+            httpStatusCode: 403, // allowApiDelete: false, same error shape a browser gets
+          })
+        })
+        expect(await repo(GatedTask).count()).toBe(2) // privileged again outside
+      },
+      { dataProvider: db },
+    )
+  })
+
+  // current semantics, locked for the RFC discussion: a server-side BackendMethod
+  // call is a plain function call - `allowed` is NOT checked - but its body's
+  // repo() ops resolve through the scope, so they hit the api rules
+  it('a BackendMethod called inside withFetch runs its body through the api', async () => {
+    const db = new InMemoryDataProvider()
+    await withRemult(
+      async () => {
+        await repo(GatedTask).insert([
+          { id: 1, title: 'public', pub: true },
+          { id: 2, title: 'private', pub: false },
+        ])
+      },
+      { dataProvider: db },
+    )
+
+    const http = apiHttpClient(db)
+    await withRemult(
+      async () => {
+        expect(await GatedMethods.visibleCount()).toBe(2) // privileged outside the scope
+        const gated = await withFetch(http, () => GatedMethods.visibleCount())
+        expect(gated).toBe(1)
+      },
+      { dataProvider: db },
     )
   })
 })

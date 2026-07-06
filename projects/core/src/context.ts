@@ -47,7 +47,6 @@ import { getEntitySettings } from './remult3/getEntityRef.js'
 export type RemultAsyncStore = {
   remult: Remult
   inInitRequest?: boolean
-  /** scoped override set by `withDataProvider` - applies to `remult` of this store only */
   dataProvider?: DataProvider
 }
 export class RemultAsyncLocalStorage {
@@ -93,11 +92,10 @@ export class RemultAsyncLocalStorage {
     }
     return this.remultObjectStorage.getStore()
   }
-  /** Like getStore, but returns undefined when async_hooks were never initialized. */
   tryGetStore() {
     return this.remultObjectStorage?.getStore()
   }
-  /** Backed by a real AsyncLocalStorage (not the stub) - nested `run` restores the previous store. */
+  /** the stub's `run` never restores the previous store on exit */
   hasRealAsyncStorage() {
     return !!this.remultObjectStorage && !this.remultObjectStorage.isStub
   }
@@ -566,7 +564,7 @@ export async function doTransaction(
 ) {
   const trans = new transactionLiveQueryPublisher(remult.liveQueryPublisher)
   let ok = true
-  // scope the tx provider when `remult` is the ambient context; mutate + restore otherwise
+  // mutate+restore inside a scope would clobber the enclosing override
   const scoped =
     remultStatic.asyncContext.hasRealAsyncStorage() &&
     remultStatic.asyncContext.tryGetStore()?.remult === remult
@@ -633,11 +631,9 @@ export async function withRemult<T>(
 }
 
 /**
- * Runs `callback` with `dataProvider` scoped to the current async context.
- * The ambient `remult` (user, context) stays the same - only data access is
- * rerouted - and concurrent requests are unaffected.
- * Without AsyncLocalStorage (browser, plain scripts) it swaps the current
- * remult's provider and restores it - single-context environments only.
+ * Runs `callback` with `dataProvider` scoped to the current async context - same
+ * `remult` (user, context), only data access is rerouted; concurrent requests are
+ * unaffected. Without AsyncLocalStorage it swaps and restores the current provider.
  */
 export async function withDataProvider<T>(
   dataProvider: DataProvider,
