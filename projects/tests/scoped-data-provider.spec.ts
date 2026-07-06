@@ -46,7 +46,11 @@ class GatedTask {
 
 class GatedMethods {
   @BackendMethod({ allowed: false })
-  static async visibleCount() {
+  static async forbiddenCount() {
+    return await repo(GatedTask).count()
+  }
+  @BackendMethod({ allowed: true })
+  static async totalCount() {
     return await repo(GatedTask).count()
   }
 }
@@ -54,7 +58,7 @@ class GatedMethods {
 // http client backed by a full in-process api pipeline
 function apiHttpClient(dataProvider: DataProvider) {
   const server = createRemultServerCore<GenericRequestInfo & { body?: any }>(
-    { entities: [GatedTask], dataProvider },
+    { entities: [GatedTask], controllers: [GatedMethods], dataProvider },
     {
       getRequestBody: async (req) => req.body,
       buildGenericRequestInfo: (req) => ({
@@ -344,10 +348,7 @@ describe('withDataProvider with real async storage', () => {
     )
   })
 
-  // current semantics, locked for the RFC discussion: a server-side BackendMethod
-  // call is a plain function call - `allowed` is NOT checked - but its body's
-  // repo() ops resolve through the scope, so they hit the api rules
-  it('a BackendMethod called inside withFetch runs its body through the api', async () => {
+  it('a BackendMethod inside withFetch is dispatched like a client call - allowed enforced at the endpoint', async () => {
     const db = new InMemoryDataProvider()
     await withRemult(
       async () => {
@@ -362,9 +363,32 @@ describe('withDataProvider with real async storage', () => {
     const http = apiHttpClient(db)
     await withRemult(
       async () => {
-        expect(await GatedMethods.visibleCount()).toBe(2) // privileged outside the scope
-        const gated = await withFetch(http, () => GatedMethods.visibleCount())
-        expect(gated).toBe(1)
+        expect(await GatedMethods.forbiddenCount()).toBe(2) // direct server call, no gate
+        await expect(
+          withFetch(http, () => GatedMethods.forbiddenCount()),
+        ).rejects.toMatchObject({ httpStatusCode: 403 })
+      },
+      { dataProvider: db },
+    )
+  })
+
+  it('a BackendMethod inside withFetch runs its body privileged at the endpoint', async () => {
+    const db = new InMemoryDataProvider()
+    await withRemult(
+      async () => {
+        await repo(GatedTask).insert([
+          { id: 1, title: 'public', pub: true },
+          { id: 2, title: 'private', pub: false },
+        ])
+      },
+      { dataProvider: db },
+    )
+
+    const http = apiHttpClient(db)
+    await withRemult(
+      async () => {
+        const total = await withFetch(http, () => GatedMethods.totalCount())
+        expect(total).toBe(2) // not gated: the body is server code at the endpoint
       },
       { dataProvider: db },
     )

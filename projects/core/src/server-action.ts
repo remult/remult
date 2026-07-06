@@ -35,6 +35,11 @@ interface inArgs {
 interface result {
   data: any
 }
+// a `withFetch` scope makes server-side BackendMethod calls behave like client calls
+function scopedApiClient() {
+  const scoped = remultStatic.asyncContext?.tryGetStore?.()?.apiClient
+  return scoped?.httpClient ? scoped : undefined
+}
 export abstract class Action<inParam, outParam> implements ActionInterface {
   constructor(
     private actionUrl: string,
@@ -282,12 +287,21 @@ export function BackendMethod<type = unknown>(
       result = async function (...args: any[]) {
         if (!isBackend()) {
           return await serverAction.doWork(args, undefined)
-        } else
-          return await originalMethod.apply(
-            //@ts-ignore
-            this as any,
+        }
+        const scoped = scopedApiClient()
+        if (scoped) {
+          return await serverAction.doWork(
             args,
+            undefined,
+            scoped.url,
+            buildRestDataProvider(scoped.httpClient!),
           )
+        }
+        return await originalMethod.apply(
+          //@ts-ignore
+          this as any,
+          args,
+        )
       }
       registerAction(target, result)
       result[serverActionField] = serverAction
@@ -512,7 +526,17 @@ export function BackendMethod<type = unknown>(
       let self: any = this
       if (!isBackend()) {
         return serverAction.doWork(args, self)
-      } else return await originalMethod.apply(self, args)
+      }
+      const scoped = scopedApiClient()
+      if (scoped) {
+        return serverAction.doWork(
+          args,
+          self,
+          scoped.url,
+          buildRestDataProvider(scoped.httpClient!),
+        )
+      }
+      return await originalMethod.apply(self, args)
     }
     registerAction(target.constructor, result)
     result[serverActionField] = serverAction

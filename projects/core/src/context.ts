@@ -48,6 +48,7 @@ export type RemultAsyncStore = {
   remult: Remult
   inInitRequest?: boolean
   dataProvider?: DataProvider
+  apiClient?: ApiClient
 }
 export class RemultAsyncLocalStorage {
   static enable() {
@@ -656,7 +657,9 @@ export async function withDataProvider<T>(
 
 /**
  * Runs `callback` with data access going through the API via `fetch` - the
- * scoped replacement for the deprecated `remult.useFetch`.
+ * scoped replacement for the deprecated `remult.useFetch`. Inside the scope a
+ * `BackendMethod` call behaves exactly like a client call: dispatched over
+ * `fetch`, `allowed` enforced at the endpoint, body runs privileged there.
  * @example
  * export const load = async (event) =>
  *   withFetch(event.fetch, () => repo(Task).find())
@@ -666,8 +669,24 @@ export function withFetch<T>(
   callback: () => Promise<T>,
   options?: { url?: string },
 ): Promise<T> {
-  return withDataProvider(
-    new RestDataProvider(() => ({ httpClient: fetch, url: options?.url })),
-    callback,
-  )
+  const apiClient: ApiClient = { httpClient: fetch, url: options?.url }
+  const dataProvider = new RestDataProvider(() => apiClient)
+  const storage = remultStatic.asyncContext
+  const store = storage.tryGetStore()
+  if (store && storage.hasRealAsyncStorage()) {
+    return storage.runWith({ ...store, dataProvider, apiClient }, callback)
+  }
+  return (async () => {
+    const r = remultStatic.remultFactory()
+    const prevDp = r.dataProvider
+    const prevApi = r.apiClient
+    r.dataProvider = dataProvider
+    r.apiClient = apiClient
+    try {
+      return await callback()
+    } finally {
+      r.dataProvider = prevDp
+      r.apiClient = prevApi
+    }
+  })()
 }
