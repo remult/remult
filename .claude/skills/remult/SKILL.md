@@ -1,6 +1,6 @@
 ---
 name: remult
-description: Remult patterns - entities, fields, repo() usage, lifecycle hooks, permissions (allowApi + apiPrefilter), upsert, customFilter, sqlExpression, ValueList enums, relations. Use whenever writing or modifying Remult entities, configuring API permissions, working with `repo()`, or building CRUD flows in any Remult-powered app (React, Angular, Vue, SvelteKit, Next.js, SolidStart, Nuxt).
+description: Remult patterns - entities, fields, repo() usage, lifecycle hooks, permissions (allowApi + apiPrefilter), upsert, customFilter, sqlExpression, ValueList enums, relations, BackendMethod, and keeping server-only / Node-only code (fs, sharp, ...) out of the client bundle with `import.meta.env.SSR`. Use whenever writing or modifying Remult entities, configuring API permissions, working with `repo()`, writing a BackendMethod, guarding server-only code, or building CRUD flows in any Remult-powered app (React, Angular, Vue, SvelteKit, Next.js, SolidStart, Nuxt).
 ---
 
 # Remult
@@ -88,7 +88,12 @@ static async log(msg: string) {
   if (import.meta.env.SSR) {
     const { appendFileSync } = await import('fs')
     appendFileSync('./logs/log.txt', `${new Date().toISOString()} ${msg}\n`)
+    return { status: 'ok' }
   }
+  // Unreachable on the server (SSR is build-time true). When the method returns a
+  // value, `return` inside the block and `throw` here to keep the return type clean
+  // (no `| undefined`).
+  throw new Error('server-only')
 }
 ```
 
@@ -105,7 +110,7 @@ Same pattern in hooks:
 })
 ```
 
-**Do not use `if (!import.meta.env.SSR) return` as an early-return** - it does NOT strip the Node-only deps from the client bundle. Always wrap the server-only section in `if (import.meta.env.SSR) { ... }`.
+**The shape is mandatory (this is THE thing people get wrong):** `import.meta.env.SSR` is a build-time constant Vite replaces + tree-shakes, so it can only drop a **wrapped block**. The server-only `import()` MUST be inside `if (import.meta.env.SSR) { ... }` (return inside; `throw` after for a returning method). An early `if (!import.meta.env.SSR) return` leaves the import statically reachable -> it stays in the client bundle -> `Module not found`.
 
 For more (abstract-the-call, bundler exclusion), see <https://remult.dev/docs/using-server-only-packages>.
 

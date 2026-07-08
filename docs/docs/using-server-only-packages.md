@@ -53,7 +53,12 @@ static async log(msg: string) {
   if (import.meta.env.SSR) {
     const { appendFileSync } = await import('fs')
     appendFileSync('./logs/log.txt', `${new Date().toISOString()} ${msg}\n`)
+    return { status: 'ok' }
   }
+  // `import.meta.env.SSR` is build-time `true` on the server, so this line is never
+  // reached. When the method returns a value, `return` inside the block and `throw`
+  // here - it keeps the inferred return type clean (no `| undefined`).
+  throw new Error('server-only')
 }
 ```
 
@@ -70,8 +75,23 @@ Same pattern in an entity `saved` hook:
 })
 ```
 
-::: warning Early-return does NOT work
-`if (!import.meta.env.SSR) return` at the top of a `BackendMethod` does **not** strip the Node-only deps from the client bundle - you'll still get `Module not found`. Always wrap the server-only section in `if (import.meta.env.SSR) { ... }`.
+::: danger The shape is mandatory: wrap the block, never early-return
+`import.meta.env.SSR` is a **build-time constant** - Vite replaces it with `true`/`false` and tree-shakes. It can therefore only drop a **wrapped block**, so the server-only `import()` must live _inside_ `if (import.meta.env.SSR) { ... }`. An early `if (!import.meta.env.SSR) return` leaves the import statically reachable, so it stays in the client bundle and you get `Module not found`.
+
+```ts
+// ✅ the whole block (and its import) is stripped from the client bundle
+if (import.meta.env.SSR) {
+  const { appendFileSync } = await import('fs')
+  // ...
+  return result
+}
+throw new Error('server-only') // unreachable on the server; required for a clean return type
+
+// ❌ NOT stripped -> `Module not found` in the client build
+if (!import.meta.env.SSR) return
+const { appendFileSync } = await import('fs') // still statically reachable
+```
+
 :::
 
 ## Solution 2 - abstract the call
