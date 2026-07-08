@@ -2462,6 +2462,13 @@ export declare class Remult {
     instance: any,
     allowed?: AllowedForInstance<any>,
   ): boolean
+  /**
+   * @deprecated In SvelteKit, loads run in parallel, so reassigning the shared
+   * `remult` data provider here leaks across loads. Scope the fetch to the read
+   * with `withRemult` instead, e.g.
+   * `withRemult((r) => r.repo(X).find(), { dataProvider: new RestDataProvider(() => ({ httpClient: event.fetch })) })`.
+   * See the SvelteKit "Universal load & SSR" doc.
+   */
   useFetch(fetch: ApiClient["httpClient"]): void
   /** The current data provider */
   dataProvider: DataProvider
