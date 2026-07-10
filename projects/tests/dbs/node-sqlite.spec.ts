@@ -17,14 +17,14 @@ const supportsNodeSqlite =
 describe.skipIf(!supportsNodeSqlite)('node:sqlite', () => {
   let db: SqlDatabase
   let remult: Remult
+  let provider: NodeSqliteDataProvider
 
   beforeEach(() => {
     const { DatabaseSync } = require('node:sqlite') as {
       DatabaseSync: new (location: string) => NodeSqliteDatabase
     }
-    db = new SqlDatabase(
-      new NodeSqliteDataProvider(new DatabaseSync(':memory:')),
-    )
+    provider = new NodeSqliteDataProvider(new DatabaseSync(':memory:'))
+    db = new SqlDatabase(provider)
     remult = new Remult(db)
   })
 
@@ -55,6 +55,16 @@ describe.skipIf(!supportsNodeSqlite)('node:sqlite', () => {
       (await command.execute(`select * from x where id=${command.param(1)}`))
         .rows,
     ).toEqual([{ id: 1 }])
+
+    const legacyCommand = provider.createCommand()
+    const legacyParameter = legacyCommand.addParameterAndReturnSqlToken(1)
+    expect(
+      (
+        await legacyCommand.execute(
+          `select * from x where id=${legacyParameter}`,
+        )
+      ).rows,
+    ).toEqual([{ id: 1 }])
   })
 
   it('round-trips binary values', async () => {
@@ -68,5 +78,11 @@ describe.skipIf(!supportsNodeSqlite)('node:sqlite', () => {
 
     const rows = (await db.execute('select value from binary_values')).rows
     expect(rows[0].value).toEqual(new Uint8Array([1, 2, 3]))
+  })
+
+  it('closes the underlying database', async () => {
+    await db.end()
+
+    await expect(db.execute('select 1')).rejects.toThrow()
   })
 })
