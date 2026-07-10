@@ -4611,6 +4611,22 @@ export declare class SqliteCoreDataProvider
 //[ ] FieldMetadata from ./src/column-interfaces.js is not exported
 ```
 
+## ./remult-node-sqlite.js
+
+```ts
+export type NodeSqliteDatabase = {
+  prepare(sql: string): NodeSqliteStatement
+  close(): void
+}
+export declare class NodeSqliteDataProvider extends SqliteCoreDataProvider {
+  constructor(db: NodeSqliteDatabase)
+}
+export type NodeSqliteStatement = {
+  setAllowBareNamedParameters(enabled: boolean): void
+  all(...anonymousParameters: any[]): Record<string, unknown>[]
+}
+```
+
 ## ./remult-better-sqlite3.js
 
 ```ts
