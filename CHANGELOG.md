@@ -1,7 +1,9 @@
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [3.3.15] - 2026-07-10
 
+- Added a Node built-in SQLite data provider (`remult/remult-node-sqlite`), using the native `node:sqlite` module ([#1034](https://github.com/remult/remult/pull/1034)).
+- Thanks to @linoch512 for their first contribution
 - `groupBy` now ignores `orderBy` fields that are not part of the group by (previously they were passed through to the database, producing an invalid grouped query on SQL Server / Postgres). The rest api additionally ignores `orderBy` fields that are not included in the api.
 
 ## [3.3.14] - 2026-07-08
