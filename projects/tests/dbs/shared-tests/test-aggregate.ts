@@ -615,6 +615,24 @@ export function aggregateTest(
       expect(results.length).toBe(1)
     })
 
+    it('should ignore orderBy fields that are not part of the group by', async () => {
+      // Such a column is invalid in a grouped query on SQL Server / Postgres -
+      // it is silently dropped so behavior is consistent across data providers.
+      const r = await repo()
+      const results = await r.groupBy({
+        group: ['country'],
+        orderBy: { salary: 'asc', $count: 'desc', country: 'asc' } as any,
+        limit: 100,
+      })
+      const expected = await r.groupBy({
+        group: ['country'],
+        orderBy: { $count: 'desc', country: 'asc' },
+      })
+      expect(results.map((x) => x.country)).toEqual(
+        expected.map((x) => x.country),
+      )
+    })
+
     it('should order results by distinct count of cities', async () => {
       const r = await repo()
 

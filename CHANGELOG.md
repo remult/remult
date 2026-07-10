@@ -1,5 +1,9 @@
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+- `groupBy` now ignores `orderBy` fields that are not part of the group by (previously they were passed through to the database, producing an invalid grouped query on SQL Server / Postgres). The rest api additionally ignores `orderBy` fields that are not included in the api.
+
 ## [3.3.14] - 2026-07-08
 
 - Fixed a memory leak related to usage of repo(x,y) with infinite different y
