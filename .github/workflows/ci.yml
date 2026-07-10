@@ -9,6 +9,25 @@ on:
       - '**'
 
 jobs:
+  node_sqlite:
+    name: Node built-in SQLite provider
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🌐 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🧑‍💻 Setup env
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🧪 Test node:sqlite provider
+        run: npx vitest run projects/tests/dbs/node-sqlite.spec.ts --coverage=false
+
   build:
     name: Test latest typescript build with public api
     runs-on: ubuntu-latest
