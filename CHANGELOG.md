@@ -1,5 +1,10 @@
 All notable changes to this project will be documented in this file.
 
+## [3.3.16] - 2026-07-14
+
+- Added support for default values without an arrow function
+- Added type info in the field's function response - used for typing stuff :)
+
 ## [3.3.15] - 2026-07-10
 
 - Added a Node built-in SQLite data provider (`remult/remult-node-sqlite`), using the native `node:sqlite` module ([#1034](https://github.com/remult/remult/pull/1034)).

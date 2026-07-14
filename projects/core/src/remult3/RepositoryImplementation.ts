@@ -1880,7 +1880,7 @@ export class rowHelperImplementation<T>
           if (typeof col.options.defaultValue === 'function') {
             instance[colKey] = col.options.defaultValue(instance) as any
           } else if (!instance[colKey])
-            instance[colKey] = col.options.defaultValue
+            instance[colKey] = col.options.defaultValue as T[keyof T]
         }
       }
     }
