@@ -152,13 +152,19 @@ export const CaptionTransformer: {
     entityMetaData: import("./src/remult3/remult3.js").EntityMetadata<any>,
   ) => string
 }
-export type ClassFieldDecorator<entityType, valueType> = (
+export type ClassFieldDecorator<entityType, valueType> = ((
   target: any,
   context:
     | string
     | ClassFieldDecoratorContextStub<entityType, valueType | undefined>,
   c?: any,
-) => void
+) => void) & {
+  /** Phantom type brand (never set at runtime). Without it the decorator is a
+   * bare function type, which TypeScript skips as an inference candidate when
+   * a `Fields.xxx()` call appears in a generically-inferred object alongside a
+   * context-sensitive function — e.g. UI schemas built from field decorators. */
+  readonly __fieldValueType?: valueType
+}
 export interface ClassFieldDecoratorContextStub<entityType, valueType> {
   readonly access: {
     set(object: entityType, value: valueType | null): void
@@ -1188,8 +1194,8 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
   valueConverter?: ValueConverter<valueType>
   /** an arrow function that translates the value to a display value */
   displayValue?: (entity: entityType, value: valueType) => string
-  /** an arrow function that determines the default value of the field, when the entity is created using the `repo.create` method */
-  defaultValue?: (entity: entityType) => valueType
+  /** The default value of the field, when the entity is created using the `repo.create` method — a value or an arrow function that computes it */
+  defaultValue?: valueType | ((entity: entityType) => valueType)
   /** The html input type for this field */
   inputType?: string
   /**
@@ -2462,6 +2468,13 @@ export declare class Remult {
     instance: any,
     allowed?: AllowedForInstance<any>,
   ): boolean
+  /**
+   * @deprecated In SvelteKit, loads run in parallel, so reassigning the shared
+   * `remult` data provider here leaks across loads. Scope the fetch to the read
+   * with `withRemult` instead, e.g.
+   * `withRemult((r) => r.repo(X).find(), { dataProvider: new RestDataProvider(() => ({ httpClient: event.fetch })) })`.
+   * See the SvelteKit "Universal load & SSR" doc.
+   */
   useFetch(fetch: ApiClient["httpClient"]): void
   /** The current data provider */
   dataProvider: DataProvider
@@ -4602,6 +4615,22 @@ export declare class SqliteCoreDataProvider
 //[ ] SqlImplementation from ./src/sql-command.js is not exported
 //[ ] EntityMetadata from ./src/remult3/remult3.js is not exported
 //[ ] FieldMetadata from ./src/column-interfaces.js is not exported
+```
+
+## ./remult-node-sqlite.js
+
+```ts
+export type NodeSqliteDatabase = {
+  prepare(sql: string): NodeSqliteStatement
+  close(): void
+}
+export declare class NodeSqliteDataProvider extends SqliteCoreDataProvider {
+  constructor(db: NodeSqliteDatabase)
+}
+export type NodeSqliteStatement = {
+  setAllowBareNamedParameters(enabled: boolean): void
+  all(...anonymousParameters: any[]): Record<string, unknown>[]
+}
 ```
 
 ## ./remult-better-sqlite3.js

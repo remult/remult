@@ -132,8 +132,8 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
 
   /** an arrow function that translates the value to a display value */
   displayValue?: (entity: entityType, value: valueType) => string
-  /** an arrow function that determines the default value of the field, when the entity is created using the `repo.create` method */
-  defaultValue?: (entity: entityType) => valueType
+  /** The default value of the field, when the entity is created using the `repo.create` method — a value or an arrow function that computes it */
+  defaultValue?: valueType | ((entity: entityType) => valueType)
 
   /** The html input type for this field */
   inputType?: string

@@ -13,6 +13,7 @@ import type { EntityOptions } from '../entity.js'
 import { Filter } from '../filter/filter-interfaces.js'
 import { Sort } from '../sort.js'
 import {
+  GroupByCountMember,
   GroupByForApiKey,
   type GroupByOptions,
   type GroupByResult,
@@ -359,10 +360,15 @@ export class RepositoryImplementation<entityType>
           const element = (options.orderBy as any)[key]
           if (element)
             if (typeof element === 'string') {
+              // ordering by a raw column is only valid for grouped fields -
+              // skip others so behavior is consistent across data providers
+              if (key !== GroupByCountMember && !options?.group?.includes(key))
+                continue
               dpOptions.orderBy.push({
-                field: key === '$count' ? undefined : getField(key as any),
+                field:
+                  key === GroupByCountMember ? undefined : getField(key as any),
                 isDescending: element === 'desc',
-                operation: key === '$count' ? 'count' : undefined,
+                operation: key === GroupByCountMember ? 'count' : undefined,
               })
             } else {
               for (const operation in element) {
@@ -1874,7 +1880,7 @@ export class rowHelperImplementation<T>
           if (typeof col.options.defaultValue === 'function') {
             instance[colKey] = col.options.defaultValue(instance) as any
           } else if (!instance[colKey])
-            instance[colKey] = col.options.defaultValue
+            instance[colKey] = col.options.defaultValue as T[keyof T]
         }
       }
     }

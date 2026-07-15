@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 - Fixed `TestApiDataProvider` corrupting concurrent `withRemult` contexts (crash or cross-request user leak): when a real `AsyncLocalStorage` is available, calls now nest in it instead of swapping process-global statics.
 
+## [3.3.16] - 2026-07-14
+
+- Added support for default values without an arrow function
+- Added type info in the field's function response - used for typing stuff :)
+
+## [3.3.15] - 2026-07-10
+
+- Added a Node built-in SQLite data provider (`remult/remult-node-sqlite`), using the native `node:sqlite` module ([#1034](https://github.com/remult/remult/pull/1034)).
+- Thanks to @linoch512 for their first contribution
+- `groupBy` now ignores `orderBy` fields that are not part of the group by (previously they were passed through to the database, producing an invalid grouped query on SQL Server / Postgres). The rest api additionally ignores `orderBy` fields that are not included in the api.
+
+## [3.3.14] - 2026-07-08
+
+- Fixed a memory leak related to usage of repo(x,y) with infinite different y
+
 ## [3.3.13] - 2026-06-09
 
 - Fixed `groupBy`/`aggregate` with `limit`/`page` but no `orderBy` emitting `OFFSET/FETCH` without an `ORDER BY`, which is invalid on SQL Server. A grouped query now falls back to ordering by the group columns, and a pure aggregate skips paging entirely.
