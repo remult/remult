@@ -1,6 +1,7 @@
 import { beforeEach, afterEach, describe, expect, it } from 'vitest'
 import {
   BackendMethod,
+  Controller,
   Entity,
   Fields,
   InMemoryDataProvider,
@@ -14,6 +15,7 @@ import {
 import { RemultAsyncLocalStorage, doTransaction } from '../core/src/context.js'
 import { remultStatic } from '../core/src/remult-static.js'
 import { AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore } from '../core/server/initAsyncHooks.js'
+import { TestApiDataProvider } from '../core/server/test-api-data-provider.js'
 import {
   createRemultServerCore,
   type GenericRequestInfo,
@@ -55,10 +57,28 @@ class GatedMethods {
   }
 }
 
+@Controller('gatedCtrl')
+class GatedController {
+  @Fields.string()
+  note = ''
+  @BackendMethod({ allowed: false })
+  async forbiddenNote() {
+    return this.note
+  }
+  @BackendMethod({ allowed: true })
+  async echo() {
+    return this.note + '!'
+  }
+}
+
 // http client backed by a full in-process api pipeline
 function apiHttpClient(dataProvider: DataProvider) {
   const server = createRemultServerCore<GenericRequestInfo & { body?: any }>(
-    { entities: [GatedTask], controllers: [GatedMethods], dataProvider },
+    {
+      entities: [GatedTask],
+      controllers: [GatedMethods, GatedController],
+      dataProvider,
+    },
     {
       getRequestBody: async (req) => req.body,
       buildGenericRequestInfo: (req) => ({
@@ -88,7 +108,34 @@ function deferred() {
   return { promise, resolve }
 }
 
-describe('withDataProvider with real async storage', () => {
+// `find` signals when it starts and blocks until released - holds the call open
+function gated(
+  inner: DataProvider,
+  started: () => void,
+  gate: Promise<void>,
+): DataProvider {
+  return {
+    getEntityDataProvider: (entity) => {
+      const rows = inner.getEntityDataProvider(entity)
+      return {
+        ...rows,
+        count: rows.count.bind(rows),
+        groupBy: rows.groupBy?.bind(rows),
+        update: rows.update.bind(rows),
+        delete: rows.delete.bind(rows),
+        insert: rows.insert.bind(rows),
+        find: async (options) => {
+          started()
+          await gate
+          return rows.find(options)
+        },
+      }
+    },
+    transaction: (action) => inner.transaction(action),
+  }
+}
+
+function useRealAsyncStorage() {
   beforeEach(() => {
     remultStatic.asyncContext = new RemultAsyncLocalStorage(
       new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
@@ -99,6 +146,22 @@ describe('withDataProvider with real async storage', () => {
     RemultAsyncLocalStorage.disable()
     remultStatic.asyncContext = new RemultAsyncLocalStorage(undefined!)
   })
+}
+
+async function seedGated(db: DataProvider) {
+  await withRemult(
+    async () => {
+      await repo(GatedTask).insert([
+        { id: 1, title: 'public', pub: true, secret: 's1' },
+        { id: 2, title: 'private', pub: false, secret: 's2' },
+      ])
+    },
+    { dataProvider: db },
+  )
+}
+
+describe('withDataProvider with real async storage', () => {
+  useRealAsyncStorage()
 
   it('scopes data access, keeps the ambient remult identity', async () => {
     const dbA = new InMemoryDataProvider()
@@ -221,33 +284,17 @@ describe('withDataProvider with real async storage', () => {
     const dbShared = new InMemoryDataProvider()
     const aStarted = deferred()
     const releaseA = deferred()
-    const gatedB: DataProvider = {
-      getEntityDataProvider: (e) => {
-        const inner = dbB.getEntityDataProvider(e)
-        return {
-          ...inner,
-          count: inner.count.bind(inner),
-          groupBy: inner.groupBy?.bind(inner),
-          update: inner.update.bind(inner),
-          delete: inner.delete.bind(inner),
-          insert: inner.insert.bind(inner),
-          find: async (options) => {
-            aStarted.resolve()
-            await releaseA.promise
-            return inner.find(options)
-          },
-        }
-      },
-      transaction: (action) => dbB.transaction(action),
-    }
 
     const requestA = withRemult(
       async () => {
         remult.user = { id: 'A' }
-        return withDataProvider(gatedB, async () => {
-          const rows = await repo(Task).find()
-          return { user: remult.user?.id, rows: rows.length }
-        })
+        return withDataProvider(
+          gated(dbB, aStarted.resolve, releaseA.promise),
+          async () => {
+            const rows = await repo(Task).find()
+            return { user: remult.user?.id, rows: rows.length }
+          },
+        )
       },
       { dataProvider: dbShared },
     )
@@ -321,16 +368,7 @@ describe('withDataProvider with real async storage', () => {
 
   it('withFetch applies the api rules of the endpoint', async () => {
     const db = new InMemoryDataProvider()
-    await withRemult(
-      async () => {
-        await repo(GatedTask).insert([
-          { id: 1, title: 'public', pub: true, secret: 's1' },
-          { id: 2, title: 'private', pub: false, secret: 's2' },
-        ])
-      },
-      { dataProvider: db },
-    )
-
+    await seedGated(db)
     const http = apiHttpClient(db)
     await withRemult(
       async () => {
@@ -348,55 +386,133 @@ describe('withDataProvider with real async storage', () => {
     )
   })
 
-  it('a BackendMethod inside withFetch is dispatched like a client call - allowed enforced at the endpoint', async () => {
+  it('a BackendMethod inside withFetch is dispatched like a client call', async () => {
     const db = new InMemoryDataProvider()
-    await withRemult(
-      async () => {
-        await repo(GatedTask).insert([
-          { id: 1, title: 'public', pub: true },
-          { id: 2, title: 'private', pub: false },
-        ])
-      },
-      { dataProvider: db },
-    )
-
+    await seedGated(db)
     const http = apiHttpClient(db)
     await withRemult(
       async () => {
         expect(await GatedMethods.forbiddenCount()).toBe(2) // direct server call, no gate
         await expect(
           withFetch(http, () => GatedMethods.forbiddenCount()),
-        ).rejects.toMatchObject({ httpStatusCode: 403 })
+        ).rejects.toMatchObject({ httpStatusCode: 403 }) // allowed enforced at the endpoint
+        expect(await withFetch(http, () => GatedMethods.totalCount())).toBe(2) // body runs privileged there
       },
       { dataProvider: db },
     )
   })
 
-  it('a BackendMethod inside withFetch runs its body privileged at the endpoint', async () => {
+  it('an instance BackendMethod inside withFetch is dispatched like a client call', async () => {
     const db = new InMemoryDataProvider()
-    await withRemult(
-      async () => {
-        await repo(GatedTask).insert([
-          { id: 1, title: 'public', pub: true },
-          { id: 2, title: 'private', pub: false },
-        ])
-      },
-      { dataProvider: db },
-    )
-
     const http = apiHttpClient(db)
     await withRemult(
       async () => {
-        const total = await withFetch(http, () => GatedMethods.totalCount())
-        expect(total).toBe(2) // not gated: the body is server code at the endpoint
+        const c = new GatedController()
+        c.note = 'hi'
+        expect(await c.echo()).toBe('hi!') // direct server call
+        await expect(
+          withFetch(http, () => c.forbiddenNote()),
+        ).rejects.toMatchObject({ httpStatusCode: 403 })
+        expect(await withFetch(http, () => c.echo())).toBe('hi!')
       },
       { dataProvider: db },
     )
   })
 })
 
+let userSeenByApiPipeline: string | undefined
+
+@Entity('apiRulesTasks', {
+  allowApiCrud: true,
+  apiPrefilter: () => {
+    userSeenByApiPipeline = remult.user?.id
+    return undefined
+  },
+})
+class ApiRulesTask {
+  @Fields.integer()
+  id = 0
+}
+
+// A withRemult starting while the in-process api call swaps the process-global statics
+// registers in the throwaway context and loses its remult once they are restored.
+describe('TestApiDataProvider with concurrent server requests', () => {
+  useRealAsyncStorage()
+
+  it('a concurrent withRemult keeps its own context and user', async () => {
+    const aCallStarted = deferred()
+    const releaseA = deferred()
+    const bEntered = deferred()
+    const aFinished = deferred()
+
+    const apiDb = TestApiDataProvider({
+      dataProvider: gated(
+        new InMemoryDataProvider(),
+        aCallStarted.resolve,
+        releaseA.promise,
+      ),
+      ensureSchema: false,
+    })
+
+    // Request A: a server load reading through the api pipeline in-process.
+    const requestA = withRemult(
+      async () => {
+        remult.user = { id: 'A' }
+        await repo(ApiRulesTask).find()
+      },
+      { dataProvider: apiDb },
+    ).then(aFinished.resolve)
+
+    // Request B: enters withRemult while A's in-process api call is in flight.
+    const requestB = (async () => {
+      await aCallStarted.promise
+      return withRemult(async () => {
+        const userSeenOnEntry = remult.user?.id
+        remult.user = { id: 'B' }
+        bEntered.resolve()
+        await aFinished.promise // A completes, statics restored
+        return { userSeenOnEntry, userAfterA: remult.user?.id }
+      })
+    })()
+
+    await bEntered.promise
+    releaseA.resolve()
+    await requestA
+
+    const b = await requestB
+    expect(userSeenByApiPipeline).toBe('A') // caller's user reaches the api pipeline
+    expect(b.userSeenOnEntry).toBeUndefined() // leaked 'A' = cross-request user bleed
+    expect(b.userAfterA).toBe('B') // without nesting: 'outside of a valid request cycle'
+  })
+})
+
 describe('withDataProvider without async storage (fallback)', () => {
-  it('swaps and restores on the current remult', async () => {
+  it('withFetch swaps and restores dataProvider and apiClient', async () => {
+    const calls: string[] = []
+    const http = {
+      get: async (url: string) => {
+        calls.push(url)
+        return []
+      },
+      post: async () => ({}),
+      put: async () => ({}),
+      delete: async () => {},
+    }
+    const prevDp = remult.dataProvider
+    const prevApi = remult.apiClient
+    try {
+      remult.dataProvider = new InMemoryDataProvider()
+      const dpBefore = remult.dataProvider
+      await withFetch(http, () => repo(Task).find())
+      expect(calls).toEqual(['/api/scopedDpTasks'])
+      expect(remult.dataProvider).toBe(dpBefore)
+      expect(remult.apiClient).toBe(prevApi)
+    } finally {
+      remult.dataProvider = prevDp
+    }
+  })
+
+  it('swaps and restores, also when the callback throws', async () => {
     const dbA = new InMemoryDataProvider()
     const dbB = new InMemoryDataProvider()
     const prev = remult.dataProvider
@@ -409,17 +525,6 @@ describe('withDataProvider without async storage (fallback)', () => {
       })
       expect(await repo(Task).count()).toBe(1)
       expect(remult.dataProvider).toBe(dbA)
-    } finally {
-      remult.dataProvider = prev
-    }
-  })
-
-  it('restores even when the callback throws', async () => {
-    const dbA = new InMemoryDataProvider()
-    const dbB = new InMemoryDataProvider()
-    const prev = remult.dataProvider
-    try {
-      remult.dataProvider = dbA
       await expect(
         withDataProvider(dbB, async () => {
           throw new Error('boom')
