@@ -105,16 +105,24 @@ export class RemultProxy implements Remult {
 
   private repoCache = new Map<
     ClassType<any>,
-    Map<DataProvider, Repository<any>>
+    {
+      default?: Repository<any>
+      byDataProvider: WeakMap<DataProvider, Repository<any>>
+    }
   >()
   //@ts-ignore
   repo: Remult['repo'] = (...args) => {
     let self = remultStatic
     let entityCache = this.repoCache.get(args[0])
     if (!entityCache) {
-      this.repoCache.set(args[0], (entityCache = new Map()))
+      this.repoCache.set(
+        args[0],
+        (entityCache = { byDataProvider: new WeakMap() }),
+      )
     }
-    let result = entityCache.get(args[1]!)
+    let result = args[1]
+      ? entityCache.byDataProvider.get(args[1])
+      : entityCache.default
     if (result) return result
     result = {
       get fields() {
@@ -250,7 +258,8 @@ export class RemultProxy implements Remult {
           .repo(...args)
           .update(a, b, c),
     }
-    entityCache.set(args[1]!, result!)
+    if (args[1]) entityCache.byDataProvider.set(args[1], result!)
+    else entityCache.default = result
     return result
   }
 

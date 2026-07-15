@@ -1529,13 +1529,19 @@ export interface ClassDecoratorContextStub<
   addInitializer(initializer: (this: Class) => void): void
 }
 
-export type ClassFieldDecorator<entityType, valueType> = (
+export type ClassFieldDecorator<entityType, valueType> = ((
   target: any,
   context:
     | string
     | ClassFieldDecoratorContextStub<entityType, valueType | undefined>,
   c?: any,
-) => void
+) => void) & {
+  /** Phantom type brand (never set at runtime). Without it the decorator is a
+   * bare function type, which TypeScript skips as an inference candidate when
+   * a `Fields.xxx()` call appears in a generically-inferred object alongside a
+   * context-sensitive function — e.g. UI schemas built from field decorators. */
+  readonly __fieldValueType?: valueType
+}
 
 export const flags = {
   error500RetryCount: 4,

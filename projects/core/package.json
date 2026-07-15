@@ -44,6 +44,7 @@
     "./remult-mongo": "./remult-mongo.js",
     "./remult-sql-js": "./remult-sql-js.js",
     "./remult-sqlite-core-js": "./remult-sqlite-core.js",
+    "./remult-node-sqlite": "./remult-node-sqlite.js",
     "./remult-better-sqlite3": "./remult-better-sqlite3.js",
     "./remult-sqlite3": "./remult-sqlite3.js",
     "./remult-turso": "./remult-turso.js",

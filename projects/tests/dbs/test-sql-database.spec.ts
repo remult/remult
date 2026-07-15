@@ -124,6 +124,18 @@ describe('test sql implementation', () => {
       ]
     `)
   })
+  it('test group by ignores orderBy of a field that is not grouped', async () => {
+    await repo.groupBy({
+      group: ['title'],
+      orderBy: { id: 'asc', $count: 'desc' } as any,
+    })
+    expect(commands).toMatchInlineSnapshot(`
+      [
+        "select count(*) as count, [title]
+       from [tasks] group by [title] order by count(*) desc",
+      ]
+    `)
+  })
   it('test to db sql', async () => {
     @Entity('myEntity')
     class myEntity {

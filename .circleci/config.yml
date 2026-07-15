@@ -58,6 +58,24 @@ jobs:
       - store_test_results:
           path: ./test-results.xml
 
+  test-node-sqlite:
+    docker:
+      - image: cimg/node:24.11
+    steps:
+      - checkout
+      - node/install-packages
+      - run:
+          name: Run node:sqlite provider tests with coverage
+          command: npx vitest run projects/tests/dbs/node-sqlite.spec.ts --coverage
+      - run:
+          name: Upload coverage to Codecov
+          command: |
+            curl -Os https://cli.codecov.io/latest/linux/codecov
+            chmod +x codecov
+            ./codecov upload-process -t "$CODECOV_TOKEN" || true
+      - store_test_results:
+          path: ./test-results.xml
+
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
@@ -65,3 +83,4 @@ workflows:
     jobs:
       - build
       - test-remult
+      - test-node-sqlite

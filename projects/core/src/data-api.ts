@@ -240,6 +240,11 @@ export class DataApi<T = unknown> {
     if (body?.orderBy) {
       for (const element of body?.orderBy) {
         const direction = element.isDescending ? 'desc' : 'asc'
+        if (
+          element.operation !== 'count' &&
+          !this.repository.fields.find(element.field)?.includedInApi()
+        )
+          continue
         switch (element.operation) {
           case undefined:
             orderBy[element.field] = direction

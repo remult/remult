@@ -2,6 +2,7 @@
   "extends": "../core/tsconfig.json",
   "compilerOptions": {
     "baseUrl": "../../",
-    "noEmit": true
+    "noEmit": true,
+    "lib": ["es2021", "dom"]
   }
 }

@@ -94,6 +94,52 @@ describe('test api data provider', () => {
       }
     `)
   })
+  test('groupBy api ignores orderBy on fields not included in api', async () => {
+    @Entity('LoginAudit', { allowApiCrud: true })
+    class LoginAudit {
+      @Fields.integer()
+      id = 0
+      @Fields.string()
+      venue = ''
+      @Fields.integer({ includeInApi: false })
+      secret = 0
+    }
+    const commands: string[] = []
+    remult.dataProvider = TestApiDataProvider({
+      ensureSchema: false,
+      dataProvider: new SqlDatabase({
+        wrapIdentifier: (name) => '[' + name + ']',
+        createCommand: () => ({
+          addParameterAndReturnSqlToken: (val) => JSON.stringify(val),
+          param: (val) => JSON.stringify(val),
+          execute: async (sql) => {
+            commands.push(sql)
+            return {
+              getColumnKeyInResultForIndexInSelect: undefined!,
+              rows: [],
+            }
+          },
+        }),
+        async entityIsUsedForTheFirstTime() {},
+        getLimitSqlSyntax: (limit, offset) =>
+          ' offset ' + offset + ' rows fetch next ' + limit + ' rows only',
+        transaction: undefined!,
+        end: async () => {},
+      }),
+    })
+    await repo(LoginAudit).groupBy({
+      group: ['venue'],
+      sum: ['secret'],
+      orderBy: { secret: { sum: 'desc' }, $count: 'desc' },
+      limit: 100,
+    })
+    expect(commands).toMatchInlineSnapshot(`
+      [
+        "select count(*) as count, [venue]
+       from [LoginAudit] group by [venue] order by count(*) desc  offset 0 rows fetch next 100 rows only",
+      ]
+    `)
+  })
   test('test server expression', async () => {
     @Entity('test', {
       allowApiCrud: true,
