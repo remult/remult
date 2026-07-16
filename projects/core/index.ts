@@ -188,6 +188,7 @@ export {
   LiveQueryStorage,
   StoredQuery,
   InMemoryLiveQueryStorage,
+  SubscriptionServerOrchestrator,
 } from './src/live-query/SubscriptionServer.js'
 export {
   SubscriptionListener,

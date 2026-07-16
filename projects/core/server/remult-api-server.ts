@@ -27,6 +27,7 @@ import type {
 import {
   InMemoryLiveQueryStorage,
   LiveQueryPublisher,
+  SubscriptionServerOrchestrator,
 } from '../src/live-query/SubscriptionServer.js'
 import { IdEntity } from '../src/remult3/IdEntity.js'
 import { Fields } from '../src/remult3/Fields.js'
@@ -238,8 +239,9 @@ export interface ServerHandleResponse {
   html?: string
   statusCode: number
 }
-export interface RemultServer<RequestType>
-  extends RemultServerCore<RequestType> {
+export interface RemultServer<
+  RequestType,
+> extends RemultServerCore<RequestType> {
   withRemult(req: RequestType, res: GenericResponse, next: VoidFunction): void
   registerRouter(r: GenericRouter<RequestType>): void
   handle(
@@ -289,9 +291,9 @@ export interface GenericResponse {
 
 /* @internal*/
 
-export class RemultServerImplementation<RequestType>
-  implements RemultServer<RequestType>
-{
+export class RemultServerImplementation<
+  RequestType,
+> implements RemultServer<RequestType> {
   liveQueryStorage: LiveQueryStorage = new InMemoryLiveQueryStorage()
   modulesSorted: Module<RequestType>[] = []
   entities: ClassType<any>[] = []
@@ -514,9 +516,8 @@ export class RemultServerImplementation<RequestType>
                 // Lazy-load the ~1.4MB admin HTML module only when the admin
                 // page is actually requested, so it is never pulled into the
                 // bundle of apps that don't serve the admin UI.
-                const { default: remultAdminHtml } = await import(
-                  './remult-admin-html.js'
-                )
+                const { default: remultAdminHtml } =
+                  await import('./remult-admin-html.js')
                 origResponse.send(
                   remultAdminHtml({
                     rootPath: this.options.rootPath ?? '/api',
@@ -538,21 +539,36 @@ export class RemultServerImplementation<RequestType>
           res.success(remult.user ?? null),
         ),
       )
-      if (this.options.subscriptionServer instanceof SseSubscriptionServer) {
+
+      if (
+        this.subscriptionServer instanceof SseSubscriptionServer ||
+        (this.subscriptionServer instanceof SubscriptionServerOrchestrator &&
+          this.subscriptionServer.getSseServer())
+      ) {
         const streamPath = this.options.rootPath + '/' + streamUrl
+
+        // TODO Move to an 'utilities' location
+        const getSseServer = (remult: Remult): SseSubscriptionServer => {
+          if (remult.subscriptionServer instanceof SseSubscriptionServer)
+            return remult.subscriptionServer
+          else if (
+            remult.subscriptionServer instanceof SubscriptionServerOrchestrator
+          ) {
+            return remult.subscriptionServer.getSseServer()!
+          } else {
+            // should never happen, unless this and remult are out of sync
+            throw new Error('No SSE subscription server found after validation')
+          }
+        }
 
         r.route(streamPath).get(
           this.process(async (remult, req, res, origReq, origRes) => {
-            ;(
-              remult.subscriptionServer as SseSubscriptionServer
-            ).openHttpServerStream(origReq, origRes as any)
+            getSseServer(remult).openHttpServerStream(origReq, origRes as any)
           }),
         )
         r.route(streamPath + '/subscribe').post(
           this.process(async (remult, _2, res, _, _1, origReq: RequestType) => {
-            const body = (
-              remult.subscriptionServer as SseSubscriptionServer
-            ).subscribeToChannel(
+            const body = getSseServer(remult).subscribeToChannel(
               await this.coreOptions.getRequestBody(origReq),
               res,
               remult,
@@ -569,9 +585,7 @@ export class RemultServerImplementation<RequestType>
               origRes,
               origReq: RequestType,
             ) => {
-              ;(
-                remult.subscriptionServer as SseSubscriptionServer
-              ).subscribeToChannel(
+              getSseServer(remult).subscribeToChannel(
                 await this.coreOptions.getRequestBody(origReq),
                 res,
                 remult,
