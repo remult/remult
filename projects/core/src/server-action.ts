@@ -35,10 +35,10 @@ interface inArgs {
 interface result {
   data: any
 }
-// a `withFetch` scope makes server-side BackendMethod calls behave like client calls
-function scopedApiClient() {
-  const scoped = remultStatic.asyncContext?.tryGetStore?.()?.apiClient
-  return scoped?.httpClient ? scoped : undefined
+// a `withFetch` scope makes server-side BackendMethod calls behave like client
+// calls - doWork's url/http defaults resolve through the scope-aware apiClient
+function inFetchScope() {
+  return !!remultStatic.asyncContext?.scopedStore?.()?.apiClient
 }
 export abstract class Action<inParam, outParam> implements ActionInterface {
   constructor(
@@ -285,17 +285,8 @@ export function BackendMethod<type = unknown>(
       }
 
       result = async function (...args: any[]) {
-        if (!isBackend()) {
+        if (!isBackend() || inFetchScope()) {
           return await serverAction.doWork(args, undefined)
-        }
-        const scoped = scopedApiClient()
-        if (scoped) {
-          return await serverAction.doWork(
-            args,
-            undefined,
-            scoped.url,
-            buildRestDataProvider(scoped.httpClient!),
-          )
         }
         return await originalMethod.apply(
           //@ts-ignore
@@ -524,17 +515,8 @@ export function BackendMethod<type = unknown>(
     result = async function (...args: any[]) {
       //@ts-ignore I specifically referred to the this of the original function - so it'll be sent inside
       let self: any = this
-      if (!isBackend()) {
+      if (!isBackend() || inFetchScope()) {
         return serverAction.doWork(args, self)
-      }
-      const scoped = scopedApiClient()
-      if (scoped) {
-        return serverAction.doWork(
-          args,
-          self,
-          scoped.url,
-          buildRestDataProvider(scoped.httpClient!),
-        )
       }
       return await originalMethod.apply(self, args)
     }

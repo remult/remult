@@ -102,6 +102,26 @@ function apiHttpClient(dataProvider: DataProvider) {
   }
 }
 
+// records calls ('GET' urls plain, others prefixed); `get` resolves via onGet
+function mockHttp(onGet: (url: string) => any = () => []) {
+  const calls: string[] = []
+  return {
+    calls,
+    http: {
+      get: async (url: string) => {
+        calls.push(url)
+        return onGet(url)
+      },
+      post: async (url: string) => {
+        calls.push('POST ' + url)
+        return {}
+      },
+      put: async () => ({}),
+      delete: async () => {},
+    },
+  }
+}
+
 function deferred() {
   let resolve!: () => void
   const promise = new Promise<void>((res) => (resolve = res))
@@ -321,16 +341,7 @@ describe('withDataProvider with real async storage', () => {
 
   it('withFetch routes reads through the http client, same user', async () => {
     const dbA = new InMemoryDataProvider()
-    const calls: string[] = []
-    const http = {
-      get: async (url: string) => {
-        calls.push(url)
-        return [{ id: 7, title: 'from api' }]
-      },
-      post: async () => ({}),
-      put: async () => ({}),
-      delete: async () => {},
-    }
+    const { calls, http } = mockHttp(() => [{ id: 7, title: 'from api' }])
     await withRemult(
       async () => {
         remult.user = { id: 'u1' }
@@ -347,16 +358,7 @@ describe('withDataProvider with real async storage', () => {
   })
 
   it('withFetch url option overrides the default api root', async () => {
-    const calls: string[] = []
-    const http = {
-      get: async (url: string) => {
-        calls.push(url)
-        return []
-      },
-      post: async () => ({}),
-      put: async () => ({}),
-      delete: async () => {},
-    }
+    const { calls, http } = mockHttp()
     await withRemult(
       async () => {
         await withFetch(http, () => repo(Task).find(), { url: '/custom' })
@@ -488,16 +490,7 @@ describe('TestApiDataProvider with concurrent server requests', () => {
 
 describe('withDataProvider without async storage (fallback)', () => {
   it('withFetch swaps and restores dataProvider and apiClient', async () => {
-    const calls: string[] = []
-    const http = {
-      get: async (url: string) => {
-        calls.push(url)
-        return []
-      },
-      post: async () => ({}),
-      put: async () => ({}),
-      delete: async () => {},
-    }
+    const { calls, http } = mockHttp()
     const prevDp = remult.dataProvider
     const prevApi = remult.apiClient
     try {
@@ -533,6 +526,169 @@ describe('withDataProvider without async storage (fallback)', () => {
       expect(remult.dataProvider).toBe(dbA)
     } finally {
       remult.dataProvider = prev
+    }
+  })
+})
+
+describe('scoped store fixes', () => {
+  useRealAsyncStorage()
+
+  it('does not carry inInitRequest into the scope', async () => {
+    // a carried flag would make an in-process api request reuse the caller's
+    // remult and serve itself with the scoped provider - infinite recursion
+    await withRemult(async () => {
+      remultStatic.asyncContext.setInInitRequest(true)
+      expect(remultStatic.asyncContext.isInInitRequest()).toBe(true)
+      await withDataProvider(new InMemoryDataProvider(), async () => {
+        expect(remultStatic.asyncContext.isInInitRequest()).toBeFalsy()
+      })
+      await withFetch(mockHttp().http, async () => {
+        expect(remultStatic.asyncContext.isInInitRequest()).toBeFalsy()
+      })
+      expect(remultStatic.asyncContext.isInInitRequest()).toBe(true)
+    })
+  })
+
+  it('doTransaction accepts the global remult proxy inside a scope', async () => {
+    const dbA = new InMemoryDataProvider()
+    const dbB = new InMemoryDataProvider()
+    await withRemult(
+      async () => {
+        await withDataProvider(dbB, async () => {
+          await expect(
+            doTransaction(remult, async () => {
+              await repo(Task).insert({ id: 1 })
+              throw new Error('rollback')
+            }),
+          ).rejects.toThrow('rollback')
+        })
+        expect(remult.dataProvider).toBe(dbA) // instance default not clobbered
+      },
+      { dataProvider: dbA },
+    )
+    await withRemult(async () => expect(await repo(Task).count()).toBe(0), {
+      dataProvider: dbB,
+    })
+  })
+
+  it('BackendMethods use the scoped fetch also when runningOnServer is false', async () => {
+    const db = new InMemoryDataProvider()
+    await seedGated(db)
+    const http = apiHttpClient(db)
+    const prev = remultStatic.actionInfo.runningOnServer
+    remultStatic.actionInfo.runningOnServer = false
+    try {
+      await withRemult(
+        async () => {
+          expect(await withFetch(http, () => GatedMethods.totalCount())).toBe(2)
+        },
+        { dataProvider: db },
+      )
+    } finally {
+      remultStatic.actionInfo.runningOnServer = prev
+    }
+  })
+
+  it('CRUD and BackendMethods share the base url inside withFetch', async () => {
+    const { calls, http } = mockHttp()
+    await withRemult(
+      async (r) => {
+        r.apiClient.url = '/backend'
+        await withFetch(http, async () => {
+          await repo(Task).find()
+          await GatedMethods.totalCount()
+        })
+        expect(calls).toEqual([
+          '/backend/scopedDpTasks',
+          'POST /backend/totalCount',
+        ])
+      },
+      { dataProvider: new InMemoryDataProvider() },
+    )
+  })
+
+  it('withDataProvider inside withFetch runs BackendMethods directly', async () => {
+    const db = new InMemoryDataProvider()
+    await seedGated(db)
+    const http = apiHttpClient(db)
+    await withRemult(
+      async () => {
+        await withFetch(http, async () => {
+          await expect(GatedMethods.forbiddenCount()).rejects.toMatchObject({
+            httpStatusCode: 403,
+          })
+          await withDataProvider(db, async () => {
+            expect(await GatedMethods.forbiddenCount()).toBe(2) // privileged again
+          })
+        })
+      },
+      { dataProvider: db },
+    )
+  })
+
+  it('works with async storage enabled but no ambient store', async () => {
+    const db = new InMemoryDataProvider()
+    await seedGated(db)
+    const http = apiHttpClient(db)
+    const rows = await withFetch(http, () => repo(GatedTask).find())
+    expect(rows.map((r) => r.id)).toEqual([1])
+  })
+})
+
+describe('withFetch fallback fixes (no async storage)', () => {
+  it('BackendMethods keep the default api root and the subscriptionClient', async () => {
+    const { calls, http } = mockHttp()
+    const prevDp = remult.dataProvider
+    const prevRunning = remultStatic.actionInfo.runningOnServer
+    remultStatic.actionInfo.runningOnServer = false
+    const subscriptionClient = remult.apiClient.subscriptionClient
+    try {
+      remult.dataProvider = new InMemoryDataProvider()
+      await withFetch(http, async () => {
+        expect(remult.apiClient.subscriptionClient).toBe(subscriptionClient)
+        await GatedMethods.totalCount()
+      })
+      expect(calls).toEqual(['POST /api/totalCount'])
+    } finally {
+      remult.dataProvider = prevDp
+      remultStatic.actionInfo.runningOnServer = prevRunning
+    }
+  })
+
+  it('overlapping scopes restore the original state on last exit', async () => {
+    const a = mockHttp()
+    const b = mockHttp()
+    const prevDp = remult.dataProvider
+    const prevApi = remult.apiClient
+    const origDp = new InMemoryDataProvider()
+    try {
+      remult.dataProvider = origDp
+      const release = deferred()
+      const first = withFetch(a.http, async () => {
+        await release.promise
+      })
+      const second = withFetch(b.http, async () => {})
+      await second
+      release.resolve()
+      await first
+      expect(remult.dataProvider).toBe(origDp)
+      expect(remult.apiClient).toBe(prevApi)
+    } finally {
+      remult.dataProvider = prevDp
+    }
+  })
+
+  it('does not retain the scoped provider in the repo cache', async () => {
+    const { http } = mockHttp()
+    const prevDp = remult.dataProvider
+    try {
+      remult.dataProvider = new InMemoryDataProvider()
+      const r = remultStatic.remultFactory()
+      const before = r.repCache.size
+      await withFetch(http, () => repo(Task).find())
+      expect(r.repCache.size).toBe(before)
+    } finally {
+      remult.dataProvider = prevDp
     }
   })
 })

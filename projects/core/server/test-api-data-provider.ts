@@ -39,19 +39,16 @@ export function TestApiDataProvider(
   ) as RemultServerImplementation<GenericRequestInfo & { body?: any }>
 
   const lock = new AsyncLock()
-  // serialized so concurrent first calls don't race ensureSchema
-  let schemaQueue: Promise<void> = Promise.resolve()
+  // separate from `lock` - the nested-storage path skips `lock` but must still
+  // serialize concurrent first calls racing ensureSchema
+  const schemaLock = new AsyncLock()
   function ensureSchemaSerialized() {
-    const run = schemaQueue
-      .catch(() => {})
-      .then(async () => {
-        if (newEntities.length > 0 && options?.ensureSchema != false) {
-          await (await dp).ensureSchema?.(newEntities)
-          newEntities = []
-        }
-      })
-    schemaQueue = run
-    return run
+    return schemaLock.runExclusive(async () => {
+      if (newEntities.length > 0 && options?.ensureSchema != false) {
+        await (await dp).ensureSchema?.(newEntities)
+        newEntities = []
+      }
+    })
   }
   async function handleOnServer(
     req: GenericRequestInfo & { body?: any; user?: unknown },
@@ -64,15 +61,12 @@ export function TestApiDataProvider(
       }
       return result?.data ? JSON.parse(JSON.stringify(result.data)) : undefined
     }
-    if (
-      remultStatic.asyncContext.hasRealAsyncStorage() &&
-      remultStatic.asyncContext.tryGetStore()
-    ) {
-      // nested ALS run is concurrency-safe, no lock needed
+    if (remultStatic.asyncContext.scopedStore()) {
+      // nested storage run is concurrency-safe, no lock needed
       req.user = remult.user ? { ...remult.user } : undefined
       return remultStatic.asyncContext.run(new Remult(), call)
     }
-    // no ALS (e.g. StackBlitz): swapping globals is only safe one call at a time
+    // no real async storage: swapping globals is only safe one call at a time
     return lock.runExclusive(() =>
       MakeServerCallWithDifferentStaticRemult(call),
     )
@@ -154,7 +148,7 @@ async function MakeServerCallWithDifferentStaticRemult<T>(what: () => T) {
         return callback()
       },
       wasImplemented: 'yes',
-      isStub: true, // keep hasRealAsyncStorage() false while this fake is installed
+      isStub: true, // keep scopedStore() empty while this fake is installed
     })
     return await what()
   } finally {

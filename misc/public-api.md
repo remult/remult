@@ -2479,6 +2479,7 @@ export declare class Remult {
   /** The current data provider - reads honor an enclosing `withDataProvider` scope, assignment sets the instance default */
   get dataProvider(): DataProvider
   set dataProvider(provider: DataProvider)
+  private _dataProvider?
   /** Creates a new instance of the `remult` object.
    *
    * Can receive either an HttpProvider or a DataProvider as a parameter - which will be used to fetch data from.
@@ -2517,8 +2518,10 @@ export declare class Remult {
    * Check out the [extensibility section](/docs/custom-options#enhancing-field-and-entity-definitions-with-custom-options) for more custom options.
    */
   readonly context: RemultContext
-  /** The api client that will be used by `remult` to perform calls to the `api` */
-  apiClient: ApiClient
+  /** The api client that will be used by `remult` to perform calls to the `api` - reads honor an enclosing `withFetch` scope, assignment sets the instance default */
+  get apiClient(): ApiClient
+  set apiClient(client: ApiClient)
+  private _apiClient?
 }
 export interface RemultContext {
   headers?: {
