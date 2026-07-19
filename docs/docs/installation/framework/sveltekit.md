@@ -109,18 +109,16 @@ export const handle = sequence(
 
 To use remult in an SSR `PageLoad`, route the read through the API using the `event`'s fetch: it works on SSR and CSR (no double fetch on the client), and applies all API rules even when it runs on the server.
 
-Scope it to the read with `withRemult` rather than mutating the shared request `remult`. A universal `load` runs **concurrently** with any `+page.server.ts`, so reassigning the global data provider there (as the deprecated `remult.useFetch` does) would change the provider that other load is using.
+Scope it to the read with `withFetch` rather than mutating the shared request `remult`. A universal `load` runs **concurrently** with any `+page.server.ts`, so reassigning the global data provider there (as the deprecated `remult.useFetch` does) would change the provider that other load is using. Inside the scope, `BackendMethod` calls are dispatched over the same fetch, so api rules apply to them too.
 
 ::: code-group
 
 ```ts [src/routes/+page.ts]
-import { RestDataProvider, withRemult } from 'remult'
+import { repo, withFetch } from 'remult'
 import type { PageLoad } from './$types'
 
 export const load = (async (event) => {
-  return withRemult((remult) => remult.repo(Task).find(), {
-    dataProvider: new RestDataProvider(() => ({ httpClient: event.fetch })),
-  })
+  return withFetch(event.fetch, () => repo(Task).find())
 }) satisfies PageLoad
 ```
 

@@ -44,6 +44,12 @@ import { initDataProvider } from '../server/initDataProvider.js'
 import { SubscribableImp } from './remult3/SubscribableImp.js'
 import { getEntitySettings } from './remult3/getEntityRef.js'
 
+export type RemultAsyncStore = {
+  remult: Remult
+  inInitRequest?: boolean
+  dataProvider?: DataProvider
+  apiClient?: ApiClient
+}
 export class RemultAsyncLocalStorage {
   static enable() {
     remultStatic.remultFactory = () => {
@@ -60,10 +66,7 @@ export class RemultAsyncLocalStorage {
   }
   constructor(
     private readonly remultObjectStorage:
-      | RemultAsyncLocalStorageCore<{
-          remult: Remult
-          inInitRequest?: boolean
-        }>
+      | RemultAsyncLocalStorageCore<RemultAsyncStore>
       | undefined,
   ) {}
   async run<T>(
@@ -89,6 +92,21 @@ export class RemultAsyncLocalStorage {
       )
     }
     return this.remultObjectStorage.getStore()
+  }
+  tryGetStore() {
+    return this.remultObjectStorage?.getStore()
+  }
+  /** store only when backed by real async storage - the stub's `run` never restores the previous store on exit */
+  scopedStore() {
+    const storage = this.remultObjectStorage
+    return storage && !storage.isStub ? storage.getStore() : undefined
+  }
+  hasStorage() {
+    return !!this.remultObjectStorage
+  }
+  /** callers must check scopedStore() first */
+  runWith<T>(store: RemultAsyncStore, callback: () => Promise<T>): Promise<T> {
+    return this.remultObjectStorage!.run(store, callback)
   }
 }
 if (!remultStatic.asyncContext)
@@ -236,8 +254,8 @@ export class Remult {
   /**
    * @deprecated In SvelteKit, loads run in parallel, so reassigning the shared
    * `remult` data provider here leaks across loads. Scope the fetch to the read
-   * with `withRemult` instead, e.g.
-   * `withRemult((r) => r.repo(X).find(), { dataProvider: new RestDataProvider(() => ({ httpClient: event.fetch })) })`.
+   * with `withFetch` instead, e.g.
+   * `withFetch(event.fetch, () => repo(Task).find())`.
    * See the SvelteKit "Universal load & SSR" doc.
    */
   useFetch(fetch: ApiClient['httpClient']) {
@@ -248,8 +266,16 @@ export class Remult {
       httpClient: fetch,
     }))
   }
-  /** The current data provider */
-  dataProvider: DataProvider = new RestDataProvider(() => this.apiClient)
+  /** The current data provider - reads honor an enclosing `withDataProvider` scope, assignment sets the instance default */
+  get dataProvider(): DataProvider {
+    const store = remultStatic.asyncContext?.scopedStore()
+    if (store?.dataProvider && store.remult === this) return store.dataProvider
+    return (this._dataProvider ??= new RestDataProvider(() => this.apiClient))
+  }
+  set dataProvider(provider: DataProvider) {
+    this._dataProvider = provider
+  }
+  private _dataProvider?: DataProvider
   /* @internal */
   repCache = new Map<DataProvider, Map<ClassType<any>, Repository<unknown>>>()
   /** Creates a new instance of the `remult` object.
@@ -338,11 +364,19 @@ export class Remult {
    * Check out the [extensibility section](/docs/custom-options#enhancing-field-and-entity-definitions-with-custom-options) for more custom options.
    */
   readonly context: RemultContext = {} as RemultContext
-  /** The api client that will be used by `remult` to perform calls to the `api` */
-  apiClient: ApiClient = {
-    url: '/api',
-    subscriptionClient: new SseSubscriptionClient(),
+  /** The api client that will be used by `remult` to perform calls to the `api` - reads honor an enclosing `withFetch` scope, assignment sets the instance default */
+  get apiClient(): ApiClient {
+    const store = remultStatic.asyncContext?.scopedStore()
+    if (store?.apiClient && store.remult === this) return store.apiClient
+    return (this._apiClient ??= {
+      url: '/api',
+      subscriptionClient: new SseSubscriptionClient(),
+    })
   }
+  set apiClient(client: ApiClient) {
+    this._apiClient = client
+  }
+  private _apiClient?: ApiClient
 }
 
 remultStatic.defaultRemultFactory = () => new Remult()
@@ -533,20 +567,29 @@ export async function doTransaction(
   remult: Remult,
   what: (dp: DataProvider) => Promise<void>,
 ) {
+  // callers may pass the global proxy - its setter targets the instance while an
+  // active scope shadows the reads, so resolve it to the actual instance first
+  if (!(remult instanceof Remult)) remult = remultStatic.remultFactory()
   const trans = new transactionLiveQueryPublisher(remult.liveQueryPublisher)
   let ok = true
+  // mutate+restore inside a scope would clobber the enclosing override
+  const scoped = remultStatic.asyncContext.scopedStore()?.remult === remult
   const prev = remult.dataProvider
   try {
-    await remult.dataProvider.transaction(async (ds) => {
-      remult.dataProvider = ds
+    await prev.transaction(async (ds) => {
       remult.liveQueryPublisher = trans
-      await what(ds)
+      if (scoped) {
+        await withDataProvider(ds, () => what(ds))
+      } else {
+        remult.dataProvider = ds
+        await what(ds)
+      }
       ok = true
     })
 
     if (ok) await trans.flush()
   } finally {
-    remult.dataProvider = prev
+    if (!scoped) remult.dataProvider = prev
   }
 }
 class transactionLiveQueryPublisher implements LiveQueryChangesListener {
@@ -591,4 +634,105 @@ export async function withRemult<T>(
   )
 
   return remultStatic.asyncContext.run(remult, (r) => callback(r))
+}
+
+type ScopedStorePatch = {
+  dataProvider: DataProvider
+  apiClient?: ApiClient
+}
+// tracks overlapping no-storage scopes so only the last exit restores the originals
+const swapState = new WeakMap<
+  Remult,
+  { depth: number; dataProvider: DataProvider; apiClient: ApiClient }
+>()
+
+async function withScopedStore<T>(
+  buildPatch: (remult: Remult) => ScopedStorePatch,
+  callback: () => Promise<T>,
+): Promise<T> {
+  const storage = remultStatic.asyncContext
+  const store = storage.scopedStore()
+  if (store) {
+    // inInitRequest must not leak into the scope - an in-process api request
+    // issued inside it would be served with the scoped provider and recurse
+    return storage.runWith(
+      {
+        ...store,
+        inInitRequest: undefined,
+        apiClient: undefined,
+        ...buildPatch(store.remult),
+      },
+      callback,
+    )
+  }
+  if (storage.hasStorage() && !storage.tryGetStore()) {
+    // outside a request the enabled factory throws - open a scope like withRemult
+    return withRemult((r) => {
+      const patch = buildPatch(r)
+      r.dataProvider = patch.dataProvider
+      if (patch.apiClient) r.apiClient = patch.apiClient
+      return callback()
+    })
+  }
+  // no async storage (browser): swap and restore the shared instance
+  const r = remultStatic.remultFactory()
+  const patch = buildPatch(r)
+  let state = swapState.get(r)
+  if (!state) {
+    swapState.set(
+      r,
+      (state = {
+        depth: 0,
+        dataProvider: r.dataProvider,
+        apiClient: r.apiClient,
+      }),
+    )
+  }
+  state.depth++
+  r.dataProvider = patch.dataProvider
+  if (patch.apiClient) r.apiClient = patch.apiClient
+  try {
+    return await callback()
+  } finally {
+    // the scope-private provider must not outlive the scope in the repo cache
+    r.repCache.delete(patch.dataProvider)
+    if (--state.depth === 0) {
+      swapState.delete(r)
+      r.dataProvider = state.dataProvider
+      r.apiClient = state.apiClient
+    }
+  }
+}
+
+/**
+ * Runs `callback` with `dataProvider` scoped to the current async context - same
+ * `remult` (user, context), only data access is rerouted; concurrent requests are
+ * unaffected. Without AsyncLocalStorage it swaps and restores the current provider.
+ */
+export async function withDataProvider<T>(
+  dataProvider: DataProvider,
+  callback: () => Promise<T>,
+): Promise<T> {
+  return withScopedStore(() => ({ dataProvider }), callback)
+}
+
+/**
+ * Runs `callback` with data access going through the API via `fetch` - the
+ * scoped replacement for the deprecated `remult.useFetch`. Inside the scope a
+ * `BackendMethod` call behaves exactly like a client call: dispatched over
+ * `fetch`, `allowed` enforced at the endpoint, body runs privileged there.
+ * @example
+ * export const load = async (event) =>
+ *   withFetch(event.fetch, () => repo(Task).find())
+ */
+export function withFetch<T>(
+  fetch: ApiClient['httpClient'],
+  callback: () => Promise<T>,
+  options?: { url?: string },
+): Promise<T> {
+  return withScopedStore((r) => {
+    const apiClient: ApiClient = { ...r.apiClient, httpClient: fetch }
+    if (options?.url) apiClient.url = options.url
+    return { dataProvider: new RestDataProvider(() => apiClient), apiClient }
+  }, callback)
 }

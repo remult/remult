@@ -5,7 +5,7 @@ import {
   SqlDatabase,
   type DataProvider,
   type EntityMetadata,
-  type Remult,
+  Remult,
 } from '../index.js'
 import type { RemultServerOptions } from './index.js'
 import {
@@ -39,22 +39,37 @@ export function TestApiDataProvider(
   ) as RemultServerImplementation<GenericRequestInfo & { body?: any }>
 
   const lock = new AsyncLock()
-  async function handleOnServer(req: GenericRequestInfo & { body?: any }) {
-    return lock.runExclusive(async () => {
-      return await MakeServerCallWithDifferentStaticRemult(async () => {
-        if (newEntities.length > 0 && options?.ensureSchema != false) {
-          await (await dp).ensureSchema?.(newEntities)
-          newEntities = []
-        }
-        var result = await server.handle(req)
-        if ((result?.statusCode ?? 200) >= 400) {
-          throw { ...result?.data, status: result?.statusCode ?? 500 }
-        }
-        return result?.data
-          ? JSON.parse(JSON.stringify(result.data))
-          : undefined
-      })
+  // separate from `lock` - the nested-storage path skips `lock` but must still
+  // serialize concurrent first calls racing ensureSchema
+  const schemaLock = new AsyncLock()
+  function ensureSchemaSerialized() {
+    return schemaLock.runExclusive(async () => {
+      if (newEntities.length > 0 && options?.ensureSchema != false) {
+        await (await dp).ensureSchema?.(newEntities)
+        newEntities = []
+      }
     })
+  }
+  async function handleOnServer(
+    req: GenericRequestInfo & { body?: any; user?: unknown },
+  ) {
+    const call = async () => {
+      await ensureSchemaSerialized()
+      var result = await server.handle(req)
+      if ((result?.statusCode ?? 200) >= 400) {
+        throw { ...result?.data, status: result?.statusCode ?? 500 }
+      }
+      return result?.data ? JSON.parse(JSON.stringify(result.data)) : undefined
+    }
+    if (remultStatic.asyncContext.scopedStore()) {
+      // nested storage run is concurrency-safe, no lock needed
+      req.user = remult.user ? { ...remult.user } : undefined
+      return remultStatic.asyncContext.run(new Remult(), call)
+    }
+    // no real async storage: swapping globals is only safe one call at a time
+    return lock.runExclusive(() =>
+      MakeServerCallWithDifferentStaticRemult(call),
+    )
   }
 
   const registeredEntities = new Set<string>()
@@ -133,6 +148,7 @@ async function MakeServerCallWithDifferentStaticRemult<T>(what: () => T) {
         return callback()
       },
       wasImplemented: 'yes',
+      isStub: true, // keep scopedStore() empty while this fake is installed
     })
     return await what()
   } finally {

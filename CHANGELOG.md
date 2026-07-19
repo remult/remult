@@ -1,5 +1,10 @@
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+- Added `withDataProvider` and `withFetch` - scope data access to the current async context, same `remult` (user, context); `withFetch` succeeds the deprecated `remult.useFetch` for SSR loads and enforces the api rules at the endpoint it fetches.
+- Fixed `TestApiDataProvider` corrupting concurrent `withRemult` contexts (crash or cross-request user leak).
+
 ## [3.3.16] - 2026-07-14
 
 - Added support for default values without an arrow function
