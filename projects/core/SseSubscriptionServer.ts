@@ -1,7 +1,4 @@
-import type {
-  GenericRequestInfo,
-  GenericResponse,
-} from './server/index.js'
+import type { GenericRequestInfo, GenericResponse } from './server/index.js'
 import type {
   SubscriptionServerRouteApi,
   SubscriptionServerWithRoutes,
@@ -17,7 +14,10 @@ export class SseSubscriptionServer implements SubscriptionServerWithRoutes {
   initApiServer(api: SubscriptionServerRouteApi) {
     const streamPath = '/' + streamUrl
     api.addRoute(streamPath, 'get', async ({ req, origRes }) => {
-      this.openHttpServerStream(req, origRes as any)
+      this.openHttpServerStream(
+        req,
+        origRes as GenericResponse & ResponseRequiredForSSE,
+      )
     })
     api.addRoute(
       streamPath + '/subscribe',
