@@ -15,10 +15,7 @@ import type {
   ErrorInfo,
   Storage,
 } from '../src/data-interfaces.js'
-import {
-  liveQueryKeepAliveRoute,
-  streamUrl,
-} from '../src/live-query/SubscriptionChannel.js'
+import { liveQueryKeepAliveRoute } from '../src/live-query/SubscriptionChannel.js'
 import type {
   LiveQueryStorage,
   PerformWithContext,
@@ -287,6 +284,27 @@ export interface GenericResponse {
   end(): void
 }
 
+/** A `SubscriptionServer` that also needs to serve http routes (for example SSE),
+ * can implement this interface to register them on the api server */
+export interface SubscriptionServerWithRoutes extends SubscriptionServer {
+  initApiServer(api: SubscriptionServerRouteApi): void
+}
+export interface SubscriptionServerRouteApi {
+  rootPath: string
+  addRoute(
+    relativePath: string,
+    method: 'get' | 'post',
+    handler: (args: SubscriptionServerRouteHandlerArgs) => Promise<void>,
+  ): void
+}
+export interface SubscriptionServerRouteHandlerArgs {
+  remult: Remult
+  res: DataApiResponse
+  req: GenericRequestInfo
+  origRes: GenericResponse
+  getBody(): Promise<any>
+}
+
 /* @internal*/
 
 export class RemultServerImplementation<RequestType>
@@ -538,48 +556,37 @@ export class RemultServerImplementation<RequestType>
           res.success(remult.user ?? null),
         ),
       )
-      if (this.options.subscriptionServer instanceof SseSubscriptionServer) {
-        const streamPath = this.options.rootPath + '/' + streamUrl
-
-        r.route(streamPath).get(
-          this.process(async (remult, req, res, origReq, origRes) => {
-            ;(
-              remult.subscriptionServer as SseSubscriptionServer
-            ).openHttpServerStream(origReq, origRes as any)
-          }),
+      const subscriptionServer = this.options.subscriptionServer
+      if (
+        isOfType<SubscriptionServerWithRoutes>(
+          subscriptionServer,
+          'initApiServer',
         )
-        r.route(streamPath + '/subscribe').post(
-          this.process(async (remult, _2, res, _, _1, origReq: RequestType) => {
-            const body = (
-              remult.subscriptionServer as SseSubscriptionServer
-            ).subscribeToChannel(
-              await this.coreOptions.getRequestBody(origReq),
-              res,
-              remult,
+      ) {
+        subscriptionServer.initApiServer({
+          rootPath: this.options.rootPath!,
+          addRoute: (relativePath, method, handler) => {
+            r.route(this.options.rootPath + relativePath)[method](
+              this.process(
+                async (
+                  remult,
+                  _,
+                  res,
+                  req,
+                  origRes,
+                  origReq: RequestType,
+                ) =>
+                  handler({
+                    remult,
+                    res,
+                    req,
+                    origRes,
+                    getBody: () => this.coreOptions.getRequestBody(origReq),
+                  }),
+              ),
             )
-          }),
-        )
-        r.route(streamPath + '/unsubscribe').post(
-          this.process(
-            async (
-              remult,
-              req,
-              res,
-              reqInfo,
-              origRes,
-              origReq: RequestType,
-            ) => {
-              ;(
-                remult.subscriptionServer as SseSubscriptionServer
-              ).subscribeToChannel(
-                await this.coreOptions.getRequestBody(origReq),
-                res,
-                remult,
-                true,
-              )
-            },
-          ),
-        )
+          },
+        })
       }
       r.route(this.options.rootPath + '/' + liveQueryKeepAliveRoute).post(
         this.process(
