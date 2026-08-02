@@ -3267,7 +3267,11 @@ export interface SubscriptionListener<type> {
 }
 export interface SubscriptionServer {
   publishMessage<T>(channel: string, message: T): Promise<void>
+  /** A subscription server that also needs to serve http routes (for example SSE),
+   * can implement this method to register them on the api server */
+  initApiServer?(api: SubscriptionServerRouteApi): void
 }
+//[ ] SubscriptionServerRouteApi from TBD is not exported
 export type Unsubscribe = VoidFunction
 export interface UpsertOptions<entityType> {
   where: Partial<MembersOnly<entityType>>
@@ -3979,9 +3983,7 @@ export type SpecificRoute<RequestType> = {
     handler: GenericRequestHandler<RequestType>,
   ): SpecificRoute<RequestType>
 }
-export declare class SseSubscriptionServer
-  implements SubscriptionServerWithRoutes
-{
+export declare class SseSubscriptionServer implements SubscriptionServer {
   private canUserConnectToChannel?
   initApiServer(api: SubscriptionServerRouteApi): void
   constructor(
@@ -4225,9 +4227,7 @@ export type SpecificRoute<RequestType> = {
     handler: GenericRequestHandler<RequestType>,
   ): SpecificRoute<RequestType>
 }
-export declare class SseSubscriptionServer
-  implements SubscriptionServerWithRoutes
-{
+export declare class SseSubscriptionServer implements SubscriptionServer {
   private canUserConnectToChannel?
   initApiServer(api: SubscriptionServerRouteApi): void
   constructor(
@@ -4997,9 +4997,6 @@ export interface SubscriptionServerRouteHandlerArgs {
 }
 //[ ] GenericRequestInfo from TBD is not exported
 //[ ] GenericResponse from TBD is not exported
-export interface SubscriptionServerWithRoutes extends SubscriptionServer {
-  initApiServer(api: SubscriptionServerRouteApi): void
-}
 ```
 
 ## ./remult-nuxt.js

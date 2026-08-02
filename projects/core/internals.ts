@@ -26,7 +26,6 @@ export { isOfType } from './src/isOfType.js'
 export type { ClassType } from './classType.js'
 
 export type {
-  SubscriptionServerWithRoutes,
   SubscriptionServerRouteApi,
   SubscriptionServerRouteHandlerArgs,
 } from './server/remult-api-server.js'

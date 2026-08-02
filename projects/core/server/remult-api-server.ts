@@ -284,11 +284,6 @@ export interface GenericResponse {
   end(): void
 }
 
-/** A `SubscriptionServer` that also needs to serve http routes (for example SSE),
- * can implement this interface to register them on the api server */
-export interface SubscriptionServerWithRoutes extends SubscriptionServer {
-  initApiServer(api: SubscriptionServerRouteApi): void
-}
 export interface SubscriptionServerRouteApi {
   rootPath: string
   addRoute(
@@ -557,12 +552,7 @@ export class RemultServerImplementation<RequestType>
         ),
       )
       const subscriptionServer = this.options.subscriptionServer
-      if (
-        isOfType<SubscriptionServerWithRoutes>(
-          subscriptionServer,
-          'initApiServer',
-        )
-      ) {
+      if (subscriptionServer?.initApiServer) {
         subscriptionServer.initApiServer({
           rootPath: this.options.rootPath!,
           addRoute: (relativePath, method, handler) => {

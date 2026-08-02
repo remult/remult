@@ -1,8 +1,5 @@
 import type { GenericRequestInfo, GenericResponse } from './server/index.js'
-import type {
-  SubscriptionServerRouteApi,
-  SubscriptionServerWithRoutes,
-} from './server/remult-api-server.js'
+import type { SubscriptionServerRouteApi } from './server/remult-api-server.js'
 import type { Remult } from './src/context.js'
 import type { DataApiResponse } from './src/data-api.js'
 import { ConnectionNotFoundError } from './src/live-query/SseSubscriptionClient.js'
@@ -10,7 +7,7 @@ import { streamUrl } from './src/live-query/SubscriptionChannel.js'
 import type { ServerEventChannelSubscribeDTO } from './src/live-query/SubscriptionChannel.js'
 import type { SubscriptionServer } from './src/live-query/SubscriptionServer.js'
 
-export class SseSubscriptionServer implements SubscriptionServerWithRoutes {
+export class SseSubscriptionServer implements SubscriptionServer {
   initApiServer(api: SubscriptionServerRouteApi) {
     const streamPath = '/' + streamUrl
     api.addRoute(streamPath, 'get', async ({ req, origRes }) => {
