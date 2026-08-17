@@ -36,9 +36,12 @@ interface result {
   data: any
 }
 // a `withFetch` scope makes server-side BackendMethod calls behave like client
-// calls - doWork's url/http defaults resolve through the scope-aware apiClient
+// calls - doWork's url/http defaults resolve through the scope-aware apiClient.
+// The scope must not reach the in-process request it dispatches to, hence the
+// check that it belongs to the current remult.
 function inFetchScope() {
-  return !!remultStatic.asyncContext?.scopedStore?.()?.apiClient
+  const scope = remultStatic.dataScope?.get()
+  return !!scope?.apiClient && scope.remult === remultStatic.remultFactory()
 }
 export abstract class Action<inParam, outParam> implements ActionInterface {
   constructor(

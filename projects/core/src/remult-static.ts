@@ -1,5 +1,10 @@
 import type { ClassType } from '../classType.js'
-import type { ClassHelper, Remult, RemultAsyncLocalStorage } from './context.js'
+import type {
+  ClassHelper,
+  Remult,
+  RemultAsyncLocalStorage,
+  RemultDataScopeStorage,
+} from './context.js'
 import type { DataProvider } from './data-interfaces.js'
 import type { columnInfo } from './remult3/columnInfo.js'
 
@@ -10,6 +15,7 @@ let x = {
   remultFactory: undefined as unknown as () => Remult,
   defaultRemult: undefined as unknown as Remult,
   asyncContext: undefined as unknown as RemultAsyncLocalStorage,
+  dataScope: undefined as unknown as RemultDataScopeStorage,
   columnsOfType: new Map<any, columnInfo[]>(),
   allEntities: [] as ClassType<any>[],
   classHelpers: new Map<any, ClassHelper>(),
