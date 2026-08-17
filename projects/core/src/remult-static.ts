@@ -44,6 +44,8 @@ if (
 export const remultStatic = x
 
 export function defaultFactory() {
+  const store = remultStatic.asyncContext?.tryGetStore()
+  if (store) return store.remult
   if (!remultStatic.defaultRemult) {
     remultStatic.defaultRemult = remultStatic.defaultRemultFactory()
   }

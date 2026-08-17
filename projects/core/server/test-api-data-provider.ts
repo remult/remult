@@ -5,7 +5,7 @@ import {
   SqlDatabase,
   type DataProvider,
   type EntityMetadata,
-  Remult,
+  type UserInfo,
 } from '../index.js'
 import type { RemultServerOptions } from './index.js'
 import {
@@ -13,21 +13,25 @@ import {
   type GenericRequestInfo,
   type RemultServerImplementation,
 } from './remult-api-server.js'
-import { remultStatic } from '../src/remult-static.js'
-import { RemultAsyncLocalStorage } from '../src/context.js'
 import { initDataProvider } from './initDataProvider.js'
+import { initAsyncHooks } from './initAsyncHooks.js'
+
+type TestApiRequest = GenericRequestInfo & { body?: any; user?: UserInfo }
 
 export function TestApiDataProvider(
   options?: Pick<RemultServerOptions<unknown>, 'ensureSchema' | 'dataProvider'>,
 ) {
   if (!options) options = {}
+  // `createRemultServerCore` skips it - without it the in-process call has no
+  // remult of its own and would corrupt the caller's context
+  initAsyncHooks()
 
   var dp = initDataProvider(options.dataProvider, false, async () => {
     return new InMemoryDataProvider()
   })
 
-  const server = createRemultServerCore<GenericRequestInfo & { body?: any }>(
-    { ...options, dataProvider: dp },
+  const server = createRemultServerCore<TestApiRequest>(
+    { ...options, dataProvider: dp, getUser: async (req) => req.user },
     {
       getRequestBody: async (req) => req.body,
       buildGenericRequestInfo: (req) => ({
@@ -36,40 +40,24 @@ export function TestApiDataProvider(
       }),
       ignoreAsyncStorage: true,
     },
-  ) as RemultServerImplementation<GenericRequestInfo & { body?: any }>
+  ) as RemultServerImplementation<TestApiRequest>
 
-  const lock = new AsyncLock()
-  // separate from `lock` - the nested-storage path skips `lock` but must still
-  // serialize concurrent first calls racing ensureSchema
+  // concurrent first calls would otherwise race on ensureSchema
   const schemaLock = new AsyncLock()
-  function ensureSchemaSerialized() {
-    return schemaLock.runExclusive(async () => {
+
+  async function handleOnServer(req: TestApiRequest) {
+    req.user = remult.user ? { ...remult.user } : undefined
+    await schemaLock.runExclusive(async () => {
       if (newEntities.length > 0 && options?.ensureSchema != false) {
         await (await dp).ensureSchema?.(newEntities)
         newEntities = []
       }
     })
-  }
-  async function handleOnServer(
-    req: GenericRequestInfo & { body?: any; user?: unknown },
-  ) {
-    const call = async () => {
-      await ensureSchemaSerialized()
-      var result = await server.handle(req)
-      if ((result?.statusCode ?? 200) >= 400) {
-        throw { ...result?.data, status: result?.statusCode ?? 500 }
-      }
-      return result?.data ? JSON.parse(JSON.stringify(result.data)) : undefined
+    var result = await server.handle(req)
+    if ((result?.statusCode ?? 200) >= 400) {
+      throw { ...result?.data, status: result?.statusCode ?? 500 }
     }
-    if (remultStatic.asyncContext.scopedStore()) {
-      // nested storage run is concurrency-safe, no lock needed
-      req.user = remult.user ? { ...remult.user } : undefined
-      return remultStatic.asyncContext.run(new Remult(), call)
-    }
-    // no real async storage: swapping globals is only safe one call at a time
-    return lock.runExclusive(() =>
-      MakeServerCallWithDifferentStaticRemult(call),
-    )
+    return result?.data ? JSON.parse(JSON.stringify(result.data)) : undefined
   }
 
   const registeredEntities = new Set<string>()
@@ -127,32 +115,5 @@ export class AsyncLock {
     } finally {
       resolveNext!()
     }
-  }
-}
-
-async function MakeServerCallWithDifferentStaticRemult<T>(what: () => T) {
-  var x = remultStatic.asyncContext
-  var y = remultStatic.remultFactory
-  const user = { ...remult.user! }
-  let store: {
-    remult: Remult
-    inInitRequest?: boolean
-  }
-  remultStatic.remultFactory = () => store.remult
-  try {
-    remultStatic.asyncContext = new RemultAsyncLocalStorage({
-      getStore: () => store,
-      run: (pStore, callback) => {
-        store = pStore
-        store.remult.user = user
-        return callback()
-      },
-      wasImplemented: 'yes',
-      isStub: true, // keep scopedStore() empty while this fake is installed
-    })
-    return await what()
-  } finally {
-    remultStatic.asyncContext = x
-    remultStatic.remultFactory = y
   }
 }

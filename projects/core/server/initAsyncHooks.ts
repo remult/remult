@@ -5,11 +5,8 @@ import {
 } from '../src/context.js'
 import { remultStatic } from '../src/remult-static.js'
 
-let init = false
-
 export function initAsyncHooks() {
-  if (init) return
-  init = true
+  if (remultStatic.asyncContext?.hasStorage()) return
   remultStatic.asyncContext = new RemultAsyncLocalStorage(
     new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
   )
