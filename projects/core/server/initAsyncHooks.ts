@@ -6,11 +6,15 @@ import {
 import { remultStatic } from '../src/remult-static.js'
 
 export function initAsyncHooks() {
-  if (remultStatic.asyncContext?.hasStorage()) return
-  remultStatic.asyncContext = new RemultAsyncLocalStorage(
-    new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
-  )
-  remultStatic.dataScope.core =
+  const remultStorageAlreadySet = remultStatic.asyncContext?.hasStorage()
+  // the two storages are wired independently: a hand-wired asyncContext must not
+  // leave the data scope without one, or scopes degrade to save/restore
+  if (remultStorageAlreadySet && remultStatic.dataScope.core) return
+  if (!remultStorageAlreadySet)
+    remultStatic.asyncContext = new RemultAsyncLocalStorage(
+      new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
+    )
+  remultStatic.dataScope.core ??=
     new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore()
   let test = new AsyncLocalStorage()
   test.run(1, async () => {
@@ -19,9 +23,10 @@ export function initAsyncHooks() {
       console.log(
         "async_hooks.AsyncLocalStorage not working, using stub implementation (You're probably running on stackblitz, this will work on a normal nodejs environment)",
       )
-      remultStatic.asyncContext = new RemultAsyncLocalStorage(
-        new StubRemultAsyncLocalStorageCore(),
-      )
+      if (!remultStorageAlreadySet)
+        remultStatic.asyncContext = new RemultAsyncLocalStorage(
+          new StubRemultAsyncLocalStorageCore(),
+        )
       remultStatic.dataScope.core = undefined
     }
   })

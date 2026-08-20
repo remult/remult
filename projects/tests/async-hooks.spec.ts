@@ -6,6 +6,7 @@ import { remult } from '../core/src/remult-proxy.js'
 import { remultStatic } from '../core/src/remult-static.js'
 import {
   AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore,
+  initAsyncHooks,
   StubRemultAsyncLocalStorageCore,
 } from '../core/server/initAsyncHooks.js'
 import { remultApi } from '../core/remult-express'
@@ -121,6 +122,41 @@ describe('test stub async hooks', () => {
     expect(result?.id).toBe('1')
     await api.withRemultAsync({} as any, () => repo(t).findFirst())
     expect(count).toBe(2)
+  })
+})
+describe('initAsyncHooks wires the data scope storage', () => {
+  let savedContext: typeof remultStatic.asyncContext
+  let savedCore: typeof remultStatic.dataScope.core
+  beforeEach(() => {
+    savedContext = remultStatic.asyncContext
+    savedCore = remultStatic.dataScope.core
+  })
+  afterEach(() => {
+    remultStatic.asyncContext = savedContext
+    remultStatic.dataScope.core = savedCore
+  })
+  it('gives the data scope a storage even when the remult storage is already set', () => {
+    remultStatic.asyncContext = new RemultAsyncLocalStorage(
+      new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
+    )
+    remultStatic.dataScope.core = undefined
+    const context = remultStatic.asyncContext
+
+    initAsyncHooks()
+
+    expect(remultStatic.dataScope.core).toBeDefined()
+    expect(remultStatic.asyncContext).toBe(context)
+  })
+  it('keeps an existing data scope storage', () => {
+    const core = new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore<any>()
+    remultStatic.asyncContext = new RemultAsyncLocalStorage(
+      new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
+    )
+    remultStatic.dataScope.core = core
+
+    initAsyncHooks()
+
+    expect(remultStatic.dataScope.core).toBe(core)
   })
 })
 describe('test with remult within get user & init request', () => {
