@@ -120,8 +120,8 @@ export type RemultDataScope = {
 export class RemultDataScopeStorage {
   /** set by `initAsyncHooks` - without it the scope is process wide */
   core?: RemultAsyncLocalStorageCore<RemultDataScope>
-  // a stack rather than save/restore: scopes that close out of order (parallel
-  // client loads) then leave the still open ones with their own provider
+  // a stack rather than save/restore, so scopes closing out of order (parallel
+  // client loads) leave the still open ones with their own provider
   private stack: RemultDataScope[] = []
   get() {
     if (this.core) return this.core.getStore()
@@ -687,10 +687,10 @@ async function withScope<T>(
 }
 
 /**
- * Runs `callback` with `dataProvider` scoped to the current async context - same
- * `remult` (user, context), only data access is rerouted; concurrent requests are
- * unaffected. Without AsyncLocalStorage the innermost open scope wins, so
- * overlapping scopes in the same process can read each other's provider.
+ * Runs `callback` with `dataProvider` scoped to the current async context. Same
+ * `remult` (user, context), only data access changes, and concurrent requests
+ * keep their own provider. Without AsyncLocalStorage the innermost open scope
+ * wins, so overlapping scopes in the same process can read each other's provider.
  */
 export function withDataProvider<T>(
   dataProvider: DataProvider,
@@ -702,8 +702,8 @@ export function withDataProvider<T>(
 /**
  * Runs `callback` with data access going through the API via `fetch` - the
  * scoped replacement for the deprecated `remult.useFetch`. Inside the scope a
- * `BackendMethod` call behaves exactly like a client call: dispatched over
- * `fetch`, `allowed` enforced at the endpoint, body runs privileged there.
+ * `BackendMethod` call behaves like a client call: it goes over `fetch`, the
+ * endpoint checks `allowed`, and the body runs privileged there.
  * @example
  * export const load = async (event) =>
  *   withFetch(event.fetch, () => repo(Task).find())

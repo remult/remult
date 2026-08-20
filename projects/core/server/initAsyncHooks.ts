@@ -7,8 +7,8 @@ import { remultStatic } from '../src/remult-static.js'
 
 export function initAsyncHooks() {
   const remultStorageAlreadySet = remultStatic.asyncContext?.hasStorage()
-  // the two storages are wired independently: a hand-wired asyncContext must not
-  // leave the data scope without one, or scopes degrade to save/restore
+  // the two storages are wired independently - a hand-wired asyncContext must
+  // still leave the data scope with a core, or scopes degrade to save/restore
   if (remultStorageAlreadySet && remultStatic.dataScope.core) return
   if (!remultStorageAlreadySet)
     remultStatic.asyncContext = new RemultAsyncLocalStorage(
