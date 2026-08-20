@@ -2,8 +2,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-- Added `withDataProvider` and `withFetch` - scope data access to the current async context, same `remult` (user, context); `withFetch` succeeds the deprecated `remult.useFetch` for SSR loads and enforces the api rules at the endpoint it fetches.
-- Fixed `TestApiDataProvider` corrupting concurrent `withRemult` contexts (crash or cross-request user leak).
+- Added `withDataProvider` and `withFetch` - scope data access to the current async context, same `remult` (user, context); `withFetch` replaces the deprecated `remult.useFetch` for SSR loads and enforces the api rules at the endpoint it fetches.
+- Fixed `TestApiDataProvider` corrupting concurrent `withRemult` contexts (crash or cross-request user leak). It now calls `initAsyncHooks()`, which enables `async_hooks` tracking for the whole process.
+- `remult.dataProvider` and `remult.apiClient` are now accessors instead of plain fields, so they are no longer own properties of the instance (`{ ...remult }` and `structuredClone` no longer copy them, a subclass redeclaring them as fields shadows the scope). Reads and writes are unchanged.
 
 ## [3.3.16] - 2026-07-14
 

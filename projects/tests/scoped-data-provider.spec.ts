@@ -6,6 +6,7 @@ import {
   Fields,
   InMemoryDataProvider,
   remult,
+  Remult,
   repo,
   withRemult,
   withDataProvider,
@@ -277,6 +278,31 @@ describe('withDataProvider with real async storage', () => {
     })
   })
 
+  it('doTransaction scopes the remult it was given, not the ambient one', async () => {
+    const dbA = new InMemoryDataProvider()
+    const committed = new InMemoryDataProvider()
+    const inTransaction = new InMemoryDataProvider()
+    const dbB: DataProvider = {
+      getEntityDataProvider: (e) => committed.getEntityDataProvider(e),
+      transaction: (action) => inTransaction.transaction(action),
+    }
+    await withRemult(
+      async () => {
+        // a remult of its own, not the one the request cycle put in the store
+        const other = new Remult(dbB)
+        await doTransaction(other, async (ds) => {
+          expect(other.dataProvider).toBe(ds)
+          await other.repo(Task).insert({ id: 1 })
+        })
+        expect(await other.repo(Task).count()).toBe(0) // the write went to the transaction
+        await withRemult(async () => expect(await repo(Task).count()).toBe(1), {
+          dataProvider: inTransaction,
+        })
+      },
+      { dataProvider: dbA },
+    )
+  })
+
   it('a failed doTransaction inside a scope rolls back on the scoped provider', async () => {
     const dbA = new InMemoryDataProvider()
     const dbB = new InMemoryDataProvider()
@@ -502,6 +528,30 @@ describe('withDataProvider without async storage (fallback)', () => {
       expect(remult.apiClient).toBe(prevApi)
     } finally {
       remult.dataProvider = prevDp
+    }
+  })
+
+  it('a scope closing out of order leaves an open sibling with its own provider', async () => {
+    const dbA = new InMemoryDataProvider()
+    const dbB = new InMemoryDataProvider()
+    const dbC = new InMemoryDataProvider()
+    const prev = remult.dataProvider
+    const releaseFirst = deferred()
+    const releaseSecond = deferred()
+    try {
+      remult.dataProvider = dbA
+      const first = withDataProvider(dbB, () => releaseFirst.promise)
+      const second = withDataProvider(dbC, async () => {
+        await releaseSecond.promise
+        return remult.dataProvider
+      })
+      releaseFirst.resolve()
+      await first
+      releaseSecond.resolve()
+      expect(await second).toBe(dbC)
+      expect(remult.dataProvider).toBe(dbA)
+    } finally {
+      remult.dataProvider = prev
     }
   })
 

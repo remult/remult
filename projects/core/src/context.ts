@@ -118,20 +118,23 @@ export type RemultDataScope = {
   apiClient?: ApiClient
 }
 export class RemultDataScopeStorage {
-  /** set by `initAsyncHooks` - without it the scope degrades to save/restore */
+  /** set by `initAsyncHooks` - without it the scope is process wide */
   core?: RemultAsyncLocalStorageCore<RemultDataScope>
-  private current?: RemultDataScope
+  // a stack rather than save/restore: scopes that close out of order (parallel
+  // client loads) then leave the still open ones with their own provider
+  private stack: RemultDataScope[] = []
   get() {
-    return this.core ? this.core.getStore() : this.current
+    if (this.core) return this.core.getStore()
+    return this.stack[this.stack.length - 1]
   }
   async run<T>(scope: RemultDataScope, callback: () => Promise<T>): Promise<T> {
     if (this.core) return this.core.run(scope, callback)
-    const prev = this.current
-    this.current = scope
+    this.stack.push(scope)
     try {
       return await callback()
     } finally {
-      this.current = prev
+      const i = this.stack.lastIndexOf(scope)
+      if (i > -1) this.stack.splice(i, 1)
     }
   }
 }
@@ -593,12 +596,23 @@ export async function doTransaction(
   remult: Remult,
   what: (dp: DataProvider) => Promise<void>,
 ) {
-  const trans = new transactionLiveQueryPublisher(remult.liveQueryPublisher)
-  await remult.dataProvider.transaction(async (ds) => {
-    remult.liveQueryPublisher = trans
-    await withDataProvider(ds, () => what(ds))
-  })
-  await trans.flush()
+  const prevPublisher = remult.liveQueryPublisher
+  const trans = new transactionLiveQueryPublisher(prevPublisher)
+  // the proxy has no identity to pin a scope to, so it falls back to the ambient remult
+  const target = remult instanceof Remult ? remult : undefined
+  try {
+    await remult.dataProvider.transaction(async (ds) => {
+      remult.liveQueryPublisher = trans
+      await withScope(
+        target,
+        () => ({ dataProvider: ds }),
+        () => what(ds),
+      )
+    })
+    await trans.flush()
+  } finally {
+    remult.liveQueryPublisher = prevPublisher
+  }
 }
 class transactionLiveQueryPublisher implements LiveQueryChangesListener {
   constructor(private orig: LiveQueryChangesListener) {}
@@ -644,21 +658,25 @@ export async function withRemult<T>(
   return remultStatic.asyncContext.run(remult, (r) => callback(r))
 }
 
-/** the remult a scope attaches to, or undefined when there is no request cycle to attach to */
-function ambientRemult(): Remult | undefined {
-  try {
-    return remultStatic.remultFactory()
-  } catch {
-    return undefined
-  }
+/**
+ * The remult a scope attaches to, or undefined when there is no request cycle to
+ * attach to. Checks the store instead of catching, so a `remultFactory` that
+ * throws for its own reasons still surfaces its error.
+ */
+/* @internal */
+export function tryGetAmbientRemult(): Remult | undefined {
+  const context = remultStatic.asyncContext
+  if (context.hasStorage() && !context.tryGetStore()) return undefined
+  return remultStatic.remultFactory()
 }
 
 async function withScope<T>(
+  target: Remult | undefined,
   build: (remult: Remult) => Omit<RemultDataScope, 'remult'>,
   callback: () => Promise<T>,
 ): Promise<T> {
-  const remult = ambientRemult()
-  if (!remult) return withRemult(() => withScope(build, callback))
+  const remult = target ?? tryGetAmbientRemult()
+  if (!remult) return withRemult(() => withScope(undefined, build, callback))
   const scope: RemultDataScope = { remult, ...build(remult) }
   try {
     return await remultStatic.dataScope.run(scope, callback)
@@ -671,13 +689,14 @@ async function withScope<T>(
 /**
  * Runs `callback` with `dataProvider` scoped to the current async context - same
  * `remult` (user, context), only data access is rerouted; concurrent requests are
- * unaffected. Without AsyncLocalStorage it swaps and restores the current provider.
+ * unaffected. Without AsyncLocalStorage the innermost open scope wins, so
+ * overlapping scopes in the same process can read each other's provider.
  */
 export function withDataProvider<T>(
   dataProvider: DataProvider,
   callback: () => Promise<T>,
 ): Promise<T> {
-  return withScope(() => ({ dataProvider }), callback)
+  return withScope(undefined, () => ({ dataProvider }), callback)
 }
 
 /**
@@ -694,9 +713,13 @@ export function withFetch<T>(
   callback: () => Promise<T>,
   options?: { url?: string },
 ): Promise<T> {
-  return withScope((r) => {
-    const apiClient: ApiClient = { ...r.apiClient, httpClient: fetch }
-    if (options?.url) apiClient.url = options.url
-    return { dataProvider: new RestDataProvider(() => apiClient), apiClient }
-  }, callback)
+  return withScope(
+    undefined,
+    (r) => {
+      const apiClient: ApiClient = { ...r.apiClient, httpClient: fetch }
+      if (options?.url) apiClient.url = options.url
+      return { dataProvider: new RestDataProvider(() => apiClient), apiClient }
+    },
+    callback,
+  )
 }

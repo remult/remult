@@ -8,6 +8,7 @@ import {
   doTransaction,
   isBackend,
   setControllerSettings,
+  tryGetAmbientRemult,
 } from './context.js'
 import type { DataApiResponse } from './data-api.js'
 import type {
@@ -41,7 +42,7 @@ interface result {
 // check that it belongs to the current remult.
 function inFetchScope() {
   const scope = remultStatic.dataScope?.get()
-  return !!scope?.apiClient && scope.remult === remultStatic.remultFactory()
+  return !!scope?.apiClient && scope.remult === tryGetAmbientRemult()
 }
 export abstract class Action<inParam, outParam> implements ActionInterface {
   constructor(
