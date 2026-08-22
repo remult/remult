@@ -3267,7 +3267,11 @@ export interface SubscriptionListener<type> {
 }
 export interface SubscriptionServer {
   publishMessage<T>(channel: string, message: T): Promise<void>
+  /** A subscription server that also needs to serve http routes (for example SSE),
+   * can implement this method to register them on the api server */
+  initApiServer?(api: SubscriptionServerRouteApi): void
 }
+//[ ] SubscriptionServerRouteApi from TBD is not exported
 export type Unsubscribe = VoidFunction
 export interface UpsertOptions<entityType> {
   where: Partial<MembersOnly<entityType>>
@@ -3981,6 +3985,7 @@ export type SpecificRoute<RequestType> = {
 }
 export declare class SseSubscriptionServer implements SubscriptionServer {
   private canUserConnectToChannel?
+  initApiServer(api: SubscriptionServerRouteApi): void
   constructor(
     canUserConnectToChannel?:
       | ((channel: string, remult: Remult) => boolean)
@@ -3988,6 +3993,7 @@ export declare class SseSubscriptionServer implements SubscriptionServer {
   )
   publishMessage<T>(channel: string, message: any): Promise<void>
 }
+//[ ] SubscriptionServerRouteApi from TBD is not exported
 export declare function TestApiDataProvider(
   options?: Pick<RemultServerOptions<unknown>, "ensureSchema" | "dataProvider">,
 ): RestDataProvider
@@ -4223,6 +4229,7 @@ export type SpecificRoute<RequestType> = {
 }
 export declare class SseSubscriptionServer implements SubscriptionServer {
   private canUserConnectToChannel?
+  initApiServer(api: SubscriptionServerRouteApi): void
   constructor(
     canUserConnectToChannel?:
       | ((channel: string, remult: Remult) => boolean)
@@ -4230,6 +4237,7 @@ export declare class SseSubscriptionServer implements SubscriptionServer {
   )
   publishMessage<T>(channel: string, message: any): Promise<void>
 }
+//[ ] SubscriptionServerRouteApi from TBD is not exported
 ```
 
 ## ./remult-fastify.js
@@ -4867,6 +4875,20 @@ export declare class controllerRefImpl<T = unknown>
 //[ ] FieldMetadata from TBD is not exported
 //[ ] Remult from TBD is not exported
 //[ ] FieldsRef from TBD is not exported
+export interface DataApiResponse {
+  success(data: any): void
+  deleted(): void
+  created(data: any): void
+  notFound(): void
+  error(
+    data: ErrorInfo,
+    entity: EntityMetadata | undefined,
+    statusCode?: number | undefined,
+  ): void
+  forbidden(message?: string): void
+  progress(progress: number): void
+}
+//[ ] ErrorInfo from TBD is not exported
 export declare class DataProviderPromiseWrapper implements DataProvider {
   private dataProvider
   constructor(dataProvider: Promise<DataProvider>)
@@ -4958,6 +4980,23 @@ export declare function sqlRelationsFilter<entityType>(
     ArrayItemType<NonNullable<entityType[p]>>
   >
 }
+export interface SubscriptionServerRouteApi {
+  rootPath: string
+  addRoute(
+    relativePath: string,
+    method: "get" | "post",
+    handler: (args: SubscriptionServerRouteHandlerArgs) => Promise<void>,
+  ): void
+}
+export interface SubscriptionServerRouteHandlerArgs {
+  remult: Remult
+  res: DataApiResponse
+  req: GenericRequestInfo
+  origRes: GenericResponse
+  getBody(): Promise<any>
+}
+//[ ] GenericRequestInfo from TBD is not exported
+//[ ] GenericResponse from TBD is not exported
 ```
 
 ## ./remult-nuxt.js
