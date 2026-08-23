@@ -2185,9 +2185,10 @@ export class rowHelperImplementation<T>
           if (loadItems.includes(col)) await lu.waitLoad()
         }
       } else if (!getRelationFieldInfo(col))
-        if (data[col.key] === undefined)
-          delete this.instance[col.key as keyof T]
-        else this.instance[col.key as keyof T] = data[col.key]
+        if (data[col.key] === undefined) {
+          if (!Reflect.deleteProperty(this.instance as object, col.key))
+            this.instance[col.key as keyof T] = undefined!
+        } else this.instance[col.key as keyof T] = data[col.key]
     }
     await this.calcServerExpression()
     this.id = this.getId()
