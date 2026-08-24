@@ -1,5 +1,9 @@
 All notable changes to this project will be documented in this file.
 
+## [3.3.17] - 2026-08-24
+
+- Fixed `TypeError: Cannot delete property` on client save when a field has `includeInApi: false` and the entity was subscribed (e.g. grid dirty tracking)
+
 ## [3.3.16] - 2026-07-14
 
 - Added support for default values without an arrow function
