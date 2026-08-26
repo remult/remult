@@ -2,6 +2,11 @@ import { BackendMethod, remult } from 'remult'
 import { Task } from './Task'
 
 export class TasksController {
+  @BackendMethod({ allowed: 'admin' })
+  static async countAll() {
+    return remult.repo(Task).count()
+  }
+
   @BackendMethod({ allowed: true })
   static async setAllCompleted(completed: boolean) {
     const taskRepo = remult.repo(Task)

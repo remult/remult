@@ -3,6 +3,7 @@
   import { Task } from '../shared/Task'
   import { TasksController } from '../shared/TasksController'
   import { signOut } from '@auth/sveltekit/client'
+  import { invalidateAll } from '$app/navigation'
 
   let { data } = $props()
 
@@ -109,6 +110,15 @@
     </div>
 
     <section>
+      <h2>+page.ts: universal load (SSR & CSR)</h2>
+      <p>
+        <code>withFetch(event.fetch, (remult) => remult.repo(Task).find())</code>
+        last ran on: <b>{data.ranOn}</b>, {data.tasks.length} tasks.
+        <button onclick={() => invalidateAll()}>re-run loads (CSR)</button>
+      </p>
+    </section>
+
+    <section>
       <h2>+page.server.ts: privileged vs api level</h2>
       <p>
         Same <code>repo(Task).find()</code>, once straight on the database,
@@ -118,6 +128,10 @@
       </p>
       <p>createdBy from db: {data.fromDb.join(', ')}</p>
       <p>createdBy via api: {data.fromApi.join(', ')}</p>
+      <p>
+        <code>TasksController.countAll()</code> (<code>allowed: 'admin'</code>)
+        direct: {data.directCount}, via api: {data.apiCount}
+      </p>
     </section>
   </main>
 </div>
