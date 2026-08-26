@@ -107,5 +107,31 @@
       <button onclick={() => setAllCompleted(false)}>Mark All Incomplete</button
       >
     </div>
+
+    <section>
+      <h2>+page.server.ts: privileged vs api level</h2>
+      <p>
+        Same <code>repo(Task).find()</code>, once straight on the database,
+        once through <code>withFetch(event.fetch)</code> as {remult.user?.name}.
+        <code>ownerId</code> is <code>includeInApi: 'admin'</code>, so log in as
+        Steve to see the api side hide it.
+      </p>
+      <table>
+        <thead>
+          <tr><th>title</th><th>ownerId from db</th><th>ownerId via api</th></tr>
+        </thead>
+        <tbody>
+          {#each data.fromDb as t (t.id)}
+            <tr>
+              <td>{t.title}</td>
+              <td>{t.ownerId}</td>
+              <td>
+                {data.fromApi.find((a) => a.id === t.id)?.ownerId ?? '(hidden)'}
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    </section>
   </main>
 </div>

@@ -7,5 +7,5 @@ import type { PageLoad } from './$types'
 // the SSR response instead of fetching again.
 export const load = (async (event) => {
   const tasks = await withFetch(event.fetch, (remult) => remult.repo(Task).find())
-  return { tasks }
+  return { ...event.data, tasks }
 }) satisfies PageLoad

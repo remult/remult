@@ -1,9 +1,12 @@
-import { Allow, Entity, Fields } from 'remult'
+import { Allow, Entity, Fields, remult } from 'remult'
 
 @Entity<Task>('tasks', {
   allowApiCrud: Allow.authenticated,
   allowApiInsert: 'admin',
   allowApiDelete: 'admin',
+  saving: (task, e) => {
+    if (e.isNew) task.ownerId = remult.user?.id ?? ''
+  },
 })
 export class Task {
   @Fields.id()
@@ -23,4 +26,8 @@ export class Task {
 
   @Fields.createdAt()
   completedAt: Date = new Date()
+
+  // only admins get it through the api, a privileged server read always does
+  @Fields.string({ includeInApi: 'admin', allowApiUpdate: false })
+  ownerId = ''
 }
