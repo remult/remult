@@ -1,6 +1,7 @@
 import type { RequestEvent } from '@sveltejs/kit'
 
 import { Task } from '../../../shared/Task'
+import { Gated } from '../../../shared/Gated'
 import { TasksController } from '../../../shared/TasksController'
 import { remult } from 'remult'
 import { remultApi } from 'remult/remult-sveltekit'
@@ -16,9 +17,15 @@ const initRequestModule = new Module({
 })
 
 export const _api = remultApi({
-  entities: [Task],
+  entities: [Task, Gated],
   controllers: [TasksController],
   admin: true,
+  getUser: async (event) => {
+    const auth = event.request.headers.get('authorization')
+    if (auth === 'Bearer admin') return { id: 'admin', roles: ['admin'] }
+    if (auth === 'Bearer user') return { id: 'user' }
+    return undefined
+  },
   initRequest: async (event) => {
     remult.context.setHeaders = (headers) => {
       event.setHeaders(headers)
