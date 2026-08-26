@@ -147,6 +147,7 @@ export {
   Allow,
   Remult,
   withRemult,
+  withFetch,
   RemultContext,
   ApiClient,
   isBackend,

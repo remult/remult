@@ -236,8 +236,8 @@ export class Remult {
   /**
    * @deprecated In SvelteKit, loads run in parallel, so reassigning the shared
    * `remult` data provider here leaks across loads. Scope the fetch to the read
-   * with `withRemult` instead, e.g.
-   * `withRemult((r) => r.repo(X).find(), { dataProvider: new RestDataProvider(() => ({ httpClient: event.fetch })) })`.
+   * with `withFetch` instead, e.g.
+   * `withFetch(event.fetch, (r) => r.repo(Task).find())`.
    * See the SvelteKit "Universal load & SSR" doc.
    */
   useFetch(fetch: ApiClient['httpClient']) {
@@ -343,6 +343,8 @@ export class Remult {
     url: '/api',
     subscriptionClient: new SseSubscriptionClient(),
   }
+  /* @internal */
+  backendMethodsThroughApi = false
 }
 
 remultStatic.defaultRemultFactory = () => new Remult()
@@ -580,9 +582,12 @@ export async function withRemult<T>(
       | DataProvider
       | Promise<DataProvider>
       | (() => Promise<DataProvider | undefined>)
+    /** Copies `user`, `context` and `apiClient` from this remult - same request, different data access */
+    from?: Remult
   },
 ) {
   const remult = new Remult()
+  if (options?.from) inherit(remult, options.from)
 
   remult.dataProvider = await initDataProvider(
     options?.dataProvider,
@@ -591,4 +596,45 @@ export async function withRemult<T>(
   )
 
   return remultStatic.asyncContext.run(remult, (r) => callback(r))
+}
+
+/**
+ * Runs `callback` with a `remult` that reads through the api via `fetch`, keeping
+ * the current user and context. Replaces the deprecated `remult.useFetch` in a
+ * universal SvelteKit `load`, which runs concurrently with the server load.
+ * `BackendMethod` calls inside go over `fetch` too, so `allowed` is enforced at the endpoint.
+ * @example
+ * export const load = (event) => withFetch(event.fetch, (r) => r.repo(Task).find())
+ */
+export function withFetch<T>(
+  fetch: NonNullable<ApiClient['httpClient']>,
+  callback: (remult: Remult) => Promise<T>,
+  options?: { url?: string },
+): Promise<T> {
+  const remult = new Remult()
+  inherit(remult, ambientRemult())
+  remult.apiClient.httpClient = fetch
+  if (options?.url) remult.apiClient.url = options.url
+  remult.backendMethodsThroughApi = true
+  return remultStatic.asyncContext.run(remult, callback)
+}
+
+function inherit(remult: Remult, from: Remult | undefined) {
+  if (!from) return
+  remult.user = from.user
+  Object.assign(remult.context, from.context)
+  remult.apiClient = { ...from.apiClient }
+  remult.liveQueryStorage = from.liveQueryStorage
+  remult.subscriptionServer = from.subscriptionServer
+  remult.liveQueryPublisher = from.liveQueryPublisher
+}
+
+// undefined outside a request cycle, where the factory throws
+/* @internal */
+export function ambientRemult() {
+  try {
+    return remultStatic.remultFactory()
+  } catch {
+    return undefined
+  }
 }

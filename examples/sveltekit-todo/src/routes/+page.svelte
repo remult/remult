@@ -4,12 +4,13 @@
   import { TasksController } from '../shared/TasksController'
   import { signOut } from '@auth/sveltekit/client'
 
-  let tasks = $state<Task[]>([])
+  let { data } = $props()
+
+  // loaded in +page.ts, so the list is already there on SSR; the live query keeps it fresh
+  // svelte-ignore state_referenced_locally
+  let tasks = $state<Task[]>(data.tasks)
 
   $effect(() => {
-    // repo(Task)
-    //   .find()
-    //   .then((t) => (tasks = t));
     return repo(Task)
       .liveQuery()
       .subscribe((info) => {

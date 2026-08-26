@@ -2471,8 +2471,8 @@ export declare class Remult {
   /**
    * @deprecated In SvelteKit, loads run in parallel, so reassigning the shared
    * `remult` data provider here leaks across loads. Scope the fetch to the read
-   * with `withRemult` instead, e.g.
-   * `withRemult((r) => r.repo(X).find(), { dataProvider: new RestDataProvider(() => ({ httpClient: event.fetch })) })`.
+   * with `withFetch` instead, e.g.
+   * `withFetch(event.fetch, (r) => r.repo(Task).find())`.
    * See the SvelteKit "Universal load & SSR" doc.
    */
   useFetch(fetch: ApiClient["httpClient"]): void
@@ -3637,6 +3637,13 @@ export declare function valueValidator<valueType>(
   entity: any,
   e: ValidateFieldEvent<any, valueType>,
 ) => string | boolean | Promise<string | boolean>
+export declare function withFetch<T>(
+  fetch: NonNullable<ApiClient["httpClient"]>,
+  callback: (remult: Remult) => Promise<T>,
+  options?: {
+    url?: string
+  },
+): Promise<T>
 export declare function withRemult<T>(
   callback: (remult: Remult) => Promise<T>,
   options?: {
@@ -3644,6 +3651,8 @@ export declare function withRemult<T>(
       | DataProvider
       | Promise<DataProvider>
       | (() => Promise<DataProvider | undefined>)
+    /** Copies `user`, `context` and `apiClient` from this remult - same request, different data access */
+    from?: Remult
   },
 ): Promise<T>
 ````

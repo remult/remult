@@ -8,6 +8,7 @@ import {
   doTransaction,
   isBackend,
   setControllerSettings,
+  ambientRemult,
 } from './context.js'
 import type { DataApiResponse } from './data-api.js'
 import type {
@@ -280,7 +281,7 @@ export function BackendMethod<type = unknown>(
       }
 
       result = async function (...args: any[]) {
-        if (!isBackend()) {
+        if (!isBackend() || ambientRemult()?.backendMethodsThroughApi) {
           return await serverAction.doWork(args, undefined)
         } else
           return await originalMethod.apply(
@@ -510,7 +511,7 @@ export function BackendMethod<type = unknown>(
     result = async function (...args: any[]) {
       //@ts-ignore I specifically referred to the this of the original function - so it'll be sent inside
       let self: any = this
-      if (!isBackend()) {
+      if (!isBackend() || ambientRemult()?.backendMethodsThroughApi) {
         return serverAction.doWork(args, self)
       } else return await originalMethod.apply(self, args)
     }

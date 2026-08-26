@@ -96,8 +96,9 @@ export class RemultProxy implements Remult {
   }
   /**
    * @deprecated Mutating the shared request `remult` is unsafe (it can affect a
-   * concurrent `+page.server.ts` on the server). Scope the rest fetch to the read
-   * with `withRemult` instead - see the SvelteKit "Universal load & SSR" doc.
+   * concurrent `+page.server.ts` on the server). Scope the fetch to the read
+   * with `withFetch` instead, e.g. `withFetch(event.fetch, (r) => r.repo(Task).find())`.
+   * See the SvelteKit "Universal load & SSR" doc.
    */
   useFetch(args: typeof fetch) {
     return remultStatic.remultFactory().useFetch(args)
@@ -280,6 +281,14 @@ export class RemultProxy implements Remult {
   }
   set subscriptionServer(value: SubscriptionServer) {
     remultStatic.remultFactory().subscriptionServer = value
+  }
+  /* @internal */
+  get backendMethodsThroughApi() {
+    return remultStatic.remultFactory().backendMethodsThroughApi
+  }
+  /* @internal */
+  set backendMethodsThroughApi(value: boolean) {
+    remultStatic.remultFactory().backendMethodsThroughApi = value
   }
 }
 
