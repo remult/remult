@@ -8,7 +8,8 @@ export const load = (async (event) => {
   // api level: through the api as the current user, so includeInApi,
   // allowApi* and apiPrefilter apply. Same global repo(), scoped by withFetch.
   const fromApi = await withFetch(event.fetch, () => repo(Task).find())
-  // plain objects: toJson would apply includeInApi again for the current user
-  const pick = (t: Task) => ({ id: t.id, title: t.title, ownerId: t.ownerId })
-  return { fromDb: fromDb.map(pick), fromApi: fromApi.map(pick) }
+
+  const names = (tasks: Task[]) => tasks.map((t) => t.createdBy ?? '(hidden)')
+  console.log('createdBy from db:', names(fromDb), 'via api:', names(fromApi))
+  return { fromDb: names(fromDb), fromApi: names(fromApi) }
 }) satisfies PageServerLoad

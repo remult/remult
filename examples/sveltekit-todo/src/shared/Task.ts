@@ -5,7 +5,7 @@ import { Allow, Entity, Fields, remult } from 'remult'
   allowApiInsert: 'admin',
   allowApiDelete: 'admin',
   saving: (task, e) => {
-    if (e.isNew) task.ownerId = remult.user?.id ?? ''
+    if (e.isNew) task.createdBy = remult.user?.name ?? ''
   },
 })
 export class Task {
@@ -29,5 +29,5 @@ export class Task {
 
   // only admins get it through the api, a privileged server read always does
   @Fields.string({ includeInApi: 'admin', allowApiUpdate: false })
-  ownerId = ''
+  createdBy = ''
 }
