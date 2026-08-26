@@ -55,5 +55,7 @@ describe('test sveltekit server', async () => {
         }),
       )
     },
+    // hooks.server.ts runs initRequest, so its crash surfaces as SvelteKit's 500
+    { initRequestCrashStatus: 500 },
   )
 })

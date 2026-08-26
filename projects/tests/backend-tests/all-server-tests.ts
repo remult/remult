@@ -20,6 +20,7 @@ export function testAsExpressMW(
   additionalTests?: (
     withRemultForTest: (what: () => Promise<void>) => () => Promise<void>,
   ) => void,
+  options?: ServerTestOptions,
 ) {
   let destroy: () => Promise<void>
 
@@ -33,19 +34,22 @@ export function testAsExpressMW(
       }
     })
   })
-  allServerTests(port, {}, additionalTests)
+  allServerTests(port, options, additionalTests)
   afterAll(async () => {
     RemultAsyncLocalStorage.disable()
     return destroy()
   })
 }
 
+export type ServerTestOptions = {
+  skipAsyncHooks?: boolean
+  skipLiveQuery?: boolean
+  /** an initRequest throw is a 400 from the api handler, but a 500 when it happens in a framework hook */
+  initRequestCrashStatus?: number
+}
 export function allServerTests(
   port: number,
-  options?: {
-    skipAsyncHooks?: boolean
-    skipLiveQuery?: boolean
-  },
+  options?: ServerTestOptions,
   additionalTests?: (
     withRemultForTest: (what: () => Promise<void>) => () => Promise<void>,
   ) => void,
@@ -587,11 +591,9 @@ export function allServerTests(
             })
             expect('to never').toBe('be here')
           } catch (error) {
-            if (error instanceof Error) {
-              expect(error.message).toMatchInlineSnapshot(
-                `"Request failed with status code 400"`,
-              )
-            }
+            expect(axios.isAxiosError(error) && error.response?.status).toBe(
+              options?.initRequestCrashStatus ?? 400,
+            )
           }
         }),
       )
