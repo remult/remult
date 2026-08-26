@@ -3651,7 +3651,7 @@ export declare function withRemult<T>(
       | DataProvider
       | Promise<DataProvider>
       | (() => Promise<DataProvider | undefined>)
-    /** Copies `user`, `context` and `apiClient` from this remult - same request, different data access */
+    /** Copies the request state (`user`, `context`, `apiClient`, live query wiring) from this remult, only data access changes */
     from?: Remult
   },
 ): Promise<T>

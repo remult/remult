@@ -124,12 +124,6 @@ function mockHttp(rows: any[] = []) {
   }
 }
 
-function deferred() {
-  let resolve!: () => void
-  const promise = new Promise<void>((res) => (resolve = res))
-  return { promise, resolve }
-}
-
 function useRealAsyncStorage() {
   beforeEach(() => {
     remultStatic.asyncContext = new RemultAsyncLocalStorage(
@@ -301,16 +295,17 @@ describe('withFetch with async storage', () => {
   it('concurrent loads each keep their own fetch', async () => {
     const a = mockHttp()
     const b = mockHttp()
-    const gate = deferred()
+    let open!: () => void
+    const gate = new Promise<void>((r) => (open = r))
     await withRemult(async () => {
       const loadA = withFetch(a.http, async (r) => {
-        await gate.promise
+        await gate
         expect(remult.apiClient.httpClient).toBe(a.http)
         return r.repo(Task).find()
       })
       const loadB = withFetch(b.http, (r) => r.repo(Task).find())
       await loadB
-      gate.resolve()
+      open()
       await loadA
       expect(a.calls).toEqual(['/api/withFetchTasks'])
       expect(b.calls).toEqual(['/api/withFetchTasks'])

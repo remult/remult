@@ -282,14 +282,6 @@ export class RemultProxy implements Remult {
   set subscriptionServer(value: SubscriptionServer) {
     remultStatic.remultFactory().subscriptionServer = value
   }
-  /* @internal */
-  get backendMethodsThroughApi() {
-    return remultStatic.remultFactory().backendMethodsThroughApi
-  }
-  /* @internal */
-  set backendMethodsThroughApi(value: boolean) {
-    remultStatic.remultFactory().backendMethodsThroughApi = value
-  }
 }
 
 export const remult: Remult = new RemultProxy()

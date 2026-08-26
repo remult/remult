@@ -5,15 +5,19 @@ import type { PageServerLoad } from './$types'
 
 export const load = (async (event) => {
   // privileged: straight to the database, every field, allowed is not checked
-  const fromDb = await repo(Task).find()
-  const directCount = await TasksController.countAll()
+  const [fromDb, directCount] = await Promise.all([
+    repo(Task).find(),
+    TasksController.countAll(),
+  ])
 
   // api level: through the api as the current user, so includeInApi, allowApi*
   // and allowed apply. Same global repo() and BackendMethod, scoped by withFetch.
-  const { fromApi, apiCount } = await withFetch(event.fetch, async () => ({
-    fromApi: await repo(Task).find(),
-    apiCount: await TasksController.countAll().catch(() => '(forbidden)'),
-  }))
+  const [fromApi, apiCount] = await withFetch(event.fetch, () =>
+    Promise.all([
+      repo(Task).find(),
+      TasksController.countAll().catch(() => '(forbidden)'),
+    ]),
+  )
 
   const names = (tasks: Task[]) => tasks.map((t) => t.createdBy ?? '(hidden)')
   console.log('[+page.server.ts] createdBy from db:', names(fromDb), 'via api:', names(fromApi))

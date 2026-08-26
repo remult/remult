@@ -343,8 +343,6 @@ export class Remult {
     url: '/api',
     subscriptionClient: new SseSubscriptionClient(),
   }
-  /* @internal */
-  backendMethodsThroughApi = false
 }
 
 remultStatic.defaultRemultFactory = () => new Remult()
@@ -582,7 +580,7 @@ export async function withRemult<T>(
       | DataProvider
       | Promise<DataProvider>
       | (() => Promise<DataProvider | undefined>)
-    /** Copies `user`, `context` and `apiClient` from this remult - same request, different data access */
+    /** Copies the request state (`user`, `context`, `apiClient`, live query wiring) from this remult, only data access changes */
     from?: Remult
   },
 ) {
@@ -600,9 +598,8 @@ export async function withRemult<T>(
 
 /**
  * Runs `callback` with a `remult` that reads through the api via `fetch`, keeping
- * the current user and context. Replaces the deprecated `remult.useFetch` in a
- * universal SvelteKit `load`, which runs concurrently with the server load.
- * `BackendMethod` calls inside go over `fetch` too, so `allowed` is enforced at the endpoint.
+ * the current user and context. `BackendMethod` calls inside go over `fetch` too,
+ * so `allowed` is enforced at the endpoint.
  * @example
  * export const load = (event) => withFetch(event.fetch, (r) => r.repo(Task).find())
  */
@@ -615,8 +612,16 @@ export function withFetch<T>(
   inherit(remult, ambientRemult())
   remult.apiClient.httpClient = fetch
   if (options?.url) remult.apiClient.url = options.url
-  remult.backendMethodsThroughApi = true
+  fetchScoped.add(remult)
   return remultStatic.asyncContext.run(remult, callback)
+}
+
+// kept off the Remult shape: only BackendMethod dispatch reads it
+const fetchScoped = new WeakSet<Remult>()
+/* @internal */
+export function inFetchScope() {
+  const remult = ambientRemult()
+  return !!remult && fetchScoped.has(remult)
 }
 
 function inherit(remult: Remult, from: Remult | undefined) {
@@ -630,8 +635,7 @@ function inherit(remult: Remult, from: Remult | undefined) {
 }
 
 // undefined outside a request cycle, where the factory throws
-/* @internal */
-export function ambientRemult() {
+function ambientRemult() {
   try {
     return remultStatic.remultFactory()
   } catch {

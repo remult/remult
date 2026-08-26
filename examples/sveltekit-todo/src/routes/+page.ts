@@ -3,10 +3,8 @@ import { withFetch } from 'remult'
 import { Task } from '../shared/Task'
 import type { PageLoad } from './$types'
 
-// Universal load: runs on the server for SSR, again in the browser on hydration
-// (event.fetch replays the SSR response, no second request) and on client-side
-// navigation. Use the remult the callback hands you: in the browser there is no
-// async context, so the global remult is not scoped.
+// use the callback's remult: in the browser there is no async context, so the
+// global remult is not scoped there
 export const load = (async (event) => {
   const tasks = await withFetch(event.fetch, (remult) => remult.repo(Task).find())
   const ranOn = browser ? 'csr' : 'ssr'
