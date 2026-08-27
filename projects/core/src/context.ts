@@ -292,7 +292,6 @@ export class Remult {
       httpClient: fetch,
     }))
   }
-  /** The current data provider */
   /** The current data provider - an enclosing `withApiRules` wins, assignment sets the instance default */
   get dataProvider(): DataProvider {
     const scope = remultStatic.apiClientScope?.get()
@@ -391,7 +390,6 @@ export class Remult {
    * Check out the [extensibility section](/docs/custom-options#enhancing-field-and-entity-definitions-with-custom-options) for more custom options.
    */
   readonly context: RemultContext = {} as RemultContext
-  /** The api client that will be used by `remult` to perform calls to the `api` */
   /** The api client that will be used by `remult` to perform calls to the `api` */
   get apiClient(): ApiClient {
     const scope = remultStatic.apiClientScope?.get()
@@ -543,16 +541,10 @@ export interface UserInfo {
 }
 
 export declare type Allowed =
-  | boolean
-  | string
-  | string[]
-  | ((c?: Remult) => boolean)
+  boolean | string | string[] | ((c?: Remult) => boolean)
 
 export declare type AllowedForInstance<T> =
-  | boolean
-  | string
-  | string[]
-  | ((entity?: T, c?: Remult) => boolean)
+  boolean | string | string[] | ((entity?: T, c?: Remult) => boolean)
 export class Allow {
   static everyone = () => true
   static authenticated = (...args: any[]) => {
