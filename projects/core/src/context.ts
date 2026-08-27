@@ -44,6 +44,10 @@ import { initDataProvider } from '../server/initDataProvider.js'
 import { SubscribableImp } from './remult3/SubscribableImp.js'
 import { getEntitySettings } from './remult3/getEntityRef.js'
 
+export type RemultAsyncStore = {
+  remult: Remult
+  inInitRequest?: boolean
+}
 export class RemultAsyncLocalStorage {
   static enable() {
     remultStatic.remultFactory = () => {
@@ -60,10 +64,7 @@ export class RemultAsyncLocalStorage {
   }
   constructor(
     private readonly remultObjectStorage:
-      | RemultAsyncLocalStorageCore<{
-          remult: Remult
-          inInitRequest?: boolean
-        }>
+      | RemultAsyncLocalStorageCore<RemultAsyncStore>
       | undefined,
   ) {}
   async run<T>(
@@ -85,6 +86,9 @@ export class RemultAsyncLocalStorage {
     const store = this.remultObjectStorage?.getStore()
     if (!store) return
     if (val || this.remultObjectStorage?.isStub) store.inInitRequest = val
+  }
+  hasStorage() {
+    return !!this.remultObjectStorage
   }
   getStore() {
     if (!this.remultObjectStorage) {
@@ -539,10 +543,16 @@ export interface UserInfo {
 }
 
 export declare type Allowed =
-  boolean | string | string[] | ((c?: Remult) => boolean)
+  | boolean
+  | string
+  | string[]
+  | ((c?: Remult) => boolean)
 
 export declare type AllowedForInstance<T> =
-  boolean | string | string[] | ((entity?: T, c?: Remult) => boolean)
+  | boolean
+  | string
+  | string[]
+  | ((entity?: T, c?: Remult) => boolean)
 export class Allow {
   static everyone = () => true
   static authenticated = (...args: any[]) => {

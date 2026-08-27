@@ -5,7 +5,7 @@ import type {
   Remult,
   RemultAsyncLocalStorage,
 } from './context.js'
-import type { ApiClient } from './context.js'
+import type { InProcessHttpClient } from '../server/in-process-api-client.js'
 import type { DataProvider } from './data-interfaces.js'
 import type { columnInfo } from './remult3/columnInfo.js'
 
@@ -19,7 +19,7 @@ let x = {
   apiClientScope: undefined as unknown as ApiClientScopeStorage,
   /** set by `createRemultServer` - lets `withApiRules` reach the mounted api without a network hop */
   buildInProcessHttpClient: undefined as unknown as
-    | (() => NonNullable<ApiClient['httpClient']>)
+    | (() => InProcessHttpClient)
     | undefined,
   columnsOfType: new Map<any, columnInfo[]>(),
   allEntities: [] as ClassType<any>[],

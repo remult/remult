@@ -4,7 +4,6 @@ import type { ClassType } from '../classType.js'
 import type {
   Allowed,
   AllowedForInstance,
-  ApiClient,
   RemultContext,
   UserInfo,
 } from '../src/context.js'
@@ -230,10 +229,15 @@ export function createRemultServerCore<RequestType>(
     dataProvider,
     serverCoreOptions,
   )
-  // per server, and the last one mounted wins - like `remultStatic.defaultDataProvider`
-  let inProcessHttpClient: NonNullable<ApiClient['httpClient']> | undefined
-  remultStatic.buildInProcessHttpClient = () =>
-    (inProcessHttpClient ??= buildInProcessHttpClient(bridge))
+  // `withApiRules` must reach the app's api, and a server that opts out of async
+  // storage is a test helper's, not the app's. Last one mounted wins otherwise.
+  if (!serverCoreOptions.ignoreAsyncStorage) {
+    let inProcessHttpClient:
+      | ReturnType<typeof buildInProcessHttpClient>
+      | undefined
+    remultStatic.buildInProcessHttpClient = () =>
+      (inProcessHttpClient ??= buildInProcessHttpClient(bridge))
+  }
   return bridge
 }
 

@@ -1,5 +1,10 @@
 import { remult } from '../index.js'
-import type { ApiClient } from '../src/context.js'
+export type InProcessHttpClient = {
+  get(url: string): Promise<any>
+  put(url: string, body: any): Promise<any>
+  post(url: string, body: any): Promise<any>
+  delete(url: string): Promise<any>
+}
 import { buildInProcessRequest } from './in-process-request.js'
 import type { RemultServer } from './remult-api-server.js'
 
@@ -11,7 +16,7 @@ import type { RemultServer } from './remult-api-server.js'
  */
 export function buildInProcessHttpClient<RequestType>(
   server: RemultServer<RequestType>,
-): NonNullable<ApiClient['httpClient']> {
+): InProcessHttpClient {
   const call = async (method: string, url: string, body?: any) => {
     const result = await server.handle(
       buildInProcessRequest({

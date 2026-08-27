@@ -68,7 +68,6 @@ function useServer(extraOptions?: any) {
           internal: req,
           public: { headers: new Headers() },
         }),
-        ignoreAsyncStorage: true,
       },
     )
     await withRemult(
