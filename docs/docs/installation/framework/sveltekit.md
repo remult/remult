@@ -107,28 +107,60 @@ export const handle = sequence(
 
 ## Extra - Universal load & SSR
 
-To use remult in an SSR `PageLoad`, route the read through the API using the `event`'s fetch: it works on SSR and CSR (no double fetch on the client), and applies all API rules even when it runs on the server.
+A universal `load` runs on the server for SSR and in the browser on navigation. On
+the server, `repo(...)` reads the database directly and skips every API rule; in
+the browser the same line goes through the API. `withApiRules` removes that split:
+inside it, reads and `BackendMethod` calls always go through the API as the current
+user, so `allowApi*`, `apiPrefilter`, `includeInApi` and `allowed` apply on both
+sides.
 
-Scope it to the read with `withRemult` rather than mutating the shared request `remult`. A universal `load` runs **concurrently** with any `+page.server.ts`, so reassigning the global data provider there (as the deprecated `remult.useFetch` does) would change the provider that other load is using.
+Pass the `event`'s fetch so SvelteKit can serialize the SSR response into the page
+payload instead of the browser fetching it again.
 
 ::: code-group
 
 ```ts [src/routes/+page.ts]
-import { RestDataProvider, withRemult } from 'remult'
+import { repo, withApiRules } from 'remult'
 import type { PageLoad } from './$types'
 
 export const load = (async (event) => {
-  return withRemult((remult) => remult.repo(Task).find(), {
-    dataProvider: new RestDataProvider(() => ({ httpClient: event.fetch })),
+  const tasks = await withApiRules(() => repo(Task).find(), {
+    fetch: event.fetch,
   })
+  return { tasks }
 }) satisfies PageLoad
 ```
 
 :::
 
+In the browser this is already how remult reads, so `withApiRules` is a no-op there
+and both sides return the same rows.
+
+Do not reassign the shared request `remult` instead (what the deprecated
+`remult.useFetch` does): a universal `load` runs **concurrently** with any
+`+page.server.ts`, so it would change the data provider that other load is using.
+
 ::: tip
 firstly ships a ready-made wrapper (`remultApiUniversalLoad`) that also handles CSR/hydration reuse - see [remultApiLoad.ts](https://github.com/jycouet/firstly/blob/main/packages/firstly/src/lib/svelte/remultApiLoad.ts).
 :::
+
+## Extra - API rules on the server
+
+The same applies to a `+page.server.ts`, a hook or any server-only code: `repo(...)`
+is privileged there. Wrap a read in `withApiRules` to get the current user's view of
+it instead. Without a `fetch` the call stays in process - it goes through the api
+that is already mounted, without a network roundtrip.
+
+```ts [src/routes/+page.server.ts]
+import { repo, withApiRules } from 'remult'
+
+export const load = async () => ({
+  // every row and field
+  all: await repo(Task).find(),
+  // only what this user may see through the api
+  mine: await withApiRules(() => repo(Task).find()),
+})
+```
 
 ## Extra - Server load
 

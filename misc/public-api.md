@@ -2476,7 +2476,6 @@ export declare class Remult {
    * See the SvelteKit "Universal load & SSR" doc.
    */
   useFetch(fetch: ApiClient["httpClient"]): void
-  /** The current data provider */
   /** The current data provider - an enclosing `withApiRules` wins, assignment sets the instance default */
   get dataProvider(): DataProvider
   set dataProvider(dataProvider: DataProvider)
@@ -2519,7 +2518,6 @@ export declare class Remult {
    * Check out the [extensibility section](/docs/custom-options#enhancing-field-and-entity-definitions-with-custom-options) for more custom options.
    */
   readonly context: RemultContext
-  /** The api client that will be used by `remult` to perform calls to the `api` */
   /** The api client that will be used by `remult` to perform calls to the `api` */
   get apiClient(): ApiClient
   set apiClient(apiClient: ApiClient)

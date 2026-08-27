@@ -1,5 +1,9 @@
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+- Added `withApiRules(callback, { fetch? })`: runs the callback in client mode, so `repo(...)` reads and `BackendMethod` calls inside go through the api as the current user and every api rule applies. Meant for a SvelteKit universal `load` (same behaviour on SSR and CSR) and for server code that wants the caller's view of the data; replaces the deprecated `remult.useFetch`.
+
 ## [3.3.17] - 2026-08-24
 
 - Fixed `TypeError: Cannot delete property` on client save when a field has `includeInApi: false` and the entity was subscribed (e.g. grid dirty tracking)
