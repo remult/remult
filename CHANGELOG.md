@@ -3,7 +3,6 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 - Added `withFetch(fetch, (remult) => ...)`: runs the callback with a `remult` that reads through the api via `fetch`, keeping the current user and context. Replaces the deprecated `remult.useFetch` in a SvelteKit universal `load`; `BackendMethod` calls inside go over the same fetch.
-- `withRemult` accepts `from: remult` to copy `user`, `context` and `apiClient` from another remult.
 
 ## [3.3.17] - 2026-08-24
 

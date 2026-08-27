@@ -149,50 +149,6 @@ async function seedGated(db: DataProvider) {
   )
 }
 
-describe('withRemult from', () => {
-  useRealAsyncStorage()
-
-  it('copies user, context and apiClient into a new remult', async () => {
-    const dbA = new InMemoryDataProvider()
-    const dbB = new InMemoryDataProvider()
-    await withRemult(
-      async (parent) => {
-        parent.user = { id: 'u1', roles: ['admin'] }
-        ;(parent.context as any).tenant = 't1'
-        parent.apiClient.url = '/parent-api'
-
-        await withRemult(
-          async (r) => {
-            expect(r).not.toBe(parent)
-            expect(remult.user).toEqual({ id: 'u1', roles: ['admin'] })
-            expect(remult.isAllowed('admin')).toBe(true)
-            expect((remult.context as any).tenant).toBe('t1')
-            expect(remult.apiClient.url).toBe('/parent-api')
-            expect(remult.dataProvider).toBe(dbB)
-          },
-          { from: remult, dataProvider: dbB },
-        )
-
-        expect(remult.dataProvider).toBe(dbA)
-      },
-      { dataProvider: dbA },
-    )
-  })
-
-  it('does not share the apiClient object with the parent', async () => {
-    await withRemult(async (parent) => {
-      parent.apiClient.url = '/parent-api'
-      await withRemult(
-        async (r) => {
-          r.apiClient.url = '/child-api'
-        },
-        { from: parent },
-      )
-      expect(parent.apiClient.url).toBe('/parent-api')
-    })
-  })
-})
-
 describe('withFetch with async storage', () => {
   useRealAsyncStorage()
 

@@ -580,12 +580,9 @@ export async function withRemult<T>(
       | DataProvider
       | Promise<DataProvider>
       | (() => Promise<DataProvider | undefined>)
-    /** Copies the request state (`user`, `context`, `apiClient`, live query wiring) from this remult, only data access changes */
-    from?: Remult
   },
 ) {
   const remult = new Remult()
-  if (options?.from) inherit(remult, options.from)
 
   remult.dataProvider = await initDataProvider(
     options?.dataProvider,
@@ -624,6 +621,7 @@ export function inFetchScope() {
   return !!remult && fetchScoped.has(remult)
 }
 
+// the request state travels, the data provider does not
 function inherit(remult: Remult, from: Remult | undefined) {
   if (!from) return
   remult.user = from.user
