@@ -4,10 +4,12 @@ import type { ClassType } from '../classType.js'
 import type {
   Allowed,
   AllowedForInstance,
+  ApiClient,
   RemultContext,
   UserInfo,
 } from '../src/context.js'
 import { Remult, RemultAsyncLocalStorage, withRemult } from '../src/context.js'
+import { buildInProcessHttpClient } from './in-process-api-client.js'
 import type { DataApiRequest, DataApiResponse } from '../src/data-api.js'
 import { DataApi, serializeError } from '../src/data-api.js'
 import type {
@@ -179,6 +181,7 @@ export interface InitRequestOptions {
   readonly remult: Remult
 }
 
+let inProcessHttpClient: NonNullable<ApiClient['httpClient']> | undefined
 export function createRemultServerCore<RequestType>(
   options: RemultServerOptions<RequestType>,
 
@@ -218,6 +221,8 @@ export function createRemultServerCore<RequestType>(
   if (safeOptions.rootPath === undefined) safeOptions.rootPath = '/api'
 
   remultStatic.actionInfo.runningOnServer = true
+  remultStatic.buildInProcessHttpClient = () =>
+    (inProcessHttpClient ??= buildInProcessHttpClient(safeOptions, dataProvider))
   let bridge = new RemultServerImplementation<RequestType>(
     new inProcessQueueHandler(safeOptions.queueStorage),
     safeOptions,

@@ -100,6 +100,42 @@ export type RemultAsyncLocalStorageCore<T> = {
   isStub?: boolean
 }
 
+/** An open `asApiClient` scope, pinned to the remult that was ambient when it opened */
+export type ApiClientScope = {
+  remult: Remult
+  dataProvider: DataProvider
+  apiClient: ApiClient
+}
+
+/**
+ * Deliberately its own storage rather than a field on the remult store: the two
+ * have different lifetimes - one remult spans the request, api client scopes open
+ * and close inside it - and only this one has a meaning in the browser (none).
+ */
+export class ApiClientScopeStorage {
+  /** set by `initAsyncHooks`, so it only ever exists on the server */
+  core?: RemultAsyncLocalStorageCore<ApiClientScope>
+  get() {
+    return this.core?.getStore()
+  }
+  run<T>(scope: ApiClientScope, callback: () => Promise<T>): Promise<T> {
+    return this.core!.run(scope, callback)
+  }
+}
+if (!remultStatic.apiClientScope)
+  remultStatic.apiClientScope = new ApiClientScopeStorage()
+
+/** True while the ambient remult is reading through the api because of `asApiClient` */
+export function inApiClientScope() {
+  const scope = remultStatic.apiClientScope?.get()
+  if (!scope) return false
+  try {
+    return remultStatic.remultFactory() === scope.remult
+  } catch {
+    return false
+  }
+}
+
 export function isBackend() {
   return remultStatic.actionInfo.runningOnServer || !remult.dataProvider.isProxy
 }
@@ -249,7 +285,16 @@ export class Remult {
     }))
   }
   /** The current data provider */
-  dataProvider: DataProvider = new RestDataProvider(() => this.apiClient)
+  /** The current data provider - an enclosing `asApiClient` wins, assignment sets the instance default */
+  get dataProvider(): DataProvider {
+    const scope = remultStatic.apiClientScope?.get()
+    if (scope?.remult === this) return scope.dataProvider
+    return (this._dataProvider ??= new RestDataProvider(() => this.apiClient))
+  }
+  set dataProvider(dataProvider: DataProvider) {
+    this._dataProvider = dataProvider
+  }
+  private _dataProvider?: DataProvider
   /* @internal */
   repCache = new Map<DataProvider, Map<ClassType<any>, Repository<unknown>>>()
   /** Creates a new instance of the `remult` object.
@@ -339,10 +384,19 @@ export class Remult {
    */
   readonly context: RemultContext = {} as RemultContext
   /** The api client that will be used by `remult` to perform calls to the `api` */
-  apiClient: ApiClient = {
-    url: '/api',
-    subscriptionClient: new SseSubscriptionClient(),
+  /** The api client that will be used by `remult` to perform calls to the `api` */
+  get apiClient(): ApiClient {
+    const scope = remultStatic.apiClientScope?.get()
+    if (scope?.remult === this) return scope.apiClient
+    return (this._apiClient ??= {
+      url: '/api',
+      subscriptionClient: new SseSubscriptionClient(),
+    })
   }
+  set apiClient(apiClient: ApiClient) {
+    this._apiClient = apiClient
+  }
+  private _apiClient?: ApiClient
 }
 
 remultStatic.defaultRemultFactory = () => new Remult()
@@ -591,4 +645,55 @@ export async function withRemult<T>(
   )
 
   return remultStatic.asyncContext.run(remult, (r) => callback(r))
+}
+
+/**
+ * Runs `callback` in client mode: every `repo(...)` read and every `BackendMethod`
+ * call inside goes through the api as the current user, so `allowApi*`,
+ * `apiPrefilter`, `includeInApi` and `allowed` are enforced.
+ *
+ * In the browser this is already how remult reads, so it is a no-op there and the
+ * same universal `load` behaves the same on SSR and on CSR.
+ * @example
+ * // +page.ts
+ * export const load = async (event) => ({
+ *   tasks: await asApiClient(() => repo(Task).find(), { fetch: event.fetch }),
+ * })
+ */
+export function asApiClient<T>(
+  callback: () => Promise<T>,
+  options?: {
+    /** The framework's fetch, e.g. SvelteKit's `event.fetch`. Without it the call stays in process */
+    fetch?: ApiClient['httpClient']
+    url?: string
+  },
+): Promise<T> {
+  if (!remultStatic.actionInfo.runningOnServer) return callback()
+
+  const scope = remultStatic.apiClientScope
+  if (!scope.core)
+    throw new Error(
+      'asApiClient needs async_hooks on the server - it is wired by createRemultServer, make sure your api is created before this runs',
+    )
+
+  const httpClient = options?.fetch ?? remultStatic.buildInProcessHttpClient?.()
+  if (!httpClient)
+    throw new Error(
+      'asApiClient has no way to reach the api - pass `{ fetch }`, or create your api with createRemultServer so it can be called in process',
+    )
+
+  const remult = remultStatic.remultFactory()
+  const apiClient: ApiClient = {
+    ...remult.apiClient,
+    httpClient,
+    url: options?.url ?? remult.apiClient.url,
+  }
+  return scope.run(
+    {
+      remult,
+      apiClient,
+      dataProvider: new RestDataProvider(() => apiClient),
+    },
+    callback,
+  )
 }

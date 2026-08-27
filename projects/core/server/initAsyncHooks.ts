@@ -13,6 +13,8 @@ export function initAsyncHooks() {
   remultStatic.asyncContext = new RemultAsyncLocalStorage(
     new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
   )
+  remultStatic.apiClientScope.core =
+    new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore()
   let test = new AsyncLocalStorage()
   test.run(1, async () => {
     await Promise.resolve()
@@ -23,6 +25,8 @@ export function initAsyncHooks() {
       remultStatic.asyncContext = new RemultAsyncLocalStorage(
         new StubRemultAsyncLocalStorageCore(),
       )
+      // a stub cannot keep concurrent scopes apart, better to refuse than to leak one into another request
+      remultStatic.apiClientScope.core = undefined
     }
   })
 }
