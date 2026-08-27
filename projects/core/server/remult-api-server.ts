@@ -10,6 +10,10 @@ import type {
 } from '../src/context.js'
 import { Remult, RemultAsyncLocalStorage, withRemult } from '../src/context.js'
 import { buildInProcessHttpClient } from './in-process-api-client.js'
+import {
+  inProcessRequestInfo,
+  isInProcessRequest,
+} from './in-process-request.js'
 import type { DataApiRequest, DataApiResponse } from '../src/data-api.js'
 import { DataApi, serializeError } from '../src/data-api.js'
 import type {
@@ -181,7 +185,6 @@ export interface InitRequestOptions {
   readonly remult: Remult
 }
 
-let inProcessHttpClient: NonNullable<ApiClient['httpClient']> | undefined
 export function createRemultServerCore<RequestType>(
   options: RemultServerOptions<RequestType>,
 
@@ -221,14 +224,16 @@ export function createRemultServerCore<RequestType>(
   if (safeOptions.rootPath === undefined) safeOptions.rootPath = '/api'
 
   remultStatic.actionInfo.runningOnServer = true
-  remultStatic.buildInProcessHttpClient = () =>
-    (inProcessHttpClient ??= buildInProcessHttpClient(safeOptions, dataProvider))
   let bridge = new RemultServerImplementation<RequestType>(
     new inProcessQueueHandler(safeOptions.queueStorage),
     safeOptions,
     dataProvider,
     serverCoreOptions,
   )
+  // per server, and the last one mounted wins - like `remultStatic.defaultDataProvider`
+  let inProcessHttpClient: NonNullable<ApiClient['httpClient']> | undefined
+  remultStatic.buildInProcessHttpClient = () =>
+    (inProcessHttpClient ??= buildInProcessHttpClient(bridge))
   return bridge
 }
 
@@ -307,6 +312,15 @@ export class RemultServerImplementation<RequestType>
     public dataProvider: Promise<DataProvider>,
     private coreOptions: ServerCoreOptions<RequestType>,
   ) {
+    this.coreOptions = {
+      ...coreOptions,
+      buildGenericRequestInfo: (req) =>
+        isInProcessRequest(req)
+          ? inProcessRequestInfo(req)
+          : coreOptions.buildGenericRequestInfo(req),
+      getRequestBody: async (req) =>
+        isInProcessRequest(req) ? req.body : coreOptions.getRequestBody(req),
+    }
     if (options.liveQueryStorage)
       this.liveQueryStorage = options.liveQueryStorage
     if (options.subscriptionServer)
@@ -786,7 +800,9 @@ export class RemultServerImplementation<RequestType>
               remultStatic.asyncContext.setInInitRequest(true)
               try {
                 let user
-                if (this.options.getUser) user = await this.options.getUser(req)
+                if (isInProcessRequest(req)) user = req.user
+                else if (this.options.getUser)
+                  user = await this.options.getUser(req)
                 else {
                   user = (req as any)['user']
                   if (!user) user = (req as any)['auth']

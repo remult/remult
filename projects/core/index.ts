@@ -147,7 +147,7 @@ export {
   Allow,
   Remult,
   withRemult,
-  asApiClient,
+  withApiRules,
   RemultContext,
   ApiClient,
   isBackend,

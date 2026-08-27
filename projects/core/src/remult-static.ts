@@ -17,7 +17,7 @@ let x = {
   defaultRemult: undefined as unknown as Remult,
   asyncContext: undefined as unknown as RemultAsyncLocalStorage,
   apiClientScope: undefined as unknown as ApiClientScopeStorage,
-  /** set by `createRemultServer` - lets `asApiClient` reach the mounted api without a network hop */
+  /** set by `createRemultServer` - lets `withApiRules` reach the mounted api without a network hop */
   buildInProcessHttpClient: undefined as unknown as
     | (() => NonNullable<ApiClient['httpClient']>)
     | undefined,

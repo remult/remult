@@ -1,61 +1,29 @@
-import type { DataProvider } from '../index.js'
 import { remult } from '../index.js'
 import type { ApiClient } from '../src/context.js'
-import type { RemultServerOptions } from './index.js'
-import {
-  createRemultServerCore,
-  type GenericRequestInfo,
-  type RemultServerImplementation,
-} from './remult-api-server.js'
-
-type InProcessRequest = GenericRequestInfo & { body?: any; user?: any }
+import { buildInProcessRequest } from './in-process-request.js'
+import type { RemultServer } from './remult-api-server.js'
 
 /**
- * An http client that runs the request through this process' api pipeline instead
- * of the network - same entities, controllers and data provider as the mounted
- * api, so every api rule applies, minus the roundtrip.
- *
- * It needs a second server because the mounted one speaks its framework's request
- * type; this one speaks `{ url, method, body }`.
+ * An http client that hands the request to the api mounted in this process
+ * instead of the network - same server, same routes, same rules, minus the
+ * roundtrip. The user comes from the ambient remult, since there is no framework
+ * request to read it from.
  */
 export function buildInProcessHttpClient<RequestType>(
-  options: RemultServerOptions<RequestType>,
-  dataProvider: Promise<DataProvider>,
+  server: RemultServer<RequestType>,
 ): NonNullable<ApiClient['httpClient']> {
-  let server: RemultServerImplementation<InProcessRequest> | undefined
-
   const call = async (method: string, url: string, body?: any) => {
-    if (!server)
-      server = createRemultServerCore<InProcessRequest>(
-        {
-          ...(options as RemultServerOptions<InProcessRequest>),
-          dataProvider,
-          // the mounted api already ensured it, and its initApi already ran
-          ensureSchema: false,
-          initApi: undefined,
-          logApiEndPoints: false,
-          // the caller is already authenticated, the framework request is gone
-          getUser: async (req) => req.user,
-        },
-        {
-          getRequestBody: async (req) => req.body,
-          buildGenericRequestInfo: (req) => ({
-            internal: req,
-            public: { headers: new Headers() },
-          }),
-          ignoreAsyncStorage: true,
-        },
-      ) as RemultServerImplementation<InProcessRequest>
-
-    const result = await server.handle({
-      url,
-      method,
-      body,
-      user: remult.user ? { ...remult.user } : undefined,
-    })
+    const result = await server.handle(
+      buildInProcessRequest({
+        url,
+        method,
+        body,
+        user: remult.user ? { ...remult.user } : undefined,
+      }) as RequestType,
+    )
     if ((result?.statusCode ?? 200) >= 400)
       throw { ...result?.data, status: result?.statusCode ?? 500 }
-    // the wire would have done it, and callers must not reach the server's rows
+    // the wire would have done it, and the caller must not reach the server's own rows
     return result?.data ? JSON.parse(JSON.stringify(result.data)) : undefined
   }
 

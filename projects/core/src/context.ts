@@ -100,7 +100,7 @@ export type RemultAsyncLocalStorageCore<T> = {
   isStub?: boolean
 }
 
-/** An open `asApiClient` scope, pinned to the remult that was ambient when it opened */
+/** An open `withApiRules` scope, pinned to the remult that was ambient when it opened */
 export type ApiClientScope = {
   remult: Remult
   dataProvider: DataProvider
@@ -125,7 +125,7 @@ export class ApiClientScopeStorage {
 if (!remultStatic.apiClientScope)
   remultStatic.apiClientScope = new ApiClientScopeStorage()
 
-/** True while the ambient remult is reading through the api because of `asApiClient` */
+/** True while the ambient remult is reading through the api because of `withApiRules` */
 export function inApiClientScope() {
   const scope = remultStatic.apiClientScope?.get()
   if (!scope) return false
@@ -285,7 +285,7 @@ export class Remult {
     }))
   }
   /** The current data provider */
-  /** The current data provider - an enclosing `asApiClient` wins, assignment sets the instance default */
+  /** The current data provider - an enclosing `withApiRules` wins, assignment sets the instance default */
   get dataProvider(): DataProvider {
     const scope = remultStatic.apiClientScope?.get()
     if (scope?.remult === this) return scope.dataProvider
@@ -657,10 +657,10 @@ export async function withRemult<T>(
  * @example
  * // +page.ts
  * export const load = async (event) => ({
- *   tasks: await asApiClient(() => repo(Task).find(), { fetch: event.fetch }),
+ *   tasks: await withApiRules(() => repo(Task).find(), { fetch: event.fetch }),
  * })
  */
-export function asApiClient<T>(
+export function withApiRules<T>(
   callback: () => Promise<T>,
   options?: {
     /** The framework's fetch, e.g. SvelteKit's `event.fetch`. Without it the call stays in process */
@@ -673,13 +673,13 @@ export function asApiClient<T>(
   const scope = remultStatic.apiClientScope
   if (!scope.core)
     throw new Error(
-      'asApiClient needs async_hooks on the server - it is wired by createRemultServer, make sure your api is created before this runs',
+      'withApiRules needs async_hooks on the server - it is wired by createRemultServer, make sure your api is created before this runs',
     )
 
   const httpClient = options?.fetch ?? remultStatic.buildInProcessHttpClient?.()
   if (!httpClient)
     throw new Error(
-      'asApiClient has no way to reach the api - pass `{ fetch }`, or create your api with createRemultServer so it can be called in process',
+      'withApiRules has no way to reach the api - pass `{ fetch }`, or create your api with createRemultServer so it can be called in process',
     )
 
   const remult = remultStatic.remultFactory()

@@ -4,7 +4,7 @@ import {
   Entity,
   Fields,
   InMemoryDataProvider,
-  asApiClient,
+  withApiRules,
   remult,
   repo,
   withRemult,
@@ -45,7 +45,7 @@ const rows = () =>
     .then((r) => r.map((t) => `${t.id}:${t.secret ?? ''}`))
 
 /** the server side of the story: async storage on, api mounted, one request remult */
-function useServer() {
+function useServer(extraOptions?: any) {
   let db: InMemoryDataProvider
   beforeEach(async () => {
     db = new InMemoryDataProvider()
@@ -56,7 +56,12 @@ function useServer() {
       new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore()
     RemultAsyncLocalStorage.enable()
     createRemultServerCore<any>(
-      { entities: [Task], controllers: [Methods], dataProvider: db },
+      {
+        entities: [Task],
+        controllers: [Methods],
+        dataProvider: db,
+        ...extraOptions,
+      },
       {
         getRequestBody: async (req) => req.body,
         buildGenericRequestInfo: (req) => ({
@@ -98,20 +103,20 @@ function useServer() {
   }
 }
 
-describe('asApiClient - in process', () => {
+describe('withApiRules - in process', () => {
   const server = useServer()
 
   it('the global repo() switches to api rules inside the scope, and back after', async () => {
     await server.request({ id: 'u' }, async () => {
       expect(await rows()).toEqual(['1:s1', '2:s2'])
-      expect(await asApiClient(rows)).toEqual(['1:'])
+      expect(await withApiRules(rows)).toEqual(['1:'])
       expect(await rows()).toEqual(['1:s1', '2:s2'])
     })
   })
 
   it('carries the user, so an admin sees what an admin may see', async () => {
     await server.request({ id: 'a', roles: ['admin'] }, async () => {
-      expect(await asApiClient(rows)).toEqual(['1:s1', '2:s2'])
+      expect(await withApiRules(rows)).toEqual(['1:s1', '2:s2'])
     })
   })
 
@@ -119,26 +124,26 @@ describe('asApiClient - in process', () => {
     await server.request({ id: 'u' }, async () => {
       expect(await Methods.adminOnly()).toBe('ran')
       await expect(
-        asApiClient(() => Methods.adminOnly()),
+        withApiRules(() => Methods.adminOnly()),
       ).rejects.toMatchObject({ httpStatusCode: 403 })
-      expect(await asApiClient(() => Methods.countAll())).toBe(2)
+      expect(await withApiRules(() => Methods.countAll())).toBe(2)
     })
   })
 
   it('writes are gated too', async () => {
     await server.request({ id: 'u' }, async () => {
       await expect(
-        asApiClient(() => repo(Task).insert({ id: 3 })),
+        withApiRules(() => repo(Task).insert({ id: 3 })),
       ).resolves.toMatchObject({ id: 3 })
       await expect(
-        asApiClient(() => repo(Task).update(2, { secret: 'hacked' })),
+        withApiRules(() => repo(Task).update(2, { secret: 'hacked' })),
       ).rejects.toBeDefined()
     })
   })
 
   it('concurrent requests do not leak their scope into each other', async () => {
     const slow = server.request({ id: 'u' }, async () => {
-      const inScope = asApiClient(async () => {
+      const inScope = withApiRules(async () => {
         await new Promise((r) => setTimeout(r, 20))
         return rows()
       })
@@ -153,7 +158,7 @@ describe('asApiClient - in process', () => {
 
   it('nested withRemult inside a scope gets the real database back', async () => {
     await server.request({ id: 'u' }, async () => {
-      await asApiClient(async () => {
+      await withApiRules(async () => {
         expect(await rows()).toEqual(['1:'])
         await withRemult(
           async () => expect(await rows()).toEqual(['1:s1', '2:s2']),
@@ -164,7 +169,33 @@ describe('asApiClient - in process', () => {
   })
 })
 
-describe('asApiClient - fetch transport', () => {
+describe('withApiRules - reuses the mounted api', () => {
+  const server = useServer({
+    // would throw on the in-process call if it were not bypassed
+    getUser: async (req: any) => {
+      if (!req.headers) throw new Error('getUser got a request it cannot read')
+      return { id: 'from-headers' }
+    },
+    initRequest: async () => {
+      initRequestCalls++
+    },
+  })
+  let initRequestCalls = 0
+  beforeEach(() => (initRequestCalls = 0))
+
+  it('skips getUser and keeps the ambient user', async () => {
+    await server.request({ id: 'a', roles: ['admin'] }, async () => {
+      expect(await withApiRules(rows)).toEqual(['1:s1', '2:s2'])
+    })
+  })
+
+  it('runs the mounted initRequest, so it is the same pipeline', async () => {
+    await server.request({ id: 'u' }, () => withApiRules(rows))
+    expect(initRequestCalls).toBe(1)
+  })
+})
+
+describe('withApiRules - fetch transport', () => {
   const server = useServer()
 
   it('uses the fetch it is given', async () => {
@@ -181,18 +212,18 @@ describe('asApiClient - fetch transport', () => {
       delete: inProcess.delete,
     }
     await server.request({ id: 'u' }, async () => {
-      expect(await asApiClient(rows, { fetch })).toEqual(['1:'])
+      expect(await withApiRules(rows, { fetch })).toEqual(['1:'])
     })
     expect(calls.length).toBe(1)
     expect(calls[0]).toContain('/api/apiModeTasks')
   })
 })
 
-describe('asApiClient - browser', () => {
+describe('withApiRules - browser', () => {
   it('is a no-op, because reads there already go through the api', async () => {
     remultStatic.actionInfo.runningOnServer = false
     let ran = false
-    const r = await asApiClient(async () => {
+    const r = await withApiRules(async () => {
       ran = true
       return 42
     })
