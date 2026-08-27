@@ -195,6 +195,19 @@ describe('withApiRules - reuses the mounted api', () => {
   })
 })
 
+describe('withApiRules - inside an initRequest', () => {
+  const server = useServer()
+
+  // a framework hook that mounts the api as its handler keeps this flag up for the
+  // whole request, so the load below runs with it on
+  it('does not hand the in-process request the scoped remult, which would recurse', async () => {
+    await server.request({ id: 'u' }, async () => {
+      remultStatic.asyncContext.setInInitRequest(true)
+      expect(await withApiRules(rows)).toEqual(['1:'])
+    })
+  })
+})
+
 describe('withApiRules - fetch transport', () => {
   const server = useServer()
 

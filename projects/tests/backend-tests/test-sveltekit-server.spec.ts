@@ -5,11 +5,43 @@ import { handler } from '../../test-servers/sveltekit-server/build/handler.js'
 import axios from 'axios'
 import { remult } from '../../core/index.js'
 
+const REGEX_RESULT = /<pre id="result">([\s\S]*?)<\/pre>/
+const REGEX_HTML_COMMENT = /<!--[\s\S]*?-->/g
+
 describe('test sveltekit server', async () => {
   testAsExpressMW(
     3014,
     (req, res, next) => handler(req, res, next),
     (withRemultForTest) => {
+      const withApiRulesPage = async (auth?: string) => {
+        const html: string = (
+          await axios.get('http://127.0.0.1:3014/with-api-rules', {
+            headers: auth ? { authorization: `Bearer ${auth}` } : {},
+          })
+        ).data
+        const inner = html.match(REGEX_RESULT)![1]
+        return JSON.parse(inner.replace(REGEX_HTML_COMMENT, ''))
+      }
+      it('withApiRules applies the api rules, in process and through event.fetch', async () => {
+        expect(await withApiRulesPage()).toEqual({
+          fromDb: ['1:s1', '2:s2'],
+          inProcess: ['1:'],
+          viaFetch: ['1:'],
+          forbidden: 403,
+          forbiddenViaFetch: 403,
+          universal: ['1:'],
+          ranOn: 'ssr',
+        })
+        expect(await withApiRulesPage('admin')).toEqual({
+          fromDb: ['1:s1', '2:s2'],
+          inProcess: ['1:s1', '2:s2'],
+          viaFetch: ['1:s1', '2:s2'],
+          forbidden: 403,
+          forbiddenViaFetch: 403,
+          universal: ['1:s1', '2:s2'],
+          ranOn: 'ssr',
+        })
+      })
       it(
         'test headers in response',
         withRemultForTest(async () => {
@@ -27,5 +59,7 @@ describe('test sveltekit server', async () => {
         }),
       )
     },
+    // hooks.server.ts runs initRequest, so its crash surfaces as SvelteKit's 500
+    { initRequestCrashStatus: 500 },
   )
 })

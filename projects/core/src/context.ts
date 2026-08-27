@@ -75,7 +75,11 @@ export class RemultAsyncLocalStorage {
     } else return callback(remult)
   }
   isInInitRequest() {
-    return this.remultObjectStorage?.getStore()?.inInitRequest
+    const store = this.remultObjectStorage?.getStore()
+    if (!store?.inInitRequest) return false
+    // inside a `withApiRules` scope the in-process request needs its own remult:
+    // reusing this one would serve it through the api again, forever
+    return remultStatic.apiClientScope?.get()?.remult !== store.remult
   }
   setInInitRequest(val: boolean) {
     const store = this.remultObjectStorage?.getStore()

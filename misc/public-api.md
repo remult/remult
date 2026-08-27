@@ -2477,7 +2477,10 @@ export declare class Remult {
    */
   useFetch(fetch: ApiClient["httpClient"]): void
   /** The current data provider */
-  dataProvider: DataProvider
+  /** The current data provider - an enclosing `withApiRules` wins, assignment sets the instance default */
+  get dataProvider(): DataProvider
+  set dataProvider(dataProvider: DataProvider)
+  private _dataProvider?
   /** Creates a new instance of the `remult` object.
    *
    * Can receive either an HttpProvider or a DataProvider as a parameter - which will be used to fetch data from.
@@ -2517,7 +2520,10 @@ export declare class Remult {
    */
   readonly context: RemultContext
   /** The api client that will be used by `remult` to perform calls to the `api` */
-  apiClient: ApiClient
+  /** The api client that will be used by `remult` to perform calls to the `api` */
+  get apiClient(): ApiClient
+  set apiClient(apiClient: ApiClient)
+  private _apiClient?
 }
 export interface RemultContext {
   headers?: {
@@ -3637,6 +3643,14 @@ export declare function valueValidator<valueType>(
   entity: any,
   e: ValidateFieldEvent<any, valueType>,
 ) => string | boolean | Promise<string | boolean>
+export declare function withApiRules<T>(
+  callback: () => Promise<T>,
+  options?: {
+    /** The framework's fetch, e.g. SvelteKit's `event.fetch`. Without it the call stays in process */
+    fetch?: ApiClient["httpClient"]
+    url?: string
+  },
+): Promise<T>
 export declare function withRemult<T>(
   callback: (remult: Remult) => Promise<T>,
   options?: {
