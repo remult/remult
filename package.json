@@ -110,7 +110,7 @@
     "typedoc": "^0.28.9",
     "typedoc-plugin-markdown": "4.8.0",
     "typescript": "^5.5.3",
-    "uuid": "^8.3.2",
+    "uuid": "^14.0.0",
     "vitest": "3.1.2",
     "webdriverio": "^9.15.0",
     "wrangler": "^4.20.0"
