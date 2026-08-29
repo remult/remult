@@ -23,7 +23,7 @@
     "compression": "^1.7.4",
     "cookie-session": "^2.0.0",
     "express": "^4.21.1",
-    "fastify": "^4.26.1",
+    "fastify": "^5.8.5",
     "helmet": "^7.1.0",
     "pg": "^8.11.3",
     "remult": "^0.26.12",
