@@ -1,5 +1,9 @@
 All notable changes to this project will be documented in this file.
 
+## [3.3.18] - 2026-08-30
+
+- Fixed `ArrayEntityDataProvider` storing omitted/`undefined` nullable fields as `undefined` instead of `null`, so filters like `{ date: null }` missed rows inserted without a value
+
 ## [3.3.17] - 2026-08-24
 
 - Fixed `TypeError: Cannot delete property` on client save when a field has `includeInApi: false` and the entity was subscribed (e.g. grid dirty tracking)

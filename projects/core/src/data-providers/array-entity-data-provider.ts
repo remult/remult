@@ -280,8 +280,13 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
   translateToJson(row: any, dbNames: EntityDbNamesBase) {
     let result: any = {}
     for (const col of this.entity.fields) {
-      if (!isDbReadonly(col, dbNames))
-        result[dbNames.$dbNameOf(col)] = col.valueConverter.toJson(row[col.key])
+      if (!isDbReadonly(col, dbNames)) {
+        let val = row[col.key]
+        if (val === undefined) {
+          if (col.allowNull) val = null
+        }
+        result[dbNames.$dbNameOf(col)] = col.valueConverter.toJson(val)
+      }
     }
     return result
   }

@@ -359,6 +359,44 @@ export function commonDbTests(
 
     expect(r.$.d.originalValue!.getFullYear()).toBe(1976)
   })
+  it('test date with null with undefined', async () => {
+    @Entity('otherTestDateWithNull', { allowApiCrud: true })
+    class otherTestDateWithNull {
+      @Fields.integer()
+      id: number = 0
+      @Fields.date({ allowNull: true })
+      d!: Date | null
+    }
+    let r = await await createEntity(otherTestDateWithNull)
+    await r.insert([
+      { id: 1 },
+      { id: 2, d: undefined! },
+      { id: 3, d: null },
+      { id: 4, d: new Date(2025, 0, 1) },
+    ])
+    expect(await r.find()).toMatchInlineSnapshot(`
+      [
+        otherTestDateWithNull {
+          "d": null,
+          "id": 1,
+        },
+        otherTestDateWithNull {
+          "d": null,
+          "id": 2,
+        },
+        otherTestDateWithNull {
+          "d": null,
+          "id": 3,
+        },
+        otherTestDateWithNull {
+          "d": 2024-12-31T22:00:00.000Z,
+          "id": 4,
+        },
+      ]
+    `)
+    expect(await r.count({ d: null! })).toBe(3)
+    expect(await r.count({ d: { $ne: null! } })).toBe(1)
+  })
 
   @Entity('testDateWithNull', { allowApiCrud: true })
   class testDateWithNull extends EntityBase {
