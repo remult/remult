@@ -3,6 +3,7 @@
   "compilerOptions": {
     "baseUrl": "../../",
     "noEmit": true,
+    "rootDir": "../",
     "lib": ["es2021", "dom"]
   }
 }

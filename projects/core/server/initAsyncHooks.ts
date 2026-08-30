@@ -2,8 +2,10 @@ import { AsyncLocalStorage } from 'async_hooks'
 import {
   RemultAsyncLocalStorage,
   type RemultAsyncLocalStorageCore,
+  type RemultInAsyncLocalStorage,
 } from '../src/context.js'
 import { remultStatic } from '../src/remult-static.js'
+import type { DataProvider } from '../src/data-interfaces.js'
 
 let init = false
 
@@ -27,13 +29,16 @@ export function initAsyncHooks() {
   })
 }
 
-export class AsyncLocalStorageBridgeToRemultAsyncLocalStorageCoreImpl<T>
-  implements RemultAsyncLocalStorageCore<T>
+export class AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore
+  implements RemultAsyncLocalStorageCore
 {
-  private asyncLocalStorage = new AsyncLocalStorage<T>()
+  private asyncLocalStorage = new AsyncLocalStorage<RemultInAsyncLocalStorage>()
 
   wasImplemented = 'yes' as const
-  run<R>(store: T, callback: () => Promise<R>): Promise<R> {
+  run<R>(
+    store: RemultInAsyncLocalStorage,
+    callback: () => Promise<R>,
+  ): Promise<R> {
     let r: Promise<R>
     this.asyncLocalStorage.run(store, () => {
       r = new Promise<R>(async (res, rej) => {
@@ -46,29 +51,35 @@ export class AsyncLocalStorageBridgeToRemultAsyncLocalStorageCoreImpl<T>
     })
     return r!
   }
-  getStore(): T | undefined {
+  getStore(): RemultInAsyncLocalStorage | undefined {
     return this.asyncLocalStorage.getStore()
+  }
+  createDataProviderAsyncLocalStorage() {
+    return new AsyncLocalStorage<{ dataProvider: DataProvider }>()
   }
 }
 
-export class StubRemultAsyncLocalStorageCore<T>
-  implements RemultAsyncLocalStorageCore<T>
+export class StubRemultAsyncLocalStorageCore
+  implements RemultAsyncLocalStorageCore
 {
+  createDataProviderAsyncLocalStorage() {
+    return undefined
+  }
   isStub = true
   wasImplemented = 'yes' as const
-  async run<R>(store: T, callback: () => Promise<R>): Promise<R> {
+  async run<R>(
+    store: RemultInAsyncLocalStorage,
+    callback: () => Promise<R>,
+  ): Promise<R> {
     this.currentValue = store
     return await callback()
   }
 
-  getStore(): T | undefined {
+  getStore(): RemultInAsyncLocalStorage | undefined {
     return this.currentValue
   }
 
-  lastPromise: Promise<T | undefined> = Promise.resolve(undefined)
-  currentValue?: T
+  lastPromise: Promise<RemultInAsyncLocalStorage | undefined> =
+    Promise.resolve(undefined)
+  currentValue?: RemultInAsyncLocalStorage
 }
-
-export class AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore<
-  T,
-> extends AsyncLocalStorageBridgeToRemultAsyncLocalStorageCoreImpl<T> {}

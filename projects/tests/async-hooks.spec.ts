@@ -11,12 +11,102 @@ import {
 import { remultApi } from '../core/remult-express'
 import { entity } from './tests/dynamic-classes'
 import {
+  Entity,
   Fields,
   InMemoryDataProvider,
   repo,
   withRemult,
+  type DataProvider,
   type UserInfo,
 } from '../core'
+import { withRemultDataProvider } from '../core/src/context.js'
+describe('test with remult and withDataProvider', () => {
+  beforeEach(() => {
+    var before = remultStatic.asyncContext
+    remultStatic.asyncContext = new RemultAsyncLocalStorage(
+      new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
+    )
+    RemultAsyncLocalStorage.enable()
+    return () => {
+      remultStatic.asyncContext = before
+      RemultAsyncLocalStorage.disable()
+    }
+  })
+
+  it('another test', async () => {
+    expect(
+      await withRemult(async () => {
+        remult.user = { id: 'noam' }
+        return remult.user.id
+      }),
+    ).toBe('noam')
+  })
+  it('test with remult', async () => {
+    @Entity('test')
+    class testEntity {
+      @Fields.id()
+      id = ''
+    }
+
+    const result = withRemult(async () => {
+      remult.dataProvider = new InMemoryDataProvider()
+      await repo(testEntity).insert({ id: '1' })
+
+      let resolve: () => void = () => {}
+      var wait = new Promise<void>((res) => (resolve = res))
+
+      const result = Promise.all([
+        withRemultDataProvider(
+          { dataProvider: new InMemoryDataProvider() },
+          async () => {
+            await repo(testEntity).insert({ id: '2' })
+            remult.user = { id: 'noam' }
+            await wait
+            return [
+              remult.user.id,
+              ...(await repo(testEntity)
+                .find()
+                .then((x) => x.map((y) => y.id))),
+            ]
+          },
+        ),
+        (async () => {
+          remult.user = { id: 'yoni' }
+          await wait
+          return [
+            remult.user.id,
+            ...(await repo(testEntity)
+              .find()
+              .then((x) => x.map((y) => y.id))),
+          ]
+        })(),
+      ])
+      resolve()
+      expect(
+        await repo(testEntity)
+          .find()
+          .then((x) => x.map((x) => x.id)),
+      ).toEqual(['1'])
+      return result
+    })
+    expect(await result).toEqual([
+      ['noam', '2'],
+      ['yoni', '1'],
+    ])
+  })
+})
+describe('test with data provider fall back', async () => {
+  it('test with data provider fall back', async () => {
+    expect(
+      await withRemultDataProvider(
+        { dataProvider: new InMemoryDataProvider() },
+        async () => {
+          return 'noam'
+        },
+      ),
+    ).toBe('noam')
+  })
+})
 
 describe('test async hooks and static remult', () => {
   it('test async hooks and static remult', async () => {

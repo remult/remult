@@ -2477,7 +2477,8 @@ export declare class Remult {
    */
   useFetch(fetch: ApiClient["httpClient"]): void
   /** The current data provider */
-  dataProvider: DataProvider
+  set dataProvider(dataProvider: DataProvider)
+  get dataProvider(): DataProvider
   /** Creates a new instance of the `remult` object.
    *
    * Can receive either an HttpProvider or a DataProvider as a parameter - which will be used to fetch data from.
@@ -4958,6 +4959,12 @@ export declare function sqlRelationsFilter<entityType>(
     ArrayItemType<NonNullable<entityType[p]>>
   >
 }
+export declare function withFetch<T>(
+  fetch: ApiClient["httpClient"],
+  callback: () => Promise<T>,
+): Promise<T>
+//[ ] IndexedAccessType from TBD is not exported
+//[ ] ApiClient from TBD is not exported
 ```
 
 ## ./remult-nuxt.js

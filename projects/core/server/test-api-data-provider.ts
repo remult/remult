@@ -132,6 +132,7 @@ async function MakeServerCallWithDifferentStaticRemult<T>(what: () => T) {
         store.remult.user = user
         return callback()
       },
+      createDataProviderAsyncLocalStorage: () => undefined,
       wasImplemented: 'yes',
     })
     return await what()

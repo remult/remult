@@ -60,10 +60,7 @@ export class RemultAsyncLocalStorage {
   }
   constructor(
     private readonly remultObjectStorage:
-      | RemultAsyncLocalStorageCore<{
-          remult: Remult
-          inInitRequest?: boolean
-        }>
+      | RemultAsyncLocalStorageCore
       | undefined,
   ) {}
   async run<T>(
@@ -82,6 +79,11 @@ export class RemultAsyncLocalStorage {
     if (!store) return
     if (val || this.remultObjectStorage?.isStub) store.inInitRequest = val
   }
+  createDataProviderAsyncLocalStorage():
+    | DataProviderAsyncLocalStorage
+    | undefined {
+    return this.remultObjectStorage?.createDataProviderAsyncLocalStorage()
+  }
   getStore() {
     if (!this.remultObjectStorage) {
       throw new Error(
@@ -93,11 +95,29 @@ export class RemultAsyncLocalStorage {
 }
 if (!remultStatic.asyncContext)
   remultStatic.asyncContext = new RemultAsyncLocalStorage(undefined!)
-export type RemultAsyncLocalStorageCore<T> = {
-  run<R>(store: T, callback: () => Promise<R>): Promise<R>
-  getStore(): T | undefined
+export type RemultAsyncLocalStorageCore = {
+  run<R>(
+    store: RemultInAsyncLocalStorage,
+    callback: () => Promise<R>,
+  ): Promise<R>
+  getStore(): RemultInAsyncLocalStorage | undefined
   wasImplemented: 'yes'
   isStub?: boolean
+  createDataProviderAsyncLocalStorage():
+    | DataProviderAsyncLocalStorage
+    | undefined
+}
+
+export type RemultInAsyncLocalStorage = {
+  remult: Remult
+  inInitRequest?: boolean
+}
+export type DataProviderAsyncLocalStorage = {
+  run<R>(
+    data: { dataProvider: DataProvider },
+    callback: () => Promise<R>,
+  ): Promise<R>
+  getStore(): { dataProvider: DataProvider } | undefined
 }
 
 export function isBackend() {
@@ -248,8 +268,18 @@ export class Remult {
       httpClient: fetch,
     }))
   }
+  /* @internal */
+  _myDataProviderStore = new RemultInstanceDataProviderStore(
+    new RestDataProvider(() => this.apiClient),
+  )
   /** The current data provider */
-  dataProvider: DataProvider = new RestDataProvider(() => this.apiClient)
+  set dataProvider(dataProvider: DataProvider) {
+    this._myDataProviderStore.getStore().dataProvider = dataProvider
+  }
+  get dataProvider(): DataProvider {
+    return this._myDataProviderStore.getStore().dataProvider
+  }
+
   /* @internal */
   repCache = new Map<DataProvider, Map<ClassType<any>, Repository<unknown>>>()
   /** Creates a new instance of the `remult` object.
@@ -481,10 +511,16 @@ export interface UserInfo {
 }
 
 export declare type Allowed =
-  boolean | string | string[] | ((c?: Remult) => boolean)
+  | boolean
+  | string
+  | string[]
+  | ((c?: Remult) => boolean)
 
 export declare type AllowedForInstance<T> =
-  boolean | string | string[] | ((entity?: T, c?: Remult) => boolean)
+  | boolean
+  | string
+  | string[]
+  | ((entity?: T, c?: Remult) => boolean)
 export class Allow {
   static everyone = () => true
   static authenticated = (...args: any[]) => {
@@ -538,10 +574,11 @@ export async function doTransaction(
   const prev = remult.dataProvider
   try {
     await remult.dataProvider.transaction(async (ds) => {
-      remult.dataProvider = ds
-      remult.liveQueryPublisher = trans
-      await what(ds)
-      ok = true
+      await withRemultDataProvider({ dataProvider: ds, remult }, async () => {
+        remult.liveQueryPublisher = trans
+        await what(ds)
+        ok = true
+      })
     })
 
     if (ok) await trans.flush()
@@ -584,11 +621,71 @@ export async function withRemult<T>(
 ) {
   const remult = new Remult()
 
-  remult.dataProvider = await initDataProvider(
-    options?.dataProvider,
-    true,
-    async () => remult.dataProvider,
-  )
+  return remultStatic.asyncContext.run(remult, async (r) => {
+    remult.dataProvider = await initDataProvider(
+      options?.dataProvider,
+      true,
+      async () => remult.dataProvider,
+    )
+    return await callback(r)
+  })
+}
 
-  return remultStatic.asyncContext.run(remult, (r) => callback(r))
+export class RemultInstanceDataProviderStore {
+  constructor(dataProvider: DataProvider) {
+    this._myDataProviderStore = { dataProvider }
+  }
+  _myDataProviderStore: { dataProvider: DataProvider }
+  getStore = () => this._myDataProviderStore
+  asyncStore?: DataProviderAsyncLocalStorage
+  async withDataProvider<T>(
+    dataProvider: DataProvider,
+    callback: () => Promise<T>,
+  ): Promise<T> {
+    if (!this.asyncStore) {
+      this.asyncStore =
+        remultStatic.asyncContext.createDataProviderAsyncLocalStorage()
+      if (this.asyncStore) {
+        this.getStore = () =>
+          this.asyncStore!.getStore() ?? this._myDataProviderStore
+      }
+    }
+    if (this.asyncStore) {
+      return this.asyncStore.run({ dataProvider }, async () => {
+        return await callback()
+      })
+    } else {
+      const prev = this._myDataProviderStore
+      try {
+        this._myDataProviderStore = { dataProvider }
+        return await callback()
+      } finally {
+        this._myDataProviderStore = prev
+      }
+    }
+  }
+}
+
+export function withRemultDataProvider<T>(
+  { dataProvider, remult }: { dataProvider: DataProvider; remult?: Remult },
+  callback: () => Promise<T>,
+): Promise<T> {
+  remult = remult ?? remultStatic.remultFactory()
+  return remult._myDataProviderStore.withDataProvider(dataProvider, callback)
+}
+export function withFetch<T>(
+  fetch: ApiClient['httpClient'],
+  callback: () => Promise<T>,
+): Promise<T> {
+  const remult = remultStatic.remultFactory()
+  return withRemultDataProvider(
+    {
+      remult,
+      dataProvider: new RestDataProvider(() => ({
+        ...remult.apiClient,
+        httpClient: fetch,
+      })),
+    },
+    callback,
+  )
 }

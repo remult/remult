@@ -281,6 +281,10 @@ export class RemultProxy implements Remult {
   set subscriptionServer(value: SubscriptionServer) {
     remultStatic.remultFactory().subscriptionServer = value
   }
+  /** @internal */
+  get _myDataProviderStore() {
+    return remultStatic.remultFactory()._myDataProviderStore
+  }
 }
 
 export const remult: Remult = new RemultProxy()
