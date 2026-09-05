@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { Entity, Fields, IndexedDbDataProvider, Remult } from '../../core'
+import {
+  Entity,
+  Fields,
+  Filter,
+  IndexedDbDataProvider,
+  Remult,
+} from '../../core'
 import { allDbTests } from './shared-tests'
 
 async function deleteIndexedDb(name: string) {
@@ -115,6 +121,121 @@ describe('IndexedDB Data Provider', () => {
     expect(await idbGet(db.db!, 'items', 1)).toMatchObject({
       id: 1,
       title: 'aa',
+    })
+  })
+
+  describe('fetch by id filter', () => {
+    @Entity('fetch_items')
+    class Item {
+      @Fields.integer()
+      id = 0
+      @Fields.string()
+      title = ''
+    }
+
+    async function seed() {
+      const repo = remult.repo(Item)
+      await repo.insert([
+        { id: 1, title: 'a' },
+        { id: 2, title: 'b' },
+        { id: 3, title: 'c' },
+      ])
+      return repo
+    }
+
+    /** extra `title: 'nope'` would empty find() — raw rows show if we over-fetched */
+    async function raw(where: { id?: any; $or?: any }) {
+      const repo = remult.repo(Item)
+      return db.fetchRows(
+        repo.metadata,
+        Filter.fromEntityFilter(repo.metadata, { title: 'nope', ...where }),
+      )
+    }
+
+    function ids(rows: any[]) {
+      return rows.map((r) => r.id)
+    }
+
+    it('eq', async () => {
+      await seed()
+      expect(ids(await raw({ id: 1 }))).toEqual([1])
+      expect(db.lastFetch).toMatchObject({ type: 'keys', keys: [1] })
+    })
+
+    it('in', async () => {
+      await seed()
+      expect(ids(await raw({ id: [1, 3] }))).toEqual([1, 3])
+      expect(db.lastFetch).toMatchObject({ type: 'keys', keys: [1, 3] })
+    })
+
+    it('or of eq', async () => {
+      await seed()
+      expect(ids(await raw({ $or: [{ id: 1 }, { id: 2 }] }))).toEqual([1, 2])
+      expect(db.lastFetch).toMatchObject({ type: 'keys', keys: [1, 2] })
+    })
+
+    it('gt', async () => {
+      await seed()
+      expect(ids(await raw({ id: { $gt: 1 } }))).toEqual([2, 3])
+      expect(db.lastFetch).toMatchObject({ type: 'range' })
+      const range = db.lastFetch as { type: 'range'; range: IDBKeyRange }
+      expect(range.range.lower).toBe(1)
+      expect(range.range.lowerOpen).toBe(true)
+    })
+
+    it('lt', async () => {
+      await seed()
+      expect(ids(await raw({ id: { $lt: 3 } }))).toEqual([1, 2])
+      const range = db.lastFetch as { type: 'range'; range: IDBKeyRange }
+      expect(range.range.upper).toBe(3)
+      expect(range.range.upperOpen).toBe(true)
+    })
+
+    it('gte + lte', async () => {
+      await seed()
+      expect(ids(await raw({ id: { $gte: 2, $lte: 3 } }))).toEqual([2, 3])
+      const range = db.lastFetch as { type: 'range'; range: IDBKeyRange }
+      expect(range.range.lower).toBe(2)
+      expect(range.range.lowerOpen).toBe(false)
+      expect(range.range.upper).toBe(3)
+      expect(range.range.upperOpen).toBe(false)
+    })
+
+    it('ne is a full scan (over-fetch visible)', async () => {
+      await seed()
+      expect(ids(await raw({ id: { $ne: 1 } }))).toEqual([1, 2, 3])
+      expect(db.lastFetch).toEqual({ type: 'all' })
+    })
+
+    it('no id is a full scan (over-fetch visible)', async () => {
+      await seed()
+      expect(ids(await raw({}))).toEqual([1, 2, 3])
+      expect(db.lastFetch).toEqual({ type: 'all' })
+    })
+
+    it('or of ranges fetches each and merges', async () => {
+      await seed()
+      expect(
+        ids(await raw({ $or: [{ id: { $gt: 2 } }, { id: { $lt: 2 } }] })).sort(),
+      ).toEqual([1, 3])
+      expect(db.lastFetch?.type).toBe('or')
+      expect((db.lastFetch as { parts: unknown[] }).parts).toHaveLength(2)
+    })
+
+    it('or of eq and range', async () => {
+      await seed()
+      expect(
+        ids(await raw({ $or: [{ id: 1 }, { id: { $gt: 2 } }] })).sort(),
+      ).toEqual([1, 3])
+      expect(db.lastFetch?.type).toBe('or')
+    })
+
+    it('or with a branch that is not id-narrowed is a full scan', async () => {
+      await seed()
+      expect(
+        ids(await raw({ $or: [{ id: { $gt: 2 } }, { title: 'a' }] })),
+      ).toEqual([1, 2, 3])
+      expect(db.lastFetch).toEqual({ type: 'all' })
     })
   })
 
