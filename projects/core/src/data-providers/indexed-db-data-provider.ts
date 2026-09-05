@@ -4,9 +4,11 @@ import type {
   EntityDataProviderFindOptions,
   EntityDataProviderGroupByOptions,
 } from '../data-interfaces.js'
+import type { EntityDbNamesBase } from '../filter/filter-consumer-bridge-to-sql-request.js'
 import { dbNamesOf } from '../filter/filter-consumer-bridge-to-sql-request.js'
 import type { Filter } from '../filter/filter-interfaces.js'
 import type { EntityMetadata } from '../remult3/remult3.js'
+import { isAutoIncrement } from '../remult3/RepositoryImplementation.js'
 import { ArrayEntityDataProvider } from './array-entity-data-provider.js'
 
 export class IndexedDbDataProvider implements DataProvider {
@@ -49,16 +51,12 @@ export class IndexedDbDataProvider implements DataProvider {
   //@internal
   async runWithRows<T>(
     entity: EntityMetadata,
-    mutate: boolean,
     what: (dp: ArrayEntityDataProvider) => Promise<T>,
   ): Promise<T> {
     return this.enqueue(async () => {
       await this.ensureStores([entity])
-      const storeName = storeNameOf(entity)
-      const rows = await this.getAll(storeName)
-      const result = await what(new ArrayEntityDataProvider(entity, () => rows))
-      if (mutate) await this.replaceStore(storeName, rows)
-      return result
+      const rows = await this.getAll(storeNameOf(entity))
+      return what(new ArrayEntityDataProvider(entity, () => rows))
     })
   }
 
@@ -68,6 +66,7 @@ export class IndexedDbDataProvider implements DataProvider {
       entities.map(async (entity) => ({
         name: storeNameOf(entity),
         keyPath: await keyPathOf(entity),
+        autoIncrement: isAutoIncrement(entity.idMetadata.field),
       })),
     )
     const db = await this.open()
@@ -79,9 +78,9 @@ export class IndexedDbDataProvider implements DataProvider {
     db.close()
 
     await this.open(nextVersion, (upgradeDb) => {
-      for (const { name, keyPath } of missing) {
+      for (const { name, keyPath, autoIncrement } of missing) {
         if (!upgradeDb.objectStoreNames.contains(name)) {
-          upgradeDb.createObjectStore(name, { keyPath })
+          upgradeDb.createObjectStore(name, { keyPath, autoIncrement })
         }
       }
     })
@@ -121,34 +120,40 @@ export class IndexedDbDataProvider implements DataProvider {
 
   //@internal
   private getAll(storeName: string): Promise<any[]> {
-    return this.withStore(storeName, 'readonly', (store) => store.getAll())
+    return this.withStore(storeName, 'readonly', (store) =>
+      idbReq(store.getAll()),
+    )
   }
 
   //@internal
-  private replaceStore(storeName: string, rows: any[]): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      const tx = this.db!.transaction(storeName, 'readwrite')
-      tx.oncomplete = () => resolve()
-      tx.onabort = () => reject(tx.error)
-      tx.onerror = () => reject(tx.error)
-      const store = tx.objectStore(storeName)
-      store.clear()
-      for (const row of rows) store.put(row)
-    })
-  }
-
-  //@internal
-  private withStore<T>(
+  withStore<T>(
     storeName: string,
     mode: IDBTransactionMode,
-    op: (store: IDBObjectStore) => IDBRequest<T>,
+    op: (store: IDBObjectStore) => Promise<T>,
   ): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       const tx = this.db!.transaction(storeName, mode)
-      tx.onabort = () => reject(tx.error)
-      const request = op(tx.objectStore(storeName))
-      request.onerror = () => reject(request.error)
-      request.onsuccess = () => resolve(request.result)
+      let result: T
+      let opErr: unknown
+      tx.oncomplete = () => {
+        if (opErr) reject(opErr)
+        else resolve(result)
+      }
+      tx.onabort = () => reject(opErr ?? tx.error)
+      tx.onerror = () => reject(opErr ?? tx.error)
+      Promise.resolve(op(tx.objectStore(storeName))).then(
+        (r) => {
+          result = r
+        },
+        (e) => {
+          opErr = e
+          try {
+            tx.abort()
+          } catch {
+            /* already aborted */
+          }
+        },
+      )
     })
   }
 }
@@ -160,30 +165,86 @@ class IndexedDbEntityDataProvider implements EntityDataProvider {
   ) {}
 
   find(options?: EntityDataProviderFindOptions): Promise<any[]> {
-    return this.provider.runWithRows(this.entity, false, (dp) =>
-      dp.find(options),
-    )
+    return this.provider.runWithRows(this.entity, (dp) => dp.find(options))
   }
   count(where: Filter): Promise<number> {
-    return this.provider.runWithRows(this.entity, false, (dp) =>
-      dp.count(where),
-    )
+    return this.provider.runWithRows(this.entity, (dp) => dp.count(where))
   }
   groupBy(options?: EntityDataProviderGroupByOptions): Promise<any[]> {
-    return this.provider.runWithRows(this.entity, false, (dp) =>
-      dp.groupBy(options),
-    )
+    return this.provider.runWithRows(this.entity, (dp) => dp.groupBy(options))
   }
+
   insert(data: any): Promise<any> {
-    return this.provider.runWithRows(this.entity, true, (dp) => dp.insert(data))
+    return this.provider.enqueue(async () => {
+      await this.provider.ensureStores([this.entity])
+      const helper = new ArrayEntityDataProvider(this.entity, () => [])
+      const names = await helper.init()
+      const json = helper.translateToJson(data, names)
+      helper.verifyThatRowHasAllNotNullColumns(json, names)
+      const auto = isAutoIncrement(this.entity.idMetadata.field)
+      const idName = names.$dbNameOf(this.entity.idMetadata.field)
+      if (auto) delete json[idName]
+      return this.provider.withStore(
+        storeNameOf(this.entity),
+        'readwrite',
+        async (store) => {
+          try {
+            const key = await idbReq(store.add(json))
+            if (auto) json[idName] = json[idName] ?? key
+          } catch (e: any) {
+            if (e?.name === 'ConstraintError') throw Error('id already exists')
+            throw e
+          }
+          return helper.translateFromJson(json, names)
+        },
+      )
+    })
   }
+
   update(id: any, data: any): Promise<any> {
-    return this.provider.runWithRows(this.entity, true, (dp) =>
-      dp.update(id, data),
-    )
+    return this.provider.enqueue(async () => {
+      await this.provider.ensureStores([this.entity])
+      const names = await dbNamesOf(this.entity, (x) => x)
+      const key = toIdbKey(this.entity, id)
+      const storeName = storeNameOf(this.entity)
+      const existing = await this.provider.withStore(
+        storeName,
+        'readonly',
+        (store) => idbReq(store.get(key)),
+      )
+      const rows = existing != null ? [existing] : []
+      const rowHelper = new ArrayEntityDataProvider(this.entity, () => rows)
+      const result = await rowHelper.update(id, data)
+      const newRow = rows[0]
+      const newKey = keyFromRow(this.entity, names, newRow)
+      await this.provider.withStore(storeName, 'readwrite', async (store) => {
+        if (!idbKeysEqual(key, newKey)) {
+          const conflict = await idbReq(store.get(newKey))
+          if (conflict != null) throw Error('id already exists')
+          await idbReq(store.delete(key))
+        }
+        await idbReq(store.put(newRow))
+      })
+      return result
+    })
   }
+
   delete(id: any): Promise<void> {
-    return this.provider.runWithRows(this.entity, true, (dp) => dp.delete(id))
+    return this.provider.enqueue(async () => {
+      await this.provider.ensureStores([this.entity])
+      const key = toIdbKey(this.entity, id)
+      const storeName = storeNameOf(this.entity)
+      const existing = await this.provider.withStore(
+        storeName,
+        'readonly',
+        (store) => idbReq(store.get(key)),
+      )
+      const rows = existing != null ? [existing] : []
+      await new ArrayEntityDataProvider(this.entity, () => rows).delete(id)
+      await this.provider.withStore(storeName, 'readwrite', (store) =>
+        idbReq(store.delete(key)),
+      )
+    })
   }
 }
 
@@ -196,4 +257,42 @@ async function keyPathOf(entity: EntityMetadata): Promise<string | string[]> {
   const fields = entity.idMetadata.fields
   if (fields.length === 1) return names.$dbNameOf(fields[0])
   return fields.map((f) => names.$dbNameOf(f))
+}
+
+function toIdbKey(entity: EntityMetadata, id: any): IDBValidKey {
+  const fields = entity.idMetadata.fields
+  if (fields.length === 1) return fields[0].valueConverter.toJson(id)
+  const values =
+    typeof id === 'object' && id !== null
+      ? id
+      : Object.fromEntries(
+          String(id)
+            .split(',')
+            .map((part, i) => [
+              fields[i].key,
+              fields[i].valueConverter.fromJson(part),
+            ]),
+        )
+  return fields.map((f) => f.valueConverter.toJson(values[f.key]))
+}
+
+function keyFromRow(
+  entity: EntityMetadata,
+  names: EntityDbNamesBase,
+  row: any,
+): IDBValidKey {
+  const fields = entity.idMetadata.fields
+  if (fields.length === 1) return row[names.$dbNameOf(fields[0])]
+  return fields.map((f) => row[names.$dbNameOf(f)])
+}
+
+function idbKeysEqual(a: IDBValidKey, b: IDBValidKey) {
+  return JSON.stringify(a) === JSON.stringify(b)
+}
+
+function idbReq<T>(request: IDBRequest<T>): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    request.onsuccess = () => resolve(request.result)
+    request.onerror = () => reject(request.error)
+  })
 }

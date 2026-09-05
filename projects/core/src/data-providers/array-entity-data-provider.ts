@@ -213,7 +213,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     return this.__names
   }
   //@internal
-  private verifyThatRowHasAllNotNullColumns(r: any, names: EntityDbNamesBase) {
+  verifyThatRowHasAllNotNullColumns(r: any, names: EntityDbNamesBase) {
     for (const f of this.entity.fields) {
       const key = names.$dbNameOf(f)
       if (!f.isServerExpression)

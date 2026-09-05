@@ -90,8 +90,9 @@ describe('IndexedDB Data Provider', () => {
       @Fields.string()
       title = ''
     }
-    await remult.repo(Item).insert({ id: 1, title: 'a' })
-    await remult.repo(Item).insert({ id: 2, title: 'b' })
+    const repo = remult.repo(Item)
+    await repo.insert({ id: 1, title: 'a' })
+    await repo.insert({ id: 2, title: 'b' })
     expect(await idbGet(db.db!, 'items', 1)).toMatchObject({
       id: 1,
       title: 'a',
@@ -99,6 +100,21 @@ describe('IndexedDB Data Provider', () => {
     expect(await idbGet(db.db!, 'items', 2)).toMatchObject({
       id: 2,
       title: 'b',
+    })
+    await repo.update(1, { title: 'aa' })
+    expect(await idbGet(db.db!, 'items', 1)).toMatchObject({
+      id: 1,
+      title: 'aa',
+    })
+    expect(await idbGet(db.db!, 'items', 2)).toMatchObject({
+      id: 2,
+      title: 'b',
+    })
+    await repo.delete(2)
+    expect(await idbGet(db.db!, 'items', 2)).toBeUndefined()
+    expect(await idbGet(db.db!, 'items', 1)).toMatchObject({
+      id: 1,
+      title: 'aa',
     })
   })
 
