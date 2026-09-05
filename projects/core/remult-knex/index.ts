@@ -171,7 +171,7 @@ export class KnexDataProvider
   }
   isProxy?: boolean
 
-  async ensureSchema(entities: EntityMetadata<any>[]): Promise<void> {
+  async ensureSchema(entities: EntityMetadata[]): Promise<void> {
     var sb = new KnexSchemaBuilder(this.knex)
     await sb.ensureSchema(entities)
   }
@@ -577,7 +577,7 @@ export class KnexSchemaBuilder {
   //@internal
   static logToConsole = true
 
-  async ensureSchema(entities: EntityMetadata<any>[]) {
+  async ensureSchema(entities: EntityMetadata[]) {
     for (const entity of entities) {
       let e: EntityDbNamesBase = await dbNamesOf(entity, (x) => x)
       try {
