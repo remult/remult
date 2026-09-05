@@ -368,32 +368,21 @@ export function commonDbTests(
       d!: Date | null
     }
     let r = await await createEntity(otherTestDateWithNull)
+    const d = new Date(2025, 0, 1)
     await r.insert([
       { id: 1 },
       { id: 2, d: undefined! },
       { id: 3, d: null },
-      { id: 4, d: new Date(2025, 0, 1) },
+      { id: 4, d },
     ])
-    expect(await r.find()).toMatchInlineSnapshot(`
-      [
-        otherTestDateWithNull {
-          "d": null,
-          "id": 1,
-        },
-        otherTestDateWithNull {
-          "d": null,
-          "id": 2,
-        },
-        otherTestDateWithNull {
-          "d": null,
-          "id": 3,
-        },
-        otherTestDateWithNull {
-          "d": 2024-12-31T22:00:00.000Z,
-          "id": 4,
-        },
-      ]
-    `)
+    expect(
+      (await r.find()).map((x) => ({ id: x.id, d: x.d })),
+    ).toEqual([
+      { id: 1, d: null },
+      { id: 2, d: null },
+      { id: 3, d: null },
+      { id: 4, d },
+    ])
     expect(await r.count({ d: null! })).toBe(3)
     expect(await r.count({ d: { $ne: null! } })).toBe(1)
   })
