@@ -5,7 +5,10 @@ import type {
   EntityDataProviderGroupByOptions,
 } from '../data-interfaces.js'
 import type { EntityDbNamesBase } from '../filter/filter-consumer-bridge-to-sql-request.js'
-import { dbNamesOf } from '../filter/filter-consumer-bridge-to-sql-request.js'
+import {
+  dbNamesOf,
+  isDbReadonly,
+} from '../filter/filter-consumer-bridge-to-sql-request.js'
 import type { Filter } from '../filter/filter-interfaces.js'
 import type { EntityMetadata } from '../remult3/remult3.js'
 import { isAutoIncrement } from '../remult3/RepositoryImplementation.js'
@@ -204,28 +207,36 @@ class IndexedDbEntityDataProvider implements EntityDataProvider {
   update(id: any, data: any): Promise<any> {
     return this.provider.enqueue(async () => {
       await this.provider.ensureStores([this.entity])
-      const names = await dbNamesOf(this.entity, (x) => x)
+      const helper = new ArrayEntityDataProvider(this.entity, () => [])
+      const names = await helper.init()
       const key = toIdbKey(this.entity, id)
-      const storeName = storeNameOf(this.entity)
-      const existing = await this.provider.withStore(
-        storeName,
-        'readonly',
-        (store) => idbReq(store.get(key)),
+      return this.provider.withStore(
+        storeNameOf(this.entity),
+        'readwrite',
+        async (store) => {
+          const existing = await idbReq(store.get(key))
+          if (existing == null)
+            throw new Error(
+              `Couldn't find row with id "${id}" in entity "${this.entity.key}" to update`,
+            )
+          const json = { ...existing }
+          const keys = Object.keys(data)
+          for (const f of this.entity.fields) {
+            if (!isDbReadonly(f, names) && keys.includes(f.key)) {
+              json[names.$dbNameOf(f)] = f.valueConverter.toJson(data[f.key])
+            }
+          }
+          helper.verifyThatRowHasAllNotNullColumns(json, names)
+          const newKey = keyFromRow(this.entity, names, json)
+          if (!idbKeysEqual(key, newKey)) {
+            const conflict = await idbReq(store.get(newKey))
+            if (conflict != null) throw Error('id already exists')
+            await idbReq(store.delete(key))
+          }
+          await idbReq(store.put(json))
+          return helper.translateFromJson(json, names)
+        },
       )
-      const rows = existing != null ? [existing] : []
-      const rowHelper = new ArrayEntityDataProvider(this.entity, () => rows)
-      const result = await rowHelper.update(id, data)
-      const newRow = rows[0]
-      const newKey = keyFromRow(this.entity, names, newRow)
-      await this.provider.withStore(storeName, 'readwrite', async (store) => {
-        if (!idbKeysEqual(key, newKey)) {
-          const conflict = await idbReq(store.get(newKey))
-          if (conflict != null) throw Error('id already exists')
-          await idbReq(store.delete(key))
-        }
-        await idbReq(store.put(newRow))
-      })
-      return result
     })
   }
 
@@ -233,16 +244,17 @@ class IndexedDbEntityDataProvider implements EntityDataProvider {
     return this.provider.enqueue(async () => {
       await this.provider.ensureStores([this.entity])
       const key = toIdbKey(this.entity, id)
-      const storeName = storeNameOf(this.entity)
-      const existing = await this.provider.withStore(
-        storeName,
-        'readonly',
-        (store) => idbReq(store.get(key)),
-      )
-      const rows = existing != null ? [existing] : []
-      await new ArrayEntityDataProvider(this.entity, () => rows).delete(id)
-      await this.provider.withStore(storeName, 'readwrite', (store) =>
-        idbReq(store.delete(key)),
+      return this.provider.withStore(
+        storeNameOf(this.entity),
+        'readwrite',
+        async (store) => {
+          const existing = await idbReq(store.get(key))
+          if (existing == null)
+            throw new Error(
+              `Couldn't find row with id "${id}" in entity "${this.entity.key}" to delete`,
+            )
+          await idbReq(store.delete(key))
+        },
       )
     })
   }
