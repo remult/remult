@@ -339,20 +339,30 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
       `ArrayEntityDataProvider: Couldn't find row with id "${id}" in entity "${this.entity.key}" to update`,
     )
   }
-  async delete(id: any): Promise<void> {
+  async delete(ids: any[]): Promise<void> {
+    for (const id of ids) await this.deleteOne(id)
+  }
+  //@internal
+  async deleteOne(id: any): Promise<void> {
     const names = await this.init()
     let idMatches = this.idMatches(id, names)
     for (let i = 0; i < this.rows().length; i++) {
       if (idMatches(this.rows()[i])) {
         this.rows().splice(i, 1)
-        return Promise.resolve()
+        return
       }
     }
     throw new Error(
       `ArrayEntityDataProvider: Couldn't find row with id "${id}" in entity "${this.entity.key}" to delete`,
     )
   }
-  async insert(data: any): Promise<any> {
+  async insert(data: any[]): Promise<any[]> {
+    const result: any[] = []
+    for (const row of data) result.push(await this.insertOne(row))
+    return result
+  }
+  //@internal
+  async insertOne(data: any): Promise<any> {
     const names = await this.init()
     let j = this.translateToJson(data, names)
     let idf = this.entity.idMetadata.field

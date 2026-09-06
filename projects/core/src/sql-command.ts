@@ -11,6 +11,8 @@ export interface SqlImplementation extends HasWrapIdentifier {
   doesNotSupportReturningSyntax?: boolean
   doesNotSupportReturningSyntaxOnlyForUpdate?: boolean
   orderByNullsFirst?: boolean
+  /** Bound-variable cap per statement. Default 2000 (SQL Server is 2100). */
+  maxParametersInOneSqlStatement?: number
   end(): Promise<void>
 
   afterMutation?: VoidFunction

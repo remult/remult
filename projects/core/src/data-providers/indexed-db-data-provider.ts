@@ -131,10 +131,16 @@ export class IndexedDbDataProvider implements DataProvider {
     const db = this.db
     if (!db?.objectStoreNames.contains(storeName)) return []
     const store = db.transaction(storeName).objectStore(storeName)
-    return [...store.indexNames].map((name) => ({
-      name,
-      keyPath: store.index(name).keyPath,
-    }))
+    const names = store.indexNames
+    const result: IdbIndexInfo[] = []
+    for (let i = 0; i < names.length; i++) {
+      const name = names[i]
+      result.push({
+        name,
+        keyPath: store.index(name).keyPath,
+      })
+    }
+    return result
   }
 
   //@internal
@@ -314,28 +320,35 @@ class IndexedDbEntityDataProvider implements EntityDataProvider {
     )
   }
 
-  insert(data: any): Promise<any> {
+  insert(data: any[]): Promise<any[]> {
     return this.provider.enqueue(async () => {
       await this.provider.ensureStores([this.entity])
       const helper = new ArrayEntityDataProvider(this.entity, () => [])
       const names = await helper.init()
-      const json = helper.translateToJson(data, names)
-      helper.verifyThatRowHasAllNotNullColumns(json, names)
       const auto = isAutoIncrement(this.entity.idMetadata.field)
       const idName = names.$dbNameOf(this.entity.idMetadata.field)
-      if (auto) delete json[idName]
+      const rows = data.map((row) => {
+        const json = helper.translateToJson(row, names)
+        helper.verifyThatRowHasAllNotNullColumns(json, names)
+        if (auto) delete json[idName]
+        return json
+      })
       return this.provider.withStore(
         storeNameOf(this.entity),
         'readwrite',
         async (store) => {
-          try {
-            const key = await idbReq(store.add(json))
-            if (auto) json[idName] = json[idName] ?? key
-          } catch (e: any) {
-            if (e?.name === 'ConstraintError') throw Error('id already exists')
-            throw e
+          const result: any[] = []
+          for (const json of rows) {
+            try {
+              const key = await idbReq(store.add(json))
+              if (auto) json[idName] = json[idName] ?? key
+            } catch (e: any) {
+              if (e?.name === 'ConstraintError') throw Error('id already exists')
+              throw e
+            }
+            result.push(helper.translateFromJson(json, names))
           }
-          return helper.translateFromJson(json, names)
+          return result
         },
       )
     })
@@ -377,20 +390,23 @@ class IndexedDbEntityDataProvider implements EntityDataProvider {
     })
   }
 
-  delete(id: any): Promise<void> {
+  delete(ids: any[]): Promise<void> {
+    if (ids.length === 0) return Promise.resolve()
     return this.provider.enqueue(async () => {
       await this.provider.ensureStores([this.entity])
-      const key = toIdbKey(this.entity, id)
       return this.provider.withStore(
         storeNameOf(this.entity),
         'readwrite',
         async (store) => {
-          const existing = await idbReq(store.get(key))
-          if (existing == null)
-            throw new Error(
-              `Couldn't find row with id "${id}" in entity "${this.entity.key}" to delete`,
-            )
-          await idbReq(store.delete(key))
+          for (const id of ids) {
+            const key = toIdbKey(this.entity, id)
+            const existing = await idbReq(store.get(key))
+            if (existing == null)
+              throw new Error(
+                `Couldn't find row with id "${id}" in entity "${this.entity.key}" to delete`,
+              )
+            await idbReq(store.delete(key))
+          }
         },
       )
     })

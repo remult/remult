@@ -105,8 +105,8 @@ export declare class ArrayEntityDataProvider implements EntityDataProvider {
   count(where?: Filter): Promise<number>
   find(options?: EntityDataProviderFindOptions): Promise<any[]>
   update(id: any, data: any): Promise<any>
-  delete(id: any): Promise<void>
-  insert(data: any): Promise<any>
+  delete(ids: any[]): Promise<void>
+  insert(data: any[]): Promise<any[]>
 }
 //[ ] CustomArrayFilter from TBD is not exported
 export declare function BackendMethod<type = unknown>(
@@ -485,8 +485,8 @@ export interface EntityDataProvider {
   find(options?: EntityDataProviderFindOptions): Promise<Array<any>>
   groupBy(options?: EntityDataProviderGroupByOptions): Promise<any[]>
   update(id: any, data: any, options?: InsertOrUpdateOptions): Promise<any>
-  delete(id: any): Promise<void>
-  insert(data: any, options?: InsertOrUpdateOptions): Promise<any>
+  delete(ids: any[]): Promise<void>
+  insert(data: any[], options?: InsertOrUpdateOptions): Promise<any[]>
 }
 export interface EntityDataProviderFindOptions {
   select?: string[]
@@ -1934,6 +1934,28 @@ export interface IdMetadata<entityType = unknown> {
     items: Partial<MembersOnly<entityType>>[],
   ): EntityFilter<entityType>
 }
+export declare class IndexedDbDataProvider implements DataProvider {
+  private dbName
+  constructor(dbName?: string, options?: IndexedDbDataProviderOptions)
+  getEntityDataProvider(entity: EntityMetadata): EntityDataProvider
+  transaction(
+    action: (dataProvider: DataProvider) => Promise<void>,
+  ): Promise<void>
+  ensureSchema(entities: EntityMetadata[]): Promise<void>
+  close(): void
+}
+export type IndexedDbDataProviderOptions = {
+  indexes?: (x: IndexedDbIndexBuilder) => void
+}
+export declare class IndexedDbIndexBuilder {
+  ensureIndexes<entityType>(
+    entity: ClassType<entityType>,
+    indexes: readonly IndexedDbIndexDef<entityType>[],
+  ): this
+}
+export type IndexedDbIndexDef<entityType> =
+  | keyof MembersOnly<entityType>
+  | readonly (keyof MembersOnly<entityType>)[]
 export declare class InMemoryDataProvider
   implements DataProvider, __RowsOfDataForTesting
 {
@@ -2180,7 +2202,9 @@ export interface LiveQueryStorage {
 export declare type MembersOnly<T> = {
   [K in keyof Omit<T, keyof EntityBase> as T[K] extends Function
     ? never
-    : K]: T[K]
+    : K extends string
+      ? K
+      : never]: T[K]
 }
 export type MembersToInclude<T> = {
   [K in keyof ObjectMembersOnly<T>]?:
@@ -2793,7 +2817,7 @@ export interface Repository<entityType> {
    */
   validate(
     item: Partial<entityType>,
-    ...fields: Extract<keyof MembersOnly<entityType>, string>[]
+    ...fields: (keyof MembersOnly<entityType>)[]
   ): Promise<ErrorInfo<entityType> | undefined>
   /** saves an item or item[] to the data source. It assumes that if an `id` value exists, it's an existing row - otherwise it's a new row
    * @example
@@ -3183,6 +3207,8 @@ export interface SqlImplementation extends HasWrapIdentifier {
   doesNotSupportReturningSyntax?: boolean
   doesNotSupportReturningSyntaxOnlyForUpdate?: boolean
   orderByNullsFirst?: boolean
+  /** Bound-variable cap per statement. Default 2000 (SQL Server is 2100). */
+  maxParametersInOneSqlStatement?: number
   end(): Promise<void>
   afterMutation?: VoidFunction
 }
@@ -3192,7 +3218,7 @@ export interface SqlResult {
 }
 export declare function standardSchema<
   entityType,
-  fieldsType extends Extract<keyof MembersOnly<entityType>, string>[] = [],
+  fieldsType extends (keyof MembersOnly<entityType>)[] = [],
 >(
   repo: Repository<entityType>,
   ...fields: fieldsType
@@ -3429,6 +3455,7 @@ export interface ValueConverter<valueType> {
   toJson?(val: valueType): any
   /**
    * Converts a value from the database format to the valueType.
+   * Defaults to `fromJson` when not provided.
    *
    * @param val The value to convert.
    * @returns The converted value.
@@ -3439,6 +3466,7 @@ export interface ValueConverter<valueType> {
   fromDb?(val: any): valueType
   /**
    * Converts a value of valueType to the database format.
+   * Defaults to `toJson` when not provided.
    *
    * @param val The value to convert.
    * @returns The converted value.
@@ -3450,6 +3478,7 @@ export interface ValueConverter<valueType> {
   toDbSql?(val: string): string
   /**
    * Converts a value of valueType to a string suitable for an HTML input element.
+   * Defaults to `toJson` when not provided.
    *
    * @param val The value to convert.
    * @param inputType The type of the input element (optional).
@@ -3461,6 +3490,7 @@ export interface ValueConverter<valueType> {
   toInput?(val: valueType, inputType?: string): string
   /**
    * Converts a string from an HTML input element to the valueType.
+   * Defaults to `fromJson` when not provided.
    *
    * @param val The value to convert.
    * @param inputType The type of the input element (optional).
@@ -4486,7 +4516,7 @@ export declare class KnexDataProvider
     wrapIdentifier?: (name: string) => string,
   ): Promise<(knex: Knex.QueryBuilder) => void>
   isProxy?: boolean
-  ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
+  ensureSchema(entities: EntityMetadata[]): Promise<void>
 }
 //[ ] MigrationCode from ../migrations/migration-types.js is not exported
 //[ ] MigrationBuilder from ../migrations/migration-types.js is not exported
@@ -4499,7 +4529,7 @@ export declare class KnexDataProvider
 //[ ] RepositoryOverloads from ../src/remult3/RepositoryImplementation.js is not exported
 export declare class KnexSchemaBuilder {
   private knex
-  ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
+  ensureSchema(entities: EntityMetadata[]): Promise<void>
   createIfNotExist(entity: EntityMetadata): Promise<void>
   createTableKnexCommand(
     entity: EntityMetadata,
@@ -4591,6 +4621,7 @@ export declare class SqliteCoreDataProvider
     doesNotSupportReturningSyntaxOnlyForUpdate?: boolean,
   )
   orderByNullsFirst?: boolean
+  maxParametersInOneSqlStatement: number
   getLimitSqlSyntax(limit: number, offset: number): string
   afterMutation?: VoidFunction
   provideMigrationBuilder(builder: MigrationCode): MigrationBuilder
@@ -4709,6 +4740,7 @@ export interface D1Client {
 }
 export declare class D1DataProvider extends SqliteCoreDataProvider {
   private d1
+  maxParametersInOneSqlStatement: number
   /**
    * For production or local d1 using binding
    *

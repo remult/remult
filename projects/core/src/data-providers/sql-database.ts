@@ -182,6 +182,9 @@ export class SqlDatabase
             doesNotSupportReturningSyntaxOnlyForUpdate:
               this.sql.doesNotSupportReturningSyntaxOnlyForUpdate,
             orderByNullsFirst: this.sql.orderByNullsFirst,
+            afterMutation: this.sql.afterMutation,
+            maxParametersInOneSqlStatement:
+              this.sql.maxParametersInOneSqlStatement,
           }),
         )
       } finally {
@@ -272,6 +275,43 @@ export class SqlDatabase
   private createdEntities: string[] = []
 
   end!: () => Promise<void>
+}
+
+const defaultMaxParametersInOneSqlStatement = 2000
+
+function splitByMaxParameters<T>(
+  items: T[],
+  parametersInItem: (item: T) => number,
+  maxParameters: number,
+): T[][] {
+  const batches: T[][] = []
+  let batch: T[] = []
+  let params = 0
+  for (const item of items) {
+    const n = parametersInItem(item)
+    if (batch.length > 0 && params + n > maxParameters) {
+      batches.push(batch)
+      batch = []
+      params = 0
+    }
+    batch.push(item)
+    params += n
+  }
+  if (batch.length) batches.push(batch)
+  return batches
+}
+
+function countInsertBindParameters(
+  entity: EntityMetadata,
+  e: EntityDbNamesBase,
+  row: any,
+): number {
+  let n = 0
+  for (const x of entity.fields) {
+    if (isDbReadonly(x, e)) continue
+    if (x.valueConverter.toDb(row[x.key]) != undefined) n++
+  }
+  return n
 }
 
 const icons = new Map<string, string>([
@@ -553,13 +593,14 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
     })
   }
 
-  async delete(id: any): Promise<void> {
+  async delete(ids: any[]): Promise<void> {
+    if (ids.length === 0) return
     let e = await this.init()
     let r = this.sql.createCommand()
     let f = new FilterConsumerBridgeToSqlRequest(r, e)
     Filter.fromEntityFilter(
       this.entity,
-      this.entity.idMetadata.getIdFilter(id),
+      this.entity.idMetadata.getIdFilter(...ids),
     ).__applyToConsumer(f)
     let statement = 'delete from ' + e.$entityName
     statement += await f.resolveWhere()
@@ -567,62 +608,108 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
       this.sql._getSourceSql().afterMutation?.()
     })
   }
-  async insert(data: any, options?: InsertOrUpdateOptions): Promise<any> {
+  async insert(data: any[], options?: InsertOrUpdateOptions): Promise<any[]> {
+    if (data.length === 0) return []
     let e = await this.init()
+    const maxParams =
+      this.strategy.maxParametersInOneSqlStatement ??
+      defaultMaxParametersInOneSqlStatement
+    const batches = splitByMaxParameters(
+      data,
+      (row) => countInsertBindParameters(this.entity, e, row),
+      maxParams,
+    )
+    const result: any[] = []
+    for (const batch of batches)
+      result.push(...(await this.insertBatch(batch, e, options)))
+    return result
+  }
+  //@internal
+  async insertOne(data: any, options?: InsertOrUpdateOptions): Promise<any> {
+    return (await this.insert([data], options))[0]
+  }
 
+  private async insertBatch(
+    batch: any[],
+    e: EntityDbNamesBase,
+    options?: InsertOrUpdateOptions,
+  ): Promise<any[]> {
     let r = this.sql.createCommand()
-    let cols = ''
-    let vals = ''
-    let added = false
-
+    const cols: FieldMetadata[] = []
     for (const x of this.entity.fields) {
-      if (isDbReadonly(x, e)) {
-      } else {
-        let v = x.valueConverter.toDb(data[x.key])
-        if (v != undefined) {
-          if (!added) added = true
-          else {
-            cols += ', '
-            vals += ', '
-          }
-
-          cols += e.$dbNameOf(x)
-          vals += toDbSql(r, x, v)
-        }
-      }
+      if (isDbReadonly(x, e)) continue
+      if (batch.some((row) => x.valueConverter.toDb(row[x.key]) != undefined))
+        cols.push(x)
     }
 
-    let statement = `insert into ${e.$entityName} (${cols}) values (${vals})`
-
-    let { colKeys, select } = await this.buildSelect(e, r, undefined, undefined)
-    if (
-      !this.sql._getSourceSql().doesNotSupportReturningSyntax &&
-      !(options?.select === 'none')
-    )
-      statement += ' returning ' + select
-    return await r.execute(statement).then((sql) => {
-      this.sql._getSourceSql().afterMutation?.()
-      if (this.sql._getSourceSql().doesNotSupportReturningSyntax) {
-        if (isAutoIncrement(this.entity.idMetadata.field)) {
-          const id = sql.rows[0] as Number
-          if (typeof id !== 'number')
-            throw new Error(
-              'Auto increment, for a database that is does not support returning syntax, should return an array with the single last added id. Instead it returned: ' +
-                JSON.stringify(id),
-            )
-          if (options?.select === 'none') return undefined!
-          return this.find({
-            where: new Filter((x) =>
-              x.isEqualTo(this.entity.idMetadata.field, id),
-            ),
-          }).then((r) => r[0])
-        } else {
-          if (options?.select === 'none') return undefined!
-          return getRowAfterUpdate(this.entity, this, data, undefined, 'insert')
-        }
+    let colSql = ''
+    let vals = ''
+    for (let i = 0; i < cols.length; i++) {
+      if (i) colSql += ', '
+      colSql += e.$dbNameOf(cols[i])
+    }
+    for (let i = 0; i < batch.length; i++) {
+      if (i) vals += ','
+      vals += '('
+      for (let j = 0; j < cols.length; j++) {
+        if (j) vals += ', '
+        const x = cols[j]
+        const v = x.valueConverter.toDb(batch[i][x.key])
+        if (v != undefined) vals += toDbSql(r, x, v)
+        else if (x.allowNull) vals += 'null'
+        else vals += 'DEFAULT'
       }
-      if (options?.select === 'none') return undefined!
-      return this.buildResultRow(colKeys, sql.rows[0], sql)
+      vals += ')'
+    }
+
+    let statement = `insert into ${e.$entityName} (${colSql}) values ${vals}`
+    let { colKeys, select } = await this.buildSelect(e, r, undefined, undefined)
+    const source = this.sql._getSourceSql()
+    const wantRows = options?.select !== 'none'
+    if (!source.doesNotSupportReturningSyntax && wantRows)
+      statement += ' returning ' + select
+
+    const sql = await r.execute(statement)
+    source.afterMutation?.()
+    if (!wantRows) return batch.map(() => undefined!)
+
+    if (source.doesNotSupportReturningSyntax) {
+      if (isAutoIncrement(this.entity.idMetadata.field)) {
+        const lastId = sql.rows[0] as number
+        if (typeof lastId !== 'number')
+          throw new Error(
+            'Auto increment, for a database that is does not support returning syntax, should return an array with the single last added id. Instead it returned: ' +
+              JSON.stringify(lastId),
+          )
+        const ids: number[] = []
+        for (let id = lastId - batch.length + 1; id <= lastId; id++)
+          ids.push(id)
+        return this.loadRowsByIds(ids)
+      }
+      return this.loadRowsByIds(
+        batch.map((row) => this.entity.idMetadata.getId(row)),
+      )
+    }
+    return sql.rows.map((row) => this.buildResultRow(colKeys, row, sql))
+  }
+
+  private async loadRowsByIds(ids: any[]): Promise<any[]> {
+    const found = await this.find({
+      where: Filter.fromEntityFilter(
+        this.entity,
+        this.entity.idMetadata.getIdFilter(...ids),
+      ),
+    })
+    const byId = new Map(
+      found.map((row) => [this.entity.idMetadata.getId(row) + '', row]),
+    )
+    return ids.map((id) => {
+      const row = byId.get(id + '')
+      if (!row)
+        throw new Error(
+          `Failed to insert row - result contained ${found.length} rows`,
+        )
+      return row
     })
   }
 }

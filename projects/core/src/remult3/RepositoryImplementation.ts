@@ -487,7 +487,7 @@ export class RepositoryImplementation<entityType>
     if (ref) return ref.delete()
 
     if (typeof item === 'string' || typeof item === 'number')
-      if (this._dataProvider.isProxy) return this._edp.delete(item)
+      if (this._dataProvider.isProxy) return this._edp.delete([item])
       else {
         let ref2 = await this.findId(item)
         if (!ref2) throw this._notFoundError(item)
@@ -542,44 +542,30 @@ export class RepositoryImplementation<entityType>
     options?: InsertOrUpdateOptions,
   ): Promise<entityType | entityType[]> {
     if (Array.isArray(entity)) {
-      if (this._dataProvider.isProxy) {
-        let refs: rowHelperImplementation<entityType>[] = []
-        let raw: any[] = []
-        for (const item of entity) {
-          this.__cleanupPartialObject(item)
-          let ref = getEntityRef(
-            entity,
-            false,
-          ) as unknown as rowHelperImplementation<entityType>
-          if (ref) {
-            if (!ref.isNew()) throw 'Item is not new'
-          } else {
-            ref = (await this.getEntityRef(
-              this.create(item),
-            )) as rowHelperImplementation<entityType>
-          }
-          refs.push(ref)
-          raw.push(
-            await (
-              ref as rowHelperImplementation<entityType>
-            ).buildDtoForInsert(),
-          )
+      let refs: rowHelperImplementation<entityType>[] = []
+      let raw: any[] = []
+      for (const item of entity) {
+        this.__cleanupPartialObject(item)
+        let ref = getEntityRef(
+          item,
+          false,
+        ) as unknown as rowHelperImplementation<entityType>
+        if (ref) {
+          if (!ref.isNew()) throw 'Item is not new'
+        } else {
+          ref = this.getEntityRef(
+            this.create(item),
+          ) as rowHelperImplementation<entityType>
         }
-        const inserted = await (
-          this._edp as any as ProxyEntityDataProvider
-        ).insertMany(raw, options)
-        if (options?.select === 'none') return undefined!
-        return promiseAll(inserted, (item, i) =>
-          refs[i].processInsertResponseDto(item),
-        )
-      } else {
-        let r: entityType[] = []
-        for (const item of entity) {
-          r.push(await this.insert(item, options))
-        }
-        if (options?.select === 'none') return undefined!
-        return r
+        refs.push(ref)
+        raw.push(await ref.buildDtoForInsert())
       }
+      const inserted = await this._edp.insert(raw, options)
+      const result = await promiseAll(inserted, (row, i) =>
+        refs[i].processInsertResponseDto(row),
+      )
+      if (options?.select === 'none') return undefined!
+      return result
     } else {
       let ref = getEntityRef(entity, false) as unknown as EntityRef<entityType>
       let result = undefined
@@ -1278,13 +1264,20 @@ export class RepositoryImplementation<entityType>
         where === 'all' ? 'all' : await this._translateWhereToFilter(where),
       )
     } else {
-      let deleted = 0
       if (where === 'all') where = undefined!
+      const prepared: {
+        ref: rowHelperImplementation<entityType>
+        event: LifecycleEvent<entityType>
+        doDelete: boolean
+      }[] = []
       for await (const item of this.query({ where, aggregate: undefined! })) {
-        await getEntityRef(item).delete()
-        deleted++
+        const ref = getEntityRef(item) as rowHelperImplementation<entityType>
+        prepared.push({ ref, ...(await ref.__prepareDelete()) })
       }
-      return deleted
+      const ids = prepared.filter((x) => x.doDelete).map((x) => x.ref.id)
+      if (ids.length) await this._edp.delete(ids)
+      for (const x of prepared) await x.ref.__finishDelete(x.event)
+      return prepared.length
     }
   }
 
@@ -2042,7 +2035,7 @@ export class rowHelperImplementation<T>
             updatedRow = (updatedRow = await this.edp.find({
               where: await this.getIdFilter(),
             }))[0]
-          } else updatedRow = await this.edp.insert(d, options)
+          } else updatedRow = (await this.edp.insert([d], options))[0]
         } else {
           let changesOnly: any = {}
           let wasChanged = false
@@ -2099,13 +2092,41 @@ export class rowHelperImplementation<T>
     }
   }
   async processInsertResponseDto(updatedRow: any): Promise<T> {
-    await this.loadDataFrom(updatedRow)
-    this.saveOriginalData()
-    this._isNew = false
-    return this.instance
+    try {
+      if (updatedRow) await this.loadDataFrom(updatedRow)
+      const e = this.buildLifeCycleEvent()
+      e.id = this.getId()
+      if (!this.repo._dataProvider.isProxy) {
+        if (this.info.entityInfo.saved)
+          await this.info.entityInfo.saved(this.instance, e)
+        if (this.repo.listeners)
+          for (const listener of this.repo.listeners) {
+            await listener.saved?.(this.instance, true)
+          }
+      }
+      this.repo._remult.liveQueryPublisher.itemChanged(
+        this.repo.metadata.key,
+        [{ id: this.getId(), oldId: this.getOriginalId(), deleted: false }],
+      )
+      this.saveOriginalData()
+      this._isNew = false
+      return this.instance
+    } catch (err) {
+      throw await this.catchSaveErrors(err)
+    }
   }
   async buildDtoForInsert(): Promise<any> {
     await this.__validateEntity()
+    const e = this.buildLifeCycleEvent()
+    if (!this.repo._dataProvider.isProxy) {
+      for (const col of this.fields) {
+        if (col.metadata.options.saving)
+          await col.metadata.options.saving(this.instance, col, e as any)
+      }
+      if (this.info.entityInfo.saving) {
+        await this.info.entityInfo.saving(this.instance, e)
+      }
+    }
     this.__assertValidity()
 
     let d = this.copyDataToObject(this.isNew())
@@ -2140,37 +2161,44 @@ export class rowHelperImplementation<T>
   }
 
   async delete() {
-    this.__clearErrorsAndReportChanged()
-    let doDelete = true
-    let e = this.buildLifeCycleEvent(() => (doDelete = false))
-    if (!this.repo._dataProvider.isProxy) {
-      if (this.info.entityInfo.deleting)
-        await this.info.entityInfo.deleting(this.instance, e)
-    }
-    this.__assertValidity()
     try {
-      if (doDelete) {
-        if (this.id === undefined)
-          throw new Error('Invalid operation, id is undefined')
-        await this.edp.delete(this.id)
-      }
-      if (!this.repo._dataProvider.isProxy) {
-        if (this.info.entityInfo.deleted)
-          await this.info.entityInfo.deleted(this.instance, e)
-      }
-
-      if (this.repo.listeners)
-        for (const listener of this.repo.listeners) {
-          await listener.deleted?.(this.instance)
-        }
-      this.repo._remult.liveQueryPublisher.itemChanged(this.repo.metadata.key, [
-        { id: this.getId(), oldId: this.getOriginalId(), deleted: true },
-      ])
-
-      this._wasDeleted = true
+      const { doDelete, event } = await this.__prepareDelete()
+      if (doDelete) await this.edp.delete([this.id])
+      await this.__finishDelete(event)
     } catch (err) {
       throw await this.catchSaveErrors(err)
     }
+  }
+  //@internal
+  async __prepareDelete() {
+    this.__clearErrorsAndReportChanged()
+    let doDelete = true
+    const event = this.buildLifeCycleEvent(() => (doDelete = false))
+    if (!this.repo._dataProvider.isProxy) {
+      if (this.info.entityInfo.deleting)
+        await this.info.entityInfo.deleting(this.instance, event)
+    }
+    this.__assertValidity()
+    if (doDelete && this.id === undefined)
+      throw new Error('Invalid operation, id is undefined')
+    return { doDelete, event }
+  }
+  //@internal
+  async __finishDelete(e: LifecycleEvent<T>) {
+    if (!this.repo._dataProvider.isProxy) {
+      if (this.info.entityInfo.deleted)
+        await this.info.entityInfo.deleted(this.instance, e)
+    }
+
+    if (this.repo.listeners)
+      for (const listener of this.repo.listeners) {
+        await listener.deleted?.(this.instance)
+      }
+    this.repo._remult.liveQueryPublisher.itemChanged(this.repo.metadata.key, [
+      { id: this.getId(), oldId: this.getOriginalId(), deleted: true },
+    ])
+
+    this._wasDeleted = true
   }
 
   async loadDataFrom(data: any, loadItems?: FieldMetadata[]) {
