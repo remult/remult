@@ -1871,21 +1871,23 @@ describe('test rest data provider translates data correctly', () => {
         get: () => undefined!,
         post: async (x, data) => {
           done.ok()
-          expect(data.a).toBe(1)
-          expect(data.b).toBe('2021-05-16T08:32:19.905Z')
+          expect(data[0].a).toBe(1)
+          expect(data[0].b).toBe('2021-05-16T08:32:19.905Z')
           return data
         },
         put: () => undefined!,
       },
     }))
     let x = z.getEntityDataProvider(c.metadata)
-    let r = await x.insert({
-      a: 1,
-      b: new Date('2021-05-16T08:32:19.905Z'),
-    })
-    expect(r.a).toBe(1)
-    expect(r.b instanceof Date).toBe(true)
-    expect(r.b.toISOString()).toBe('2021-05-16T08:32:19.905Z')
+    let r = await x.insert([
+      {
+        a: 1,
+        b: new Date('2021-05-16T08:32:19.905Z'),
+      },
+    ])
+    expect(r[0].a).toBe(1)
+    expect(r[0].b instanceof Date).toBe(true)
+    expect(r[0].b.toISOString()).toBe('2021-05-16T08:32:19.905Z')
     done.test()
   })
 })

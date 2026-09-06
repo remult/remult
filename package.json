@@ -1,10 +1,12 @@
 {
   "name": "remult-mono-repo",
   "description": "See projects/core for the remult core package.json. This package.json is used for remult/core development, test projects and experimental work. See ",
-  "version": "3.3.18",
+  "version": "3.3.19-next.1",
   "scripts": {
     "format": "prettier \"./projects/core/**\" --write",
     "test": "vitest --ui --coverage",
+    "test:browser": "vitest --config misc/vitest.config.web.ts",
+    "test:browser:ci": "vitest run --config misc/vitest.config.web.ts --coverage",
     "release": "rimraf dist && npm run build && npm run patch-versions",
     "build": "tsc -p projects/core/tsconfig.build.json && tsc -p projects/core/tsconfig.build.esm.json && tsx misc/build-packagejson-core.ts && copyfiles README.md dist/remult && copyfiles LICENSE dist/remult && tsx misc/dedupe-admin-html.ts && tsx misc/extract-public-api.ts",
     "build-tests": "tsc -p tsconfig.tests.json && tsc -p projects/tests/strict/tsconfig.check.json",
@@ -65,6 +67,7 @@
     "@typescript-eslint/eslint-plugin": "^6.4.1",
     "@typescript-eslint/parser": "^6.4.1",
     "@vitest/browser": "3.1.2",
+    "@vitest/coverage-istanbul": "3.1.2",
     "@vitest/coverage-v8": "3.1.2",
     "@vitest/ui": "3.1.2",
     "ably": "^1.2.33",

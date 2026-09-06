@@ -6,7 +6,7 @@ export type { ClassType } from './classType.js'
 /*
  * Public API Surface of remult
  */
-export {
+export type {
   ValidateFieldEvent,
   MembersOnly,
   NumericKeys,
@@ -66,9 +66,9 @@ export {
   getFields,
   ValueListFieldType,
   getValueList,
-  ValueListFieldOptions,
   ValueListInfo,
 } from './src/remult3/RepositoryImplementation.js'
+export type { ValueListFieldOptions } from './src/remult3/RepositoryImplementation.js'
 import { LabelTransformer } from './src/remult3/RepositoryImplementation.js'
 export { LabelTransformer } from './src/remult3/RepositoryImplementation.js'
 /**
@@ -77,12 +77,8 @@ export { LabelTransformer } from './src/remult3/RepositoryImplementation.js'
 export const CaptionTransformer = LabelTransformer
 export { Entity } from './src/remult3/entity.js'
 export { getEntityRef } from './src/remult3/getEntityRef.js'
-export {
-  Field,
-  Fields,
-  StringFieldOptions,
-  Relations,
-} from './src/remult3/Fields.js'
+export { Field, Fields, Relations } from './src/remult3/Fields.js'
+export type { StringFieldOptions } from './src/remult3/Fields.js'
 export { IdEntity } from './src/remult3/IdEntity.js'
 
 export {
@@ -90,23 +86,23 @@ export {
   describeBackendMethods,
   describeEntity,
 } from './src/remult3/classDescribers.js'
-export { EntityOptions, PreprocessFilterEvent } from './src/entity.js'
-export {
+export type { EntityOptions, PreprocessFilterEvent } from './src/entity.js'
+export { EntityError } from './src/data-interfaces.js' //V
+export type {
   DataProvider,
   EntityDataProvider,
   EntityDataProviderGroupByOptions,
   EntityDataProviderFindOptions,
   ErrorInfo,
-  EntityError,
   RestDataProviderHttpProvider,
-} from './src/data-interfaces.js' //V
-export {
+} from './src/data-interfaces.js'
+export type {
   SqlCommand,
   SqlCommandWithParameters,
   SqlImplementation,
   SqlResult,
 } from './src/sql-command.js' //V
-export {
+export type {
   FieldMetadata,
   FieldOptions,
   FieldValidator,
@@ -121,60 +117,73 @@ export { SqlDatabase } from './src/data-providers/sql-database.js' //V
 export {
   CustomSqlFilterBuilder,
   dbNamesOf,
+} from './src/filter/filter-consumer-bridge-to-sql-request.js'
+export type {
   dbNamesOfOptions,
   CustomSqlFilterBuilderFunction,
   EntityDbNames,
 } from './src/filter/filter-consumer-bridge-to-sql-request.js'
 
-export {
-  JsonDataProvider,
-  JsonEntityStorage,
-} from './src/data-providers/json-data-provider.js' //V
+export { JsonDataProvider } from './src/data-providers/json-data-provider.js' //V
+export type { JsonEntityStorage } from './src/data-providers/json-data-provider.js'
 export { JsonEntityOpfsStorage } from './src/data-providers/json-entity-opfs-storage.js'
 export { JsonEntityIndexedDbStorage } from './src/data-providers/json-entity-indexed-db-data-provider.js'
+export {
+  IndexedDbDataProvider,
+  IndexedDbIndexBuilder,
+} from './src/data-providers/indexed-db-data-provider.js'
+export type {
+  IndexedDbDataProviderOptions,
+  IndexedDbIndexDef,
+} from './src/data-providers/indexed-db-data-provider.js'
 
 //export * from './src/data-api'; //reconsider if to make internal
 export {
   Controller,
-  BackendMethodOptions,
   BackendMethod,
   ProgressListener,
   ForbiddenError,
 } from './src/server-action.js'
+export type { BackendMethodOptions } from './src/server-action.js'
 
 export {
-  Allowed,
   Allow,
   Remult,
   withRemult,
+  isBackend,
+  EventSource,
+} from './src/context.js'
+export type {
+  Allowed,
   RemultContext,
   ApiClient,
-  isBackend,
   AllowedForInstance,
   EventDispatcher,
-  EventSource,
   UserInfo,
 } from './src/context.js'
-export { ExternalHttpProvider } from './src/buildRestDataProvider.js'
-export { SortSegment, Sort } from './src/sort.js'
+export type { ExternalHttpProvider } from './src/buildRestDataProvider.js'
+export { Sort } from './src/sort.js'
+export type { SortSegment } from './src/sort.js'
 export { CompoundIdField } from './src/CompoundIdField.js'
-export {
-  Filter,
+export { Filter } from './src/filter/filter-interfaces.js'
+export type {
   FilterConsumer,
   FilterPreciseValues,
 } from './src/filter/filter-interfaces.js'
 export { UrlBuilder } from './urlBuilder.js'
 export {
   Validators,
-  ValidationMessage,
-  ValueValidationMessage,
-  Validator,
-  ValidatorWithArgs,
   valueValidator,
   createValidator,
   createValidatorWithArgs,
   createValueValidatorWithArgs,
   createValueValidator,
+} from './src/validators.js'
+export type {
+  ValidationMessage,
+  ValueValidationMessage,
+  Validator,
+  ValidatorWithArgs,
 } from './src/validators.js'
 
 export { ValueConverters } from './src/valueConverters.js'
@@ -183,17 +192,17 @@ import { remult } from './src/remult-proxy.js'
 
 //export { getId } from './src/remult3/getId';
 
-export {
+export { InMemoryLiveQueryStorage } from './src/live-query/SubscriptionServer.js'
+export type {
   SubscriptionServer,
   LiveQueryStorage,
   StoredQuery,
-  InMemoryLiveQueryStorage,
 } from './src/live-query/SubscriptionServer.js'
-export {
+export { SubscriptionChannel } from './src/live-query/SubscriptionChannel.js'
+export type {
   SubscriptionListener,
   SubscriptionClientConnection,
   SubscriptionClient,
-  SubscriptionChannel,
   LiveQueryChange,
   Unsubscribe,
 } from './src/live-query/SubscriptionChannel.js'

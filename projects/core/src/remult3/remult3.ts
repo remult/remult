@@ -311,7 +311,9 @@ export interface EntityMetadata<entityType = unknown> {
 export declare type MembersOnly<T> = {
   [K in keyof Omit<T, keyof EntityBase> as T[K] extends Function
     ? never
-    : K]: T[K]
+    : K extends string
+      ? K
+      : never]: T[K]
 }
 //Pick<
 //   T,
@@ -740,7 +742,7 @@ export interface Repository<entityType> {
    */
   validate(
     item: Partial<entityType>,
-    ...fields: Extract<keyof MembersOnly<entityType>, string>[]
+    ...fields: (keyof MembersOnly<entityType>)[]
   ): Promise<ErrorInfo<entityType> | undefined>
   /** saves an item or item[] to the data source. It assumes that if an `id` value exists, it's an existing row - otherwise it's a new row
    * @example
