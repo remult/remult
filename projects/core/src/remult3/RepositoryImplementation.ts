@@ -599,7 +599,7 @@ export class RepositoryImplementation<entityType>
   }
   async validate(
     entity: Partial<MembersOnly<entityType>>,
-    ...fields: Extract<keyof MembersOnly<entityType>, string>[]
+    ...fields: (keyof MembersOnly<entityType>)[]
   ): Promise<ErrorInfo<entityType> | undefined> {
     {
       let ref: rowHelperImplementation<any> = getEntityRef(entity, false) as any

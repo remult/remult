@@ -128,7 +128,14 @@ export { JsonDataProvider } from './src/data-providers/json-data-provider.js' //
 export type { JsonEntityStorage } from './src/data-providers/json-data-provider.js'
 export { JsonEntityOpfsStorage } from './src/data-providers/json-entity-opfs-storage.js'
 export { JsonEntityIndexedDbStorage } from './src/data-providers/json-entity-indexed-db-data-provider.js'
-export { IndexedDbDataProvider } from './src/data-providers/indexed-db-data-provider.js'
+export {
+  IndexedDbDataProvider,
+  IndexedDbIndexBuilder,
+} from './src/data-providers/indexed-db-data-provider.js'
+export type {
+  IndexedDbDataProviderOptions,
+  IndexedDbIndexDef,
+} from './src/data-providers/indexed-db-data-provider.js'
 
 //export * from './src/data-api'; //reconsider if to make internal
 export {

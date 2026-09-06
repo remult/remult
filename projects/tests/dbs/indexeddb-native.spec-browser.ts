@@ -257,3 +257,108 @@ describe('IndexedDB Data Provider', () => {
     db2.close()
   })
 })
+
+describe('IndexedDB indexes', () => {
+  @Entity('idx_items')
+  class Item {
+    @Fields.integer()
+    id = 0
+    @Fields.string()
+    title = ''
+    @Fields.string()
+    status = ''
+    @Fields.string()
+    tag = ''
+  }
+
+  let db: IndexedDbDataProvider
+  let remult: Remult
+  let dbName: string
+
+  beforeEach(() => {
+    dbName = `remult-idb-idx-${crypto.randomUUID()}`
+    db = new IndexedDbDataProvider(dbName, {
+      indexes: (x) => x.ensureIndexes(Item, ['title', ['status', 'title']]),
+    })
+    remult = new Remult(db)
+  })
+
+  afterEach(async () => {
+    db.close()
+    await deleteIndexedDb(dbName)
+  })
+
+  async function seed() {
+    const repo = remult.repo(Item)
+    await repo.insert([
+      { id: 1, title: 'a', status: 'open', tag: 'x' },
+      { id: 2, title: 'b', status: 'open', tag: 'y' },
+      { id: 3, title: 'a', status: 'done', tag: 'z' },
+    ])
+    return repo
+  }
+
+  async function raw(where: { title?: any; status?: any; $or?: any }) {
+    const repo = remult.repo(Item)
+    return db.fetchRows(
+      repo.metadata,
+      Filter.fromEntityFilter(repo.metadata, { tag: 'nope', ...where }),
+    )
+  }
+
+  function ids(rows: any[]) {
+    return rows.map((r) => r.id).sort((a, b) => a - b)
+  }
+
+  function indexNames() {
+    const store = db
+      .db!.transaction('idx_items')
+      .objectStore('idx_items')
+    return [...store.indexNames]
+  }
+
+  it('creates declared indexes', async () => {
+    await seed()
+    expect(indexNames()).toEqual(expect.arrayContaining(['title', 'status_title']))
+  })
+
+  it('eq on title uses the title index', async () => {
+    await seed()
+    expect(ids(await raw({ title: 'a' }))).toEqual([1, 3])
+    expect(db.lastFetch).toMatchObject({
+      type: 'keys',
+      keys: ['a'],
+      index: 'title',
+    })
+  })
+
+  it('in on title uses the title index', async () => {
+    await seed()
+    expect(ids(await raw({ title: ['a', 'b'] }))).toEqual([1, 2, 3])
+    expect(db.lastFetch).toMatchObject({ type: 'keys', index: 'title' })
+  })
+
+  it('gt on title uses a range on the title index', async () => {
+    await seed()
+    expect(ids(await raw({ title: { $gt: 'a' } }))).toEqual([2])
+    expect(db.lastFetch).toMatchObject({ type: 'range', index: 'title' })
+  })
+
+  it('or of titles uses the title index', async () => {
+    await seed()
+    expect(
+      ids(await raw({ $or: [{ title: 'a' }, { title: 'b' }] })),
+    ).toEqual([1, 2, 3])
+    expect(db.lastFetch).toMatchObject({ type: 'keys', index: 'title' })
+  })
+
+  it('eq on status+title uses the compound index', async () => {
+    await seed()
+    expect(ids(await raw({ status: 'open', title: 'a' }))).toEqual([1])
+    expect(db.lastFetch).toMatchObject({
+      type: 'keys',
+      keys: [['open', 'a']],
+      index: 'status_title',
+    })
+  })
+})

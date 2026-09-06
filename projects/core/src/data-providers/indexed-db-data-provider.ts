@@ -9,14 +9,51 @@ import {
   dbNamesOf,
   isDbReadonly,
 } from '../filter/filter-consumer-bridge-to-sql-request.js'
+import type { ClassType } from '../../classType.js'
 import type { FieldMetadata } from '../column-interfaces.js'
 import type { Filter, FilterConsumer } from '../filter/filter-interfaces.js'
-import type { EntityMetadata } from '../remult3/remult3.js'
+import type { EntityMetadata, MembersOnly } from '../remult3/remult3.js'
 import { isAutoIncrement } from '../remult3/RepositoryImplementation.js'
 import { ArrayEntityDataProvider } from './array-entity-data-provider.js'
 
+export type IndexedDbIndexDef<entityType> =
+  | keyof MembersOnly<entityType>
+  | readonly (keyof MembersOnly<entityType>)[]
+
+export class IndexedDbIndexBuilder {
+  //@internal
+  readonly entries: {
+    entity: ClassType<any>
+    indexes: IndexedDbIndexDef<any>[]
+  }[] = []
+
+  ensureIndexes<entityType>(
+    entity: ClassType<entityType>,
+    indexes: readonly IndexedDbIndexDef<entityType>[],
+  ): this {
+    this.entries.push({ entity, indexes: [...indexes] })
+    return this
+  }
+}
+
+export type IndexedDbDataProviderOptions = {
+  indexes?: (x: IndexedDbIndexBuilder) => void
+}
+
 export class IndexedDbDataProvider implements DataProvider {
-  constructor(private dbName: string = 'remult') {}
+  //@internal
+  private declaredIndexes: IndexedDbIndexBuilder['entries'] = []
+
+  constructor(
+    private dbName: string = 'remult',
+    options?: IndexedDbDataProviderOptions,
+  ) {
+    if (options?.indexes) {
+      const builder = new IndexedDbIndexBuilder()
+      options.indexes(builder)
+      this.declaredIndexes = builder.entries
+    }
+  }
 
   //@internal
   db?: IDBDatabase
@@ -78,7 +115,11 @@ export class IndexedDbDataProvider implements DataProvider {
   //@internal
   private async loadRows(entity: EntityMetadata, where?: Filter) {
     const storeName = storeNameOf(entity)
-    const prefetch = idbPrefetchFromFilter(entity, where)
+    const prefetch = await idbPrefetchFromFilter(
+      entity,
+      where,
+      this.storeIndexes(storeName),
+    )
     this.lastFetch = prefetch
     if (prefetch.type === 'all') return this.getAll(storeName)
     const ops = prefetch.type === 'or' ? prefetch.parts : [prefetch]
@@ -86,26 +127,61 @@ export class IndexedDbDataProvider implements DataProvider {
   }
 
   //@internal
+  private storeIndexes(storeName: string): IdbIndexInfo[] {
+    const db = this.db
+    if (!db?.objectStoreNames.contains(storeName)) return []
+    const store = db.transaction(storeName).objectStore(storeName)
+    return [...store.indexNames].map((name) => ({
+      name,
+      keyPath: store.index(name).keyPath,
+    }))
+  }
+
+  //@internal
+  private indexesFor(entity: EntityMetadata): IndexedDbIndexDef<any>[] {
+    return this.declaredIndexes
+      .filter((e) => e.entity === entity.entityType)
+      .flatMap((e) => e.indexes)
+  }
+
+  //@internal
   async ensureStores(entities: EntityMetadata[]) {
     const wanted = await Promise.all(
-      entities.map(async (entity) => ({
-        name: storeNameOf(entity),
-        keyPath: await keyPathOf(entity),
-        autoIncrement: isAutoIncrement(entity.idMetadata.field),
-      })),
+      entities.map(async (entity) => {
+        const keyPath = await keyPathOf(entity)
+        return {
+          name: storeNameOf(entity),
+          keyPath,
+          autoIncrement: isAutoIncrement(entity.idMetadata.field),
+          indexes: await resolveIndexDefs(
+            entity,
+            this.indexesFor(entity),
+            keyPath,
+          ),
+        }
+      }),
     )
     const db = await this.open()
-    const missing = wanted.filter((w) => !db.objectStoreNames.contains(w.name))
-    if (missing.length === 0) return
+    const needsUpgrade = wanted.some((w) => {
+      if (!db.objectStoreNames.contains(w.name)) return true
+      const existing = this.storeIndexes(w.name).map((i) => i.name)
+      return w.indexes.some((idx) => !existing.includes(idx.name))
+    })
+    if (!needsUpgrade) return
 
     const nextVersion = db.version + 1
     this.forget(db)
     db.close()
 
-    await this.open(nextVersion, (upgradeDb) => {
-      for (const { name, keyPath, autoIncrement } of missing) {
-        if (!upgradeDb.objectStoreNames.contains(name)) {
-          upgradeDb.createObjectStore(name, { keyPath, autoIncrement })
+    await this.open(nextVersion, (upgradeDb, tx) => {
+      for (const { name, keyPath, autoIncrement, indexes } of wanted) {
+        const store = upgradeDb.objectStoreNames.contains(name)
+          ? tx.objectStore(name)
+          : upgradeDb.createObjectStore(name, { keyPath, autoIncrement })
+        for (const idx of indexes) {
+          if (!store.indexNames.contains(idx.name)) {
+            store.createIndex(idx.name, idx.keyPath)
+          }
         }
       }
     })
@@ -119,7 +195,7 @@ export class IndexedDbDataProvider implements DataProvider {
   //@internal
   private async open(
     version?: number,
-    upgrade?: (db: IDBDatabase) => void,
+    upgrade?: (db: IDBDatabase, tx: IDBTransaction) => void,
   ): Promise<IDBDatabase> {
     if (this.db && version == null) return this.db
     this.db = await new Promise<IDBDatabase>((resolve, reject) => {
@@ -128,7 +204,8 @@ export class IndexedDbDataProvider implements DataProvider {
           ? indexedDB.open(this.dbName)
           : indexedDB.open(this.dbName, version)
       request.onerror = () => reject(request.error)
-      request.onupgradeneeded = () => upgrade?.(request.result)
+      request.onupgradeneeded = () =>
+        upgrade?.(request.result, request.transaction!)
       request.onsuccess = () => {
         const db = request.result
         const forget = () => this.forget(db)
@@ -161,10 +238,17 @@ export class IndexedDbDataProvider implements DataProvider {
       const seen = new Set<string>()
       const rows: any[] = []
       for (const op of ops) {
+        const source = op.index ? store.index(op.index) : store
         const chunk =
           op.type === 'keys'
-            ? await Promise.all(op.keys.map((key) => idbReq(store.get(key))))
-            : await idbReq(store.getAll(op.range))
+            ? op.index
+              ? (
+                  await Promise.all(
+                    op.keys.map((key) => idbReq(source.getAll(key))),
+                  )
+                ).flat()
+              : await Promise.all(op.keys.map((key) => idbReq(store.get(key))))
+            : await idbReq(source.getAll(op.range))
         for (const row of chunk) {
           if (row == null) continue
           const k = JSON.stringify(row[idKey])
@@ -318,25 +402,130 @@ function storeNameOf(entity: EntityMetadata) {
 }
 
 export type IdbFetchOp =
-  | { type: 'keys'; keys: IDBValidKey[] }
-  | { type: 'range'; range: IDBKeyRange }
+  | { type: 'keys'; keys: IDBValidKey[]; index?: string }
+  | { type: 'range'; range: IDBKeyRange; index?: string }
 
 export type IdbPrefetch =
   | { type: 'all' }
   | IdbFetchOp
   | { type: 'or'; parts: IdbFetchOp[] }
 
+export type IdbIndexInfo = { name: string; keyPath: string | string[] }
+
 //@internal
-export function idbPrefetchFromFilter(
+export async function idbPrefetchFromFilter(
   entity: EntityMetadata,
   where?: Filter,
-): IdbPrefetch {
+  indexes: IdbIndexInfo[] = [],
+): Promise<IdbPrefetch> {
   if (!where) return { type: 'all' }
-  const fields = entity.idMetadata.fields
-  if (fields.length !== 1) return { type: 'all' }
-  const c = new IdbPrefetchCollector(fields[0])
-  where.__applyToConsumer(c)
-  return c.result()
+  const names = await dbNamesOf(entity, (x) => x)
+  if (entity.idMetadata.fields.length === 1) {
+    const c = new IdbPrefetchCollector(entity.idMetadata.fields[0])
+    where.__applyToConsumer(c)
+    const r = c.result()
+    if (r.type !== 'all') return r
+  }
+  const ordered = [...indexes].sort(
+    (a, b) => pathLen(b.keyPath) - pathLen(a.keyPath),
+  )
+  for (const idx of ordered) {
+    const r = prefetchForIndex(entity, names, where, idx)
+    if (r.type !== 'all') return withIndex(r, idx.name)
+  }
+  return { type: 'all' }
+}
+
+function prefetchForIndex(
+  entity: EntityMetadata,
+  names: EntityDbNamesBase,
+  where: Filter,
+  idx: IdbIndexInfo,
+): IdbPrefetch {
+  const path = Array.isArray(idx.keyPath) ? idx.keyPath : [idx.keyPath]
+  if (path.length === 1) {
+    const field = fieldByDbName(entity, names, path[0])
+    if (!field) return { type: 'all' }
+    const c = new IdbPrefetchCollector(field)
+    where.__applyToConsumer(c)
+    return c.result()
+  }
+  const parts = path.map((dbName) => {
+    const field = fieldByDbName(entity, names, dbName)
+    if (!field) return { type: 'all' } as IdbPrefetch
+    const c = new IdbPrefetchCollector(field)
+    where.__applyToConsumer(c)
+    return c.result()
+  })
+  if (parts.every((p) => p.type === 'keys')) {
+    return {
+      type: 'keys',
+      keys: cartesian(parts.map((p) => (p as { keys: IDBValidKey[] }).keys)),
+    }
+  }
+  const last = parts[parts.length - 1]
+  const prefix = parts.slice(0, -1)
+  if (
+    last.type === 'range' &&
+    prefix.every((p) => p.type === 'keys' && p.keys.length === 1)
+  ) {
+    const pre = prefix.map((p) => (p as { type: 'keys'; keys: IDBValidKey[] }).keys[0])
+    const r = last.range
+    try {
+      if (r.lower !== undefined && r.upper !== undefined)
+        return {
+          type: 'range',
+          range: IDBKeyRange.bound(
+            [...pre, r.lower],
+            [...pre, r.upper],
+            r.lowerOpen,
+            r.upperOpen,
+          ),
+        }
+      if (r.lower !== undefined)
+        return {
+          type: 'range',
+          range: IDBKeyRange.lowerBound([...pre, r.lower], r.lowerOpen),
+        }
+      if (r.upper !== undefined)
+        return {
+          type: 'range',
+          range: IDBKeyRange.upperBound([...pre, r.upper], r.upperOpen),
+        }
+    } catch {
+      return { type: 'keys', keys: [] }
+    }
+  }
+  return { type: 'all' }
+}
+
+function withIndex(prefetch: IdbPrefetch, index: string): IdbPrefetch {
+  if (prefetch.type === 'all') return prefetch
+  if (prefetch.type === 'or')
+    return { type: 'or', parts: prefetch.parts.map((p) => ({ ...p, index })) }
+  return { ...prefetch, index }
+}
+
+function pathLen(keyPath: string | string[]) {
+  return Array.isArray(keyPath) ? keyPath.length : 1
+}
+
+function fieldByDbName(
+  entity: EntityMetadata,
+  names: EntityDbNamesBase,
+  dbName: string,
+) {
+  for (const f of entity.fields) {
+    if (names.$dbNameOf(f) === dbName) return f
+  }
+}
+
+function cartesian(lists: IDBValidKey[][]): IDBValidKey[] {
+  let acc: IDBValidKey[][] = [[]]
+  for (const list of lists) {
+    acc = acc.flatMap((prefix) => list.map((v) => [...prefix, v]))
+  }
+  return acc
 }
 
 class IdbPrefetchCollector implements FilterConsumer {
@@ -478,22 +667,54 @@ class IdbPrefetchCollector implements FilterConsumer {
 }
 
 function mergeOps(ops: IdbFetchOp[]): IdbPrefetch {
-  const keys: IDBValidKey[] = []
-  const ranges: IDBKeyRange[] = []
+  const keyGroups = new Map<string, IDBValidKey[]>()
+  const ranges: IdbFetchOp[] = []
   for (const op of ops) {
-    if (op.type === 'keys') keys.push(...op.keys)
-    else ranges.push(op.range)
+    if (op.type === 'keys') {
+      const k = op.index ?? ''
+      keyGroups.set(k, [...(keyGroups.get(k) ?? []), ...op.keys])
+    } else ranges.push(op)
   }
-  const uniqueKeys = keys.filter(
-    (k, i) => keys.findIndex((x) => idbKeysEqual(x, k)) === i,
-  )
-  if (ranges.length === 0) return { type: 'keys', keys: uniqueKeys }
   const parts: IdbFetchOp[] = [
-    ...(uniqueKeys.length ? [{ type: 'keys' as const, keys: uniqueKeys }] : []),
-    ...ranges.map((range) => ({ type: 'range' as const, range })),
+    ...[...keyGroups.entries()].map(([index, keys]) => ({
+      type: 'keys' as const,
+      keys: keys.filter((k, i) => keys.findIndex((x) => idbKeysEqual(x, k)) === i),
+      ...(index ? { index } : {}),
+    })),
+    ...ranges,
   ]
   if (parts.length === 1) return parts[0]
   return { type: 'or', parts }
+}
+
+async function resolveIndexDefs(
+  entity: EntityMetadata,
+  defs: IndexedDbIndexDef<any>[],
+  storeKeyPath: string | string[],
+): Promise<IdbIndexInfo[]> {
+  if (defs.length === 0) return []
+  const names = await dbNamesOf(entity, (x) => x)
+  const result: IdbIndexInfo[] = []
+  const seen = new Set<string>()
+  const pk = JSON.stringify(storeKeyPath)
+  for (const def of defs) {
+    const keys = Array.isArray(def) ? [...def] : [def]
+    const keyPath = keys.map((key) => {
+      const field = [...entity.fields].find((f) => f.key === key)
+      if (!field)
+        throw new Error(
+          `IndexedDB index field "${key}" not found on entity "${entity.key}"`,
+        )
+      return names.$dbNameOf(field)
+    })
+    const path: string | string[] = keyPath.length === 1 ? keyPath[0] : keyPath
+    if (JSON.stringify(path) === pk) continue
+    const name = keyPath.join('_')
+    if (seen.has(name)) continue
+    seen.add(name)
+    result.push({ name, keyPath: path })
+  }
+  return result
 }
 
 async function keyPathOf(entity: EntityMetadata): Promise<string | string[]> {
