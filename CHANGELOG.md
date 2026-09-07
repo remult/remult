@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 - `LiveQueryChange` has a new `{ type: 'version', from, to }` member. It is consumed internally and not passed to `liveQuery` listeners
 - **Breaking** for custom `LiveQueryStorage` implementations: `keepAliveAndReturnUnknownQueryIds` now returns `{ unknownQueryIds: string[], versions: Record<string, number> }` instead of `string[]`. The keep-alive route still accepts and answers the old array body for older clients
 - `SubscriptionClientConnection` gained optional `lastServerEvent` and `resume(force?)`. Custom subscription clients (e.g. Ably) can ignore them
+- `SubscriptionListener` gained an optional `reconnect()` so `SubscriptionChannel` subscribers can refetch state after a dropped connection
 
 ## [3.3.18] - 2026-08-30
 

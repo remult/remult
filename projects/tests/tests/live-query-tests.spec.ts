@@ -1615,6 +1615,37 @@ describe('live query resilience', () => {
     u()
   })
 
+  it('channel listeners are told about a reconnect', async () => {
+    let onReconnect: () => void = () => {}
+    const lqc = new LiveQueryClient(
+      () => ({
+        subscriptionClient: {
+          async openConnection(reconnect) {
+            onReconnect = reconnect
+            return {
+              close() {},
+              async subscribe() {
+                return () => {}
+              },
+            }
+          },
+        },
+        httpClient: createMockHttpDataProvider(new Remult()),
+      }),
+      () => undefined,
+    )
+    const remult = new Remult(new InMemoryDataProvider())
+    remult.liveQuerySubscriber = lqc
+    let reconnects = 0
+    const unsub = await new SubscriptionChannel('chan').subscribe(
+      { next: () => {}, reconnect: () => reconnects++ },
+      remult,
+    )
+    onReconnect()
+    expect(reconnects).toBe(1)
+    unsub()
+  })
+
   it('keep-alive matching version does not reload', async () => {
     let get = 0
     const lqc = new LiveQueryClient(

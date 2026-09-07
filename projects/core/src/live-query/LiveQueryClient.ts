@@ -342,6 +342,9 @@ export class LiveQueryClient {
             for (const q of this.queries.values()) {
               q.subscribeCode!()
             }
+            for (const c of this.channels.values()) {
+              for (const l of c.listeners) l.reconnect?.()
+            }
           })
           .then((c) => {
             this.openedConnection = c

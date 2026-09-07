@@ -175,6 +175,8 @@ export interface SubscriptionListener<type> {
   next(message: type): void
   error(err: any): void
   complete(): void
+  /** The connection was re-established; messages published meanwhile were lost, refetch state if needed. */
+  reconnect?(): void
 }
 
 export type Unsubscribe = VoidFunction
@@ -318,6 +320,16 @@ export interface ServerEventChannelSubscribeDTO {
  *  // Frontend: in the chart component, we can subscribe to messages
  *  chart.subscribe((message) => {
  *    chartData = message.data;
+ *  });
+ *  ```
+ *
+ *  #### Recovering after a dropped connection
+ *  Messages published while the connection was down are not replayed.
+ *  Use the `reconnect` listener to refetch state:
+ *  ```ts
+ *  chart.subscribe({
+ *    next: (message) => (chartData = message.data),
+ *    reconnect: () => loadChartData(),
  *  });
  *  ```
  *
