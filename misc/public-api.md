@@ -4990,6 +4990,14 @@ export declare function sqlRelationsFilter<entityType>(
     ArrayItemType<NonNullable<entityType[p]>>
   >
 }
+export declare class SseSubscriptionClient implements SubscriptionClient {
+  openConnection(
+    onReconnect: VoidFunction,
+  ): Promise<SubscriptionClientConnection>
+  static createEventSource(url: string): EventSource
+}
+//[ ] SubscriptionClientConnection from TBD is not exported
+//[ ] EventSource from TBD is not exported
 ```
 
 ## ./remult-nuxt.js
