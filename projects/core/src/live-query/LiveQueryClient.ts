@@ -228,7 +228,7 @@ export class LiveQueryClient {
   interval: any
   lastKeepAliveAt = 0
   private keepAliveBackoffMs = flags.liveQueryPollWhenStaleMs
-  private keepAliveInFlight?: Promise<void>
+  private keepAliveInFlight?: Promise<boolean>
   private foregroundKeepAliveTimer: ReturnType<typeof setTimeout> | undefined
   isSseStale() {
     const conn = this.openedConnection
@@ -242,13 +242,14 @@ export class LiveQueryClient {
     })
     return this.keepAliveInFlight
   }
+  /** Resolves true when a query was refetched. */
   private async sendKeepAlive() {
     const ids: string[] = []
     for (const q of this.queries.values()) {
       if (!q.snapshotReady) continue
       ids.push(q.queryChannel)
     }
-    if (ids.length === 0) return
+    if (ids.length === 0) return false
     let p = this.apiProvider()
     const raw: unknown = await this.runPromise(
       remultStatic.actionInfo.runActionWithoutBlockingUI(() =>
@@ -278,13 +279,7 @@ export class LiveQueryClient {
         q.subscribeCode!()
       }
     }
-    if (this.isSseStale()) {
-      this.keepAliveBackoffMs = reloaded
-        ? flags.liveQueryPollWhenStaleMs
-        : Math.min(this.keepAliveBackoffMs * 2, flags.liveQueryKeepAliveMs)
-    } else {
-      this.keepAliveBackoffMs = flags.liveQueryPollWhenStaleMs
-    }
+    return reloaded
   }
   private async maybeKeepAlive() {
     const stale = this.isSseStale()
@@ -295,7 +290,12 @@ export class LiveQueryClient {
     if (Date.now() - this.lastKeepAliveAt < interval) return
     this.lastKeepAliveAt = Date.now()
     if (stale) this.openedConnection?.resume?.(true)
-    await this.runKeepAlive()
+    const reloaded = await this.runKeepAlive()
+    // backoff lives here so channel-only clients (no query ids) back off too
+    if (this.isSseStale())
+      this.keepAliveBackoffMs = reloaded
+        ? flags.liveQueryPollWhenStaleMs
+        : Math.min(this.keepAliveBackoffMs * 2, flags.liveQueryKeepAliveMs)
   }
   private detachForeground = () => {}
   private attachForeground() {
@@ -320,18 +320,22 @@ export class LiveQueryClient {
       this.detachForeground = () => {}
     }
   }
+  private startKeepAlive() {
+    // openConnection may reject and be retried with queries still alive
+    if (this.interval !== undefined) return
+    this.lastKeepAliveAt = Date.now()
+    this.keepAliveBackoffMs = flags.liveQueryPollWhenStaleMs
+    this.attachForeground()
+    this.interval = setInterval(
+      () => {
+        this.runPromise(this.maybeKeepAlive())
+      },
+      Math.min(flags.liveQueryPollWhenStaleMs, flags.liveQueryKeepAliveMs),
+    )
+  }
   private openIfNoOpened() {
     if (!this.client) {
-      this.lastKeepAliveAt = Date.now()
-      this.keepAliveBackoffMs = flags.liveQueryPollWhenStaleMs
-      this.attachForeground()
-      this.interval = setInterval(
-        () => {
-          this.runPromise(this.maybeKeepAlive())
-        },
-        Math.min(flags.liveQueryPollWhenStaleMs, flags.liveQueryKeepAliveMs),
-      )
-
+      this.startKeepAlive()
       return this.runPromise(
         (this.client = this.apiProvider()
           .subscriptionClient!.openConnection(() => {

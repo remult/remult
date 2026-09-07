@@ -1733,9 +1733,12 @@ describe('live query resilience', () => {
     const orig = SseSubscriptionClient.createEventSource
     SseSubscriptionClient.createEventSource = () => {
       const src = {
+        readyState: 1,
         onmessage: undefined as any,
         onerror: undefined as any,
-        close() {},
+        close() {
+          src.readyState = 2
+        },
         addEventListener(_name: string, _fn: any) {},
       }
       sources.push(src)
@@ -1750,6 +1753,11 @@ describe('live query resilience', () => {
         await vi.advanceTimersByTimeAsync(30_000)
       }
       expect(sources.length).toBe(6)
+      // open source: foreground resume leaves it alone
+      conn.resume?.()
+      expect(sources.length).toBe(6)
+      // errored source with a backoff timer pending: resume reconnects now
+      sources[5].onerror?.(new Event('error'))
       conn.resume?.()
       expect(sources.length).toBe(7)
     } finally {
@@ -2052,6 +2060,55 @@ describe('live query resilience gaps', () => {
     }
   })
 
+  it('channel-only client backs off forced reconnects while SSE is stale', async () => {
+    vi.useFakeTimers()
+    const sources = fakeEventSources()
+    const origEs = SseSubscriptionClient.createEventSource
+    SseSubscriptionClient.createEventSource = () => sources.create()
+    let posts = 0
+    const http = {
+      get: async () => [],
+      put: () => undefined!,
+      delete: () => undefined!,
+      post: async () => {
+        posts++
+        return {}
+      },
+    }
+    const prevHttp = remult.apiClient.httpClient
+    const prevUrl = remult.apiClient.url
+    remult.apiClient.httpClient = http
+    remult.apiClient.url = 'http://x/api'
+    try {
+      const lqc = new LiveQueryClient(
+        () => ({
+          subscriptionClient: new SseSubscriptionClient(),
+          httpClient: http,
+          url: 'http://x/api',
+        }),
+        () => undefined,
+      )
+      const r = new Remult(new InMemoryDataProvider())
+      r.liveQuerySubscriber = lqc
+      const unsubP = new SubscriptionChannel('chan').subscribe(() => {}, r)
+      await vi.advanceTimersByTimeAsync(10)
+      sources.all[0].fire('connectionId', 'c1')
+      await vi.advanceTimersByTimeAsync(10)
+      const unsub = await unsubP
+      posts = 0
+      // no server event ever again: must reconnect, but not once per second
+      await vi.advanceTimersByTimeAsync(60_000)
+      expect(sources.all.length).toBeGreaterThan(1)
+      expect(sources.all.length).toBeLessThanOrEqual(5)
+      expect(posts).toBe(0)
+      unsub()
+    } finally {
+      SseSubscriptionClient.createEventSource = origEs
+      remult.apiClient.httpClient = prevHttp
+      remult.apiClient.url = prevUrl
+    }
+  })
+
   it('stale keep-alive polling backs off while versions match', async () => {
     vi.useFakeTimers()
     let posts = 0
@@ -2125,16 +2182,32 @@ describe('live query resilience gaps', () => {
       )
       const r = new Remult(new InMemoryDataProvider())
       r.liveQuerySubscriber = lqc
+      const noop = { next: () => {}, error: () => {}, complete: () => {} }
       for (let i = 0; i < 2; i++) {
-        const u = r.repo(eventTestEntity).liveQuery().subscribe({
-          next: () => {},
-          error: () => {},
-          complete: () => {},
-        })
+        const u = r.repo(eventTestEntity).liveQuery().subscribe(noop)
         await vi.advanceTimersByTimeAsync(10)
         u()
         await vi.advanceTimersByTimeAsync(10)
       }
+      expect(lqc.hasQueriesForTesting()).toBe(false)
+      expect(vi.getTimerCount()).toBe(0)
+      expect(listeners).toBe(0)
+
+      // second open attempt while a query is still alive must not stack timers
+      const u1 = r.repo(eventTestEntity).liveQuery().subscribe(noop)
+      await vi.advanceTimersByTimeAsync(10)
+      const timersAfterFirst = vi.getTimerCount()
+      const listenersAfterFirst = listeners
+      const u2 = r
+        .repo(eventTestEntity)
+        .liveQuery({ where: { id: 1 } })
+        .subscribe(noop)
+      await vi.advanceTimersByTimeAsync(10)
+      expect(vi.getTimerCount()).toBe(timersAfterFirst)
+      expect(listeners).toBe(listenersAfterFirst)
+      u1()
+      u2()
+      await vi.advanceTimersByTimeAsync(10)
       expect(lqc.hasQueriesForTesting()).toBe(false)
       expect(vi.getTimerCount()).toBe(0)
       expect(listeners).toBe(0)

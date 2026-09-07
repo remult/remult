@@ -1,6 +1,7 @@
 import { buildRestDataProvider } from '../buildRestDataProvider.js'
 import { remult } from '../remult-proxy.js'
 import { remultStatic } from '../remult-static.js'
+import { flags } from '../remult3/remult3.js'
 import type {
   ServerEventChannelSubscribeDTO,
   SubscriptionClient,
@@ -19,6 +20,7 @@ export class SseSubscriptionClient implements SubscriptionClient {
     let closed = false
     let connected = false
     let reconnectTimer: ReturnType<typeof setTimeout> | undefined
+    let lastConnectAt = 0
     let connectionReady!: () => void
     let connectionPromise = new Promise<void>((res) => {
       connectionReady = res
@@ -44,16 +46,15 @@ export class SseSubscriptionClient implements SubscriptionClient {
 
     function resume(force?: boolean) {
       if (closed) return
-      retryCount = 0
-      clearReconnectTimer()
+      const open = source && source.readyState !== EVENT_SOURCE_CLOSED
       if (force) {
+        // a source still inside its handshake window is not a zombie yet
+        if (open && Date.now() - lastConnectAt < flags.sseStaleMs) return
         createConnection()
         return
       }
-      const open =
-        source &&
-        typeof EventSource !== 'undefined' &&
-        source.readyState !== EventSource.CLOSED
+      retryCount = 0
+      clearReconnectTimer()
       if (!open) createConnection()
     }
 
@@ -100,6 +101,7 @@ export class SseSubscriptionClient implements SubscriptionClient {
       if (closed) return
       clearReconnectTimer()
       if (source) source.close()
+      lastConnectAt = Date.now()
       source = SseSubscriptionClient.createEventSource(
         remult.apiClient.url + '/' + streamUrl,
       )
@@ -171,3 +173,5 @@ export class SseSubscriptionClient implements SubscriptionClient {
 }
 
 export const ConnectionNotFoundError = 'client connection not found'
+// EventSource.CLOSED; the global is absent in Node
+const EVENT_SOURCE_CLOSED = 2
