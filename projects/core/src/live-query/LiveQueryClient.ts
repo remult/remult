@@ -131,6 +131,7 @@ export class LiveQueryClient {
               )),
             )
             q.subscribeCode = () => {
+              q.snapshotReady = false
               q.unsubscribeChannel()
 
               let unsubscribeToChannel: Unsubscribe = () => {}
@@ -241,6 +242,7 @@ export class LiveQueryClient {
   private async sendKeepAlive(opts?: { checkVersions?: boolean }) {
     const ids: string[] = []
     for (const q of this.queries.values()) {
+      if (!q.snapshotReady) continue
       ids.push(q.queryChannel)
     }
     if (ids.length === 0) return

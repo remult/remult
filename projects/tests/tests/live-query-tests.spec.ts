@@ -2082,3 +2082,164 @@ describe('live query resilience gaps', () => {
     }
   })
 })
+
+describe('live query attach-time keep-alive', () => {
+  it('does not refetch a sibling query whose first snapshot is still in flight', async () => {
+    actionInfo.runningOnServer = false
+    const registered = new Set<string>()
+    let gets = 0
+    let keepAlives = 0
+    const lqc = new LiveQueryClient(
+      () => ({
+        subscriptionClient: {
+          async openConnection() {
+            return {
+              close() {},
+              async subscribe() {
+                await new Promise((r) => setTimeout(r, 30))
+                return () => {}
+              },
+            }
+          },
+        },
+        httpClient: {
+          get: async (url: string) => {
+            gets++
+            const id = decodeURIComponent(url.split('liveQuery-')[1] ?? '')
+            await new Promise((r) => setTimeout(r, url.includes('title') ? 80 : 10))
+            registered.add(id)
+            return [{ id: 1, title: 'noam' }]
+          },
+          put: () => undefined!,
+          delete: () => undefined!,
+          post: async (url: string, body: any) => {
+            if (!String(url).includes('_liveQueryKeepAlive')) return {}
+            keepAlives++
+            const ids: string[] = body.queryIds
+            const versions: Record<string, number> = {}
+            for (const id of ids) if (registered.has(id)) versions[id] = 0
+            return {
+              unknownQueryIds: ids.filter((id) => !registered.has(id)),
+              versions,
+            }
+          },
+        },
+      }),
+      () => undefined,
+    )
+    const r = new Remult(new InMemoryDataProvider())
+    r.liveQuerySubscriber = lqc
+    const u1 = r.repo(eventTestEntity).liveQuery().subscribe(() => {})
+    const u2 = r
+      .repo(eventTestEntity)
+      .liveQuery({ where: { title: 'b' } })
+      .subscribe(() => {})
+    await new Promise((r) => setTimeout(r, 300))
+    expect(keepAlives).toBeGreaterThan(0)
+    expect(gets).toBe(2)
+    u1()
+    u2()
+  })
+
+  it('keep-alive unknown of a registered query refetches', async () => {
+    actionInfo.runningOnServer = false
+    let gets = 0
+    const lqc = new LiveQueryClient(
+      () => ({
+        subscriptionClient: {
+          async openConnection() {
+            return {
+              close() {},
+              async subscribe() {
+                return () => {}
+              },
+            }
+          },
+        },
+        httpClient: {
+          get: async () => {
+            gets++
+            return [{ id: 1, title: 'noam' }]
+          },
+          put: () => undefined!,
+          delete: () => undefined!,
+          post: async (url: string, body: any) => {
+            if (!String(url).includes('_liveQueryKeepAlive')) return {}
+            return {
+              unknownQueryIds: body.queryIds,
+              versions: {},
+            }
+          },
+        },
+      }),
+      () => undefined,
+    )
+    const p = new PromiseResolver(lqc)
+    const r = new Remult(new InMemoryDataProvider())
+    r.liveQuerySubscriber = lqc
+    const u = r.repo(eventTestEntity).liveQuery().subscribe(() => {})
+    await p.flush()
+    expect(gets).toBe(1)
+    await lqc.runKeepAlive()
+    await p.flush()
+    expect(gets).toBe(2)
+    u()
+  })
+})
+
+describe('live query keep-alive during refetch', () => {
+  it('skips a query whose refetch snapshot is still in flight', async () => {
+    actionInfo.runningOnServer = false
+    let gets = 0
+    let releaseGet: () => void = () => {}
+    let posted: string[][] = []
+    let onReconnect: () => void = () => {}
+    const lqc = new LiveQueryClient(
+      () => ({
+        subscriptionClient: {
+          async openConnection(r) {
+            onReconnect = r
+            return {
+              close() {},
+              async subscribe() {
+                return () => {}
+              },
+            }
+          },
+        },
+        httpClient: {
+          get: async () => {
+            gets++
+            if (gets > 1) await new Promise<void>((r) => (releaseGet = r))
+            return [{ id: 1, title: 'noam' }]
+          },
+          put: () => undefined!,
+          delete: () => undefined!,
+          post: async (url: string, body: any) => {
+            if (!String(url).includes('_liveQueryKeepAlive')) return {}
+            posted.push(body.queryIds)
+            const versions: Record<string, number> = {}
+            for (const id of body.queryIds) versions[id] = 7
+            return { unknownQueryIds: [], versions }
+          },
+        },
+      }),
+      () => undefined,
+    )
+    const r = new Remult(new InMemoryDataProvider())
+    r.liveQuerySubscriber = lqc
+    const u = r.repo(eventTestEntity).liveQuery().subscribe(() => {})
+    await vi.waitFor(() => expect(gets).toBe(1))
+    onReconnect()
+    await vi.waitFor(() => expect(gets).toBe(2))
+    await lqc.runKeepAlive({ checkVersions: true })
+    expect(posted).toEqual([])
+    releaseGet()
+    await new Promise((r) => setTimeout(r, 20))
+    await lqc.runKeepAlive({ checkVersions: true })
+    expect(posted.length).toBe(1)
+    await new Promise((r) => setTimeout(r, 20))
+    expect(gets).toBe(3)
+    u()
+  })
+})

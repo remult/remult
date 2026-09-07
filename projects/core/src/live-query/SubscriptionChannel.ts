@@ -24,6 +24,7 @@ export class LiveQuerySubscriber<entityType> {
   unsubscribe: VoidFunction = () => {}
   unsubscribeChannel: VoidFunction = () => {}
   unsubscribeQuery: VoidFunction = () => {}
+  snapshotReady = false
   async setAllItems(result: any[]) {
     const items = await getRepositoryInternals(this.repo)._fromJsonArray(
       result,
@@ -35,6 +36,7 @@ export class LiveQuerySubscriber<entityType> {
       })
     }, this.allItemsMessage(items))
     this.version = 0
+    this.snapshotReady = true
   }
 
   private allItemsMessage(items: entityType[]): LiveQueryChange[] {
