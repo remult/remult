@@ -37,8 +37,27 @@ export class IndexedDbIndexBuilder {
 }
 
 export type IndexedDbDataProviderOptions = {
+  /** IDB-only indexes (not unique). PK is skipped. Compound names join db names with `_`. */
   indexes?: (x: IndexedDbIndexBuilder) => void
+  /**
+   * AES-GCM 256 on non-indexed fields (`_enc` + `_iv`). Requires `crypto.subtle`.
+   *
+   * Not full security. Stops casual disk/profile dump and other origins
+   * (non-extractable `CryptoKey` wrapped by the browser). Does **not** protect
+   * against same-origin XSS / any JS that can use the stored `CryptoKey` to decrypt.
+   *
+   * PK + `ensureIndexes` fields stay plaintext (required for IDB keyPath/indexes).
+   * Only non-indexed fields go into `_enc`.
+   *
+   * Default auto-key is origin-bound theater vs XSS. Pass `getEncryptionKey` for
+   * a stronger secret you control.
+   */
   encrypt?: boolean
+  /**
+   * Your AES-GCM `CryptoKey` (or Promise). Skips `__remult_keys`. Stronger than
+   * the default origin-bound auto-key — still not XSS-safe if same-origin JS can
+   * call this and decrypt.
+   */
   getEncryptionKey?: () => CryptoKey | Promise<CryptoKey>
 }
 
