@@ -1946,7 +1946,10 @@ export declare class IndexedDbDataProvider implements DataProvider {
 }
 export type IndexedDbDataProviderOptions = {
   indexes?: (x: IndexedDbIndexBuilder) => void
+  encrypt?: boolean
+  getEncryptionKey?: () => CryptoKey | Promise<CryptoKey>
 }
+//[ ] CryptoKey from TBD is not exported
 export declare class IndexedDbIndexBuilder {
   ensureIndexes<entityType>(
     entity: ClassType<entityType>,
