@@ -132,6 +132,7 @@ export class LiveQueryClient {
             )
             q.subscribeCode = () => {
               q.snapshotReady = false
+              q.droppedWhilePending = false
               q.unsubscribeChannel()
 
               let unsubscribeToChannel: Unsubscribe = () => {}
@@ -158,7 +159,11 @@ export class LiveQueryClient {
                   this.runPromise(r.unsubscribe())
                 }
                 snapshotDone = true
-                return this.runPromise(q.setAllItems(r.result))
+                return this.runPromise(
+                  q.setAllItems(r.result).then(() => {
+                    if (q.droppedWhilePending) return this.runKeepAlive()
+                  }),
+                )
               }
 
               this.runPromise(
@@ -176,9 +181,7 @@ export class LiveQueryClient {
                     }
                     unsubscribeToChannel = unsub
                     if (snapshotDone)
-                      return this.runPromise(
-                        this.runKeepAlive({ checkVersions: true }),
-                      )
+                      return this.runPromise(this.runKeepAlive())
                   })
                   .catch((err) => {
                     q.listeners.forEach((l) => l.error(err))
@@ -232,14 +235,14 @@ export class LiveQueryClient {
     if (!conn || conn.lastServerEvent === undefined) return false
     return Date.now() - conn.lastServerEvent > flags.sseStaleMs
   }
-  async runKeepAlive(opts?: { checkVersions?: boolean }) {
+  async runKeepAlive() {
     if (this.keepAliveInFlight) return this.keepAliveInFlight
-    this.keepAliveInFlight = this.sendKeepAlive(opts).finally(() => {
+    this.keepAliveInFlight = this.sendKeepAlive().finally(() => {
       this.keepAliveInFlight = undefined
     })
     return this.keepAliveInFlight
   }
-  private async sendKeepAlive(opts?: { checkVersions?: boolean }) {
+  private async sendKeepAlive() {
     const ids: string[] = []
     for (const q of this.queries.values()) {
       if (!q.snapshotReady) continue
@@ -261,13 +264,14 @@ export class LiveQueryClient {
     const versions: Record<string, number> = Array.isArray(raw)
       ? {}
       : ((raw as { versions?: Record<string, number> })?.versions ?? {})
-    const stale = opts?.checkVersions || this.isSseStale()
     let reloaded = false
     for (const q of this.queries.values()) {
       const serverVersion = versions[q.queryChannel]
       const unknown = unknownIds.includes(q.queryChannel)
+      // server returns versions on every keep-alive, so a missed message is
+      // caught even while SSE pings look healthy
       const mismatch =
-        stale && serverVersion !== undefined && serverVersion !== q.version
+        serverVersion !== undefined && serverVersion !== q.version
       if (unknown || mismatch) {
         reloaded = true
         if (serverVersion !== undefined) q.version = serverVersion
@@ -277,10 +281,7 @@ export class LiveQueryClient {
     if (this.isSseStale()) {
       this.keepAliveBackoffMs = reloaded
         ? flags.liveQueryPollWhenStaleMs
-        : Math.min(
-            this.keepAliveBackoffMs * 2,
-            flags.liveQueryKeepAliveMs,
-          )
+        : Math.min(this.keepAliveBackoffMs * 2, flags.liveQueryKeepAliveMs)
     } else {
       this.keepAliveBackoffMs = flags.liveQueryPollWhenStaleMs
     }
@@ -307,7 +308,7 @@ export class LiveQueryClient {
         this.foregroundKeepAliveTimer = undefined
         this.keepAliveBackoffMs = flags.liveQueryPollWhenStaleMs
         this.lastKeepAliveAt = 0
-        this.runPromise(this.runKeepAlive({ checkVersions: true }))
+        this.runPromise(this.runKeepAlive())
       }, 300)
     })
     this.detachForeground = () => {
@@ -324,9 +325,12 @@ export class LiveQueryClient {
       this.lastKeepAliveAt = Date.now()
       this.keepAliveBackoffMs = flags.liveQueryPollWhenStaleMs
       this.attachForeground()
-      this.interval = setInterval(() => {
-        this.runPromise(this.maybeKeepAlive())
-      }, Math.min(flags.liveQueryPollWhenStaleMs, flags.liveQueryKeepAliveMs))
+      this.interval = setInterval(
+        () => {
+          this.runPromise(this.maybeKeepAlive())
+        },
+        Math.min(flags.liveQueryPollWhenStaleMs, flags.liveQueryKeepAliveMs),
+      )
 
       return this.runPromise(
         (this.client = this.apiProvider()

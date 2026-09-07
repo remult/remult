@@ -25,7 +25,11 @@ export class LiveQuerySubscriber<entityType> {
   unsubscribeChannel: VoidFunction = () => {}
   unsubscribeQuery: VoidFunction = () => {}
   snapshotReady = false
+  droppedWhilePending = false
   async setAllItems(result: any[]) {
+    // server re-registers the query at version 0; reset before the await so a
+    // version message landing mid-parse is judged against the new baseline
+    this.version = 0
     const items = await getRepositoryInternals(this.repo)._fromJsonArray(
       result,
       this.query.options,
@@ -35,7 +39,6 @@ export class LiveQuerySubscriber<entityType> {
         return items
       })
     }, this.allItemsMessage(items))
-    this.version = 0
     this.snapshotReady = true
   }
 
@@ -86,17 +89,22 @@ export class LiveQuerySubscriber<entityType> {
   }
 
   async handle(messages: LiveQueryChange[]) {
+    // the pending snapshot supersedes anything in flight; the keep-alive
+    // after it lands catches whatever was dropped here
+    if (!this.snapshotReady) {
+      this.droppedWhilePending = true
+      return
+    }
     const ver = messages.find(
       (m): m is Extract<LiveQueryChange, { type: 'version' }> =>
         m.type === 'version',
     )
-    if (ver) {
-      if (ver.from < this.version) return
-      if (ver.from > this.version) {
-        this.version = ver.to
-        this.subscribeCode?.()
-        return
-      }
+    // any gap, forward or backward, means a message was missed or two servers
+    // published the same version with different diffs: refetch instead of drop
+    if (ver && ver.from !== this.version) {
+      this.version = ver.to
+      this.subscribeCode?.()
+      return
     }
     const data = messages.filter((m) => m.type !== 'version')
     {

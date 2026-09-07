@@ -1330,7 +1330,8 @@ describe('live query resilience', () => {
     await p.flush()
     expect(get).toBe(1)
     expect(items[0].title).toBe('noam')
-    lqc.openedConnection!.lastServerEvent = 0
+    // SSE looks healthy (recent server event) yet the server is ahead
+    lqc.openedConnection!.lastServerEvent = Date.now()
     await lqc.runKeepAlive()
     await p.flush()
     expect(get).toBe(2)
@@ -1447,7 +1448,7 @@ describe('live query resilience', () => {
     u()
   })
 
-  it('stale SSE version is ignored', async () => {
+  it('duplicate SSE version with different diff refetches', async () => {
     let get = 0
     let send: (x: any) => void = () => {}
     const lqc = new LiveQueryClient(
@@ -1466,7 +1467,7 @@ describe('live query resilience', () => {
         httpClient: {
           get: async () => {
             get++
-            return [{ id: 1, title: 'noam' }]
+            return [{ id: 1, title: get === 1 ? 'noam' : 'refetched' }]
           },
           put: () => undefined!,
           post: async () => {},
@@ -1500,8 +1501,10 @@ describe('live query resilience', () => {
       { type: 'version', from: 0, to: 1 },
     ])
     await p.flush()
-    expect(get).toBe(1)
-    expect(items[0].title).toBe('v1')
+    // same version twice with different diffs (two servers publishing):
+    // the second diff is not applied, the snapshot is refetched instead
+    expect(get).toBe(2)
+    expect(items[0].title).toBe('refetched')
     u()
   })
 
@@ -1549,6 +1552,65 @@ describe('live query resilience', () => {
     u()
   })
 
+
+  it('message during a pending snapshot is held, then versions are checked', async () => {
+    const gets: ((x: any) => void)[] = []
+    let keepAlives = 0
+    let send: (x: any) => void = () => {}
+    const lqc = new LiveQueryClient(
+      () => ({
+        subscriptionClient: {
+          async openConnection() {
+            return {
+              close() {},
+              async subscribe(_channel: string, onMessage: (x: any) => void) {
+                send = onMessage
+                return () => {}
+              },
+            }
+          },
+        },
+        httpClient: {
+          get: () => new Promise((res) => gets.push(res)),
+          put: () => undefined!,
+          post: async (url: string, body: any) => {
+            if (String(url).includes('_liveQueryKeepAlive')) {
+              keepAlives++
+              return { unknownQueryIds: [], versions: { [body.queryIds[0]]: 0 } }
+            }
+          },
+          delete: () => undefined!,
+        },
+      }),
+      () => undefined,
+    )
+    const tick = () => new Promise((r) => setTimeout(r, 5))
+    const remult = new Remult(new InMemoryDataProvider())
+    remult.liveQuerySubscriber = lqc
+    let items: eventTestEntity[] = []
+    const u = remult
+      .repo(eventTestEntity)
+      .liveQuery()
+      .subscribe(({ applyChanges }) => (items = applyChanges(items)))
+    await tick()
+    gets[0]([{ id: 1, title: 'first' }])
+    await tick()
+    send([{ type: 'version', from: 5, to: 6 }])
+    await tick()
+    expect(gets.length).toBe(2)
+    // arrives while the refetch is in flight: not applied, no second refetch
+    send([
+      { type: 'add', data: { item: { id: 9, title: 'held' } } },
+      { type: 'version', from: 0, to: 1 },
+    ])
+    await tick()
+    expect(gets.length).toBe(2)
+    gets[1]([{ id: 1, title: 'newest' }])
+    await tick()
+    expect(items.map((x) => x.title)).toEqual(['newest'])
+    expect(keepAlives).toBe(1)
+    u()
+  })
 
   it('keep-alive matching version does not reload', async () => {
     let get = 0
