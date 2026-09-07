@@ -48,10 +48,13 @@ describe('test rest many operations', () => {
   })
   it('Insert many works', async () => {
     await expect(() =>
-      r.insert([
-        { id: 1, name: 'a' },
-        { id: 2, name: '' },
-      ]),
+      r.insert(
+        [
+          { id: 1, name: 'a' },
+          { id: 2, name: '' },
+        ],
+        { bulk: true },
+      ),
     ).rejects.toMatchObject({
       message: 'Name: Should not be empty',
       modelState: {

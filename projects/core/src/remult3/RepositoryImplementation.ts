@@ -542,6 +542,12 @@ export class RepositoryImplementation<entityType>
     options?: InsertOrUpdateOptions,
   ): Promise<entityType | entityType[]> {
     if (Array.isArray(entity)) {
+      if (!options?.bulk) {
+        const r = []
+        for (const item of entity) r.push(await this.insert(item, options))
+        if (options?.select === 'none') return undefined!
+        return r
+      }
       let refs: rowHelperImplementation<entityType>[] = []
       let raw: any[] = []
       for (const item of entity) {

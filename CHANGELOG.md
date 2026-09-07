@@ -1,5 +1,22 @@
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Breaking
+
+- `EntityDataProvider.insert` is now `insert(data: any[], options?): Promise<any[]>` (not one object). `insertMany` removed from `ProxyEntityDataProvider`.
+- `EntityDataProvider.delete` is now `delete(ids: any[]): Promise<void>`. REST: 1 id → DELETE, N → existing deleteMany.
+
+### Added
+
+- Native `IndexedDbDataProvider`: PK + declared indexes, filter prefetch, batch insert/delete in one IDB txn, optional `encrypt: true` (AES-GCM, non-extractable key in `__remult_keys`, PK+index fields plaintext, rest `_enc`+`_iv`). Docs: installation/database/indexeddb.
+- `insert([a, b], { bulk: true })` — one `EntityDataProvider.insert` after all `saving` hooks. Use for SQL multi-row `INSERT` / one IDB txn. `Validators.unique` / `count()` only see the DB, not siblings in the same array.
+
+### Changed
+
+- `repo.insert([a, b, c])` is sequential by default again (`this.insert(item)` per row). `saving` and `Validators.unique` see prior rows in the same call. Not a hook/unique break.
+- SQL/knex multi-row `INSERT ... VALUES (...),(...)` batched under bind-variable limits (default 2000, sqlite 999, D1 100). Pass `{ bulk: true }` to use it from `repo.insert`.
+
 ## [3.3.18] - 2026-08-30
 
 - Fixed `ArrayEntityDataProvider` storing omitted/`undefined` nullable fields as `undefined` instead of `null`, so filters like `{ date: null }` missed rows inserted without a value

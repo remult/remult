@@ -758,11 +758,14 @@ export interface Repository<entityType> {
     options?: InsertOrUpdateOptions,
   ): Promise<entityType>
 
-  /**Insert an item or item[] to the data source
+  /**Insert an item or item[] to the data source.
+   * Arrays insert one-by-one by default. Pass `{ bulk: true }` for one provider statement/txn.
    * @example
    * await taskRepo.insert({title:"task a"})
    * @example
    * await taskRepo.insert([{title:"task a"}, {title:"task b", completed:true }])
+   * @example
+   * await taskRepo.insert([{title:"a"}, {title:"b"}], { bulk: true })
    */
   insert(
     item: Partial<MembersOnly<entityType>>[],
@@ -1515,7 +1518,19 @@ export declare type EntityIdFields<entityType> = {
 export declare type EntitySelectFields<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?: boolean
 }
-export declare type InsertOrUpdateOptions = { select: 'none' }
+export declare type InsertOrUpdateOptions = {
+  select?: 'none'
+  /**
+   * One provider statement/txn (SQL multi-row `INSERT`, IDB one txn).
+   *
+   * Default / omitted (`false`): `insert([a,b,c])` inserts one-by-one so
+   * `saving` and `Validators.unique` see prior rows in the same call.
+   *
+   * When `true`: all `saving` hooks run before any write; `Validators.unique`
+   * / `count()` only see the DB, not siblings in the same array.
+   */
+  bulk?: boolean
+}
 
 export interface ClassFieldDecoratorContextStub<entityType, valueType> {
   readonly access: {

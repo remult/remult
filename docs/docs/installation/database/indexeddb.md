@@ -81,13 +81,16 @@ await tasks.find({ where: { status: 'open', title: 'hi' } })
 
 ## Batch insert / delete
 
-`repo.insert([a, b])` and `deleteMany` (`delete(ids)` under the hood) each run in **one IndexedDB transaction**.
+`repo.insert([a, b], { bulk: true })` and `deleteMany` (`delete(ids)` under the hood) each run in **one IndexedDB transaction**. Default `insert([])` is sequential (one write per row).
 
 ```ts
-await tasks.insert([
-  { title: 'a', status: 'open' },
-  { title: 'b', status: 'done' },
-])
+await tasks.insert(
+  [
+    { title: 'a', status: 'open' },
+    { title: 'b', status: 'done' },
+  ],
+  { bulk: true },
+)
 await tasks.deleteMany({ where: { status: 'done' } })
 ```
 
