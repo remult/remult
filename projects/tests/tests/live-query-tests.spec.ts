@@ -2352,6 +2352,52 @@ describe('live query resilience gaps', () => {
     u()
   })
 
+  it('keep-alive backs off while the server is unreachable', async () => {
+    vi.useFakeTimers()
+    let posts = 0
+    const lqc = new LiveQueryClient(
+      () => ({
+        subscriptionClient: {
+          async openConnection() {
+            return {
+              lastServerEvent: Date.now(),
+              close() {},
+              async subscribe() {
+                return () => {}
+              },
+            }
+          },
+        },
+        httpClient: {
+          get: async () => [{ id: 1, title: 'noam' }],
+          put: () => undefined!,
+          delete: () => undefined!,
+          post: async (url: string) => {
+            if (String(url).includes('_liveQueryKeepAlive')) {
+              posts++
+              throw new Error('ECONNREFUSED')
+            }
+            return {}
+          },
+        },
+      }),
+      () => undefined,
+    )
+    const r = new Remult(new InMemoryDataProvider())
+    r.liveQuerySubscriber = lqc
+    const u = r.repo(eventTestEntity).liveQuery().subscribe({
+      next: () => {},
+      error: () => {},
+      complete: () => {},
+    })
+    await vi.advanceTimersByTimeAsync(10)
+    lqc.openedConnection!.lastServerEvent = 0
+    posts = 0
+    await vi.advanceTimersByTimeAsync(60_000)
+    expect(posts).toBeLessThanOrEqual(8)
+    u()
+  })
+
   it('failed openConnection does not leak the keep-alive interval or foreground listeners', async () => {
     vi.useFakeTimers()
     const g = globalThis as any

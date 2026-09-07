@@ -294,12 +294,17 @@ export class LiveQueryClient {
     if (Date.now() - this.lastKeepAliveAt < interval) return
     this.lastKeepAliveAt = Date.now()
     if (stale) this.openedConnection?.resume?.(true)
-    const reloaded = await this.runKeepAlive()
-    // backoff lives here so channel-only clients (no query ids) back off too
-    if (this.isSseStale())
-      this.keepAliveBackoffMs = reloaded
-        ? flags.liveQueryPollWhenStaleMs
-        : Math.min(this.keepAliveBackoffMs * 2, flags.liveQueryKeepAliveMs)
+    let reloaded = false
+    try {
+      reloaded = await this.runKeepAlive()
+    } finally {
+      // runs on a failed post too, so an unreachable server is not polled
+      // every second; channel-only clients (no query ids) back off as well
+      if (this.isSseStale())
+        this.keepAliveBackoffMs = reloaded
+          ? flags.liveQueryPollWhenStaleMs
+          : Math.min(this.keepAliveBackoffMs * 2, flags.liveQueryKeepAliveMs)
+    }
   }
   private detachForeground = () => {}
   private attachForeground() {
