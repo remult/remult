@@ -337,7 +337,8 @@ export class LiveQueryClient {
     this.attachForeground()
     this.interval = setInterval(
       () => {
-        this.runPromise(this.maybeKeepAlive())
+        // a failed post is transient: the backoff covers it, next tick retries
+        this.runPromise(this.maybeKeepAlive().catch(() => {}))
       },
       Math.min(flags.liveQueryPollWhenStaleMs, flags.liveQueryKeepAliveMs),
     )
