@@ -1630,17 +1630,22 @@ describe('live query resilience', () => {
             }
           },
         },
-        httpClient: createMockHttpDataProvider(new Remult()),
+        httpClient: {
+          get: async () => [],
+          put: () => undefined!,
+          post: async () => ({}),
+          delete: () => undefined!,
+        },
       }),
       () => undefined,
     )
-    const remult = new Remult(new InMemoryDataProvider())
-    remult.liveQuerySubscriber = lqc
     let reconnects = 0
-    const unsub = await new SubscriptionChannel('chan').subscribe(
-      { next: () => {}, reconnect: () => reconnects++ },
-      remult,
-    )
+    const unsub = await lqc.subscribeChannel('chan', {
+      next: () => {},
+      error: () => {},
+      complete: () => {},
+      reconnect: () => reconnects++,
+    })
     onReconnect()
     expect(reconnects).toBe(1)
     unsub()
@@ -2566,11 +2571,11 @@ describe('live query keep-alive during refetch', () => {
     await vi.waitFor(() => expect(gets).toBe(1))
     onReconnect()
     await vi.waitFor(() => expect(gets).toBe(2))
-    await lqc.runKeepAlive({ checkVersions: true })
+    await lqc.runKeepAlive()
     expect(posted).toEqual([])
     releaseGet()
     await new Promise((r) => setTimeout(r, 20))
-    await lqc.runKeepAlive({ checkVersions: true })
+    await lqc.runKeepAlive()
     expect(posted.length).toBe(1)
     await new Promise((r) => setTimeout(r, 20))
     expect(gets).toBe(3)
