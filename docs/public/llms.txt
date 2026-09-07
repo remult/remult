@@ -14,7 +14,7 @@
 - **Custom filters** - `Filter.createCustom` / `SqlDatabase.filterToRaw` to express complex queries that round-trip to the server safely.
 - **Validators** - built-ins under `Validators.*` (`required`, `min`, `max`, `email`, `url`, `unique`, `regex`, `enum`, ...) or `validate: (entity) => string | undefined` for custom logic.
 - **Admin UI** - turnkey `/api/admin` panel via `admin: true` (or `admin: { allow: 'admin' }`) in `remultApi()`.
-- **Stacks** - frameworks: React, Angular, Vue, SvelteKit, Next.js, SolidStart, Nuxt. Servers: Express, Fastify, Hono, Elysia, Hapi, Koa, NestJS. Databases: PostgreSQL, MySQL, MongoDB, SQLite (better/sqljs/bun), MSSQL, Turso, DuckDB, Oracle, Cloudflare D1, JSON files.
+- **Stacks** - frameworks: React, Angular, Vue, SvelteKit, Next.js, SolidStart, Nuxt. Servers: Express, Fastify, Hono, Elysia, Hapi, Koa, NestJS. Databases: PostgreSQL, MySQL, MongoDB, SQLite (better/sqljs/bun), MSSQL, Turso, DuckDB, Oracle, Cloudflare D1, JSON files, IndexedDB.
 
 ## Documentation
 
@@ -32,7 +32,7 @@
 - [Lifecycle Hooks](https://remult.dev/docs/lifecycle-hooks): Entity hooks - validation, saving, saved, deleting, deleted - for custom logic at persistence boundaries.
 - [Migrations](https://remult.dev/docs/migrations): Automatic ensureSchema sync vs. explicit migration files generated and applied via the migrations CLI.
 - [Generate from Existing DB](https://remult.dev/docs/entities-codegen-from-db-schema): Generate entity classes from an existing database schema using remult-kit.
-- [Offline Support](https://remult.dev/docs/offline-support): Browser-side dataProviders - JsonDataProvider over localStorage, sessionStorage, IndexedDB, or OPFS.
+- [Offline Support](https://remult.dev/docs/offline-support): Browser-side dataProviders - IndexedDbDataProvider, or JsonDataProvider over localStorage, sessionStorage, IndexedDB blobs, or OPFS.
 - [Active Record & EntityBase](https://remult.dev/docs/active-record): Active Record pattern via EntityBase/IdEntity - mutable instances with save/delete methods bound to rows.
 - [Entity Backend Methods](https://remult.dev/docs/entity-backend-methods): @BackendMethod on entity instances - round-trips the full (possibly unsaved) entity state to the server.
 - [Mutable Controllers](https://remult.dev/docs/mutable-controllers): @Controller classes with stateful fields that round-trip between client and server on BackendMethod calls.
@@ -66,6 +66,7 @@
 - [Oracle](https://remult.dev/docs/installation/database/oracle): Oracle via createKnexDataProvider with the oracledb client on the dataProvider option.
 - [D1](https://remult.dev/docs/installation/database/d1): Cloudflare D1 via createD1DataProvider from remult/remult-d1 on the dataProvider option.
 - [Json files](https://remult.dev/docs/installation/database/json): JSON file storage via JsonDataProvider + JsonEntityFileStorage on the dataProvider option.
+- [IndexedDB](https://remult.dev/docs/installation/database/indexeddb): Browser IndexedDbDataProvider from remult - native object stores, typed indexes, filter prefetch, batch insert/delete, optional AES-GCM encryption.
 
 ### Server-side Code
 - [Backend Methods](https://remult.dev/docs/backendMethods): @BackendMethod - typed RPC calls that auto-expose REST endpoints and run server-only logic.

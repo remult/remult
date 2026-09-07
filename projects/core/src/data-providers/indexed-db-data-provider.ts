@@ -38,16 +38,36 @@ export class IndexedDbIndexBuilder {
 
 export type IndexedDbDataProviderOptions = {
   indexes?: (x: IndexedDbIndexBuilder) => void
+  encrypt?: boolean
+  getEncryptionKey?: () => CryptoKey | Promise<CryptoKey>
 }
+
+const IDB_KEYS_STORE = '__remult_keys'
+const IDB_DEK_ID = 'dek'
+const IDB_ENC = '_enc'
+const IDB_IV = '_iv'
 
 export class IndexedDbDataProvider implements DataProvider {
   //@internal
   private declaredIndexes: IndexedDbIndexBuilder['entries'] = []
+  //@internal
+  encrypt: boolean
+  //@internal
+  private customGetKey?: () => CryptoKey | Promise<CryptoKey>
+  //@internal
+  private dek?: CryptoKey
 
   constructor(
     private dbName: string = 'remult',
     options?: IndexedDbDataProviderOptions,
   ) {
+    this.encrypt = options?.encrypt === true
+    this.customGetKey = options?.getEncryptionKey
+    if (this.encrypt && !(typeof crypto !== 'undefined' && crypto.subtle)) {
+      throw new Error(
+        'Web Crypto API is required when IndexedDB encryption is enabled',
+      )
+    }
     if (options?.indexes) {
       const builder = new IndexedDbIndexBuilder()
       options.indexes(builder)
@@ -121,9 +141,20 @@ export class IndexedDbDataProvider implements DataProvider {
       this.storeIndexes(storeName),
     )
     this.lastFetch = prefetch
-    if (prefetch.type === 'all') return this.getAll(storeName)
-    const ops = prefetch.type === 'or' ? prefetch.parts : [prefetch]
-    return this.fetchOps(storeName, entity, ops)
+    const rows =
+      prefetch.type === 'all'
+        ? await this.getAll(storeName)
+        : await this.fetchOps(
+            storeName,
+            entity,
+            prefetch.type === 'or' ? prefetch.parts : [prefetch],
+          )
+    if (!this.encrypt) return rows
+    const dek = await this.loadDek()
+    const names = await dbNamesOf(entity, (x) => x)
+    return Promise.all(
+      rows.map((row) => decryptJson(storeName, row, entity, names, dek)),
+    )
   }
 
   //@internal
@@ -168,11 +199,15 @@ export class IndexedDbDataProvider implements DataProvider {
       }),
     )
     const db = await this.open()
-    const needsUpgrade = wanted.some((w) => {
-      if (!db.objectStoreNames.contains(w.name)) return true
-      const existing = this.storeIndexes(w.name).map((i) => i.name)
-      return w.indexes.some((idx) => !existing.includes(idx.name))
-    })
+    const needsKeyStore =
+      this.usesKeyStore() && !db.objectStoreNames.contains(IDB_KEYS_STORE)
+    const needsUpgrade =
+      needsKeyStore ||
+      wanted.some((w) => {
+        if (!db.objectStoreNames.contains(w.name)) return true
+        const existing = this.storeIndexes(w.name).map((i) => i.name)
+        return w.indexes.some((idx) => !existing.includes(idx.name))
+      })
     if (!needsUpgrade) return
 
     const nextVersion = db.version + 1
@@ -180,6 +215,12 @@ export class IndexedDbDataProvider implements DataProvider {
     db.close()
 
     await this.open(nextVersion, (upgradeDb, tx) => {
+      if (
+        this.usesKeyStore() &&
+        !upgradeDb.objectStoreNames.contains(IDB_KEYS_STORE)
+      ) {
+        upgradeDb.createObjectStore(IDB_KEYS_STORE, { keyPath: 'id' })
+      }
       for (const { name, keyPath, autoIncrement, indexes } of wanted) {
         const store = upgradeDb.objectStoreNames.contains(name)
           ? tx.objectStore(name)
@@ -191,6 +232,72 @@ export class IndexedDbDataProvider implements DataProvider {
         }
       }
     })
+  }
+
+  //@internal
+  private usesKeyStore() {
+    return this.encrypt && !this.customGetKey
+  }
+
+  //@internal
+  async loadDek(): Promise<CryptoKey> {
+    if (this.dek) return this.dek
+    if (this.customGetKey) {
+      const key = await this.customGetKey()
+      this.dek = key
+      return key
+    }
+    const existing = await this.withStore(IDB_KEYS_STORE, 'readonly', (s) =>
+      idbReq(s.get(IDB_DEK_ID)),
+    )
+    if (existing?.key) {
+      this.dek = existing.key
+      return existing.key
+    }
+    const generated = await crypto.subtle.generateKey(
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt'],
+    )
+    const key = await this.withStore(
+      IDB_KEYS_STORE,
+      'readwrite',
+      async (s) => {
+        const rec = await idbReq(s.get(IDB_DEK_ID))
+        if (rec?.key) return rec.key as CryptoKey
+        try {
+          await idbReq(s.add({ id: IDB_DEK_ID, key: generated }))
+          return generated
+        } catch (e: any) {
+          if (e?.name === 'ConstraintError') {
+            const again = await idbReq(s.get(IDB_DEK_ID))
+            if (!again?.key)
+              throw new Error('Failed to load IndexedDB encryption key')
+            return again.key as CryptoKey
+          }
+          throw e
+        }
+      },
+    )
+    this.dek = key
+    return key
+  }
+
+  //@internal
+  async plaintextDbNames(entity: EntityMetadata): Promise<Set<string>> {
+    const names = await dbNamesOf(entity, (x) => x)
+    const set = new Set<string>()
+    for (const f of entity.idMetadata.fields) {
+      set.add(names.$dbNameOf(f))
+    }
+    for (const def of this.indexesFor(entity)) {
+      const keys = Array.isArray(def) ? [...def] : [def]
+      for (const key of keys) {
+        const field = [...entity.fields].find((f) => f.key === key)
+        if (field) set.add(names.$dbNameOf(field))
+      }
+    }
+    return set
   }
 
   //@internal
@@ -333,24 +440,63 @@ class IndexedDbEntityDataProvider implements EntityDataProvider {
         if (auto) delete json[idName]
         return json
       })
-      return this.provider.withStore(
-        storeNameOf(this.entity),
+      const storeName = storeNameOf(this.entity)
+      const dek = this.provider.encrypt
+        ? await this.provider.loadDek()
+        : undefined
+      const keep = dek
+        ? await this.provider.plaintextDbNames(this.entity)
+        : undefined
+      if (dek && auto) {
+        const keys = await this.provider.withStore(
+          storeName,
+          'readwrite',
+          async (store) => {
+            const allocated: IDBValidKey[] = []
+            for (let i = 0; i < rows.length; i++) {
+              allocated.push(await idbReq(store.add({})))
+            }
+            return allocated
+          },
+        )
+        for (let i = 0; i < rows.length; i++) {
+          rows[i][idName] = keys[i]
+        }
+      }
+      const toWrite = dek
+        ? await Promise.all(
+            rows.map((json) =>
+              encryptJson(
+                storeName,
+                json,
+                keep!,
+                keyFromRow(this.entity, names, json),
+                dek,
+              ),
+            ),
+          )
+        : rows
+      await this.provider.withStore(
+        storeName,
         'readwrite',
         async (store) => {
-          const result: any[] = []
-          for (const json of rows) {
+          for (let i = 0; i < toWrite.length; i++) {
             try {
-              const key = await idbReq(store.add(json))
-              if (auto) json[idName] = json[idName] ?? key
+              if (dek && auto) {
+                await idbReq(store.put(toWrite[i]))
+              } else {
+                const key = await idbReq(store.add(toWrite[i]))
+                if (auto) rows[i][idName] = rows[i][idName] ?? key
+              }
             } catch (e: any) {
-              if (e?.name === 'ConstraintError') throw Error('id already exists')
+              if (e?.name === 'ConstraintError')
+                throw Error('id already exists')
               throw e
             }
-            result.push(helper.translateFromJson(json, names))
           }
-          return result
         },
       )
+      return rows.map((json) => helper.translateFromJson(json, names))
     })
   }
 
@@ -360,33 +506,53 @@ class IndexedDbEntityDataProvider implements EntityDataProvider {
       const helper = new ArrayEntityDataProvider(this.entity, () => [])
       const names = await helper.init()
       const key = toIdbKey(this.entity, id)
-      return this.provider.withStore(
-        storeNameOf(this.entity),
+      const storeName = storeNameOf(this.entity)
+      const existingRaw = await this.provider.withStore(
+        storeName,
+        'readonly',
+        (store) => idbReq(store.get(key)),
+      )
+      if (existingRaw == null)
+        throw new Error(
+          `Couldn't find row with id "${id}" in entity "${this.entity.key}" to update`,
+        )
+      const dek = this.provider.encrypt
+        ? await this.provider.loadDek()
+        : undefined
+      const existing = dek
+        ? await decryptJson(storeName, existingRaw, this.entity, names, dek)
+        : existingRaw
+      const json = { ...existing }
+      const keys = Object.keys(data)
+      for (const f of this.entity.fields) {
+        if (!isDbReadonly(f, names) && keys.includes(f.key)) {
+          json[names.$dbNameOf(f)] = f.valueConverter.toJson(data[f.key])
+        }
+      }
+      helper.verifyThatRowHasAllNotNullColumns(json, names)
+      const newKey = keyFromRow(this.entity, names, json)
+      const toWrite = dek
+        ? await encryptJson(
+            storeName,
+            json,
+            await this.provider.plaintextDbNames(this.entity),
+            newKey,
+            dek,
+          )
+        : json
+      await this.provider.withStore(
+        storeName,
         'readwrite',
         async (store) => {
-          const existing = await idbReq(store.get(key))
-          if (existing == null)
-            throw new Error(
-              `Couldn't find row with id "${id}" in entity "${this.entity.key}" to update`,
-            )
-          const json = { ...existing }
-          const keys = Object.keys(data)
-          for (const f of this.entity.fields) {
-            if (!isDbReadonly(f, names) && keys.includes(f.key)) {
-              json[names.$dbNameOf(f)] = f.valueConverter.toJson(data[f.key])
-            }
-          }
-          helper.verifyThatRowHasAllNotNullColumns(json, names)
-          const newKey = keyFromRow(this.entity, names, json)
           if (!idbKeysEqual(key, newKey)) {
             const conflict = await idbReq(store.get(newKey))
             if (conflict != null) throw Error('id already exists')
             await idbReq(store.delete(key))
           }
-          await idbReq(store.put(json))
-          return helper.translateFromJson(json, names)
+          await idbReq(store.put(toWrite))
         },
       )
+      return helper.translateFromJson(json, names)
     })
   }
 
@@ -776,4 +942,72 @@ function idbReq<T>(request: IDBRequest<T>): Promise<T> {
     request.onsuccess = () => resolve(request.result)
     request.onerror = () => reject(request.error)
   })
+}
+
+function encAad(storeName: string, id: IDBValidKey) {
+  return new TextEncoder().encode(storeName + '\0' + JSON.stringify(id))
+}
+
+function asBufferSource(value: any, label: string): BufferSource {
+  if (value instanceof Uint8Array || value instanceof ArrayBuffer)
+    return value as BufferSource
+  throw new Error(`Failed to decrypt IndexedDB row: missing ${label}`)
+}
+
+async function encryptJson(
+  storeName: string,
+  json: any,
+  plaintext: Set<string>,
+  idbKey: IDBValidKey,
+  dek: CryptoKey,
+) {
+  const stored: any = {}
+  const payload: any = {}
+  for (const k of Object.keys(json)) {
+    if (k === IDB_ENC || k === IDB_IV) continue
+    if (plaintext.has(k)) stored[k] = json[k]
+    else payload[k] = json[k]
+  }
+  const iv = crypto.getRandomValues(new Uint8Array(12))
+  stored[IDB_ENC] = await crypto.subtle.encrypt(
+    {
+      name: 'AES-GCM',
+      iv,
+      additionalData: encAad(storeName, idbKey),
+    } as AlgorithmIdentifier,
+    dek,
+    new TextEncoder().encode(JSON.stringify(payload)),
+  )
+  stored[IDB_IV] = iv
+  return stored
+}
+
+async function decryptJson(
+  storeName: string,
+  row: any,
+  entity: EntityMetadata,
+  names: EntityDbNamesBase,
+  dek: CryptoKey,
+) {
+  if (row == null || row[IDB_ENC] == null) return row
+  const idbKey = keyFromRow(entity, names, row)
+  try {
+    const plain = await crypto.subtle.decrypt(
+      {
+        name: 'AES-GCM',
+        iv: asBufferSource(row[IDB_IV], IDB_IV),
+        additionalData: encAad(storeName, idbKey),
+      } as AlgorithmIdentifier,
+      dek,
+      asBufferSource(row[IDB_ENC], IDB_ENC) as BufferSource,
+    )
+    const payload = JSON.parse(new TextDecoder().decode(plain))
+    const result = { ...row, ...payload }
+    delete result[IDB_ENC]
+    delete result[IDB_IV]
+    return result
+  } catch (e: any) {
+    if (e?.message?.startsWith('Failed to decrypt IndexedDB row')) throw e
+    throw new Error(`Failed to decrypt IndexedDB row in "${storeName}"`)
+  }
 }

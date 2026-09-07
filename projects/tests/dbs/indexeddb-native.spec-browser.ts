@@ -4,6 +4,7 @@ import {
   Fields,
   Filter,
   IndexedDbDataProvider,
+  IndexedDbIndexBuilder,
   Remult,
 } from '../../core'
 import { allDbTests } from './shared-tests'
@@ -22,6 +23,15 @@ function idbGet(db: IDBDatabase, storeName: string, key: IDBValidKey) {
     const req = db.transaction(storeName).objectStore(storeName).get(key)
     req.onsuccess = () => resolve(req.result)
     req.onerror = () => reject(req.error)
+  })
+}
+
+function idbPut(db: IDBDatabase, storeName: string, value: any) {
+  return new Promise<void>((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readwrite')
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(tx.error)
+    tx.objectStore(storeName).put(value)
   })
 }
 
@@ -80,6 +90,7 @@ describe('IndexedDB Data Provider', () => {
     await remult.repo(Customer).insert({ id: 1, name: 'c' })
     const names = [...db.db!.objectStoreNames]
     expect(names).toEqual(expect.arrayContaining(['orders', 'customers']))
+    expect(names).not.toContain('__remult_keys')
     expect(await remult.repo(Order).find()).toMatchObject([
       { id: 1, name: 'o' },
     ])
@@ -361,4 +372,185 @@ describe('IndexedDB indexes', () => {
       index: 'status_title',
     })
   })
+})
+
+describe('IndexedDB encryption', () => {
+  @Entity('enc_tasks')
+  class Task {
+    @Fields.integer()
+    id = 0
+    @Fields.string()
+    status = ''
+    @Fields.string()
+    secret = ''
+    @Fields.createdAt()
+    createdAt = new Date()
+  }
+
+  let db: IndexedDbDataProvider
+  let remult: Remult
+  let dbName: string
+
+  function encOptions() {
+    return {
+      indexes: (x: IndexedDbIndexBuilder) =>
+        x.ensureIndexes(Task, ['status', 'createdAt']),
+      encrypt: true as const,
+    }
+  }
+
+  beforeEach(() => {
+    dbName = `remult-idb-enc-${crypto.randomUUID()}`
+    db = new IndexedDbDataProvider(dbName, encOptions())
+    remult = new Remult(db)
+  })
+
+  afterEach(async () => {
+    db.close()
+    await deleteIndexedDb(dbName)
+  })
+
+  it('encrypts non-indexed fields at rest and decrypts on find', async () => {
+    const createdAt = new Date('2024-01-02T00:00:00.000Z')
+    await remult.repo(Task).insert({
+      id: 1,
+      status: 'open',
+      secret: 's3cret',
+      createdAt,
+    })
+    const raw = await idbGet(db.db!, 'enc_tasks', 1)
+    expect(raw._enc).toBeInstanceOf(ArrayBuffer)
+    expect(raw._iv).toHaveLength(12)
+    expect(raw.id).toBe(1)
+    expect(raw.status).toBe('open')
+    expect(raw.createdAt).toBeTruthy()
+    expect(raw.secret).toBeUndefined()
+    expect(JSON.stringify(raw)).not.toContain('s3cret')
+    const dek = await idbGet(db.db!, '__remult_keys', 'dek')
+    expect(dek.key).toBeInstanceOf(CryptoKey)
+    expect(dek.key.extractable).toBe(false)
+    expect(await remult.repo(Task).find()).toMatchObject([
+      { id: 1, status: 'open', secret: 's3cret' },
+    ])
+  })
+
+  it('find by indexed field still prefetches', async () => {
+    const repo = remult.repo(Task)
+    await repo.insert([
+      { id: 1, status: 'open', secret: 'a' },
+      { id: 2, status: 'done', secret: 'b' },
+    ])
+    const rows = await db.fetchRows(
+      repo.metadata,
+      Filter.fromEntityFilter(repo.metadata, { status: 'open', secret: 'nope' }),
+    )
+    expect(rows.map((r) => r.id)).toEqual([1])
+    expect(db.lastFetch).toMatchObject({
+      type: 'keys',
+      keys: ['open'],
+      index: 'status',
+    })
+    expect(await repo.find({ where: { status: 'open' } })).toMatchObject([
+      { id: 1, secret: 'a' },
+    ])
+  })
+
+  it('auto key persists across provider instances', async () => {
+    await remult.repo(Task).insert({ id: 1, status: 'open', secret: 'keep' })
+    db.close()
+    const db2 = new IndexedDbDataProvider(dbName, encOptions())
+    const remult2 = new Remult(db2)
+    expect(await remult2.repo(Task).find()).toMatchObject([
+      { id: 1, status: 'open', secret: 'keep' },
+    ])
+    db2.close()
+  })
+
+  it('reads unencrypted rows and encrypts on write', async () => {
+    db.close()
+    await deleteIndexedDb(dbName)
+    const plain = new IndexedDbDataProvider(dbName)
+    const remultPlain = new Remult(plain)
+    await remultPlain.repo(Task).insert({
+      id: 1,
+      status: 'open',
+      secret: 'old',
+    })
+    plain.close()
+    db = new IndexedDbDataProvider(dbName, encOptions())
+    remult = new Remult(db)
+    expect(await remult.repo(Task).find()).toMatchObject([
+      { id: 1, secret: 'old' },
+    ])
+    await remult.repo(Task).update(1, { secret: 'new' })
+    const raw = await idbGet(db.db!, 'enc_tasks', 1)
+    expect(raw._enc).toBeInstanceOf(ArrayBuffer)
+    expect(raw.secret).toBeUndefined()
+    expect(await remult.repo(Task).findId(1)).toMatchObject({ secret: 'new' })
+  })
+
+  it('throws if decrypt fails', async () => {
+    await remult.repo(Task).insert({ id: 1, status: 'open', secret: 'x' })
+    const raw = await idbGet(db.db!, 'enc_tasks', 1)
+    raw._enc = new Uint8Array([1, 2, 3, 4]).buffer
+    await idbPut(db.db!, 'enc_tasks', raw)
+    await expect(remult.repo(Task).find()).rejects.toThrow(
+      /Failed to decrypt IndexedDB row/,
+    )
+  })
+
+  it('uses getEncryptionKey and skips the key store', async () => {
+    db.close()
+    await deleteIndexedDb(dbName)
+    const key = await crypto.subtle.generateKey(
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt'],
+    )
+    db = new IndexedDbDataProvider(dbName, {
+      ...encOptions(),
+      getEncryptionKey: () => key,
+    })
+    remult = new Remult(db)
+    await remult.repo(Task).insert({ id: 1, status: 'open', secret: 'k' })
+    expect([...db.db!.objectStoreNames]).not.toContain('__remult_keys')
+    expect(await remult.repo(Task).find()).toMatchObject([{ secret: 'k' }])
+  })
+})
+
+describe('IndexedDB encryption (all db tests)', () => {
+  let db: IndexedDbDataProvider
+  let remult: Remult
+  let dbName: string
+
+  beforeEach(() => {
+    dbName = `remult-idb-enc-all-${crypto.randomUUID()}`
+    db = new IndexedDbDataProvider(dbName, { encrypt: true })
+    remult = new Remult(db)
+  })
+
+  afterEach(async () => {
+    db.close()
+    await deleteIndexedDb(dbName)
+  })
+
+  allDbTests(
+    {
+      getDb() {
+        return db
+      },
+      getRemult() {
+        return remult
+      },
+      createEntity: async (entity) => {
+        const repo = remult.repo(entity)
+        await db.ensureSchema([repo.metadata])
+        return repo
+      },
+    },
+    {
+      excludeTransactions: true,
+      excludeLiveQuery: true,
+    },
+  )
 })
