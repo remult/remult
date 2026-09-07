@@ -6,7 +6,10 @@ import {
   findOptionsToJson,
 } from '../../core/src/data-providers/rest-data-provider'
 import { LiveQueryClient } from '../../core/src/live-query/LiveQueryClient'
-import { SseSubscriptionClient } from '../../core/src/live-query/SseSubscriptionClient'
+import {
+  ConnectionNotFoundError,
+  SseSubscriptionClient,
+} from '../../core/src/live-query/SseSubscriptionClient'
 import type { LiveQueryChange } from '../../core/src/live-query/SubscriptionChannel'
 import { SubscriptionChannel } from '../../core/src/live-query/SubscriptionChannel'
 import {
@@ -2007,6 +2010,171 @@ describe('live query resilience gaps', () => {
       },
     }
   }
+
+  it('failed channel subscribe is retried on the next subscribe', async () => {
+    const sources = fakeEventSources()
+    const origEs = SseSubscriptionClient.createEventSource
+    SseSubscriptionClient.createEventSource = () => sources.create()
+    let subscribePosts = 0
+    let fail = true
+    const http = {
+      get: async () => [],
+      put: () => undefined!,
+      delete: () => undefined!,
+      post: async (url: string) => {
+        if (String(url).endsWith('/subscribe')) {
+          subscribePosts++
+          if (fail) throw new Error('network')
+        }
+        return {}
+      },
+    }
+    const prevHttp = remult.apiClient.httpClient
+    const prevUrl = remult.apiClient.url
+    remult.apiClient.httpClient = http
+    remult.apiClient.url = 'http://x/api'
+    try {
+      const conn = await new SseSubscriptionClient().openConnection(() => {})
+      sources.all[0].fire('connectionId', 'c1')
+      await expect(
+        conn.subscribe(
+          'chan',
+          () => {},
+          () => {},
+        ),
+      ).rejects.toThrow('network')
+      fail = false
+      const a = () => {}
+      const b = () => {}
+      const unsubA = await conn.subscribe('chan', a, () => {})
+      const unsubB = await conn.subscribe('chan', b, () => {})
+      expect(subscribePosts).toBe(2)
+      let got: any[] = []
+      sources.all[0].onmessage({
+        data: JSON.stringify({ channel: 'chan', data: 1 }),
+      })
+      unsubA()
+      const unsubC = await conn.subscribe(
+        'chan',
+        (x) => got.push(x),
+        () => {},
+      )
+      sources.all[0].onmessage({
+        data: JSON.stringify({ channel: 'chan', data: 2 }),
+      })
+      // removing the first listener must not wipe the others
+      expect(got).toEqual([2])
+      unsubB()
+      unsubC()
+    } finally {
+      SseSubscriptionClient.createEventSource = origEs
+      remult.apiClient.httpClient = prevHttp
+      remult.apiClient.url = prevUrl
+    }
+  })
+
+  it('ConnectionNotFoundError on subscribe reconnects and resubscribes every channel once', async () => {
+    const sources = fakeEventSources()
+    const origEs = SseSubscriptionClient.createEventSource
+    SseSubscriptionClient.createEventSource = () => sources.create()
+    const posts: { clientId: string; channel: string }[] = []
+    let lostClient = 'c1'
+    const http = {
+      get: async () => [],
+      put: () => undefined!,
+      delete: () => undefined!,
+      post: async (url: string, body: any) => {
+        if (String(url).endsWith('/subscribe')) {
+          posts.push(body)
+          if (body.clientId === lostClient) return ConnectionNotFoundError
+        }
+        return {}
+      },
+    }
+    const prevHttp = remult.apiClient.httpClient
+    const prevUrl = remult.apiClient.url
+    remult.apiClient.httpClient = http
+    remult.apiClient.url = 'http://x/api'
+    try {
+      let reconnects = 0
+      const conn = await new SseSubscriptionClient().openConnection(
+        () => reconnects++,
+      )
+      lostClient = ''
+      sources.all[0].fire('connectionId', 'c1')
+      await conn.subscribe(
+        'a',
+        () => {},
+        () => {},
+      )
+      await new Promise((r) => setTimeout(r, 5))
+      // server forgot c1: next subscribe must open a new source
+      lostClient = 'c1'
+      const errors: any[] = []
+      const subB = conn.subscribe(
+        'b',
+        () => {},
+        (e) => errors.push(e),
+      )
+      await new Promise((r) => setTimeout(r, 5))
+      expect(sources.all.length).toBe(2)
+      sources.all[1].fire('connectionId', 'c2')
+      await subB
+      await new Promise((r) => setTimeout(r, 5))
+      expect(
+        posts
+          .filter((p) => p.clientId === 'c2')
+          .map((p) => p.channel)
+          .sort(),
+      ).toEqual(['a', 'b'])
+      expect(reconnects).toBe(1)
+      expect(errors).toEqual([])
+    } finally {
+      SseSubscriptionClient.createEventSource = origEs
+      remult.apiClient.httpClient = prevHttp
+      remult.apiClient.url = prevUrl
+    }
+  })
+
+  it('subscribe failure during reconnect reaches onError', async () => {
+    const sources = fakeEventSources()
+    const origEs = SseSubscriptionClient.createEventSource
+    SseSubscriptionClient.createEventSource = () => sources.create()
+    let fail = false
+    const http = {
+      get: async () => [],
+      put: () => undefined!,
+      delete: () => undefined!,
+      post: async (url: string) => {
+        if (String(url).endsWith('/subscribe') && fail) throw new Error('403')
+        return {}
+      },
+    }
+    const prevHttp = remult.apiClient.httpClient
+    const prevUrl = remult.apiClient.url
+    remult.apiClient.httpClient = http
+    remult.apiClient.url = 'http://x/api'
+    try {
+      const conn = await new SseSubscriptionClient().openConnection(() => {})
+      sources.all[0].fire('connectionId', 'c1')
+      const errors: any[] = []
+      await conn.subscribe(
+        'a',
+        () => {},
+        (e) => errors.push(e),
+      )
+      fail = true
+      sources.all[0].onerror(new Event('error'))
+      await new Promise((r) => setTimeout(r, 600))
+      sources.all[1].fire('connectionId', 'c2')
+      await new Promise((r) => setTimeout(r, 5))
+      expect(errors.length).toBe(1)
+    } finally {
+      SseSubscriptionClient.createEventSource = origEs
+      remult.apiClient.httpClient = prevHttp
+      remult.apiClient.url = prevUrl
+    }
+  })
 
   it('recreates the EventSource when no server event arrives past sseStaleMs', async () => {
     vi.useFakeTimers()
