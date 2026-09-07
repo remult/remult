@@ -3278,6 +3278,8 @@ export interface SubscriptionListener<type> {
   next(message: type): void
   error(err: any): void
   complete(): void
+  /** The connection was re-established; messages published meanwhile were lost, refetch state if needed. */
+  reconnect?(): void
 }
 export interface SubscriptionServer {
   publishMessage<T>(channel: string, message: T): Promise<void>
@@ -4913,7 +4915,7 @@ export const fieldOptionsEnricher: {
 }
 export const flags: {
   error500RetryCount: number
-  /** Client treats SSE as dead if no event for this long */
+  /** Client treats SSE as dead if no event for this long. Server pings every 15s; two missed pings plus slack, so a stalled event loop does not trigger a reconnect storm */
   sseStaleMs: number
   /** HTTP keep-alive while SSE is healthy (touches lastUsed) */
   liveQueryKeepAliveMs: number

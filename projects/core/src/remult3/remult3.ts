@@ -1545,8 +1545,8 @@ export type ClassFieldDecorator<entityType, valueType> = ((
 
 export const flags = {
   error500RetryCount: 4,
-  /** Client treats SSE as dead if no event for this long */
-  sseStaleMs: 20_000,
+  /** Client treats SSE as dead if no event for this long. Server pings every 15s; two missed pings plus slack, so a stalled event loop does not trigger a reconnect storm */
+  sseStaleMs: 40_000,
   /** HTTP keep-alive while SSE is healthy (touches lastUsed) */
   liveQueryKeepAliveMs: 30_000,
   /** Version poll while SSE is stale */

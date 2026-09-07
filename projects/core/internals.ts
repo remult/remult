@@ -26,5 +26,6 @@ export { isOfType } from './src/isOfType.js'
 export type { ClassType } from './classType.js'
 
 export { flags } from './src/remult3/remult3.js'
+export { SseSubscriptionClient } from './src/live-query/SseSubscriptionClient.js'
 export { DataProviderPromiseWrapper } from './src/data-interfaces.js'
 export { pagedQueryResult } from './src/remult3/pagedQueryResult.js'

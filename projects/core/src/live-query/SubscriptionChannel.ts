@@ -25,7 +25,11 @@ export class LiveQuerySubscriber<entityType> {
   unsubscribeChannel: VoidFunction = () => {}
   unsubscribeQuery: VoidFunction = () => {}
   snapshotReady = false
+  droppedWhilePending = false
   async setAllItems(result: any[]) {
+    // server re-registers the query at version 0; reset before the await so a
+    // version message landing mid-parse is judged against the new baseline
+    this.version = 0
     const items = await getRepositoryInternals(this.repo)._fromJsonArray(
       result,
       this.query.options,
@@ -35,7 +39,6 @@ export class LiveQuerySubscriber<entityType> {
         return items
       })
     }, this.allItemsMessage(items))
-    this.version = 0
     this.snapshotReady = true
   }
 
@@ -86,18 +89,26 @@ export class LiveQuerySubscriber<entityType> {
   }
 
   async handle(messages: LiveQueryChange[]) {
+    // the pending snapshot supersedes anything in flight; the keep-alive
+    // after it lands catches whatever was dropped here
+    if (!this.snapshotReady) {
+      this.droppedWhilePending = true
+      return
+    }
     const ver = messages.find(
       (m): m is Extract<LiveQueryChange, { type: 'version' }> =>
         m.type === 'version',
     )
-    if (ver) {
-      if (ver.from < this.version) return
-      if (ver.from > this.version) {
-        this.version = ver.to
-        this.subscribeCode?.()
-        return
-      }
+    // any gap, forward or backward, means a message was missed or two servers
+    // published the same version with different diffs: refetch instead of drop
+    if (ver && ver.from !== this.version) {
+      this.version = ver.to
+      this.subscribeCode?.()
+      return
     }
+    // bump before the await below, so a second message delivered in the same
+    // tick is judged against this one and not mistaken for a gap
+    if (ver) this.version = ver.to
     const data = messages.filter((m) => m.type !== 'version')
     {
       let x = data.filter(({ type }) => type == 'add' || type == 'replace')
@@ -146,7 +157,7 @@ export class LiveQuerySubscriber<entityType> {
         return items
       })
     }, data)
-    this.version = ver ? ver.to : this.version + (data.length > 0 ? 1 : 0)
+    if (!ver && data.length > 0) this.version++
   }
 
   defaultQueryState: entityType[] = []
@@ -167,6 +178,8 @@ export interface SubscriptionListener<type> {
   next(message: type): void
   error(err: any): void
   complete(): void
+  /** The connection was re-established; messages published meanwhile were lost, refetch state if needed. */
+  reconnect?(): void
 }
 
 export type Unsubscribe = VoidFunction
@@ -310,6 +323,16 @@ export interface ServerEventChannelSubscribeDTO {
  *  // Frontend: in the chart component, we can subscribe to messages
  *  chart.subscribe((message) => {
  *    chartData = message.data;
+ *  });
+ *  ```
+ *
+ *  #### Recovering after a dropped connection
+ *  Messages published while the connection was down are not replayed.
+ *  Use the `reconnect` listener to refetch state:
+ *  ```ts
+ *  chart.subscribe({
+ *    next: (message) => (chartData = message.data),
+ *    reconnect: () => loadChartData(),
  *  });
  *  ```
  *

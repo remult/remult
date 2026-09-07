@@ -6,7 +6,10 @@ import {
   findOptionsToJson,
 } from '../../core/src/data-providers/rest-data-provider'
 import { LiveQueryClient } from '../../core/src/live-query/LiveQueryClient'
-import { SseSubscriptionClient } from '../../core/src/live-query/SseSubscriptionClient'
+import {
+  ConnectionNotFoundError,
+  SseSubscriptionClient,
+} from '../../core/src/live-query/SseSubscriptionClient'
 import type { LiveQueryChange } from '../../core/src/live-query/SubscriptionChannel'
 import { SubscriptionChannel } from '../../core/src/live-query/SubscriptionChannel'
 import {
@@ -1330,7 +1333,8 @@ describe('live query resilience', () => {
     await p.flush()
     expect(get).toBe(1)
     expect(items[0].title).toBe('noam')
-    lqc.openedConnection!.lastServerEvent = 0
+    // SSE looks healthy (recent server event) yet the server is ahead
+    lqc.openedConnection!.lastServerEvent = Date.now()
     await lqc.runKeepAlive()
     await p.flush()
     expect(get).toBe(2)
@@ -1447,7 +1451,7 @@ describe('live query resilience', () => {
     u()
   })
 
-  it('stale SSE version is ignored', async () => {
+  it('duplicate SSE version with different diff refetches', async () => {
     let get = 0
     let send: (x: any) => void = () => {}
     const lqc = new LiveQueryClient(
@@ -1466,7 +1470,7 @@ describe('live query resilience', () => {
         httpClient: {
           get: async () => {
             get++
-            return [{ id: 1, title: 'noam' }]
+            return [{ id: 1, title: get === 1 ? 'noam' : 'refetched' }]
           },
           put: () => undefined!,
           post: async () => {},
@@ -1500,8 +1504,10 @@ describe('live query resilience', () => {
       { type: 'version', from: 0, to: 1 },
     ])
     await p.flush()
-    expect(get).toBe(1)
-    expect(items[0].title).toBe('v1')
+    // same version twice with different diffs (two servers publishing):
+    // the second diff is not applied, the snapshot is refetched instead
+    expect(get).toBe(2)
+    expect(items[0].title).toBe('refetched')
     u()
   })
 
@@ -1549,6 +1555,101 @@ describe('live query resilience', () => {
     u()
   })
 
+
+  it('message during a pending snapshot is held, then versions are checked', async () => {
+    const gets: ((x: any) => void)[] = []
+    let keepAlives = 0
+    let send: (x: any) => void = () => {}
+    const lqc = new LiveQueryClient(
+      () => ({
+        subscriptionClient: {
+          async openConnection() {
+            return {
+              close() {},
+              async subscribe(_channel: string, onMessage: (x: any) => void) {
+                send = onMessage
+                return () => {}
+              },
+            }
+          },
+        },
+        httpClient: {
+          get: () => new Promise((res) => gets.push(res)),
+          put: () => undefined!,
+          post: async (url: string, body: any) => {
+            if (String(url).includes('_liveQueryKeepAlive')) {
+              keepAlives++
+              return { unknownQueryIds: [], versions: { [body.queryIds[0]]: 0 } }
+            }
+          },
+          delete: () => undefined!,
+        },
+      }),
+      () => undefined,
+    )
+    const tick = () => new Promise((r) => setTimeout(r, 5))
+    const remult = new Remult(new InMemoryDataProvider())
+    remult.liveQuerySubscriber = lqc
+    let items: eventTestEntity[] = []
+    const u = remult
+      .repo(eventTestEntity)
+      .liveQuery()
+      .subscribe(({ applyChanges }) => (items = applyChanges(items)))
+    await tick()
+    gets[0]([{ id: 1, title: 'first' }])
+    await tick()
+    send([{ type: 'version', from: 5, to: 6 }])
+    await tick()
+    expect(gets.length).toBe(2)
+    // arrives while the refetch is in flight: not applied, no second refetch
+    send([
+      { type: 'add', data: { item: { id: 9, title: 'held' } } },
+      { type: 'version', from: 0, to: 1 },
+    ])
+    await tick()
+    expect(gets.length).toBe(2)
+    gets[1]([{ id: 1, title: 'newest' }])
+    await tick()
+    expect(items.map((x) => x.title)).toEqual(['newest'])
+    expect(keepAlives).toBe(1)
+    u()
+  })
+
+  it('channel listeners are told about a reconnect', async () => {
+    let onReconnect: () => void = () => {}
+    const lqc = new LiveQueryClient(
+      () => ({
+        subscriptionClient: {
+          async openConnection(reconnect) {
+            onReconnect = reconnect
+            return {
+              close() {},
+              async subscribe() {
+                return () => {}
+              },
+            }
+          },
+        },
+        httpClient: {
+          get: async () => [],
+          put: () => undefined!,
+          post: async () => ({}),
+          delete: () => undefined!,
+        },
+      }),
+      () => undefined,
+    )
+    let reconnects = 0
+    const unsub = await lqc.subscribeChannel('chan', {
+      next: () => {},
+      error: () => {},
+      complete: () => {},
+      reconnect: () => reconnects++,
+    })
+    onReconnect()
+    expect(reconnects).toBe(1)
+    unsub()
+  })
 
   it('keep-alive matching version does not reload', async () => {
     let get = 0
@@ -1671,9 +1772,12 @@ describe('live query resilience', () => {
     const orig = SseSubscriptionClient.createEventSource
     SseSubscriptionClient.createEventSource = () => {
       const src = {
+        readyState: 1,
         onmessage: undefined as any,
         onerror: undefined as any,
-        close() {},
+        close() {
+          src.readyState = 2
+        },
         addEventListener(_name: string, _fn: any) {},
       }
       sources.push(src)
@@ -1688,6 +1792,11 @@ describe('live query resilience', () => {
         await vi.advanceTimersByTimeAsync(30_000)
       }
       expect(sources.length).toBe(6)
+      // open source: foreground resume leaves it alone
+      conn.resume?.()
+      expect(sources.length).toBe(6)
+      // errored source with a backoff timer pending: resume reconnects now
+      sources[5].onerror?.(new Event('error'))
       conn.resume?.()
       expect(sources.length).toBe(7)
     } finally {
@@ -1938,6 +2047,171 @@ describe('live query resilience gaps', () => {
     }
   }
 
+  it('failed channel subscribe is retried on the next subscribe', async () => {
+    const sources = fakeEventSources()
+    const origEs = SseSubscriptionClient.createEventSource
+    SseSubscriptionClient.createEventSource = () => sources.create()
+    let subscribePosts = 0
+    let fail = true
+    const http = {
+      get: async () => [],
+      put: () => undefined!,
+      delete: () => undefined!,
+      post: async (url: string) => {
+        if (String(url).endsWith('/subscribe')) {
+          subscribePosts++
+          if (fail) throw new Error('network')
+        }
+        return {}
+      },
+    }
+    const prevHttp = remult.apiClient.httpClient
+    const prevUrl = remult.apiClient.url
+    remult.apiClient.httpClient = http
+    remult.apiClient.url = 'http://x/api'
+    try {
+      const conn = await new SseSubscriptionClient().openConnection(() => {})
+      sources.all[0].fire('connectionId', 'c1')
+      await expect(
+        conn.subscribe(
+          'chan',
+          () => {},
+          () => {},
+        ),
+      ).rejects.toThrow('network')
+      fail = false
+      const a = () => {}
+      const b = () => {}
+      const unsubA = await conn.subscribe('chan', a, () => {})
+      const unsubB = await conn.subscribe('chan', b, () => {})
+      expect(subscribePosts).toBe(2)
+      let got: any[] = []
+      sources.all[0].onmessage({
+        data: JSON.stringify({ channel: 'chan', data: 1 }),
+      })
+      unsubA()
+      const unsubC = await conn.subscribe(
+        'chan',
+        (x) => got.push(x),
+        () => {},
+      )
+      sources.all[0].onmessage({
+        data: JSON.stringify({ channel: 'chan', data: 2 }),
+      })
+      // removing the first listener must not wipe the others
+      expect(got).toEqual([2])
+      unsubB()
+      unsubC()
+    } finally {
+      SseSubscriptionClient.createEventSource = origEs
+      remult.apiClient.httpClient = prevHttp
+      remult.apiClient.url = prevUrl
+    }
+  })
+
+  it('ConnectionNotFoundError on subscribe reconnects and resubscribes every channel once', async () => {
+    const sources = fakeEventSources()
+    const origEs = SseSubscriptionClient.createEventSource
+    SseSubscriptionClient.createEventSource = () => sources.create()
+    const posts: { clientId: string; channel: string }[] = []
+    let lostClient = 'c1'
+    const http = {
+      get: async () => [],
+      put: () => undefined!,
+      delete: () => undefined!,
+      post: async (url: string, body: any) => {
+        if (String(url).endsWith('/subscribe')) {
+          posts.push(body)
+          if (body.clientId === lostClient) return ConnectionNotFoundError
+        }
+        return {}
+      },
+    }
+    const prevHttp = remult.apiClient.httpClient
+    const prevUrl = remult.apiClient.url
+    remult.apiClient.httpClient = http
+    remult.apiClient.url = 'http://x/api'
+    try {
+      let reconnects = 0
+      const conn = await new SseSubscriptionClient().openConnection(
+        () => reconnects++,
+      )
+      lostClient = ''
+      sources.all[0].fire('connectionId', 'c1')
+      await conn.subscribe(
+        'a',
+        () => {},
+        () => {},
+      )
+      await new Promise((r) => setTimeout(r, 5))
+      // server forgot c1: next subscribe must open a new source
+      lostClient = 'c1'
+      const errors: any[] = []
+      const subB = conn.subscribe(
+        'b',
+        () => {},
+        (e) => errors.push(e),
+      )
+      await new Promise((r) => setTimeout(r, 5))
+      expect(sources.all.length).toBe(2)
+      sources.all[1].fire('connectionId', 'c2')
+      await subB
+      await new Promise((r) => setTimeout(r, 5))
+      expect(
+        posts
+          .filter((p) => p.clientId === 'c2')
+          .map((p) => p.channel)
+          .sort(),
+      ).toEqual(['a', 'b'])
+      expect(reconnects).toBe(1)
+      expect(errors).toEqual([])
+    } finally {
+      SseSubscriptionClient.createEventSource = origEs
+      remult.apiClient.httpClient = prevHttp
+      remult.apiClient.url = prevUrl
+    }
+  })
+
+  it('subscribe failure during reconnect reaches onError', async () => {
+    const sources = fakeEventSources()
+    const origEs = SseSubscriptionClient.createEventSource
+    SseSubscriptionClient.createEventSource = () => sources.create()
+    let fail = false
+    const http = {
+      get: async () => [],
+      put: () => undefined!,
+      delete: () => undefined!,
+      post: async (url: string) => {
+        if (String(url).endsWith('/subscribe') && fail) throw new Error('403')
+        return {}
+      },
+    }
+    const prevHttp = remult.apiClient.httpClient
+    const prevUrl = remult.apiClient.url
+    remult.apiClient.httpClient = http
+    remult.apiClient.url = 'http://x/api'
+    try {
+      const conn = await new SseSubscriptionClient().openConnection(() => {})
+      sources.all[0].fire('connectionId', 'c1')
+      const errors: any[] = []
+      await conn.subscribe(
+        'a',
+        () => {},
+        (e) => errors.push(e),
+      )
+      fail = true
+      sources.all[0].onerror(new Event('error'))
+      await new Promise((r) => setTimeout(r, 600))
+      sources.all[1].fire('connectionId', 'c2')
+      await new Promise((r) => setTimeout(r, 5))
+      expect(errors.length).toBe(1)
+    } finally {
+      SseSubscriptionClient.createEventSource = origEs
+      remult.apiClient.httpClient = prevHttp
+      remult.apiClient.url = prevUrl
+    }
+  })
+
   it('recreates the EventSource when no server event arrives past sseStaleMs', async () => {
     vi.useFakeTimers()
     const sources = fakeEventSources()
@@ -1990,6 +2264,55 @@ describe('live query resilience gaps', () => {
     }
   })
 
+  it('channel-only client backs off forced reconnects while SSE is stale', async () => {
+    vi.useFakeTimers()
+    const sources = fakeEventSources()
+    const origEs = SseSubscriptionClient.createEventSource
+    SseSubscriptionClient.createEventSource = () => sources.create()
+    let posts = 0
+    const http = {
+      get: async () => [],
+      put: () => undefined!,
+      delete: () => undefined!,
+      post: async () => {
+        posts++
+        return {}
+      },
+    }
+    const prevHttp = remult.apiClient.httpClient
+    const prevUrl = remult.apiClient.url
+    remult.apiClient.httpClient = http
+    remult.apiClient.url = 'http://x/api'
+    try {
+      const lqc = new LiveQueryClient(
+        () => ({
+          subscriptionClient: new SseSubscriptionClient(),
+          httpClient: http,
+          url: 'http://x/api',
+        }),
+        () => undefined,
+      )
+      const r = new Remult(new InMemoryDataProvider())
+      r.liveQuerySubscriber = lqc
+      const unsubP = new SubscriptionChannel('chan').subscribe(() => {}, r)
+      await vi.advanceTimersByTimeAsync(10)
+      sources.all[0].fire('connectionId', 'c1')
+      await vi.advanceTimersByTimeAsync(10)
+      const unsub = await unsubP
+      posts = 0
+      // no server event ever again: must reconnect, but not once per second
+      await vi.advanceTimersByTimeAsync(60_000)
+      expect(sources.all.length).toBeGreaterThan(1)
+      expect(sources.all.length).toBeLessThanOrEqual(5)
+      expect(posts).toBe(0)
+      unsub()
+    } finally {
+      SseSubscriptionClient.createEventSource = origEs
+      remult.apiClient.httpClient = prevHttp
+      remult.apiClient.url = prevUrl
+    }
+  })
+
   it('stale keep-alive polling backs off while versions match', async () => {
     vi.useFakeTimers()
     let posts = 0
@@ -2029,6 +2352,52 @@ describe('live query resilience gaps', () => {
     u()
   })
 
+  it('keep-alive backs off while the server is unreachable', async () => {
+    vi.useFakeTimers()
+    let posts = 0
+    const lqc = new LiveQueryClient(
+      () => ({
+        subscriptionClient: {
+          async openConnection() {
+            return {
+              lastServerEvent: Date.now(),
+              close() {},
+              async subscribe() {
+                return () => {}
+              },
+            }
+          },
+        },
+        httpClient: {
+          get: async () => [{ id: 1, title: 'noam' }],
+          put: () => undefined!,
+          delete: () => undefined!,
+          post: async (url: string) => {
+            if (String(url).includes('_liveQueryKeepAlive')) {
+              posts++
+              throw new Error('ECONNREFUSED')
+            }
+            return {}
+          },
+        },
+      }),
+      () => undefined,
+    )
+    const r = new Remult(new InMemoryDataProvider())
+    r.liveQuerySubscriber = lqc
+    const u = r.repo(eventTestEntity).liveQuery().subscribe({
+      next: () => {},
+      error: () => {},
+      complete: () => {},
+    })
+    await vi.advanceTimersByTimeAsync(10)
+    lqc.openedConnection!.lastServerEvent = 0
+    posts = 0
+    await vi.advanceTimersByTimeAsync(60_000)
+    expect(posts).toBeLessThanOrEqual(8)
+    u()
+  })
+
   it('failed openConnection does not leak the keep-alive interval or foreground listeners', async () => {
     vi.useFakeTimers()
     const g = globalThis as any
@@ -2063,16 +2432,32 @@ describe('live query resilience gaps', () => {
       )
       const r = new Remult(new InMemoryDataProvider())
       r.liveQuerySubscriber = lqc
+      const noop = { next: () => {}, error: () => {}, complete: () => {} }
       for (let i = 0; i < 2; i++) {
-        const u = r.repo(eventTestEntity).liveQuery().subscribe({
-          next: () => {},
-          error: () => {},
-          complete: () => {},
-        })
+        const u = r.repo(eventTestEntity).liveQuery().subscribe(noop)
         await vi.advanceTimersByTimeAsync(10)
         u()
         await vi.advanceTimersByTimeAsync(10)
       }
+      expect(lqc.hasQueriesForTesting()).toBe(false)
+      expect(vi.getTimerCount()).toBe(0)
+      expect(listeners).toBe(0)
+
+      // second open attempt while a query is still alive must not stack timers
+      const u1 = r.repo(eventTestEntity).liveQuery().subscribe(noop)
+      await vi.advanceTimersByTimeAsync(10)
+      const timersAfterFirst = vi.getTimerCount()
+      const listenersAfterFirst = listeners
+      const u2 = r
+        .repo(eventTestEntity)
+        .liveQuery({ where: { id: 1 } })
+        .subscribe(noop)
+      await vi.advanceTimersByTimeAsync(10)
+      expect(vi.getTimerCount()).toBe(timersAfterFirst)
+      expect(listeners).toBe(listenersAfterFirst)
+      u1()
+      u2()
+      await vi.advanceTimersByTimeAsync(10)
       expect(lqc.hasQueriesForTesting()).toBe(false)
       expect(vi.getTimerCount()).toBe(0)
       expect(listeners).toBe(0)
@@ -2232,14 +2617,109 @@ describe('live query keep-alive during refetch', () => {
     await vi.waitFor(() => expect(gets).toBe(1))
     onReconnect()
     await vi.waitFor(() => expect(gets).toBe(2))
-    await lqc.runKeepAlive({ checkVersions: true })
+    await lqc.runKeepAlive()
     expect(posted).toEqual([])
     releaseGet()
     await new Promise((r) => setTimeout(r, 20))
-    await lqc.runKeepAlive({ checkVersions: true })
+    await lqc.runKeepAlive()
     expect(posted.length).toBe(1)
     await new Promise((r) => setTimeout(r, 20))
     expect(gets).toBe(3)
     u()
+  })
+})
+
+describe('live query message ordering and channel retry', () => {
+  it('two pushes delivered in the same tick apply in order without a refetch', async () => {
+    actionInfo.runningOnServer = false
+    let gets = 0
+    let send: (x: any) => void = () => {}
+    const lqc = new LiveQueryClient(
+      () => ({
+        subscriptionClient: {
+          async openConnection() {
+            return {
+              close() {},
+              async subscribe(_c: string, onMessage: (x: any) => void) {
+                send = onMessage
+                return () => {}
+              },
+            }
+          },
+        },
+        httpClient: {
+          get: async () => {
+            gets++
+            return [{ id: 1, title: 'a' }]
+          },
+          put: () => undefined!,
+          delete: () => undefined!,
+          post: async () => ({ unknownQueryIds: [], versions: {} }),
+        },
+      }),
+      () => undefined,
+    )
+    const r = new Remult(new InMemoryDataProvider())
+    r.liveQuerySubscriber = lqc
+    let items: eventTestEntity[] = []
+    const u = r
+      .repo(eventTestEntity)
+      .liveQuery()
+      .subscribe(({ applyChanges }) => (items = applyChanges(items)))
+    await vi.waitFor(() => expect(items.length).toBe(1))
+    send([
+      { type: 'replace', data: { oldId: 1, item: { id: 1, title: 'v1' } } },
+      { type: 'version', from: 0, to: 1 },
+    ])
+    send([
+      { type: 'replace', data: { oldId: 1, item: { id: 1, title: 'v2' } } },
+      { type: 'version', from: 1, to: 2 },
+    ])
+    await new Promise((r) => setTimeout(r, 50))
+    expect(items[0].title).toBe('v2')
+    expect(gets).toBe(1)
+    u()
+  })
+
+  it('a refused channel subscribe is retried by the next subscribeChannel', async () => {
+    actionInfo.runningOnServer = false
+    let attempts = 0
+    const lqc = new LiveQueryClient(
+      () => ({
+        subscriptionClient: {
+          async openConnection() {
+            return {
+              close() {},
+              async subscribe() {
+                attempts++
+                if (attempts === 1) throw new Error('forbidden')
+                return () => {}
+              },
+            }
+          },
+        },
+        httpClient: {
+          get: async () => [],
+          put: () => undefined!,
+          delete: () => undefined!,
+          post: async () => ({}),
+        },
+      }),
+      () => undefined,
+    )
+    const errors: any[] = []
+    const listener = {
+      next: () => {},
+      error: (e: any) => errors.push(e),
+      complete: () => {},
+    }
+    await expect(lqc.subscribeChannel('inbox', listener)).rejects.toThrow(
+      'forbidden',
+    )
+    expect(attempts).toBe(1)
+    expect(errors.length).toBe(1)
+    const unsub = await lqc.subscribeChannel('inbox', listener)
+    expect(attempts).toBe(2)
+    unsub()
   })
 })

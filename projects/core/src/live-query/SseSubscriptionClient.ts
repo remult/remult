@@ -1,6 +1,7 @@
 import { buildRestDataProvider } from '../buildRestDataProvider.js'
 import { remult } from '../remult-proxy.js'
 import { remultStatic } from '../remult-static.js'
+import { flags } from '../remult3/remult3.js'
 import type {
   ServerEventChannelSubscribeDTO,
   SubscriptionClient,
@@ -13,12 +14,15 @@ export class SseSubscriptionClient implements SubscriptionClient {
   ): Promise<SubscriptionClientConnection> {
     let connectionId: string
     const channels = new Map<string, ((value: any) => void)[]>()
+    const errorHandlers = new Map<string, ((err: any) => void)[]>()
     const provider = buildRestDataProvider(remult.apiClient.httpClient)
     let source: EventSource
     let retryCount = 0
     let closed = false
     let connected = false
+    let everConnected = false
     let reconnectTimer: ReturnType<typeof setTimeout> | undefined
+    let lastConnectAt = 0
     let connectionReady!: () => void
     let connectionPromise = new Promise<void>((res) => {
       connectionReady = res
@@ -44,16 +48,15 @@ export class SseSubscriptionClient implements SubscriptionClient {
 
     function resume(force?: boolean) {
       if (closed) return
-      retryCount = 0
-      clearReconnectTimer()
+      const open = source && source.readyState !== EVENT_SOURCE_CLOSED
       if (force) {
+        // a source still inside its handshake window is not a zombie yet
+        if (open && Date.now() - lastConnectAt < flags.sseStaleMs) return
         createConnection()
         return
       }
-      const open =
-        source &&
-        typeof EventSource !== 'undefined' &&
-        source.readyState !== EventSource.CLOSED
+      retryCount = 0
+      clearReconnectTimer()
       if (!open) createConnection()
     }
 
@@ -65,17 +68,31 @@ export class SseSubscriptionClient implements SubscriptionClient {
         clearReconnectTimer()
         source?.close()
       },
-      async subscribe(channel, handler) {
+      async subscribe(channel, handler, onError) {
         let listeners = channels.get(channel)!
+        let onErrors = errorHandlers.get(channel)!
 
         if (!listeners) {
           channels.set(channel, (listeners = []))
-          await connectionPromise
-          if (!closed) await subscribeToChannel(channel)
+          errorHandlers.set(channel, (onErrors = []))
+          try {
+            await connectionPromise
+            if (!closed) await subscribeToChannel(channel)
+          } catch (err) {
+            // otherwise the next subscribe sees the entry and never retries
+            channels.delete(channel)
+            errorHandlers.delete(channel)
+            throw err
+          }
         }
         listeners.push(handler)
+        onErrors.push(onError)
         return () => {
-          listeners.splice(listeners.indexOf(handler, 1))
+          const i = listeners.indexOf(handler)
+          if (i >= 0) {
+            listeners.splice(i, 1)
+            onErrors.splice(i, 1)
+          }
           if (listeners.length == 0) {
             remultStatic.actionInfo.runActionWithoutBlockingUI(() =>
               provider.post(
@@ -87,6 +104,7 @@ export class SseSubscriptionClient implements SubscriptionClient {
               ),
             )
             channels.delete(channel)
+            errorHandlers.delete(channel)
           }
         }
       },
@@ -100,6 +118,7 @@ export class SseSubscriptionClient implements SubscriptionClient {
       if (closed) return
       clearReconnectTimer()
       if (source) source.close()
+      lastConnectAt = Date.now()
       source = SseSubscriptionClient.createEventSource(
         remult.apiClient.url + '/' + streamUrl,
       )
@@ -125,15 +144,22 @@ export class SseSubscriptionClient implements SubscriptionClient {
         retryCount = 0
         noteServerEvent()
 
-        if (connected) {
-          for (const channel of channels.keys()) {
-            await subscribeToChannel(channel)
+        // a connection the server forgot counts as a reconnect too: every
+        // channel must be re-subscribed and live queries refetched
+        const wasConnected = everConnected
+        connected = everConnected = true
+        if (wasConnected) {
+          for (const channel of [...channels.keys()]) {
+            try {
+              await subscribeToChannel(channel)
+            } catch (err) {
+              // one refused channel must not block the others
+              errorHandlers.get(channel)?.forEach((f) => f(err))
+            }
           }
           onReconnect()
-        } else {
-          connected = true
-          connectionReady()
         }
+        connectionReady()
       })
     }
 
@@ -152,14 +178,13 @@ export class SseSubscriptionClient implements SubscriptionClient {
           )
         },
       )
-      if (result === ConnectionNotFoundError) {
+      if (result === ConnectionNotFoundError && connected) {
         connected = false
         connectionPromise = new Promise<void>((res) => {
           connectionReady = res
         })
         createConnection()
         await connectionPromise
-        if (!closed) await subscribeToChannel(channel)
       }
     }
   }
@@ -171,3 +196,5 @@ export class SseSubscriptionClient implements SubscriptionClient {
 }
 
 export const ConnectionNotFoundError = 'client connection not found'
+// EventSource.CLOSED; the global is absent in Node
+const EVENT_SOURCE_CLOSED = 2

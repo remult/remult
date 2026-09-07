@@ -64,7 +64,11 @@ export class LiveQueryClient {
             },
           )
         } catch (err: any) {
-          onResult.error(err)
+          // drop the half-registered channel so the next subscribe retries
+          // instead of joining a channel that was never subscribed
+          this.channels.delete(key)
+          q.listeners.forEach((l) => l.error(err))
+          this.closeIfNoListeners()
           throw err
         }
       }
@@ -132,6 +136,7 @@ export class LiveQueryClient {
             )
             q.subscribeCode = () => {
               q.snapshotReady = false
+              q.droppedWhilePending = false
               q.unsubscribeChannel()
 
               let unsubscribeToChannel: Unsubscribe = () => {}
@@ -158,7 +163,11 @@ export class LiveQueryClient {
                   this.runPromise(r.unsubscribe())
                 }
                 snapshotDone = true
-                return this.runPromise(q.setAllItems(r.result))
+                return this.runPromise(
+                  q.setAllItems(r.result).then(() => {
+                    if (q.droppedWhilePending) return this.runKeepAlive()
+                  }),
+                )
               }
 
               this.runPromise(
@@ -176,9 +185,7 @@ export class LiveQueryClient {
                     }
                     unsubscribeToChannel = unsub
                     if (snapshotDone)
-                      return this.runPromise(
-                        this.runKeepAlive({ checkVersions: true }),
-                      )
+                      return this.runPromise(this.runKeepAlive())
                   })
                   .catch((err) => {
                     q.listeners.forEach((l) => l.error(err))
@@ -225,27 +232,28 @@ export class LiveQueryClient {
   interval: any
   lastKeepAliveAt = 0
   private keepAliveBackoffMs = flags.liveQueryPollWhenStaleMs
-  private keepAliveInFlight?: Promise<void>
+  private keepAliveInFlight?: Promise<boolean>
   private foregroundKeepAliveTimer: ReturnType<typeof setTimeout> | undefined
   isSseStale() {
     const conn = this.openedConnection
     if (!conn || conn.lastServerEvent === undefined) return false
     return Date.now() - conn.lastServerEvent > flags.sseStaleMs
   }
-  async runKeepAlive(opts?: { checkVersions?: boolean }) {
+  async runKeepAlive() {
     if (this.keepAliveInFlight) return this.keepAliveInFlight
-    this.keepAliveInFlight = this.sendKeepAlive(opts).finally(() => {
+    this.keepAliveInFlight = this.sendKeepAlive().finally(() => {
       this.keepAliveInFlight = undefined
     })
     return this.keepAliveInFlight
   }
-  private async sendKeepAlive(opts?: { checkVersions?: boolean }) {
+  /** Resolves true when a query was refetched. */
+  private async sendKeepAlive() {
     const ids: string[] = []
     for (const q of this.queries.values()) {
       if (!q.snapshotReady) continue
       ids.push(q.queryChannel)
     }
-    if (ids.length === 0) return
+    if (ids.length === 0) return false
     let p = this.apiProvider()
     const raw: unknown = await this.runPromise(
       remultStatic.actionInfo.runActionWithoutBlockingUI(() =>
@@ -261,29 +269,21 @@ export class LiveQueryClient {
     const versions: Record<string, number> = Array.isArray(raw)
       ? {}
       : ((raw as { versions?: Record<string, number> })?.versions ?? {})
-    const stale = opts?.checkVersions || this.isSseStale()
     let reloaded = false
     for (const q of this.queries.values()) {
       const serverVersion = versions[q.queryChannel]
       const unknown = unknownIds.includes(q.queryChannel)
+      // server returns versions on every keep-alive, so a missed message is
+      // caught even while SSE pings look healthy
       const mismatch =
-        stale && serverVersion !== undefined && serverVersion !== q.version
+        serverVersion !== undefined && serverVersion !== q.version
       if (unknown || mismatch) {
         reloaded = true
         if (serverVersion !== undefined) q.version = serverVersion
         q.subscribeCode!()
       }
     }
-    if (this.isSseStale()) {
-      this.keepAliveBackoffMs = reloaded
-        ? flags.liveQueryPollWhenStaleMs
-        : Math.min(
-            this.keepAliveBackoffMs * 2,
-            flags.liveQueryKeepAliveMs,
-          )
-    } else {
-      this.keepAliveBackoffMs = flags.liveQueryPollWhenStaleMs
-    }
+    return reloaded
   }
   private async maybeKeepAlive() {
     const stale = this.isSseStale()
@@ -294,7 +294,17 @@ export class LiveQueryClient {
     if (Date.now() - this.lastKeepAliveAt < interval) return
     this.lastKeepAliveAt = Date.now()
     if (stale) this.openedConnection?.resume?.(true)
-    await this.runKeepAlive()
+    let reloaded = false
+    try {
+      reloaded = await this.runKeepAlive()
+    } finally {
+      // runs on a failed post too, so an unreachable server is not polled
+      // every second; channel-only clients (no query ids) back off as well
+      if (this.isSseStale())
+        this.keepAliveBackoffMs = reloaded
+          ? flags.liveQueryPollWhenStaleMs
+          : Math.min(this.keepAliveBackoffMs * 2, flags.liveQueryKeepAliveMs)
+    }
   }
   private detachForeground = () => {}
   private attachForeground() {
@@ -307,7 +317,7 @@ export class LiveQueryClient {
         this.foregroundKeepAliveTimer = undefined
         this.keepAliveBackoffMs = flags.liveQueryPollWhenStaleMs
         this.lastKeepAliveAt = 0
-        this.runPromise(this.runKeepAlive({ checkVersions: true }))
+        this.runPromise(this.runKeepAlive())
       }, 300)
     })
     this.detachForeground = () => {
@@ -319,20 +329,31 @@ export class LiveQueryClient {
       this.detachForeground = () => {}
     }
   }
+  private startKeepAlive() {
+    // openConnection may reject and be retried with queries still alive
+    if (this.interval !== undefined) return
+    this.lastKeepAliveAt = Date.now()
+    this.keepAliveBackoffMs = flags.liveQueryPollWhenStaleMs
+    this.attachForeground()
+    this.interval = setInterval(
+      () => {
+        // a failed post is transient: the backoff covers it, next tick retries
+        this.runPromise(this.maybeKeepAlive().catch(() => {}))
+      },
+      Math.min(flags.liveQueryPollWhenStaleMs, flags.liveQueryKeepAliveMs),
+    )
+  }
   private openIfNoOpened() {
     if (!this.client) {
-      this.lastKeepAliveAt = Date.now()
-      this.keepAliveBackoffMs = flags.liveQueryPollWhenStaleMs
-      this.attachForeground()
-      this.interval = setInterval(() => {
-        this.runPromise(this.maybeKeepAlive())
-      }, Math.min(flags.liveQueryPollWhenStaleMs, flags.liveQueryKeepAliveMs))
-
+      this.startKeepAlive()
       return this.runPromise(
         (this.client = this.apiProvider()
           .subscriptionClient!.openConnection(() => {
             for (const q of this.queries.values()) {
               q.subscribeCode!()
+            }
+            for (const c of this.channels.values()) {
+              for (const l of c.listeners) l.reconnect?.()
             }
           })
           .then((c) => {
