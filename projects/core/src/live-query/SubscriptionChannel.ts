@@ -22,6 +22,8 @@ export class LiveQuerySubscriber<entityType> {
   queryChannel: string
   subscribeCode?: () => void
   unsubscribe: VoidFunction = () => {}
+  unsubscribeChannel: VoidFunction = () => {}
+  unsubscribeQuery: VoidFunction = () => {}
   async setAllItems(result: any[]) {
     const items = await getRepositoryInternals(this.repo)._fromJsonArray(
       result,
@@ -32,6 +34,7 @@ export class LiveQuerySubscriber<entityType> {
         return items
       })
     }, this.allItemsMessage(items))
+    this.version = 0
   }
 
   private allItemsMessage(items: entityType[]): LiveQueryChange[] {
@@ -81,8 +84,21 @@ export class LiveQuerySubscriber<entityType> {
   }
 
   async handle(messages: LiveQueryChange[]) {
+    const ver = messages.find(
+      (m): m is Extract<LiveQueryChange, { type: 'version' }> =>
+        m.type === 'version',
+    )
+    if (ver) {
+      if (ver.from < this.version) return
+      if (ver.from > this.version) {
+        this.version = ver.to
+        this.subscribeCode?.()
+        return
+      }
+    }
+    const data = messages.filter((m) => m.type !== 'version')
     {
-      let x = messages.filter(({ type }) => type == 'add' || type == 'replace')
+      let x = data.filter(({ type }) => type == 'add' || type == 'replace')
       let loadedItems = await getRepositoryInternals(this.repo)._fromJsonArray(
         x.map((m) => m.data.item),
         this.query.options,
@@ -96,7 +112,7 @@ export class LiveQuerySubscriber<entityType> {
     this.forListeners((listener) => {
       listener((items) => {
         if (!items) items = []
-        for (const message of messages) {
+        for (const message of data) {
           switch (message.type) {
             case 'all':
               this.setAllItems(message.data)
@@ -127,12 +143,14 @@ export class LiveQuerySubscriber<entityType> {
         }
         return items
       })
-    }, messages)
+    }, data)
+    this.version = ver ? ver.to : this.version + (data.length > 0 ? 1 : 0)
   }
 
   defaultQueryState: entityType[] = []
   listeners: SubscriptionListener<LiveQueryChangeInfo<entityType>>[] = []
   id = String(crypto.randomUUID())
+  version = 0
   constructor(
     private repo: Repository<entityType>,
     private query: SubscribeToQueryArgs<entityType>,
@@ -150,6 +168,22 @@ export interface SubscriptionListener<type> {
 }
 
 export type Unsubscribe = VoidFunction
+//@internal
+export function onBrowserForeground(handler: VoidFunction): Unsubscribe {
+  if (typeof document === 'undefined') return () => {}
+  function onForeground() {
+    if (document.visibilityState === 'hidden') return
+    handler()
+  }
+  document.addEventListener('visibilitychange', onForeground)
+  window.addEventListener('online', onForeground)
+  window.addEventListener('pageshow', onForeground)
+  return () => {
+    document.removeEventListener('visibilitychange', onForeground)
+    window.removeEventListener('online', onForeground)
+    window.removeEventListener('pageshow', onForeground)
+  }
+}
 export interface SubscriptionClientConnection {
   subscribe(
     channel: string,
@@ -157,6 +191,10 @@ export interface SubscriptionClientConnection {
     onError: (err: any) => void,
   ): Promise<Unsubscribe>
   close(): void
+  /** SSE clients set this; missing means no heartbeat tracking (Ably, tests). */
+  lastServerEvent?: number
+  /** Foreground / online: reconnect now, skip backoff. `force` kills an OPEN zombie. */
+  resume?: (force?: boolean) => void
 }
 
 export interface SubscriptionClient {
@@ -190,6 +228,11 @@ export declare type LiveQueryChange =
   | {
       type: 'remove'
       data: { id: any }
+    }
+  | {
+      type: 'version'
+      from: number
+      to: number
     }
 //@internal
 export interface SubscribeResult {

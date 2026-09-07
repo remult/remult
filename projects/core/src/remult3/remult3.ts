@@ -1545,6 +1545,12 @@ export type ClassFieldDecorator<entityType, valueType> = ((
 
 export const flags = {
   error500RetryCount: 4,
+  /** Client treats SSE as dead if no event for this long */
+  sseStaleMs: 20_000,
+  /** HTTP keep-alive while SSE is healthy (touches lastUsed) */
+  liveQueryKeepAliveMs: 30_000,
+  /** Version poll while SSE is stale */
+  liveQueryPollWhenStaleMs: 1_000,
 }
 
 /*p1 - issues in https://stackblitz.com/edit/demo-allow-delete-based-on-other-entity:

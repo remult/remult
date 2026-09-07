@@ -82,6 +82,11 @@ export class LiveQueryPublisher implements LiveQueryChangesListener {
                 messages,
               })
               query.lastIds = currentIds
+              if (messages.length > 0) {
+                const from = query.version ?? 0
+                query.version = from + 1
+                messages.push({ type: 'version', from, to: query.version })
+              }
               await setData(query)
               if (messages.length > 0)
                 this.subscriptionServer().publishMessage(q.id, messages)
@@ -108,29 +113,40 @@ export interface LiveQueryStorage {
       setData(data: any): Promise<void>
     }) => Promise<void>,
   ): Promise<void>
-  keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<string[]>
+  keepAliveAndReturnUnknownQueryIds(
+    queryIds: string[],
+  ): Promise<LiveQueryKeepAliveResult>
+}
+export type LiveQueryKeepAliveResult = {
+  unknownQueryIds: string[]
+  versions: Record<string, number>
 }
 export class InMemoryLiveQueryStorage implements LiveQueryStorage {
   debugFileSaver = (x: any) => {}
   debug() {
     this.debugFileSaver(this.queries)
   }
-  async keepAliveAndReturnUnknownQueryIds(ids: string[]): Promise<string[]> {
-    const result: string[] = []
+  async keepAliveAndReturnUnknownQueryIds(
+    ids: string[],
+  ): Promise<LiveQueryKeepAliveResult> {
+    const unknownQueryIds: string[] = []
+    const versions: Record<string, number> = {}
     for (const id of ids) {
       let q = this.queries.find((q) => q.id === id)
       if (q) {
         q.lastUsed = new Date().toISOString()
-      } else result.push(id)
+        versions[id] = (q.data as QueryData)?.version ?? 0
+      } else unknownQueryIds.push(id)
     }
     this.debug()
-    return result
+    return { unknownQueryIds, versions }
   }
 
   queries: (StoredQuery & { lastUsed: string })[] = []
 
   constructor() {}
   async add(query: StoredQuery) {
+    this.queries = this.queries.filter((q) => q.id !== query.id)
     this.queries.push({ ...query, lastUsed: new Date().toISOString() })
     this.debug()
   }
@@ -173,4 +189,5 @@ export interface QueryData {
   findOptionsJson: any
   requestJson: any
   lastIds: any[]
+  version?: number
 }

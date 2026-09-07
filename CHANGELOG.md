@@ -1,5 +1,19 @@
 All notable changes to this project will be documented in this file.
 
+## [3.4.0] - 2026-09-07
+
+- Fixed live query silently stopping updates when the SSE stream died while the HTTP keep-alive still looked healthy. Each server-side query now carries a version that is sent with every change; the client refetches the snapshot on a version gap, and the keep-alive returns versions so a stale connection is detected and recovered
+- Fixed `liveQuery` first `next()` hanging when the EventSource never connected. The REST snapshot no longer waits for the SSE `connectionId`
+- Fixed `SseSubscriptionClient` giving up after 4 EventSource errors. It now reconnects indefinitely with exponential backoff, resets the backoff once connected, and reconnects immediately on `visibilitychange`, `online` and `pageshow`
+- Fixed a half-open EventSource (open socket, no bytes) never being recreated. The client now forces a reconnect and polls versions with backoff while no server event arrives for `flags.sseStaleMs`
+- Fixed a leaked keep-alive interval and foreground listeners when `openConnection` rejected
+- Fixed a refetch racing its own `endLiveQuery` and deleting the new registration. Re-subscribing now replaces the stored query in place; `InMemoryLiveQueryStorage.add` replaces an existing query with the same id
+- SSE server ping is now every 15s (was 45s) to stay under proxy and Heroku idle timeouts. Exported as `ssePingMs`
+- Added `flags.sseStaleMs`, `flags.liveQueryKeepAliveMs` and `flags.liveQueryPollWhenStaleMs`
+- `LiveQueryChange` has a new `{ type: 'version', from, to }` member. It is consumed internally and not passed to `liveQuery` listeners
+- **Breaking** for custom `LiveQueryStorage` implementations: `keepAliveAndReturnUnknownQueryIds` now returns `{ unknownQueryIds: string[], versions: Record<string, number> }` instead of `string[]`. The keep-alive route still accepts and answers the old array body for older clients
+- `SubscriptionClientConnection` gained optional `lastServerEvent` and `resume(force?)`. Custom subscription clients (e.g. Ably) can ignore them
+
 ## [3.3.18] - 2026-08-30
 
 - Fixed `ArrayEntityDataProvider` storing omitted/`undefined` nullable fields as `undefined` instead of `null`, so filters like `{ date: null }` missed rows inserted without a value

@@ -1119,7 +1119,9 @@ export function commonDbTests(
     await x.forEach('x', async (args) => {
       expect(args.query.data).toBe('noam')
     })
-    expect(await x.keepAliveAndReturnUnknownQueryIds([id])).toEqual([])
+    expect(
+      (await x.keepAliveAndReturnUnknownQueryIds([id])).unknownQueryIds,
+    ).toEqual([])
   })
 
   it('test ensure schema adds missing columns', async () => {
