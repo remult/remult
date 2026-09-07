@@ -106,6 +106,9 @@ export class LiveQuerySubscriber<entityType> {
       this.subscribeCode?.()
       return
     }
+    // bump before the await below, so a second message delivered in the same
+    // tick is judged against this one and not mistaken for a gap
+    if (ver) this.version = ver.to
     const data = messages.filter((m) => m.type !== 'version')
     {
       let x = data.filter(({ type }) => type == 'add' || type == 'replace')
@@ -154,7 +157,7 @@ export class LiveQuerySubscriber<entityType> {
         return items
       })
     }, data)
-    this.version = ver ? ver.to : this.version + (data.length > 0 ? 1 : 0)
+    if (!ver && data.length > 0) this.version++
   }
 
   defaultQueryState: entityType[] = []

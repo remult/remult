@@ -64,7 +64,11 @@ export class LiveQueryClient {
             },
           )
         } catch (err: any) {
-          onResult.error(err)
+          // drop the half-registered channel so the next subscribe retries
+          // instead of joining a channel that was never subscribed
+          this.channels.delete(key)
+          q.listeners.forEach((l) => l.error(err))
+          this.closeIfNoListeners()
           throw err
         }
       }

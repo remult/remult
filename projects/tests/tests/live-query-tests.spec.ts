@@ -2582,3 +2582,98 @@ describe('live query keep-alive during refetch', () => {
     u()
   })
 })
+
+describe('live query message ordering and channel retry', () => {
+  it('two pushes delivered in the same tick apply in order without a refetch', async () => {
+    actionInfo.runningOnServer = false
+    let gets = 0
+    let send: (x: any) => void = () => {}
+    const lqc = new LiveQueryClient(
+      () => ({
+        subscriptionClient: {
+          async openConnection() {
+            return {
+              close() {},
+              async subscribe(_c: string, onMessage: (x: any) => void) {
+                send = onMessage
+                return () => {}
+              },
+            }
+          },
+        },
+        httpClient: {
+          get: async () => {
+            gets++
+            return [{ id: 1, title: 'a' }]
+          },
+          put: () => undefined!,
+          delete: () => undefined!,
+          post: async () => ({ unknownQueryIds: [], versions: {} }),
+        },
+      }),
+      () => undefined,
+    )
+    const r = new Remult(new InMemoryDataProvider())
+    r.liveQuerySubscriber = lqc
+    let items: eventTestEntity[] = []
+    const u = r
+      .repo(eventTestEntity)
+      .liveQuery()
+      .subscribe(({ applyChanges }) => (items = applyChanges(items)))
+    await vi.waitFor(() => expect(items.length).toBe(1))
+    send([
+      { type: 'replace', data: { oldId: 1, item: { id: 1, title: 'v1' } } },
+      { type: 'version', from: 0, to: 1 },
+    ])
+    send([
+      { type: 'replace', data: { oldId: 1, item: { id: 1, title: 'v2' } } },
+      { type: 'version', from: 1, to: 2 },
+    ])
+    await new Promise((r) => setTimeout(r, 50))
+    expect(items[0].title).toBe('v2')
+    expect(gets).toBe(1)
+    u()
+  })
+
+  it('a refused channel subscribe is retried by the next subscribeChannel', async () => {
+    actionInfo.runningOnServer = false
+    let attempts = 0
+    const lqc = new LiveQueryClient(
+      () => ({
+        subscriptionClient: {
+          async openConnection() {
+            return {
+              close() {},
+              async subscribe() {
+                attempts++
+                if (attempts === 1) throw new Error('forbidden')
+                return () => {}
+              },
+            }
+          },
+        },
+        httpClient: {
+          get: async () => [],
+          put: () => undefined!,
+          delete: () => undefined!,
+          post: async () => ({}),
+        },
+      }),
+      () => undefined,
+    )
+    const errors: any[] = []
+    const listener = {
+      next: () => {},
+      error: (e: any) => errors.push(e),
+      complete: () => {},
+    }
+    await expect(lqc.subscribeChannel('inbox', listener)).rejects.toThrow(
+      'forbidden',
+    )
+    expect(attempts).toBe(1)
+    expect(errors.length).toBe(1)
+    const unsub = await lqc.subscribeChannel('inbox', listener)
+    expect(attempts).toBe(2)
+    unsub()
+  })
+})
