@@ -1947,7 +1947,9 @@ export declare class InMemoryDataProvider
 export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
   debugFileSaver: (x: any) => void
   debug(): void
-  keepAliveAndReturnUnknownQueryIds(ids: string[]): Promise<string[]>
+  keepAliveAndReturnUnknownQueryIds(
+    ids: string[],
+  ): Promise<LiveQueryKeepAliveResult>
   queries: (StoredQuery & {
     lastUsed: string
   })[]
@@ -1963,6 +1965,7 @@ export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
     }) => Promise<void>,
   ): Promise<void>
 }
+//[ ] LiveQueryKeepAliveResult from TBD is not exported
 export declare type InsertOrUpdateOptions = {
   select: "none"
 }
@@ -2131,6 +2134,11 @@ export declare type LiveQueryChange =
         id: any
       }
     }
+  | {
+      type: "version"
+      from: number
+      to: number
+    }
 export interface LiveQueryChangeInfo<entityType> {
   /**
    * The updated array of result items.
@@ -2175,7 +2183,9 @@ export interface LiveQueryStorage {
       setData(data: any): Promise<void>
     }) => Promise<void>,
   ): Promise<void>
-  keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<string[]>
+  keepAliveAndReturnUnknownQueryIds(
+    queryIds: string[],
+  ): Promise<LiveQueryKeepAliveResult>
 }
 export declare type MembersOnly<T> = {
   [K in keyof Omit<T, keyof EntityBase> as T[K] extends Function
@@ -3259,6 +3269,10 @@ export interface SubscriptionClientConnection {
     onError: (err: any) => void,
   ): Promise<Unsubscribe>
   close(): void
+  /** SSE clients set this; missing means no heartbeat tracking (Ably, tests). */
+  lastServerEvent?: number
+  /** Foreground / online: reconnect now, skip backoff. `force` kills an OPEN zombie. */
+  resume?: (force?: boolean) => void
 }
 export interface SubscriptionListener<type> {
   next(message: type): void
@@ -3429,6 +3443,7 @@ export interface ValueConverter<valueType> {
   toJson?(val: valueType): any
   /**
    * Converts a value from the database format to the valueType.
+   * Defaults to `fromJson` when not provided.
    *
    * @param val The value to convert.
    * @returns The converted value.
@@ -3439,6 +3454,7 @@ export interface ValueConverter<valueType> {
   fromDb?(val: any): valueType
   /**
    * Converts a value of valueType to the database format.
+   * Defaults to `toJson` when not provided.
    *
    * @param val The value to convert.
    * @returns The converted value.
@@ -3450,6 +3466,7 @@ export interface ValueConverter<valueType> {
   toDbSql?(val: string): string
   /**
    * Converts a value of valueType to a string suitable for an HTML input element.
+   * Defaults to `toJson` when not provided.
    *
    * @param val The value to convert.
    * @param inputType The type of the input element (optional).
@@ -3461,6 +3478,7 @@ export interface ValueConverter<valueType> {
   toInput?(val: valueType, inputType?: string): string
   /**
    * Converts a string from an HTML input element to the valueType.
+   * Defaults to `fromJson` when not provided.
    *
    * @param val The value to convert.
    * @param inputType The type of the input element (optional).
@@ -3750,7 +3768,10 @@ export declare class DataProviderLiveQueryStorage
       setData(data: any): Promise<void>
     }) => Promise<void>,
   ): Promise<void>
-  keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<string[]>
+  keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<{
+    unknownQueryIds: string[]
+    versions: Record<string, number>
+  }>
 }
 //[ ] Repository from TBD is not exported
 //[ ] LiveQueryStorageEntity from TBD is not exported
@@ -4023,7 +4044,10 @@ export declare class DataProviderLiveQueryStorage
       setData(data: any): Promise<void>
     }) => Promise<void>,
   ): Promise<void>
-  keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<string[]>
+  keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<{
+    unknownQueryIds: string[]
+    versions: Record<string, number>
+  }>
 }
 //[ ] Repository from TBD is not exported
 //[ ] LiveQueryStorageEntity from TBD is not exported
@@ -4486,7 +4510,7 @@ export declare class KnexDataProvider
     wrapIdentifier?: (name: string) => string,
   ): Promise<(knex: Knex.QueryBuilder) => void>
   isProxy?: boolean
-  ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
+  ensureSchema(entities: EntityMetadata[]): Promise<void>
 }
 //[ ] MigrationCode from ../migrations/migration-types.js is not exported
 //[ ] MigrationBuilder from ../migrations/migration-types.js is not exported
@@ -4499,7 +4523,7 @@ export declare class KnexDataProvider
 //[ ] RepositoryOverloads from ../src/remult3/RepositoryImplementation.js is not exported
 export declare class KnexSchemaBuilder {
   private knex
-  ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
+  ensureSchema(entities: EntityMetadata[]): Promise<void>
   createIfNotExist(entity: EntityMetadata): Promise<void>
   createTableKnexCommand(
     entity: EntityMetadata,
@@ -4889,6 +4913,12 @@ export const fieldOptionsEnricher: {
 }
 export const flags: {
   error500RetryCount: number
+  /** Client treats SSE as dead if no event for this long */
+  sseStaleMs: number
+  /** HTTP keep-alive while SSE is healthy (touches lastUsed) */
+  liveQueryKeepAliveMs: number
+  /** Version poll while SSE is stale */
+  liveQueryPollWhenStaleMs: number
 }
 export declare function getControllerRef<fieldsContainerType>(
   container: fieldsContainerType,
