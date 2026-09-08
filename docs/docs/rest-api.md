@@ -53,6 +53,19 @@ https://mySite.com/api/products?price.gte=5&price.lte=10
 
 - Combine conditions with `&`.
 
+:::warning Unrecognized filters are ignored, not rejected
+Filters are built by walking the entity's fields and looking for `<fieldKey>` + a known operator. A parameter that matches no field (typo, `includeInApi: false`, a field the caller can't read) or uses an unknown suffix is never read — the request succeeds and returns the **unfiltered** set.
+
+Relation fields filter by **id only**; there is no nested traversal. `?courier.name=Steve` is parsed as the field `courier` with the unknown operator `.name`, so it silently returns everything:
+
+```
+/api/deliveries?courier.name=Steve   // ignored - returns all rows
+/api/deliveries?courier=<courier-id> // filters
+```
+
+To filter by a related row's value, look the id up first, or expose a [custom filter](/docs/custom-filter) that does the join server-side. When a count comes back suspiciously close to the table total, suspect an ignored parameter.
+:::
+
 `$or` / `$not` (and large / nested `$in`) don't fit in the query string. Send them as `where` on a `POST` (see [Actions](#actions)):
 
 ```
@@ -172,8 +185,8 @@ Maps to `repo().groupBy()` / `repo().aggregate()`. Always returns an **array**. 
 ```
 
 - `groupBy`, `sum`, `avg`, `min`, `max`, `distinctCount` — field-name arrays. Fields with `includeInApi: false` are ignored.
-- `orderBy` — `{ field?, operation?, isDescending? }`. `operation` is `count` | `sum` | `avg` | `min` | `max` | `distinctCount`. Omit `operation` to order by a grouped field.
-- `_limit` / `_page` page the **groups**.
+- `orderBy` — `{ field?, operation?, isDescending? }`. `operation` is `count` | `sum` | `avg` | `min` | `max` | `distinctCount`. Omit `operation` to order by a grouped field. To order by the row count, use `{ "operation": "count" }` — **not** `{ "field": "$count" }`, which names no field and is ignored, leaving the groups unordered.
+- `_limit` / `_page` page the **groups**. Paging an unordered result gives you an arbitrary subset, so pair `_limit` with an `orderBy` that took effect.
 
 Response:
 

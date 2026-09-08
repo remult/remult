@@ -13,6 +13,8 @@ Live query / SSE resilience. The client no longer loses updates when the SSE str
 - `LiveQueryChange` has an internal `{ type: 'version', from, to }` member, filtered out before reaching `liveQuery` listeners
 - **Breaking** for custom `LiveQueryStorage`: `keepAliveAndReturnUnknownQueryIds` returns `{ unknownQueryIds, versions }` instead of `string[]`. The keep-alive route still accepts the old array body from older clients
 - `SubscriptionClientConnection` gained optional `lastServerEvent` and `resume(force?)`; custom clients (Ably, ...) can ignore them
+- Fixed REST `_select` / `find({ select })` serializing omitted fields through `toApiJson`, so dates and custom converters leaked as `''` instead of being absent
+- REST docs fixes
 
 ## [3.3.18] - 2026-08-30
 

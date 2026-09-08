@@ -957,7 +957,8 @@ export class RepositoryImplementation<entityType>
   }
   private async _loadManyToOneForManyRows(
     rawRows: any[],
-    loadOptions: LoadOptions<entityType>,
+    loadOptions: LoadOptions<entityType> &
+      Pick<FindOptionsBase<entityType>, 'select'>,
     loader: RelationLoader,
   ): Promise<entityType[]> {
     let loadFields: FieldMetadata[] | undefined = undefined
@@ -1016,10 +1017,28 @@ export class RepositoryImplementation<entityType>
         })
         .filter((x) => x !== undefined),
     )
+    const select = loadOptions?.select
+    let fieldsExcludedBySelect: Set<string> | undefined = undefined
+    if (select) {
+      const selected = new Set(
+        Object.keys(select).filter((x) => (select as any)[x]),
+      )
+      fieldsExcludedBySelect = new Set(
+        this.fields
+          .toArray()
+          .map((f) => f.key)
+          .filter((key) => !selected.has(key)),
+      )
+    }
     let result = await promiseAll(
       rawRows,
       async (r) =>
-        await this._mapRawDataToResult(r, loadFields, excludeRelationMembers),
+        await this._mapRawDataToResult(
+          r,
+          loadFields,
+          excludeRelationMembers,
+          fieldsExcludedBySelect,
+        ),
     )
     const fields = this.metadata.fields.toArray()
     this._populateRelationsForFields(fields, loadOptions, result, loader)
@@ -1180,6 +1199,7 @@ export class RepositoryImplementation<entityType>
     r: any,
     loadFields?: FieldMetadata[],
     excludeRelationMembers?: Set<string>,
+    fieldsExcludedBySelect?: Set<string>,
   ) {
     let x = new this._entity(this._remult)
     let helper = new rowHelperImplementation(
@@ -1191,6 +1211,7 @@ export class RepositoryImplementation<entityType>
       false,
       excludeRelationMembers,
     )
+    helper._fieldsExcludedBySelect = fieldsExcludedBySelect
     Object.defineProperty(x, entityMember, {
       //I've used define property to hide this member from console.lo g
       get: () => helper,
@@ -1526,6 +1547,9 @@ abstract class rowHelperBase<T> {
     this._error = val
     this._subscribers?.reportChanged()
   }
+  /** Fields left out by a partial `select` - they were never loaded, so they
+   * must not be serialized by {@link toApiJson}. */
+  _fieldsExcludedBySelect?: Set<string>
   constructor(
     protected fieldsMetadata: FieldMetadata[],
     public instance: T,
@@ -1792,6 +1816,10 @@ abstract class rowHelperBase<T> {
   toApiJson(includeRelatedEntities = false, notJustApi = false) {
     let result: any = {}
     for (const col of this.fieldsMetadata) {
+      // A field excluded by `select` was never loaded. Running it through
+      // valueConverter.toJson would emit a value ('' for dates and most custom
+      // converters) that the caller can't tell apart from a real empty value.
+      if (this._fieldsExcludedBySelect?.has(col.key)) continue
       if (notJustApi || !this.remult || col.includedInApi(this.instance!)) {
         let val
         let lu = this.lookups.get(col.key)
