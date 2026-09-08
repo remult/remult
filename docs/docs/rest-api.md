@@ -1,40 +1,38 @@
 ---
-llm: "Auto-generated REST endpoints per entity - GET/POST/PUT/DELETE with sort, filter, select, paging."
+llm: "READ ONLY entity REST API - GET list/by-id, count, groupBy, aggregate, query. Filter, sort, select, paging. No insert/update/delete."
 ---
 
-# Entity Rest Api Breakdown
+# Entity REST API (read)
 
-All entities automatically expose a rest API based on the parameters defined in its decorator.
+Read-only endpoints auto-exposed per entity. Mutations (insert / update / delete) are in [REST API (mutations)](/docs/rest-api-mutations).
 
-The API supports the following actions (we'll use the `products` entity as an example, and a specific product with an id=7):
+`POST` here is still a **read** — it always has `?__action=get|count|groupBy|query`. A `POST` **without** `__action` inserts a row.
 
-| Http Method | Description                                                                         | example         | requires       |
-| ----------- | ----------------------------------------------------------------------------------- | --------------- | -------------- |
-| GET         | returns an array of rows                                                            | /api/products   | allowApiRead   |
-| GET         | returns a single row based on its id                                                | /api/products/7 | allowApiRead   |
-| POST        | creates a new row based on the object sent in the body, and returns the new row     | /api/products   | allowApiInsert |
-| PUT         | updates an existing row based on the object sent in the body and returns the result | /api/products/7 | allowApiUpdate |
-| DELETE      | deletes an existing row                                                             | /api/products/7 | allowApiDelete |
+We'll use the `products` entity (id `7`) as the example.
+
+| Http Method | Description                      | example         | requires     |
+| ----------- | -------------------------------- | --------------- | ------------ |
+| GET         | array of rows                    | /api/products   | allowApiRead |
+| GET         | single row by id                 | /api/products/7 | allowApiRead |
+| POST        | same as GET, `where` in the body | see [Actions](#actions) | allowApiRead |
 
 ## Sort
 
-Add \_sort and \_order (ascending order by default)
+`_sort` and `_order` (asc by default). Comma-separated for multiple columns.
 
 ```
 https://mySite.com/api/products?_sort=price&_order=desc
 ```
 
-## Filter
+```
+https://mySite.com/api/products?_sort=category,price&_order=asc,desc
+```
 
-You can filter the rows using different operators
+## Filter
 
 ```
 https://mySite.com/api/products?price.gte=5&price.lte=10
 ```
-
-## Select
-
-Use `_select` with a comma separated list of the fields you would like to select
 
 ### Filter Operators
 
@@ -53,25 +51,46 @@ Use `_select` with a comma separated list of the fields you would like to select
 | .lte         | Lesser than or equal  | price.lte=10                                       |
 | .null        | is or is not null     | price.null=true                                    |
 
-- you can add several filter conditions using the `&` operator.
+- Combine conditions with `&`.
 
-### Count
+`$or` / `$not` (and large / nested `$in`) don't fit in the query string. Send them as `where` on a `POST` (see [Actions](#actions)):
 
 ```
-https://mySite.com/api/products?price.gte=10&__action=count
+POST /api/products?__action=get
 ```
-
-returns:
 
 ```JSON
 {
-  "count": 4
+  "where": {
+    "OR": [
+      { "category": "books" },
+      { "price.lt": 10 }
+    ]
+  }
 }
+```
+
+`NOT` works the same way (`"NOT": { "category": "books" }`).
+
+Custom filters (`Filter.createCustom`) use `$custom$<name>`:
+
+```
+https://mySite.com/api/orders?%24custom%24activeOrders=%7B%22year%22%3A2024%7D
+```
+
+See [EntityFilter](/docs/entityFilter) and [Custom Filters](/docs/custom-filter).
+
+## Select
+
+`_select` — comma-separated fields.
+
+```
+https://mySite.com/api/products?_select=id,name,price
 ```
 
 ## Paginate
 
-The default page size is 100 rows.
+The remult client defaults to 100 rows. Raw HTTP without `_limit` returns all rows (unless you set [`defaultGetLimit`](/docs/ref_remultserveroptions#defaultgetlimit)).
 
 ```
 https://mySite.com/api/products?_limit=25
@@ -82,10 +101,144 @@ https://mySite.com/api/products?_limit=5&_page=3
 ```
 
 :::tip
-You can use it all in conjunction:
+Combine freely:
 
 ```
 https://mySite.com/api/products?price.gte=5&price.lte=10&_sort=price&_order=desc&_limit=5&_page=3
 ```
 
 :::
+
+## Actions
+
+`POST /api/products?__action=<action>` — **read only**. Query-string filters still apply. `get` and `count` require `where` in the body.
+
+| `__action` | body                             | returns                         |
+| ---------- | -------------------------------- | ------------------------------- |
+| `get`      | `{ "where": ... }`               | array of rows                   |
+| `count`    | `{ "where": ... }`               | `{ "count": n }`                |
+| `groupBy`  | see [Group by](#group-by-aggregate) | array of groups / one aggregate |
+| `query`    | `{ "where"?, "aggregate"? }`     | `{ items, aggregates }`         |
+
+`GET ?__action=count` also works (query-string filters only).
+
+Simple filters can stay on the URL; put the rest in `where`. `where` uses the same operator keys as query params (`price.gte`, `name.contains`, `OR`, `NOT`, `$custom$...`).
+
+### Count
+
+```
+https://mySite.com/api/products?price.gte=10&__action=count
+```
+
+or
+
+```
+POST /api/products?__action=count
+```
+
+```JSON
+{ "where": { "price.gte": 10 } }
+```
+
+returns:
+
+```JSON
+{
+  "count": 4
+}
+```
+
+### Group by & aggregate
+
+`POST /api/products?__action=groupBy`
+
+Maps to `repo().groupBy()` / `repo().aggregate()`. Always returns an **array**. `$count` is included on every row. Omit `groupBy` for a single aggregate over the filtered set (what `repo().aggregate()` does).
+
+```JSON
+{
+  "groupBy": ["category", "inStock"],
+  "sum": ["price"],
+  "avg": ["price"],
+  "min": ["price"],
+  "max": ["price"],
+  "distinctCount": ["name"],
+  "orderBy": [
+    { "field": "category" },
+    { "field": "price", "operation": "sum", "isDescending": true },
+    { "operation": "count", "isDescending": true }
+  ],
+  "where": { "price.gte": 5 }
+}
+```
+
+- `groupBy`, `sum`, `avg`, `min`, `max`, `distinctCount` — field-name arrays. Fields with `includeInApi: false` are ignored.
+- `orderBy` — `{ field?, operation?, isDescending? }`. `operation` is `count` | `sum` | `avg` | `min` | `max` | `distinctCount`. Omit `operation` to order by a grouped field.
+- `_limit` / `_page` page the **groups**.
+
+Response:
+
+```JSON
+[
+  {
+    "$count": 3,
+    "category": "books",
+    "inStock": true,
+    "price": { "sum": 42, "avg": 14, "min": 8, "max": 20 },
+    "name": { "distinctCount": 3 }
+  }
+]
+```
+
+Aggregate only (no groups) — same endpoint, no `groupBy`:
+
+```JSON
+{
+  "sum": ["price"],
+  "avg": ["price"]
+}
+```
+
+```JSON
+[
+  {
+    "$count": 12,
+    "price": { "sum": 240, "avg": 20 }
+  }
+]
+```
+
+Query-string filters still apply (`POST /api/products?category=books&__action=groupBy`).
+
+### Query (items + aggregates)
+
+`POST /api/products?__action=query`
+
+One round-trip: current page of rows **and** aggregates over the full filtered set (paging/sort/select do **not** apply to the aggregate).
+
+```
+POST /api/products?_limit=25&_page=1&_sort=price&_order=desc&__action=query
+```
+
+```JSON
+{
+  "where": { "category": "books" },
+  "aggregate": {
+    "sum": ["price"],
+    "avg": ["price"]
+  }
+}
+```
+
+returns:
+
+```JSON
+{
+  "items": [ { "id": 7, "name": "...", "price": 20 } ],
+  "aggregates": {
+    "$count": 12,
+    "price": { "sum": 240, "avg": 20 }
+  }
+}
+```
+
+This is what `repo().query({ aggregate })` uses.

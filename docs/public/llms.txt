@@ -117,7 +117,8 @@
 - [generateMigrations](https://remult.dev/docs/ref_generatemigrations)
 - [migrate](https://remult.dev/docs/ref_migrate)
 - [Async Hooks](https://remult.dev/docs/ref_initasynchooks)
-- [REST API Spec](https://remult.dev/docs/rest-api): Auto-generated REST endpoints per entity - GET/POST/PUT/DELETE with sort, filter, select, paging.
+- [REST API (read)](https://remult.dev/docs/rest-api): READ ONLY entity REST API - GET list/by-id, count, groupBy, aggregate, query. Filter, sort, select, paging. No insert/update/delete.
+- [REST API (mutations)](https://remult.dev/docs/rest-api-mutations): WRITE entity REST API - POST insert, PUT update, DELETE, insertMany, updateMany, deleteMany, upsertMany. Not for querying.
 - [EntityBase](https://remult.dev/docs/ref_entitybase)
 - [IdEntity](https://remult.dev/docs/ref_identity)
 - [EntityRef](https://remult.dev/docs/ref_entityref)
