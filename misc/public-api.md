@@ -448,6 +448,11 @@ export declare function describeEntity<entityType extends ClassType<any>>(
   fields: FieldsDescriptor<entityType>,
   options?: EntityOptions<InstanceType<entityType>>,
 ): void
+export interface DroppableDataProvider extends DataProvider {
+  dropDatabase(): Promise<void>
+  /** Recreated with indexes on next use (`ensureSchema` / first write). */
+  dropTable(entity: EntityMetadataOverloads): Promise<void>
+}
 export declare function Entity<entityType>(
   key: string,
   ...options: (
@@ -1934,7 +1939,7 @@ export interface IdMetadata<entityType = unknown> {
     items: Partial<MembersOnly<entityType>>[],
   ): EntityFilter<entityType>
 }
-export declare class IndexedDbDataProvider implements DataProvider {
+export declare class IndexedDbDataProvider implements DroppableDataProvider {
   private dbName
   constructor(dbName?: string, options?: IndexedDbDataProviderOptions)
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider
@@ -1943,10 +1948,31 @@ export declare class IndexedDbDataProvider implements DataProvider {
   ): Promise<void>
   ensureSchema(entities: EntityMetadata[]): Promise<void>
   close(): void
+  dropDatabase(): Promise<void>
+  dropTable(entity: EntityMetadataOverloads): Promise<void>
 }
 export type IndexedDbDataProviderOptions = {
+  /** IDB-only indexes (not unique). PK is skipped. Compound names join db names with `_`. */
   indexes?: (x: IndexedDbIndexBuilder) => void
+  /**
+   * AES-GCM 256 on non-indexed fields (`_enc` + `_iv`). Requires `crypto.subtle`.
+   *
+   * Not full security. Stops casual disk/profile dump and other origins
+   * (non-extractable `CryptoKey` wrapped by the browser). Does **not** protect
+   * against same-origin XSS / any JS that can use the stored `CryptoKey` to decrypt.
+   *
+   * PK + `ensureIndexes` fields stay plaintext (required for IDB keyPath/indexes).
+   * Only non-indexed fields go into `_enc`.
+   *
+   * Default auto-key is origin-bound theater vs XSS. Pass `getEncryptionKey` for
+   * a stronger secret you control.
+   */
   encrypt?: boolean
+  /**
+   * Your AES-GCM `CryptoKey` (or Promise). Skips `__remult_keys`. Stronger than
+   * the default origin-bound auto-key — still not XSS-safe if same-origin JS can
+   * call this and decrypt.
+   */
   getEncryptionKey?: () => CryptoKey | Promise<CryptoKey>
 }
 //[ ] CryptoKey from TBD is not exported
@@ -1960,13 +1986,15 @@ export type IndexedDbIndexDef<entityType> =
   | keyof MembersOnly<entityType>
   | readonly (keyof MembersOnly<entityType>)[]
 export declare class InMemoryDataProvider
-  implements DataProvider, __RowsOfDataForTesting
+  implements DroppableDataProvider, __RowsOfDataForTesting
 {
   transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
   ): Promise<void>
   rows: any
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider
+  dropDatabase(): Promise<void>
+  dropTable(entity: EntityMetadataOverloads): Promise<void>
   toString(): string
 }
 export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
@@ -1989,7 +2017,17 @@ export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
   ): Promise<void>
 }
 export declare type InsertOrUpdateOptions = {
-  select: "none"
+  select?: "none"
+  /**
+   * One provider statement/txn (SQL multi-row `INSERT`, IDB one txn).
+   *
+   * Default / omitted (`false`): `insert([a,b,c])` inserts one-by-one so
+   * `saving` and `Validators.unique` see prior rows in the same call.
+   *
+   * When `true`: all `saving` hooks run before any write; `Validators.unique`
+   * / `count()` only see the DB, not siblings in the same array.
+   */
+  bulk?: boolean
 }
 export declare function isBackend(): boolean
 export declare class JsonDataProvider implements DataProvider {
@@ -2834,11 +2872,14 @@ export interface Repository<entityType> {
     item: Partial<MembersOnly<entityType>>,
     options?: InsertOrUpdateOptions,
   ): Promise<entityType>
-  /**Insert an item or item[] to the data source
+  /**Insert an item or item[] to the data source.
+   * Arrays insert one-by-one by default. Pass `{ bulk: true }` for one provider statement/txn.
    * @example
    * await taskRepo.insert({title:"task a"})
    * @example
    * await taskRepo.insert([{title:"task a"}, {title:"task b", completed:true }])
+   * @example
+   * await taskRepo.insert([{title:"a"}, {title:"b"}], { bulk: true })
    */
   insert(
     item: Partial<MembersOnly<entityType>>[],

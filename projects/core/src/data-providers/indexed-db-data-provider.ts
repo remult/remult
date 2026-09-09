@@ -1,5 +1,6 @@
 import type {
   DataProvider,
+  DroppableDataProvider,
   EntityDataProvider,
   EntityDataProviderFindOptions,
   EntityDataProviderGroupByOptions,
@@ -13,7 +14,11 @@ import type { ClassType } from '../../classType.js'
 import type { FieldMetadata } from '../column-interfaces.js'
 import type { Filter, FilterConsumer } from '../filter/filter-interfaces.js'
 import type { EntityMetadata, MembersOnly } from '../remult3/remult3.js'
-import { isAutoIncrement } from '../remult3/RepositoryImplementation.js'
+import {
+  getEntityMetadata,
+  isAutoIncrement,
+  type EntityMetadataOverloads,
+} from '../remult3/RepositoryImplementation.js'
 import { ArrayEntityDataProvider } from './array-entity-data-provider.js'
 
 export type IndexedDbIndexDef<entityType> =
@@ -66,7 +71,7 @@ const IDB_DEK_ID = 'dek'
 const IDB_ENC = '_enc'
 const IDB_IV = '_iv'
 
-export class IndexedDbDataProvider implements DataProvider {
+export class IndexedDbDataProvider implements DroppableDataProvider {
   //@internal
   private declaredIndexes: IndexedDbIndexBuilder['entries'] = []
   //@internal
@@ -118,6 +123,30 @@ export class IndexedDbDataProvider implements DataProvider {
   close() {
     this.db?.close()
     this.db = undefined
+  }
+
+  async dropDatabase(): Promise<void> {
+    await this.enqueue(async () => {
+      this.close()
+      this.dek = undefined
+      await idbDeleteDatabase(this.dbName)
+    })
+  }
+
+  async dropTable(entity: EntityMetadataOverloads): Promise<void> {
+    await this.enqueue(async () => {
+      const name = storeNameOf(getEntityMetadata(entity))
+      const db = await this.open()
+      if (!db.objectStoreNames.contains(name)) return
+      const nextVersion = db.version + 1
+      this.forget(db)
+      db.close()
+      await this.open(nextVersion, (upgradeDb) => {
+        if (upgradeDb.objectStoreNames.contains(name)) {
+          upgradeDb.deleteObjectStore(name)
+        }
+      })
+    })
   }
 
   //@internal
@@ -960,6 +989,17 @@ function idbReq<T>(request: IDBRequest<T>): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     request.onsuccess = () => resolve(request.result)
     request.onerror = () => reject(request.error)
+  })
+}
+
+function idbDeleteDatabase(name: string) {
+  return new Promise<void>((resolve, reject) => {
+    const req = indexedDB.deleteDatabase(name)
+    req.onsuccess = () => resolve()
+    req.onerror = () => reject(req.error)
+    req.onblocked = () => {
+      /* wait for onsuccess after other connections close */
+    }
   })
 }
 

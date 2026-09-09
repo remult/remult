@@ -6,6 +6,7 @@ import type {
   MembersOnly,
   InsertOrUpdateOptions,
 } from './remult3/remult3.js'
+import type { EntityMetadataOverloads } from './remult3/RepositoryImplementation.js'
 import { Sort } from './sort.js'
 
 export interface DataProvider {
@@ -15,6 +16,13 @@ export interface DataProvider {
   ): Promise<void>
   ensureSchema?(entities: EntityMetadata[]): Promise<void>
   isProxy?: boolean
+}
+
+/** `InMemoryDataProvider` + `IndexedDbDataProvider` — swap in tests. */
+export interface DroppableDataProvider extends DataProvider {
+  dropDatabase(): Promise<void>
+  /** Recreated with indexes on next use (`ensureSchema` / first write). */
+  dropTable(entity: EntityMetadataOverloads): Promise<void>
 }
 export interface Storage {
   ensureSchema(): Promise<void>

@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Native `IndexedDbDataProvider`: PK + declared indexes, filter prefetch, batch insert/delete in one IDB txn, optional `encrypt: true` (AES-GCM, non-extractable key in `__remult_keys`, PK+index fields plaintext, rest `_enc`+`_iv`). Docs: installation/database/indexeddb — see docs for threat model.
+- `DroppableDataProvider` (`dropDatabase` / `dropTable`) on `IndexedDbDataProvider` and `InMemoryDataProvider`. `dropTable(Task)` or metadata; store + indexes recreated on next use.
 - `insert([a, b], { bulk: true })` — one `EntityDataProvider.insert` after all `saving` hooks. Use for SQL multi-row `INSERT` / one IDB txn. `Validators.unique` / `count()` only see the DB, not siblings in the same array.
 
 ### Changed

@@ -1,5 +1,5 @@
 ---
-llm: "Browser IndexedDbDataProvider from remult - native object stores, typed indexes, filter prefetch, batch insert/delete, optional AES-GCM encryption."
+llm: "Browser IndexedDbDataProvider from remult - native object stores, typed indexes, filter prefetch, batch insert/delete, dropDatabase/dropTable, optional AES-GCM encryption."
 ---
 
 # IndexedDB
@@ -46,6 +46,22 @@ console.table(await repo(Task, db).find())
 ```
 
 Stores are created on first use (`ensureSchema`). Call `db.close()` when you are done with the connection.
+
+## Drop / reset
+
+`IndexedDbDataProvider` and `InMemoryDataProvider` both implement `DroppableDataProvider` — swap them in tests.
+
+```ts
+import type { DroppableDataProvider } from 'remult'
+
+async function reset(db: DroppableDataProvider) {
+  await db.dropTable(Task) // or repo(Task).metadata
+  await db.dropDatabase()
+}
+```
+
+- **`dropTable`** — deletes that entity's object store (IDB version bump). Next insert / `ensureSchema` recreates it with the same `ensureIndexes`. Autoincrement resets.
+- **`dropDatabase`** — closes the connection and deletes the IndexedDB (including `__remult_keys` when encryption is on). The provider stays usable.
 
 ## Indexes
 
@@ -130,5 +146,6 @@ Existing plaintext rows are still readable; the next write encrypts them.
 | Shape | native object store per entity | one JSON blob per entity in a shared store |
 | Queries | IDB indexes + prefetch | load whole entity JSON, filter in memory |
 | Encryption | optional AES-GCM | none |
+| Reset | `dropTable` / `dropDatabase` | `clear()` |
 
 Use `JsonEntityIndexedDbStorage` only when you want `JsonDataProvider` over a blob. See [Offline Support](/docs/offline-support).

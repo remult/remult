@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import type { DataProvider } from '../../core'
 import {
   Entity,
   Fields,
@@ -9,6 +8,7 @@ import {
   describeEntity,
 } from '../../core'
 import { allDbTests } from './shared-tests'
+import { droppableDataProviderTests } from './shared-tests/droppable'
 
 describe('In Memory Tests', () => {
   var db: InMemoryDataProvider
@@ -32,6 +32,10 @@ describe('In Memory Tests', () => {
       excludeTransactions: true,
       excludeLiveQuery: true,
     },
+  )
+  droppableDataProviderTests(
+    () => db,
+    () => remult,
   )
   it("test doesn't store server expressions and db readonly", async () => {
     const c = class {

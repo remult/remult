@@ -8,15 +8,7 @@ import {
   Remult,
 } from '../../core'
 import { allDbTests } from './shared-tests'
-
-async function deleteIndexedDb(name: string) {
-  await new Promise<void>((resolve, reject) => {
-    const req = indexedDB.deleteDatabase(name)
-    req.onsuccess = () => resolve()
-    req.onerror = () => reject(req.error)
-    req.onblocked = () => resolve()
-  })
-}
+import { droppableDataProviderTests } from './shared-tests/droppable'
 
 function idbGet(db: IDBDatabase, storeName: string, key: IDBValidKey) {
   return new Promise<any>((resolve, reject) => {
@@ -47,8 +39,7 @@ describe('IndexedDB Data Provider', () => {
   })
 
   afterEach(async () => {
-    db.close()
-    await deleteIndexedDb(dbName)
+    await db.dropDatabase()
   })
 
   allDbTests(
@@ -69,6 +60,11 @@ describe('IndexedDB Data Provider', () => {
       excludeTransactions: true,
       excludeLiveQuery: true,
     },
+  )
+
+  droppableDataProviderTests(
+    () => db,
+    () => remult,
   )
 
   it('uses a store per entity', async () => {
@@ -295,8 +291,7 @@ describe('IndexedDB indexes', () => {
   })
 
   afterEach(async () => {
-    db.close()
-    await deleteIndexedDb(dbName)
+    await db.dropDatabase()
   })
 
   async function seed() {
@@ -331,6 +326,22 @@ describe('IndexedDB indexes', () => {
   it('creates declared indexes', async () => {
     await seed()
     expect(indexNames()).toEqual(expect.arrayContaining(['title', 'status_title']))
+  })
+
+  it('dropTable recreates indexes on next use', async () => {
+    await seed()
+    await db.dropTable(Item)
+    expect([...db.db!.objectStoreNames]).not.toContain('idx_items')
+    await seed()
+    expect(indexNames()).toEqual(
+      expect.arrayContaining(['title', 'status_title']),
+    )
+    expect(ids(await raw({ title: 'a' }))).toEqual([1, 3])
+    expect(db.lastFetch).toMatchObject({
+      type: 'keys',
+      keys: ['a'],
+      index: 'title',
+    })
   })
 
   it('eq on title uses the title index', async () => {
@@ -406,8 +417,7 @@ describe('IndexedDB encryption', () => {
   })
 
   afterEach(async () => {
-    db.close()
-    await deleteIndexedDb(dbName)
+    await db.dropDatabase()
   })
 
   it('encrypts non-indexed fields at rest and decrypts on find', async () => {
@@ -467,8 +477,7 @@ describe('IndexedDB encryption', () => {
   })
 
   it('reads unencrypted rows and encrypts on write', async () => {
-    db.close()
-    await deleteIndexedDb(dbName)
+    await db.dropDatabase()
     const plain = new IndexedDbDataProvider(dbName)
     const remultPlain = new Remult(plain)
     await remultPlain.repo(Task).insert({
@@ -500,8 +509,7 @@ describe('IndexedDB encryption', () => {
   })
 
   it('uses getEncryptionKey and skips the key store', async () => {
-    db.close()
-    await deleteIndexedDb(dbName)
+    await db.dropDatabase()
     const key = await crypto.subtle.generateKey(
       { name: 'AES-GCM', length: 256 },
       false,
@@ -530,8 +538,7 @@ describe('IndexedDB encryption (all db tests)', () => {
   })
 
   afterEach(async () => {
-    db.close()
-    await deleteIndexedDb(dbName)
+    await db.dropDatabase()
   })
 
   allDbTests(

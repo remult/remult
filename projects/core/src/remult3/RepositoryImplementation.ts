@@ -3273,7 +3273,7 @@ class cacheEntityInfo<entityType> {
   value?: entityType = {} as entityType
   promise?: Promise<entityType | undefined>
 }
-export function getEntityMetadata<entityType>(
+export function getEntityMetadata<entityType = unknown>(
   entity: EntityMetadataOverloads<entityType>,
 ): EntityMetadata<entityType> {
   if ((entity as Repository<entityType>).metadata)
@@ -3293,7 +3293,7 @@ export function getRepository<entityType>(
   }
   return entity as Repository<entityType>
 }
-export type EntityMetadataOverloads<entityType> =
+export type EntityMetadataOverloads<entityType = unknown> =
   | Repository<entityType>
   | EntityMetadata<entityType>
   | ClassType<entityType>

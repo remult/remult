@@ -66,7 +66,7 @@
 - [Oracle](https://remult.dev/docs/installation/database/oracle): Oracle via createKnexDataProvider with the oracledb client on the dataProvider option.
 - [D1](https://remult.dev/docs/installation/database/d1): Cloudflare D1 via createD1DataProvider from remult/remult-d1 on the dataProvider option.
 - [Json files](https://remult.dev/docs/installation/database/json): JSON file storage via JsonDataProvider + JsonEntityFileStorage on the dataProvider option.
-- [IndexedDB](https://remult.dev/docs/installation/database/indexeddb): Browser IndexedDbDataProvider from remult - native object stores, typed indexes, filter prefetch, batch insert/delete, optional AES-GCM encryption.
+- [IndexedDB](https://remult.dev/docs/installation/database/indexeddb): Browser IndexedDbDataProvider from remult - native object stores, typed indexes, filter prefetch, batch insert/delete, dropDatabase/dropTable, optional AES-GCM encryption.
 
 ### Server-side Code
 - [Backend Methods](https://remult.dev/docs/backendMethods): @BackendMethod - typed RPC calls that auto-expose REST endpoints and run server-only logic.
