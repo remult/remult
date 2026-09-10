@@ -11,7 +11,7 @@ If you prefer to work without decorators, or use `remult` in a javascript projec
 ::: code-group
 
 ```ts [Typescript]
-import { Entity, Fields, describeEntity } from 'remult'
+import { Fields, describeEntity } from 'remult'
 
 export class Task {
   id!: string
@@ -22,18 +22,18 @@ describeEntity(
   Task,
   'tasks',
   {
-    allowApiCrud: true,
-  },
-  {
     id: Fields.id(),
     title: Fields.string(),
     completed: Fields.boolean(),
+  },
+  {
+    allowApiCrud: true,
   },
 )
 ```
 
 ```js [Javascript]
-import { Entity, Fields, describeEntity } from 'remult'
+import { Fields, describeEntity } from 'remult'
 
 export class Task {
   id
@@ -44,12 +44,12 @@ describeEntity(
   Task,
   'tasks',
   {
-    allowApiCrud: true,
-  },
-  {
     id: Fields.id(),
     title: Fields.string(),
     completed: Fields.boolean(),
+  },
+  {
+    allowApiCrud: true,
   },
 )
 ```
