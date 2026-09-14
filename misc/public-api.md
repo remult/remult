@@ -140,16 +140,16 @@ export interface BackendMethodOptions<type> {
 }
 export const CaptionTransformer: {
   transformLabel: (
-    remult: import('./src/context.js').Remult,
+    remult: import("./src/context.js").Remult,
     key: string,
     label: string,
-    entityMetaData: import('./src/remult3/remult3.js').EntityMetadata<any>,
+    entityMetaData: import("./src/remult3/remult3.js").EntityMetadata<any>,
   ) => string
   transformCaption: (
-    remult: import('./src/context.js').Remult,
+    remult: import("./src/context.js").Remult,
     key: string,
     label: string,
-    entityMetaData: import('./src/remult3/remult3.js').EntityMetadata<any>,
+    entityMetaData: import("./src/remult3/remult3.js").EntityMetadata<any>,
   ) => string
 }
 export type ClassFieldDecorator<entityType, valueType> = ((
@@ -194,7 +194,7 @@ export type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
    *   status: { '>': 1 }
    * };
    */
-  '>'?: valueType
+  ">"?: valueType
   /**
    * Represents a 'GREATER THAN OR EQUAL TO' filter condition where the value must be greater than or equal to the specified value.
    *
@@ -214,7 +214,7 @@ export type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
    *   status: { '>=': 1 }
    * };
    */
-  '>='?: valueType
+  ">="?: valueType
   /**
    * Represents a 'LESS THAN' filter condition where the value must be less than the specified value.
    *
@@ -234,7 +234,7 @@ export type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
    *   status: { '<': 1 }
    * };
    */
-  '<'?: valueType
+  "<"?: valueType
   /**
    * Represents a 'LESS THAN OR EQUAL TO' filter condition where the value must be less than or equal to the specified value.
    *
@@ -254,7 +254,7 @@ export type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
    *   status: { '<=': 1 }
    * };
    */
-  '<='?: valueType
+  "<="?: valueType
 }
 export declare class CompoundIdField implements FieldMetadata<string> {
   fields: FieldMetadata[]
@@ -502,7 +502,7 @@ export interface EntityDataProviderFindOptions {
   orderBy?: Sort
 }
 export interface EntityDataProviderGroupByOptions
-  extends Pick<EntityDataProviderFindOptions, 'where' | 'limit' | 'page'> {
+  extends Pick<EntityDataProviderFindOptions, "where" | "limit" | "page"> {
   group?: FieldMetadata[]
   sum?: FieldMetadata[]
   avg?: FieldMetadata[]
@@ -512,7 +512,7 @@ export interface EntityDataProviderGroupByOptions
   orderBy?: {
     field?: FieldMetadata
     isDescending?: boolean
-    operation?: (typeof GroupByOperators)[number] | 'count'
+    operation?: (typeof GroupByOperators)[number] | "count"
   }[]
 }
 //[ ] IndexedAccessType from TBD is not exported
@@ -892,7 +892,7 @@ export interface EntityOptions<entityType = unknown> {
   ) => DataProvider | Promise<DataProvider> | undefined | null
 }
 export declare type EntityOrderBy<entityType> = {
-  [Properties in keyof Partial<MembersOnly<entityType>>]?: 'asc' | 'desc'
+  [Properties in keyof Partial<MembersOnly<entityType>>]?: "asc" | "desc"
 }
 export interface EntityRef<entityType> extends EntityRefBase<entityType> {
   fields: FieldsRef<entityType>
@@ -1826,31 +1826,31 @@ export type GroupByOptions<
    * The result can be ordered by groupBy fields, sum fields, average fields, min fields, max fields, and distinctCount fields.
    */
   orderBy?: {
-    [K in groupByFields[number]]?: 'asc' | 'desc'
+    [K in groupByFields[number]]?: "asc" | "desc"
   } & {
     [K in sumFields[number]]?: {
-      sum?: 'asc' | 'desc'
+      sum?: "asc" | "desc"
     }
   } & {
     [K in averageFields[number]]?: {
-      avg?: 'asc' | 'desc'
+      avg?: "asc" | "desc"
     }
   } & {
     [K in minFields[number]]?: {
-      min?: 'asc' | 'desc'
+      min?: "asc" | "desc"
     }
   } & {
     [K in maxFields[number]]?: {
-      max?: 'asc' | 'desc'
+      max?: "asc" | "desc"
     }
   } & {
     [K in distinctCountFields[number]]?: {
-      distinctCount?: 'asc' | 'desc'
+      distinctCount?: "asc" | "desc"
     }
   } & {
-    $count?: 'asc' | 'desc'
+    $count?: "asc" | "desc"
   }
-} & Pick<FindOptions<entityType>, 'limit' | 'page'>
+} & Pick<FindOptions<entityType>, "limit" | "page">
 export type GroupByResult<
   entityType,
   groupByFields extends (keyof entityType)[],
@@ -2000,7 +2000,9 @@ export declare class InMemoryDataProvider
 export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
   debugFileSaver: (x: any) => void
   debug(): void
-  keepAliveAndReturnUnknownQueryIds(ids: string[]): Promise<string[]>
+  keepAliveAndReturnUnknownQueryIds(
+    ids: string[],
+  ): Promise<LiveQueryKeepAliveResult>
   queries: (StoredQuery & {
     lastUsed: string
   })[]
@@ -2016,8 +2018,9 @@ export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
     }) => Promise<void>,
   ): Promise<void>
 }
+//[ ] LiveQueryKeepAliveResult from TBD is not exported
 export declare type InsertOrUpdateOptions = {
-  select?: 'none'
+  select?: "none"
   /**
    * One provider statement/txn (SQL multi-row `INSERT`, IDB one txn).
    *
@@ -2174,25 +2177,30 @@ export interface LiveQuery<entityType> {
 }
 export declare type LiveQueryChange =
   | {
-      type: 'all'
+      type: "all"
       data: any[]
     }
   | {
-      type: 'add'
+      type: "add"
       data: any
     }
   | {
-      type: 'replace'
+      type: "replace"
       data: {
         oldId: any
         item: any
       }
     }
   | {
-      type: 'remove'
+      type: "remove"
       data: {
         id: any
       }
+    }
+  | {
+      type: "version"
+      from: number
+      to: number
     }
 export interface LiveQueryChangeInfo<entityType> {
   /**
@@ -2238,7 +2246,9 @@ export interface LiveQueryStorage {
       setData(data: any): Promise<void>
     }) => Promise<void>,
   ): Promise<void>
-  keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<string[]>
+  keepAliveAndReturnUnknownQueryIds(
+    queryIds: string[],
+  ): Promise<LiveQueryKeepAliveResult>
 }
 export declare type MembersOnly<T> = {
   [K in keyof Omit<T, keyof EntityBase> as T[K] extends Function
@@ -2345,7 +2355,7 @@ export interface RelationOptions<
   toEntity,
   matchIdEntity,
   optionsType extends FindOptionsBase<toEntity> = FindOptionsBase<toEntity>,
-> extends Pick<FieldOptions, 'caption' | 'label'> {
+> extends Pick<FieldOptions, "caption" | "label"> {
   /**
    * An object specifying custom field names for the relation.
    * Each key represents a field in the related entity, and its value is the corresponding field in the source entity.
@@ -2423,7 +2433,7 @@ export declare class Relations {
       | (FieldOptions<entityType, toEntityType> &
           Pick<
             RelationOptions<entityType, toEntityType, any, any>,
-            'defaultIncluded'
+            "defaultIncluded"
           >)
       | RelationOptions<entityType, toEntityType, entityType>
       | keyof entityType,
@@ -2540,7 +2550,7 @@ export declare class Remult {
    * `withRemult((r) => r.repo(X).find(), { dataProvider: new RestDataProvider(() => ({ httpClient: event.fetch })) })`.
    * See the SvelteKit "Universal load & SSR" doc.
    */
-  useFetch(fetch: ApiClient['httpClient']): void
+  useFetch(fetch: ApiClient["httpClient"]): void
   /** The current data provider */
   dataProvider: DataProvider
   /** Creates a new instance of the `remult` object.
@@ -2593,7 +2603,7 @@ export interface RemultContext {
 export declare function repo<entityType>(
   entity: ClassType<entityType>,
   dataProvider?: DataProvider,
-): import('./src/remult3/remult3.js').Repository<entityType>
+): import("./src/remult3/remult3.js").Repository<entityType>
 export interface Repository<entityType> {
   /** returns an array based on the provided options */
   find(options?: FindOptions<entityType>): Promise<entityType[]>
@@ -2731,7 +2741,7 @@ export interface Repository<entityType> {
         maxFields extends undefined ? never : maxFields,
         distinctCountFields extends undefined ? never : distinctCountFields
       >,
-      'orderBy' | 'limit' | 'page' | 'group'
+      "orderBy" | "limit" | "page" | "group"
     >,
   ): Promise<
     GroupByResult<
@@ -2808,7 +2818,7 @@ export interface Repository<entityType> {
           (keyof MembersOnly<entityType>)[],
           (keyof MembersOnly<entityType>)[]
         >,
-        'group' | 'orderBy' | 'where' | 'limit' | 'page'
+        "group" | "orderBy" | "where" | "limit" | "page"
       >
     },
   >(
@@ -2824,7 +2834,7 @@ export interface Repository<entityType> {
         (keyof MembersOnly<entityType>)[],
         (keyof MembersOnly<entityType>)[]
       >,
-      'group' | 'orderBy' | 'where' | 'limit' | 'page'
+      "group" | "orderBy" | "where" | "limit" | "page"
     >
   }
     ? QueryResult<
@@ -2832,11 +2842,11 @@ export interface Repository<entityType> {
         GroupByResult<
           entityType,
           never,
-          NonNullable<Options['aggregate']['sum']>,
-          NonNullable<Options['aggregate']['avg']>,
-          NonNullable<Options['aggregate']['min']>,
-          NonNullable<Options['aggregate']['max']>,
-          NonNullable<Options['aggregate']['distinctCount']>
+          NonNullable<Options["aggregate"]["sum"]>,
+          NonNullable<Options["aggregate"]["avg"]>,
+          NonNullable<Options["aggregate"]["min"]>,
+          NonNullable<Options["aggregate"]["max"]>,
+          NonNullable<Options["aggregate"]["distinctCount"]>
         >
       >
     : QueryResult<entityType>
@@ -2907,7 +2917,7 @@ export interface Repository<entityType> {
    * Updates all items that match the `where` condition.
    */
   updateMany(options: {
-    where: EntityFilter<entityType> | 'all'
+    where: EntityFilter<entityType> | "all"
     set: Partial<MembersOnly<entityType>>
   }): Promise<number>
   /**
@@ -2947,7 +2957,7 @@ export interface Repository<entityType> {
    * Deletes all items that match the `where` condition.
    */
   deleteMany(options: {
-    where: EntityFilter<entityType> | 'all'
+    where: EntityFilter<entityType> | "all"
   }): Promise<number>
   /** Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called.
    *
@@ -3221,7 +3231,7 @@ export declare class SqlDatabase
    */
   static LogToConsole:
     | boolean
-    | 'oneLiner'
+    | "oneLiner"
     | ((duration: number, query: string, args: Record<string, any>) => void)
   /**
    * Threshold in milliseconds for logging queries to the console.
@@ -3329,11 +3339,17 @@ export interface SubscriptionClientConnection {
     onError: (err: any) => void,
   ): Promise<Unsubscribe>
   close(): void
+  /** SSE clients set this; missing means no heartbeat tracking (Ably, tests). */
+  lastServerEvent?: number
+  /** Foreground / online: reconnect now, skip backoff. `force` kills an OPEN zombie. */
+  resume?: (force?: boolean) => void
 }
 export interface SubscriptionListener<type> {
   next(message: type): void
   error(err: any): void
   complete(): void
+  /** The connection was re-established; messages published meanwhile were lost, refetch state if needed. */
+  reconnect?(): void
 }
 export interface SubscriptionServer {
   publishMessage<T>(channel: string, message: T): Promise<void>
@@ -3640,7 +3656,7 @@ export type ValueFilter<valueType> =
        *   status: { '!=': [1, 2, 3] }
        * };
        */
-      '!='?: valueType | valueType[]
+      "!="?: valueType | valueType[]
       /**
        * Represents an 'IN' filter condition where the value must match one of the specified values.
        *
@@ -3739,7 +3755,7 @@ export type remultApiServer = express.RequestHandler &
       res: express.Response,
       next: VoidFunction,
     ) => void
-  } & Pick<RemultServer<express.Request>, 'withRemultAsync'>
+  } & Pick<RemultServer<express.Request>, "withRemultAsync">
 //[ ] RemultServerCore from ./server/remult-api-server.js is not exported
 //[ ] RemultServer from ./server/remult-api-server.js is not exported
 export const remultExpress: typeof remultApi
@@ -3824,7 +3840,10 @@ export declare class DataProviderLiveQueryStorage
       setData(data: any): Promise<void>
     }) => Promise<void>,
   ): Promise<void>
-  keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<string[]>
+  keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<{
+    unknownQueryIds: string[]
+    versions: Record<string, number>
+  }>
 }
 //[ ] Repository from TBD is not exported
 //[ ] LiveQueryStorageEntity from TBD is not exported
@@ -3870,8 +3889,8 @@ export declare class Module<RequestType> {
   priority: number
   entities?: ClassType<unknown>[]
   controllers?: ClassType<unknown>[]
-  initApi?: RemultServerOptions<RequestType>['initApi']
-  initRequest?: RemultServerOptions<RequestType>['initRequest']
+  initApi?: RemultServerOptions<RequestType>["initApi"]
+  initRequest?: RemultServerOptions<RequestType>["initRequest"]
   modules?: Module<RequestType>[]
   constructor(options: ModuleInput<RequestType>)
 }
@@ -3882,8 +3901,8 @@ export interface ModuleInput<RequestType> {
   priority?: number
   entities?: ClassType<unknown>[]
   controllers?: ClassType<unknown>[]
-  initApi?: RemultServerOptions<RequestType>['initApi']
-  initRequest?: RemultServerOptions<RequestType>['initRequest']
+  initApi?: RemultServerOptions<RequestType>["initApi"]
+  initRequest?: RemultServerOptions<RequestType>["initRequest"]
   modules?: Module<RequestType>[]
 }
 export interface queuedJobInfo {
@@ -4063,7 +4082,7 @@ export declare class SseSubscriptionServer implements SubscriptionServer {
   publishMessage<T>(channel: string, message: any): Promise<void>
 }
 export declare function TestApiDataProvider(
-  options?: Pick<RemultServerOptions<unknown>, 'ensureSchema' | 'dataProvider'>,
+  options?: Pick<RemultServerOptions<unknown>, "ensureSchema" | "dataProvider">,
 ): RestDataProvider
 //[ ] RestDataProvider from TBD is not exported
 ```
@@ -4097,7 +4116,10 @@ export declare class DataProviderLiveQueryStorage
       setData(data: any): Promise<void>
     }) => Promise<void>,
   ): Promise<void>
-  keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<string[]>
+  keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<{
+    unknownQueryIds: string[]
+    versions: Record<string, number>
+  }>
 }
 //[ ] Repository from TBD is not exported
 //[ ] LiveQueryStorageEntity from TBD is not exported
@@ -4316,7 +4338,7 @@ export declare function remultApi(
 export const remultFastify: typeof remultApi
 export type RemultFastifyServer = FastifyPluginCallback &
   RemultServerCore<FastifyRequest> & {
-    withRemult: RemultServer<FastifyRequest>['withRemultAsync']
+    withRemult: RemultServer<FastifyRequest>["withRemultAsync"]
   }
 //[ ] RemultServerCore from ./server/remult-api-server.js is not exported
 //[ ] RemultServer from ./server/remult-api-server.js is not exported
@@ -4332,7 +4354,7 @@ export declare function remultApi(
 export const remultHapi: typeof remultApi
 export type RemultHapiServer = Plugin<any, any> &
   RemultServerCore<Request> & {
-    withRemult: RemultServer<Request>['withRemultAsync']
+    withRemult: RemultServer<Request>["withRemultAsync"]
   }
 //[ ] RemultServerCore from ./server/index.js is not exported
 //[ ] RemultServer from ./server/index.js is not exported
@@ -4342,14 +4364,14 @@ export type RemultHapiServer = Plugin<any, any> &
 
 ```ts
 export declare function remultApi(
-  options: RemultServerOptions<Context<Env, '', BlankInput>>,
+  options: RemultServerOptions<Context<Env, "", BlankInput>>,
 ): RemultHonoServer
 //[ ] RemultServerOptions from ./server/index.js is not exported
 export const remultHono: typeof remultApi
 export type RemultHonoServer = Hono &
-  RemultServerCore<Context<Env, '', BlankInput>> & {
+  RemultServerCore<Context<Env, "", BlankInput>> & {
     withRemult: <T>(
-      c: Context<Env, '', BlankInput>,
+      c: Context<Env, "", BlankInput>,
       what: () => Promise<T>,
     ) => Promise<T>
   }
@@ -4393,7 +4415,7 @@ export declare function remultApi(
 export const remultSveltekit: typeof remultApi
 export type RemultSveltekitServer = RemultServerCore<RequestEvent> &
   Handle & {
-    withRemult: RemultServer<RequestEvent>['withRemultAsync']
+    withRemult: RemultServer<RequestEvent>["withRemultAsync"]
     GET: RequestHandler
     PUT: RequestHandler
     POST: RequestHandler
@@ -4414,7 +4436,7 @@ export declare function createPostgresConnection(
 export declare function createPostgresDataProvider(options?: {
   connectionString?: string
   sslInDev?: boolean
-  configuration?: 'heroku' | PoolConfig
+  configuration?: "heroku" | PoolConfig
   wrapIdentifier?: (name: string) => string
   caseInsensitiveIdentifiers?: boolean
   schema?: string
@@ -4488,7 +4510,7 @@ export declare class PostgresSchemaBuilder {
 }
 export declare function preparePostgresQueueStorage(
   sql: SqlDatabase,
-): Promise<import('../server/remult-api-server.js').EntityQueueStorage>
+): Promise<import("../server/remult-api-server.js").EntityQueueStorage>
 ```
 
 ## ./postgres/schema-builder.js
@@ -4739,7 +4761,7 @@ export declare class Sqlite3DataProvider extends SqliteCoreDataProvider {
 ```ts
 export declare class TursoDataProvider extends SqliteCoreDataProvider {
   private client
-  constructor(client: Pick<Client, 'execute'>)
+  constructor(client: Pick<Client, "execute">)
   transaction(action: (sql: SqlImplementation) => Promise<void>): Promise<void>
 }
 //[ ] SqlImplementation from ./index.js is not exported
@@ -4965,6 +4987,12 @@ export const fieldOptionsEnricher: {
 }
 export const flags: {
   error500RetryCount: number
+  /** Client treats SSE as dead if no event for this long. Server pings every 15s; two missed pings plus slack, so a stalled event loop does not trigger a reconnect storm */
+  sseStaleMs: number
+  /** HTTP keep-alive while SSE is healthy (touches lastUsed) */
+  liveQueryKeepAliveMs: number
+  /** Version poll while SSE is stale */
+  liveQueryPollWhenStaleMs: number
 }
 export declare function getControllerRef<fieldsContainerType>(
   container: fieldsContainerType,
@@ -4989,7 +5017,7 @@ export declare function pagedQueryResult<T>(
 ): QueryResult<T>
 //[ ] QueryResult from TBD is not exported
 export interface RelationFieldInfo {
-  type: 'reference' | 'toOne' | 'toMany'
+  type: "reference" | "toOne" | "toMany"
   options: RelationOptions<unknown, unknown, unknown>
   toEntity: any
   toRepo: Repository<unknown>
@@ -5003,7 +5031,7 @@ export interface RelationFields {
 }
 export interface RelationInfo {
   toType: () => any
-  type: RelationFieldInfo['type']
+  type: RelationFieldInfo["type"]
 }
 export declare class SqlRelationFilter<
   myEntity,
@@ -5034,6 +5062,14 @@ export declare function sqlRelationsFilter<entityType>(
     ArrayItemType<NonNullable<entityType[p]>>
   >
 }
+export declare class SseSubscriptionClient implements SubscriptionClient {
+  openConnection(
+    onReconnect: VoidFunction,
+  ): Promise<SubscriptionClientConnection>
+  static createEventSource(url: string): EventSource
+}
+//[ ] SubscriptionClientConnection from TBD is not exported
+//[ ] EventSource from TBD is not exported
 ```
 
 ## ./remult-nuxt.js
@@ -5046,7 +5082,7 @@ export declare function remultApi(
 export const remultNuxt: typeof remultApi
 export type RemultNuxtServer = RemultServerCore<H3Event> &
   ((event: H3Event) => Promise<any>) & {
-    withRemult: RemultServer<H3Event>['withRemultAsync']
+    withRemult: RemultServer<H3Event>["withRemultAsync"]
   }
 //[ ] RemultServerCore from ./server/index.js is not exported
 //[ ] RemultServer from ./server/index.js is not exported
