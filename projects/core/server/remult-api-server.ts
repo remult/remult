@@ -584,11 +584,15 @@ export class RemultServerImplementation<RequestType>
       r.route(this.options.rootPath + '/' + liveQueryKeepAliveRoute).post(
         this.process(
           async (remult, req, res, reqInfo, origRes, origReq: RequestType) => {
-            res.success(
+            const body = await this.coreOptions.getRequestBody(origReq)
+            const queryIds: string[] = Array.isArray(body)
+              ? body
+              : (body?.queryIds ?? [])
+            const result =
               await remult.liveQueryStorage!.keepAliveAndReturnUnknownQueryIds(
-                await this.coreOptions.getRequestBody(origReq),
-              ),
-            )
+                queryIds,
+              )
+            res.success(Array.isArray(body) ? result.unknownQueryIds : result)
           },
         ),
       )

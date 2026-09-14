@@ -1,5 +1,6 @@
 import type {
   DataProvider,
+  DroppableDataProvider,
   EntityDataProvider,
   EntityDataProviderFindOptions,
   EntityDataProviderGroupByOptions,
@@ -13,7 +14,11 @@ import type { ClassType } from '../../classType.js'
 import type { FieldMetadata } from '../column-interfaces.js'
 import type { Filter, FilterConsumer } from '../filter/filter-interfaces.js'
 import type { EntityMetadata, MembersOnly } from '../remult3/remult3.js'
-import { isAutoIncrement } from '../remult3/RepositoryImplementation.js'
+import {
+  getEntityMetadata,
+  isAutoIncrement,
+  type EntityMetadataOverloads,
+} from '../remult3/RepositoryImplementation.js'
 import { ArrayEntityDataProvider } from './array-entity-data-provider.js'
 
 export type IndexedDbIndexDef<entityType> =
@@ -37,8 +42,27 @@ export class IndexedDbIndexBuilder {
 }
 
 export type IndexedDbDataProviderOptions = {
+  /** IDB-only indexes (not unique). PK is skipped. Compound names join db names with `_`. */
   indexes?: (x: IndexedDbIndexBuilder) => void
+  /**
+   * AES-GCM 256 on non-indexed fields (`_enc` + `_iv`). Requires `crypto.subtle`.
+   *
+   * Not full security. Stops casual disk/profile dump and other origins
+   * (non-extractable `CryptoKey` wrapped by the browser). Does **not** protect
+   * against same-origin XSS / any JS that can use the stored `CryptoKey` to decrypt.
+   *
+   * PK + `ensureIndexes` fields stay plaintext (required for IDB keyPath/indexes).
+   * Only non-indexed fields go into `_enc`.
+   *
+   * Default auto-key is origin-bound theater vs XSS. Pass `getEncryptionKey` for
+   * a stronger secret you control.
+   */
   encrypt?: boolean
+  /**
+   * Your AES-GCM `CryptoKey` (or Promise). Skips `__remult_keys`. Stronger than
+   * the default origin-bound auto-key — still not XSS-safe if same-origin JS can
+   * call this and decrypt.
+   */
   getEncryptionKey?: () => CryptoKey | Promise<CryptoKey>
 }
 
@@ -47,7 +71,7 @@ const IDB_DEK_ID = 'dek'
 const IDB_ENC = '_enc'
 const IDB_IV = '_iv'
 
-export class IndexedDbDataProvider implements DataProvider {
+export class IndexedDbDataProvider implements DroppableDataProvider {
   //@internal
   private declaredIndexes: IndexedDbIndexBuilder['entries'] = []
   //@internal
@@ -99,6 +123,30 @@ export class IndexedDbDataProvider implements DataProvider {
   close() {
     this.db?.close()
     this.db = undefined
+  }
+
+  async dropDatabase(): Promise<void> {
+    await this.enqueue(async () => {
+      this.close()
+      this.dek = undefined
+      await idbDeleteDatabase(this.dbName)
+    })
+  }
+
+  async dropTable(entity: EntityMetadataOverloads): Promise<void> {
+    await this.enqueue(async () => {
+      const name = storeNameOf(getEntityMetadata(entity))
+      const db = await this.open()
+      if (!db.objectStoreNames.contains(name)) return
+      const nextVersion = db.version + 1
+      this.forget(db)
+      db.close()
+      await this.open(nextVersion, (upgradeDb) => {
+        if (upgradeDb.objectStoreNames.contains(name)) {
+          upgradeDb.deleteObjectStore(name)
+        }
+      })
+    })
   }
 
   //@internal
@@ -941,6 +989,17 @@ function idbReq<T>(request: IDBRequest<T>): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     request.onsuccess = () => resolve(request.result)
     request.onerror = () => reject(request.error)
+  })
+}
+
+function idbDeleteDatabase(name: string) {
+  return new Promise<void>((resolve, reject) => {
+    const req = indexedDB.deleteDatabase(name)
+    req.onsuccess = () => resolve()
+    req.onerror = () => reject(req.error)
+    req.onblocked = () => {
+      /* wait for onsuccess after other connections close */
+    }
   })
 }
 

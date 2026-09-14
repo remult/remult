@@ -7,6 +7,7 @@ import type {
   LiveQueryChangeInfo,
   Repository,
 } from '../remult3/remult3.js'
+import { flags } from '../remult3/remult3.js'
 import { getRepositoryInternals } from '../remult3/repository-internals.js'
 import type {
   SubscriptionClientConnection,
@@ -16,6 +17,7 @@ import type {
 import {
   liveQueryKeepAliveRoute,
   LiveQuerySubscriber,
+  onBrowserForeground,
 } from './SubscriptionChannel.js'
 /* @internal*/
 export class LiveQueryClient {
@@ -25,10 +27,10 @@ export class LiveQueryClient {
     else handleMessage()
   }
   private queries = new Map<string, LiveQuerySubscriber<any>>()
+  private channels = new Map<string, MessageChannel<any>>()
   hasQueriesForTesting() {
     return this.queries.size > 0
   }
-  private channels = new Map<string, MessageChannel<any>>()
   constructor(
     private apiProvider: () => ApiClient,
     private getUserId: () => string | undefined,
@@ -39,6 +41,7 @@ export class LiveQueryClient {
   close() {
     this.queries.clear()
     this.channels.clear()
+    this.detachForeground()
     this.closeIfNoListeners()
   }
   async subscribeChannel<T>(
@@ -61,7 +64,11 @@ export class LiveQueryClient {
             },
           )
         } catch (err: any) {
-          onResult.error(err)
+          // drop the half-registered channel so the next subscribe retries
+          // instead of joining a channel that was never subscribed
+          this.channels.delete(key)
+          q.listeners.forEach((l) => l.error(err))
+          this.closeIfNoListeners()
           throw err
         }
       }
@@ -86,13 +93,15 @@ export class LiveQueryClient {
   }
 
   private closeIfNoListeners() {
-    if (this.client)
-      if (this.queries.size === 0 && this.channels.size === 0) {
-        this.runPromise(this.client.then((x) => x.close()))
-        this.client = undefined
-        clearInterval(this.interval)
-        this.interval = undefined
-      }
+    if (this.queries.size === 0 && this.channels.size === 0) {
+      if (this.client)
+        this.runPromise(this.client.then((x) => x.close()).catch(() => {}))
+      this.client = undefined
+      this.openedConnection = undefined
+      this.detachForeground()
+      clearInterval(this.interval)
+      this.interval = undefined
+    }
   }
 
   subscribe<entityType>(
@@ -126,9 +135,39 @@ export class LiveQueryClient {
               )),
             )
             q.subscribeCode = () => {
-              if (q.unsubscribe) {
-                q.unsubscribe()
+              q.snapshotReady = false
+              q.droppedWhilePending = false
+              q.unsubscribeChannel()
+
+              let unsubscribeToChannel: Unsubscribe = () => {}
+              q.unsubscribeChannel = () => {
+                unsubscribeToChannel()
+                unsubscribeToChannel = () => {}
+              }
+              q.unsubscribe = () => {
                 q.unsubscribe = () => {}
+                q.unsubscribeChannel()
+                q.unsubscribeQuery()
+              }
+
+              let snapshotDone = false
+              const applySnapshot = (r: {
+                result: any
+                unsubscribe: () => any
+              }) => {
+                if (q.listeners.length === 0) {
+                  r.unsubscribe()
+                  return
+                }
+                q.unsubscribeQuery = () => {
+                  this.runPromise(r.unsubscribe())
+                }
+                snapshotDone = true
+                return this.runPromise(
+                  q.setAllItems(r.result).then(() => {
+                    if (q.droppedWhilePending) return this.runKeepAlive()
+                  }),
+                )
               }
 
               this.runPromise(
@@ -138,37 +177,31 @@ export class LiveQueryClient {
                   error: (er) => {
                     q.listeners.forEach((l) => l.error(er))
                   },
-                }).then((unsubscribeToChannel) => {
-                  if (q.listeners.length == 0) {
-                    unsubscribeToChannel()
-                    return
-                  }
+                })
+                  .then((unsub) => {
+                    if (q.listeners.length == 0) {
+                      unsub()
+                      return
+                    }
+                    unsubscribeToChannel = unsub
+                    if (snapshotDone)
+                      return this.runPromise(this.runKeepAlive())
+                  })
+                  .catch((err) => {
+                    q.listeners.forEach((l) => l.error(err))
+                  }),
+              )
 
-                  this.runPromise(
-                    subscribe(q.queryChannel)
-                      .then((r) => {
-                        if (q.listeners.length === 0) {
-                          r.unsubscribe()
-                          unsubscribeToChannel()
-                          return
-                        }
-                        this.runPromise(q.setAllItems(r.result))
-                        q.unsubscribe = () => {
-                          q.unsubscribe = () => {}
-                          unsubscribeToChannel()
-                          this.runPromise(r.unsubscribe())
-                        }
-                      })
-                      .catch((err) => {
-                        q.listeners.forEach((l) => l.error(err))
-                        unsubscribeToChannel()
-                        this.queries.delete(eventTypeKey)
-                      }),
-                  )
-                }),
-              ).catch((err) => {
-                q.listeners.forEach((l) => l.error(err))
-              })
+              this.runPromise(
+                subscribe(q.queryChannel)
+                  .then(applySnapshot)
+                  .catch((err) => {
+                    q.listeners.forEach((l) => l.error(err))
+                    unsubscribeToChannel()
+                    this.queries.delete(eventTypeKey)
+                    this.closeIfNoListeners()
+                  }),
+              )
             }
             q.subscribeCode()
           } else {
@@ -195,41 +228,144 @@ export class LiveQueryClient {
     }
   }
   client?: Promise<SubscriptionClientConnection>
+  openedConnection?: SubscriptionClientConnection
   interval: any
+  lastKeepAliveAt = 0
+  private keepAliveBackoffMs = flags.liveQueryPollWhenStaleMs
+  private keepAliveInFlight?: Promise<boolean>
+  private foregroundKeepAliveTimer: ReturnType<typeof setTimeout> | undefined
+  isSseStale() {
+    const conn = this.openedConnection
+    if (!conn || conn.lastServerEvent === undefined) return false
+    return Date.now() - conn.lastServerEvent > flags.sseStaleMs
+  }
+  async runKeepAlive() {
+    if (this.keepAliveInFlight) return this.keepAliveInFlight
+    this.keepAliveInFlight = this.sendKeepAlive().finally(() => {
+      this.keepAliveInFlight = undefined
+    })
+    return this.keepAliveInFlight
+  }
+  /** Resolves true when a query was refetched. */
+  private async sendKeepAlive() {
+    const ids: string[] = []
+    for (const q of this.queries.values()) {
+      if (!q.snapshotReady) continue
+      ids.push(q.queryChannel)
+    }
+    if (ids.length === 0) return false
+    let p = this.apiProvider()
+    const raw: unknown = await this.runPromise(
+      remultStatic.actionInfo.runActionWithoutBlockingUI(() =>
+        buildRestDataProvider(p.httpClient).post(
+          p.url + '/' + liveQueryKeepAliveRoute,
+          { queryIds: ids },
+        ),
+      ),
+    )
+    const unknownIds: string[] = Array.isArray(raw)
+      ? raw
+      : ((raw as { unknownQueryIds?: string[] })?.unknownQueryIds ?? [])
+    const versions: Record<string, number> = Array.isArray(raw)
+      ? {}
+      : ((raw as { versions?: Record<string, number> })?.versions ?? {})
+    let reloaded = false
+    for (const q of this.queries.values()) {
+      const serverVersion = versions[q.queryChannel]
+      const unknown = unknownIds.includes(q.queryChannel)
+      // server returns versions on every keep-alive, so a missed message is
+      // caught even while SSE pings look healthy
+      const mismatch =
+        serverVersion !== undefined && serverVersion !== q.version
+      if (unknown || mismatch) {
+        reloaded = true
+        if (serverVersion !== undefined) q.version = serverVersion
+        q.subscribeCode!()
+      }
+    }
+    return reloaded
+  }
+  private async maybeKeepAlive() {
+    const stale = this.isSseStale()
+    if (!stale) this.keepAliveBackoffMs = flags.liveQueryPollWhenStaleMs
+    const interval = stale
+      ? this.keepAliveBackoffMs
+      : flags.liveQueryKeepAliveMs
+    if (Date.now() - this.lastKeepAliveAt < interval) return
+    this.lastKeepAliveAt = Date.now()
+    if (stale) this.openedConnection?.resume?.(true)
+    let reloaded = false
+    try {
+      reloaded = await this.runKeepAlive()
+    } finally {
+      // runs on a failed post too, so an unreachable server is not polled
+      // every second; channel-only clients (no query ids) back off as well
+      if (this.isSseStale())
+        this.keepAliveBackoffMs = reloaded
+          ? flags.liveQueryPollWhenStaleMs
+          : Math.min(this.keepAliveBackoffMs * 2, flags.liveQueryKeepAliveMs)
+    }
+  }
+  private detachForeground = () => {}
+  private attachForeground() {
+    this.detachForeground()
+    const unsub = onBrowserForeground(() => {
+      this.openedConnection?.resume?.()
+      if (this.foregroundKeepAliveTimer !== undefined)
+        clearTimeout(this.foregroundKeepAliveTimer)
+      this.foregroundKeepAliveTimer = setTimeout(() => {
+        this.foregroundKeepAliveTimer = undefined
+        this.keepAliveBackoffMs = flags.liveQueryPollWhenStaleMs
+        this.lastKeepAliveAt = 0
+        this.runPromise(this.runKeepAlive())
+      }, 300)
+    })
+    this.detachForeground = () => {
+      unsub()
+      if (this.foregroundKeepAliveTimer !== undefined) {
+        clearTimeout(this.foregroundKeepAliveTimer)
+        this.foregroundKeepAliveTimer = undefined
+      }
+      this.detachForeground = () => {}
+    }
+  }
+  private startKeepAlive() {
+    // openConnection may reject and be retried with queries still alive
+    if (this.interval !== undefined) return
+    this.lastKeepAliveAt = Date.now()
+    this.keepAliveBackoffMs = flags.liveQueryPollWhenStaleMs
+    this.attachForeground()
+    this.interval = setInterval(
+      () => {
+        // a failed post is transient: the backoff covers it, next tick retries
+        this.runPromise(this.maybeKeepAlive().catch(() => {}))
+      },
+      Math.min(flags.liveQueryPollWhenStaleMs, flags.liveQueryKeepAliveMs),
+    )
+  }
   private openIfNoOpened() {
     if (!this.client) {
-      this.interval = setInterval(async () => {
-        const ids: string[] = []
-        for (const q of this.queries.values()) {
-          ids.push(q.queryChannel)
-        }
-        if (ids.length > 0) {
-          let p = this.apiProvider()
-
-          const invalidIds: string[] = await this.runPromise(
-            await remultStatic.actionInfo.runActionWithoutBlockingUI(() =>
-              buildRestDataProvider(p.httpClient).post(
-                p.url + '/' + liveQueryKeepAliveRoute,
-                ids,
-              ),
-            ),
-          )
-          for (const id of invalidIds) {
-            for (const q of this.queries.values()) {
-              if (q.queryChannel === id) q.subscribeCode!()
-            }
-          }
-        }
-      }, 30000)
-
+      this.startKeepAlive()
       return this.runPromise(
-        (this.client = this.apiProvider().subscriptionClient!.openConnection(
-          () => {
+        (this.client = this.apiProvider()
+          .subscriptionClient!.openConnection(() => {
             for (const q of this.queries.values()) {
               q.subscribeCode!()
             }
-          },
-        )),
+            for (const c of this.channels.values()) {
+              for (const l of c.listeners) l.reconnect?.()
+            }
+          })
+          .then((c) => {
+            this.openedConnection = c
+            return c
+          })
+          .catch((err) => {
+            this.client = undefined
+            this.openedConnection = undefined
+            this.closeIfNoListeners()
+            throw err
+          })),
       )
     }
 

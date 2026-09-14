@@ -90,6 +90,7 @@ export type { EntityOptions, PreprocessFilterEvent } from './src/entity.js'
 export { EntityError } from './src/data-interfaces.js' //V
 export type {
   DataProvider,
+  DroppableDataProvider,
   EntityDataProvider,
   EntityDataProviderGroupByOptions,
   EntityDataProviderFindOptions,

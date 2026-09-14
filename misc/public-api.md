@@ -140,16 +140,16 @@ export interface BackendMethodOptions<type> {
 }
 export const CaptionTransformer: {
   transformLabel: (
-    remult: import("./src/context.js").Remult,
+    remult: import('./src/context.js').Remult,
     key: string,
     label: string,
-    entityMetaData: import("./src/remult3/remult3.js").EntityMetadata<any>,
+    entityMetaData: import('./src/remult3/remult3.js').EntityMetadata<any>,
   ) => string
   transformCaption: (
-    remult: import("./src/context.js").Remult,
+    remult: import('./src/context.js').Remult,
     key: string,
     label: string,
-    entityMetaData: import("./src/remult3/remult3.js").EntityMetadata<any>,
+    entityMetaData: import('./src/remult3/remult3.js').EntityMetadata<any>,
   ) => string
 }
 export type ClassFieldDecorator<entityType, valueType> = ((
@@ -194,7 +194,7 @@ export type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
    *   status: { '>': 1 }
    * };
    */
-  ">"?: valueType
+  '>'?: valueType
   /**
    * Represents a 'GREATER THAN OR EQUAL TO' filter condition where the value must be greater than or equal to the specified value.
    *
@@ -214,7 +214,7 @@ export type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
    *   status: { '>=': 1 }
    * };
    */
-  ">="?: valueType
+  '>='?: valueType
   /**
    * Represents a 'LESS THAN' filter condition where the value must be less than the specified value.
    *
@@ -234,7 +234,7 @@ export type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
    *   status: { '<': 1 }
    * };
    */
-  "<"?: valueType
+  '<'?: valueType
   /**
    * Represents a 'LESS THAN OR EQUAL TO' filter condition where the value must be less than or equal to the specified value.
    *
@@ -254,7 +254,7 @@ export type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
    *   status: { '<=': 1 }
    * };
    */
-  "<="?: valueType
+  '<='?: valueType
 }
 export declare class CompoundIdField implements FieldMetadata<string> {
   fields: FieldMetadata[]
@@ -448,6 +448,11 @@ export declare function describeEntity<entityType extends ClassType<any>>(
   fields: FieldsDescriptor<entityType>,
   options?: EntityOptions<InstanceType<entityType>>,
 ): void
+export interface DroppableDataProvider extends DataProvider {
+  dropDatabase(): Promise<void>
+  /** Recreated with indexes on next use (`ensureSchema` / first write). */
+  dropTable(entity: EntityMetadataOverloads): Promise<void>
+}
 export declare function Entity<entityType>(
   key: string,
   ...options: (
@@ -497,7 +502,7 @@ export interface EntityDataProviderFindOptions {
   orderBy?: Sort
 }
 export interface EntityDataProviderGroupByOptions
-  extends Pick<EntityDataProviderFindOptions, "where" | "limit" | "page"> {
+  extends Pick<EntityDataProviderFindOptions, 'where' | 'limit' | 'page'> {
   group?: FieldMetadata[]
   sum?: FieldMetadata[]
   avg?: FieldMetadata[]
@@ -507,7 +512,7 @@ export interface EntityDataProviderGroupByOptions
   orderBy?: {
     field?: FieldMetadata
     isDescending?: boolean
-    operation?: (typeof GroupByOperators)[number] | "count"
+    operation?: (typeof GroupByOperators)[number] | 'count'
   }[]
 }
 //[ ] IndexedAccessType from TBD is not exported
@@ -887,7 +892,7 @@ export interface EntityOptions<entityType = unknown> {
   ) => DataProvider | Promise<DataProvider> | undefined | null
 }
 export declare type EntityOrderBy<entityType> = {
-  [Properties in keyof Partial<MembersOnly<entityType>>]?: "asc" | "desc"
+  [Properties in keyof Partial<MembersOnly<entityType>>]?: 'asc' | 'desc'
 }
 export interface EntityRef<entityType> extends EntityRefBase<entityType> {
   fields: FieldsRef<entityType>
@@ -1821,31 +1826,31 @@ export type GroupByOptions<
    * The result can be ordered by groupBy fields, sum fields, average fields, min fields, max fields, and distinctCount fields.
    */
   orderBy?: {
-    [K in groupByFields[number]]?: "asc" | "desc"
+    [K in groupByFields[number]]?: 'asc' | 'desc'
   } & {
     [K in sumFields[number]]?: {
-      sum?: "asc" | "desc"
+      sum?: 'asc' | 'desc'
     }
   } & {
     [K in averageFields[number]]?: {
-      avg?: "asc" | "desc"
+      avg?: 'asc' | 'desc'
     }
   } & {
     [K in minFields[number]]?: {
-      min?: "asc" | "desc"
+      min?: 'asc' | 'desc'
     }
   } & {
     [K in maxFields[number]]?: {
-      max?: "asc" | "desc"
+      max?: 'asc' | 'desc'
     }
   } & {
     [K in distinctCountFields[number]]?: {
-      distinctCount?: "asc" | "desc"
+      distinctCount?: 'asc' | 'desc'
     }
   } & {
-    $count?: "asc" | "desc"
+    $count?: 'asc' | 'desc'
   }
-} & Pick<FindOptions<entityType>, "limit" | "page">
+} & Pick<FindOptions<entityType>, 'limit' | 'page'>
 export type GroupByResult<
   entityType,
   groupByFields extends (keyof entityType)[],
@@ -1934,7 +1939,7 @@ export interface IdMetadata<entityType = unknown> {
     items: Partial<MembersOnly<entityType>>[],
   ): EntityFilter<entityType>
 }
-export declare class IndexedDbDataProvider implements DataProvider {
+export declare class IndexedDbDataProvider implements DroppableDataProvider {
   private dbName
   constructor(dbName?: string, options?: IndexedDbDataProviderOptions)
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider
@@ -1943,10 +1948,31 @@ export declare class IndexedDbDataProvider implements DataProvider {
   ): Promise<void>
   ensureSchema(entities: EntityMetadata[]): Promise<void>
   close(): void
+  dropDatabase(): Promise<void>
+  dropTable(entity: EntityMetadataOverloads): Promise<void>
 }
 export type IndexedDbDataProviderOptions = {
+  /** IDB-only indexes (not unique). PK is skipped. Compound names join db names with `_`. */
   indexes?: (x: IndexedDbIndexBuilder) => void
+  /**
+   * AES-GCM 256 on non-indexed fields (`_enc` + `_iv`). Requires `crypto.subtle`.
+   *
+   * Not full security. Stops casual disk/profile dump and other origins
+   * (non-extractable `CryptoKey` wrapped by the browser). Does **not** protect
+   * against same-origin XSS / any JS that can use the stored `CryptoKey` to decrypt.
+   *
+   * PK + `ensureIndexes` fields stay plaintext (required for IDB keyPath/indexes).
+   * Only non-indexed fields go into `_enc`.
+   *
+   * Default auto-key is origin-bound theater vs XSS. Pass `getEncryptionKey` for
+   * a stronger secret you control.
+   */
   encrypt?: boolean
+  /**
+   * Your AES-GCM `CryptoKey` (or Promise). Skips `__remult_keys`. Stronger than
+   * the default origin-bound auto-key — still not XSS-safe if same-origin JS can
+   * call this and decrypt.
+   */
   getEncryptionKey?: () => CryptoKey | Promise<CryptoKey>
 }
 //[ ] CryptoKey from TBD is not exported
@@ -1960,13 +1986,15 @@ export type IndexedDbIndexDef<entityType> =
   | keyof MembersOnly<entityType>
   | readonly (keyof MembersOnly<entityType>)[]
 export declare class InMemoryDataProvider
-  implements DataProvider, __RowsOfDataForTesting
+  implements DroppableDataProvider, __RowsOfDataForTesting
 {
   transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
   ): Promise<void>
   rows: any
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider
+  dropDatabase(): Promise<void>
+  dropTable(entity: EntityMetadataOverloads): Promise<void>
   toString(): string
 }
 export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
@@ -1989,7 +2017,17 @@ export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
   ): Promise<void>
 }
 export declare type InsertOrUpdateOptions = {
-  select: "none"
+  select?: 'none'
+  /**
+   * One provider statement/txn (SQL multi-row `INSERT`, IDB one txn).
+   *
+   * Default / omitted (`false`): `insert([a,b,c])` inserts one-by-one so
+   * `saving` and `Validators.unique` see prior rows in the same call.
+   *
+   * When `true`: all `saving` hooks run before any write; `Validators.unique`
+   * / `count()` only see the DB, not siblings in the same array.
+   */
+  bulk?: boolean
 }
 export declare function isBackend(): boolean
 export declare class JsonDataProvider implements DataProvider {
@@ -2136,22 +2174,22 @@ export interface LiveQuery<entityType> {
 }
 export declare type LiveQueryChange =
   | {
-      type: "all"
+      type: 'all'
       data: any[]
     }
   | {
-      type: "add"
+      type: 'add'
       data: any
     }
   | {
-      type: "replace"
+      type: 'replace'
       data: {
         oldId: any
         item: any
       }
     }
   | {
-      type: "remove"
+      type: 'remove'
       data: {
         id: any
       }
@@ -2307,7 +2345,7 @@ export interface RelationOptions<
   toEntity,
   matchIdEntity,
   optionsType extends FindOptionsBase<toEntity> = FindOptionsBase<toEntity>,
-> extends Pick<FieldOptions, "caption" | "label"> {
+> extends Pick<FieldOptions, 'caption' | 'label'> {
   /**
    * An object specifying custom field names for the relation.
    * Each key represents a field in the related entity, and its value is the corresponding field in the source entity.
@@ -2385,7 +2423,7 @@ export declare class Relations {
       | (FieldOptions<entityType, toEntityType> &
           Pick<
             RelationOptions<entityType, toEntityType, any, any>,
-            "defaultIncluded"
+            'defaultIncluded'
           >)
       | RelationOptions<entityType, toEntityType, entityType>
       | keyof entityType,
@@ -2502,7 +2540,7 @@ export declare class Remult {
    * `withRemult((r) => r.repo(X).find(), { dataProvider: new RestDataProvider(() => ({ httpClient: event.fetch })) })`.
    * See the SvelteKit "Universal load & SSR" doc.
    */
-  useFetch(fetch: ApiClient["httpClient"]): void
+  useFetch(fetch: ApiClient['httpClient']): void
   /** The current data provider */
   dataProvider: DataProvider
   /** Creates a new instance of the `remult` object.
@@ -2555,7 +2593,7 @@ export interface RemultContext {
 export declare function repo<entityType>(
   entity: ClassType<entityType>,
   dataProvider?: DataProvider,
-): import("./src/remult3/remult3.js").Repository<entityType>
+): import('./src/remult3/remult3.js').Repository<entityType>
 export interface Repository<entityType> {
   /** returns an array based on the provided options */
   find(options?: FindOptions<entityType>): Promise<entityType[]>
@@ -2693,7 +2731,7 @@ export interface Repository<entityType> {
         maxFields extends undefined ? never : maxFields,
         distinctCountFields extends undefined ? never : distinctCountFields
       >,
-      "orderBy" | "limit" | "page" | "group"
+      'orderBy' | 'limit' | 'page' | 'group'
     >,
   ): Promise<
     GroupByResult<
@@ -2770,7 +2808,7 @@ export interface Repository<entityType> {
           (keyof MembersOnly<entityType>)[],
           (keyof MembersOnly<entityType>)[]
         >,
-        "group" | "orderBy" | "where" | "limit" | "page"
+        'group' | 'orderBy' | 'where' | 'limit' | 'page'
       >
     },
   >(
@@ -2786,7 +2824,7 @@ export interface Repository<entityType> {
         (keyof MembersOnly<entityType>)[],
         (keyof MembersOnly<entityType>)[]
       >,
-      "group" | "orderBy" | "where" | "limit" | "page"
+      'group' | 'orderBy' | 'where' | 'limit' | 'page'
     >
   }
     ? QueryResult<
@@ -2794,11 +2832,11 @@ export interface Repository<entityType> {
         GroupByResult<
           entityType,
           never,
-          NonNullable<Options["aggregate"]["sum"]>,
-          NonNullable<Options["aggregate"]["avg"]>,
-          NonNullable<Options["aggregate"]["min"]>,
-          NonNullable<Options["aggregate"]["max"]>,
-          NonNullable<Options["aggregate"]["distinctCount"]>
+          NonNullable<Options['aggregate']['sum']>,
+          NonNullable<Options['aggregate']['avg']>,
+          NonNullable<Options['aggregate']['min']>,
+          NonNullable<Options['aggregate']['max']>,
+          NonNullable<Options['aggregate']['distinctCount']>
         >
       >
     : QueryResult<entityType>
@@ -2834,11 +2872,14 @@ export interface Repository<entityType> {
     item: Partial<MembersOnly<entityType>>,
     options?: InsertOrUpdateOptions,
   ): Promise<entityType>
-  /**Insert an item or item[] to the data source
+  /**Insert an item or item[] to the data source.
+   * Arrays insert one-by-one by default. Pass `{ bulk: true }` for one provider statement/txn.
    * @example
    * await taskRepo.insert({title:"task a"})
    * @example
    * await taskRepo.insert([{title:"task a"}, {title:"task b", completed:true }])
+   * @example
+   * await taskRepo.insert([{title:"a"}, {title:"b"}], { bulk: true })
    */
   insert(
     item: Partial<MembersOnly<entityType>>[],
@@ -2866,7 +2907,7 @@ export interface Repository<entityType> {
    * Updates all items that match the `where` condition.
    */
   updateMany(options: {
-    where: EntityFilter<entityType> | "all"
+    where: EntityFilter<entityType> | 'all'
     set: Partial<MembersOnly<entityType>>
   }): Promise<number>
   /**
@@ -2906,7 +2947,7 @@ export interface Repository<entityType> {
    * Deletes all items that match the `where` condition.
    */
   deleteMany(options: {
-    where: EntityFilter<entityType> | "all"
+    where: EntityFilter<entityType> | 'all'
   }): Promise<number>
   /** Creates an instance of an item. It'll not be saved to the data source unless `save` or `insert` will be called.
    *
@@ -3180,7 +3221,7 @@ export declare class SqlDatabase
    */
   static LogToConsole:
     | boolean
-    | "oneLiner"
+    | 'oneLiner'
     | ((duration: number, query: string, args: Record<string, any>) => void)
   /**
    * Threshold in milliseconds for logging queries to the console.
@@ -3599,7 +3640,7 @@ export type ValueFilter<valueType> =
        *   status: { '!=': [1, 2, 3] }
        * };
        */
-      "!="?: valueType | valueType[]
+      '!='?: valueType | valueType[]
       /**
        * Represents an 'IN' filter condition where the value must match one of the specified values.
        *
@@ -3698,7 +3739,7 @@ export type remultApiServer = express.RequestHandler &
       res: express.Response,
       next: VoidFunction,
     ) => void
-  } & Pick<RemultServer<express.Request>, "withRemultAsync">
+  } & Pick<RemultServer<express.Request>, 'withRemultAsync'>
 //[ ] RemultServerCore from ./server/remult-api-server.js is not exported
 //[ ] RemultServer from ./server/remult-api-server.js is not exported
 export const remultExpress: typeof remultApi
@@ -3829,8 +3870,8 @@ export declare class Module<RequestType> {
   priority: number
   entities?: ClassType<unknown>[]
   controllers?: ClassType<unknown>[]
-  initApi?: RemultServerOptions<RequestType>["initApi"]
-  initRequest?: RemultServerOptions<RequestType>["initRequest"]
+  initApi?: RemultServerOptions<RequestType>['initApi']
+  initRequest?: RemultServerOptions<RequestType>['initRequest']
   modules?: Module<RequestType>[]
   constructor(options: ModuleInput<RequestType>)
 }
@@ -3841,8 +3882,8 @@ export interface ModuleInput<RequestType> {
   priority?: number
   entities?: ClassType<unknown>[]
   controllers?: ClassType<unknown>[]
-  initApi?: RemultServerOptions<RequestType>["initApi"]
-  initRequest?: RemultServerOptions<RequestType>["initRequest"]
+  initApi?: RemultServerOptions<RequestType>['initApi']
+  initRequest?: RemultServerOptions<RequestType>['initRequest']
   modules?: Module<RequestType>[]
 }
 export interface queuedJobInfo {
@@ -4022,7 +4063,7 @@ export declare class SseSubscriptionServer implements SubscriptionServer {
   publishMessage<T>(channel: string, message: any): Promise<void>
 }
 export declare function TestApiDataProvider(
-  options?: Pick<RemultServerOptions<unknown>, "ensureSchema" | "dataProvider">,
+  options?: Pick<RemultServerOptions<unknown>, 'ensureSchema' | 'dataProvider'>,
 ): RestDataProvider
 //[ ] RestDataProvider from TBD is not exported
 ```
@@ -4275,7 +4316,7 @@ export declare function remultApi(
 export const remultFastify: typeof remultApi
 export type RemultFastifyServer = FastifyPluginCallback &
   RemultServerCore<FastifyRequest> & {
-    withRemult: RemultServer<FastifyRequest>["withRemultAsync"]
+    withRemult: RemultServer<FastifyRequest>['withRemultAsync']
   }
 //[ ] RemultServerCore from ./server/remult-api-server.js is not exported
 //[ ] RemultServer from ./server/remult-api-server.js is not exported
@@ -4291,7 +4332,7 @@ export declare function remultApi(
 export const remultHapi: typeof remultApi
 export type RemultHapiServer = Plugin<any, any> &
   RemultServerCore<Request> & {
-    withRemult: RemultServer<Request>["withRemultAsync"]
+    withRemult: RemultServer<Request>['withRemultAsync']
   }
 //[ ] RemultServerCore from ./server/index.js is not exported
 //[ ] RemultServer from ./server/index.js is not exported
@@ -4301,14 +4342,14 @@ export type RemultHapiServer = Plugin<any, any> &
 
 ```ts
 export declare function remultApi(
-  options: RemultServerOptions<Context<Env, "", BlankInput>>,
+  options: RemultServerOptions<Context<Env, '', BlankInput>>,
 ): RemultHonoServer
 //[ ] RemultServerOptions from ./server/index.js is not exported
 export const remultHono: typeof remultApi
 export type RemultHonoServer = Hono &
-  RemultServerCore<Context<Env, "", BlankInput>> & {
+  RemultServerCore<Context<Env, '', BlankInput>> & {
     withRemult: <T>(
-      c: Context<Env, "", BlankInput>,
+      c: Context<Env, '', BlankInput>,
       what: () => Promise<T>,
     ) => Promise<T>
   }
@@ -4352,7 +4393,7 @@ export declare function remultApi(
 export const remultSveltekit: typeof remultApi
 export type RemultSveltekitServer = RemultServerCore<RequestEvent> &
   Handle & {
-    withRemult: RemultServer<RequestEvent>["withRemultAsync"]
+    withRemult: RemultServer<RequestEvent>['withRemultAsync']
     GET: RequestHandler
     PUT: RequestHandler
     POST: RequestHandler
@@ -4373,7 +4414,7 @@ export declare function createPostgresConnection(
 export declare function createPostgresDataProvider(options?: {
   connectionString?: string
   sslInDev?: boolean
-  configuration?: "heroku" | PoolConfig
+  configuration?: 'heroku' | PoolConfig
   wrapIdentifier?: (name: string) => string
   caseInsensitiveIdentifiers?: boolean
   schema?: string
@@ -4447,7 +4488,7 @@ export declare class PostgresSchemaBuilder {
 }
 export declare function preparePostgresQueueStorage(
   sql: SqlDatabase,
-): Promise<import("../server/remult-api-server.js").EntityQueueStorage>
+): Promise<import('../server/remult-api-server.js').EntityQueueStorage>
 ```
 
 ## ./postgres/schema-builder.js
@@ -4698,7 +4739,7 @@ export declare class Sqlite3DataProvider extends SqliteCoreDataProvider {
 ```ts
 export declare class TursoDataProvider extends SqliteCoreDataProvider {
   private client
-  constructor(client: Pick<Client, "execute">)
+  constructor(client: Pick<Client, 'execute'>)
   transaction(action: (sql: SqlImplementation) => Promise<void>): Promise<void>
 }
 //[ ] SqlImplementation from ./index.js is not exported
@@ -4948,7 +4989,7 @@ export declare function pagedQueryResult<T>(
 ): QueryResult<T>
 //[ ] QueryResult from TBD is not exported
 export interface RelationFieldInfo {
-  type: "reference" | "toOne" | "toMany"
+  type: 'reference' | 'toOne' | 'toMany'
   options: RelationOptions<unknown, unknown, unknown>
   toEntity: any
   toRepo: Repository<unknown>
@@ -4962,7 +5003,7 @@ export interface RelationFields {
 }
 export interface RelationInfo {
   toType: () => any
-  type: RelationFieldInfo["type"]
+  type: RelationFieldInfo['type']
 }
 export declare class SqlRelationFilter<
   myEntity,
@@ -5005,7 +5046,7 @@ export declare function remultApi(
 export const remultNuxt: typeof remultApi
 export type RemultNuxtServer = RemultServerCore<H3Event> &
   ((event: H3Event) => Promise<any>) & {
-    withRemult: RemultServer<H3Event>["withRemultAsync"]
+    withRemult: RemultServer<H3Event>['withRemultAsync']
   }
 //[ ] RemultServerCore from ./server/index.js is not exported
 //[ ] RemultServer from ./server/index.js is not exported

@@ -1,5 +1,5 @@
 ---
-llm: "Browser IndexedDbDataProvider from remult - native object stores, typed indexes, filter prefetch, batch insert/delete, optional AES-GCM encryption."
+llm: "Browser IndexedDbDataProvider from remult - native object stores, typed indexes, filter prefetch, batch insert/delete, dropDatabase/dropTable, optional AES-GCM encryption."
 ---
 
 # IndexedDB
@@ -46,6 +46,22 @@ console.table(await repo(Task, db).find())
 ```
 
 Stores are created on first use (`ensureSchema`). Call `db.close()` when you are done with the connection.
+
+## Drop / reset
+
+`IndexedDbDataProvider` and `InMemoryDataProvider` both implement `DroppableDataProvider` — swap them in tests.
+
+```ts
+import type { DroppableDataProvider } from 'remult'
+
+async function reset(db: DroppableDataProvider) {
+  await db.dropTable(Task) // or repo(Task).metadata
+  await db.dropDatabase()
+}
+```
+
+- **`dropTable`** — deletes that entity's object store (IDB version bump). Next insert / `ensureSchema` recreates it with the same `ensureIndexes`. Autoincrement resets.
+- **`dropDatabase`** — closes the connection and deletes the IndexedDB (including `__remult_keys` when encryption is on). The provider stays usable.
 
 ## Indexes
 
@@ -96,7 +112,9 @@ await tasks.deleteMany({ where: { status: 'done' } })
 
 ## Encryption
 
-`{ encrypt: true }` encrypts non-indexed fields at rest with **AES-GCM 256**. Requires the Web Crypto API (`crypto.subtle`); the constructor throws if it is missing.
+`{ encrypt: true }` encrypts **non-indexed** fields at rest with **AES-GCM 256**. Requires the Web Crypto API (`crypto.subtle`); the constructor throws if it is missing.
+
+This is **not** full security. It stops a casual disk/profile dump and other origins (non-extractable `CryptoKey` wrapped by the browser). It does **not** protect against same-origin XSS / any JS that can use the stored `CryptoKey` to decrypt.
 
 ```ts
 const db = new IndexedDbDataProvider('remult', {
@@ -107,10 +125,10 @@ const db = new IndexedDbDataProvider('remult', {
 
 What stays plaintext vs encrypted:
 
-- **Plaintext:** primary key + indexed fields (so prefetch still works)
+- **Plaintext:** primary key + `ensureIndexes` fields — required for IDB `keyPath` / indexes (prefetch still works)
 - **Ciphertext:** everything else as `_enc` (payload) + `_iv` (12-byte IV)
 
-By default Remult generates a **non-extractable** `CryptoKey` and stores it in the `__remult_keys` object store. Pass `getEncryptionKey` to supply your own key (the key store is then skipped):
+By default Remult generates a **non-extractable** `CryptoKey` and stores it in `__remult_keys`. That auto-key is origin-bound theater vs XSS. Pass `getEncryptionKey` for a stronger secret you control (the key store is then skipped):
 
 ```ts
 const db = new IndexedDbDataProvider('remult', {
@@ -121,8 +139,6 @@ const db = new IndexedDbDataProvider('remult', {
 
 Existing plaintext rows are still readable; the next write encrypts them.
 
-**Threat model:** at-rest / other origins. This is **not** XSS protection — same-origin script can still read and decrypt.
-
 ## vs `JsonEntityIndexedDbStorage`
 
 | | `IndexedDbDataProvider` | `JsonEntityIndexedDbStorage` |
@@ -130,5 +146,6 @@ Existing plaintext rows are still readable; the next write encrypts them.
 | Shape | native object store per entity | one JSON blob per entity in a shared store |
 | Queries | IDB indexes + prefetch | load whole entity JSON, filter in memory |
 | Encryption | optional AES-GCM | none |
+| Reset | `dropTable` / `dropDatabase` | `clear()` |
 
 Use `JsonEntityIndexedDbStorage` only when you want `JsonDataProvider` over a blob. See [Offline Support](/docs/offline-support).
