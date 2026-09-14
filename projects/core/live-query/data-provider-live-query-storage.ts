@@ -70,14 +70,19 @@ export class DataProviderLiveQueryStorage implements LiveQueryStorage, Storage {
   }
   async keepAliveAndReturnUnknownQueryIds(
     queryIds: string[],
-  ): Promise<string[]> {
+  ): Promise<{
+    unknownQueryIds: string[]
+    versions: Record<string, number>
+  }> {
     const repo = await this.repo
+    const versions: Record<string, number> = {}
     for (const query of await repo.find({ where: { id: queryIds } })) {
       query.lastUsedIso = new Date().toISOString()
       await repo.save(query)
+      versions[query.id] = query.data?.version ?? 0
       queryIds = queryIds.filter((x) => x !== query.id)
     }
-    return queryIds
+    return { unknownQueryIds: queryIds, versions }
   }
 }
 

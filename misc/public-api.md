@@ -2000,7 +2000,9 @@ export declare class InMemoryDataProvider
 export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
   debugFileSaver: (x: any) => void
   debug(): void
-  keepAliveAndReturnUnknownQueryIds(ids: string[]): Promise<string[]>
+  keepAliveAndReturnUnknownQueryIds(
+    ids: string[],
+  ): Promise<LiveQueryKeepAliveResult>
   queries: (StoredQuery & {
     lastUsed: string
   })[]
@@ -2016,6 +2018,7 @@ export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
     }) => Promise<void>,
   ): Promise<void>
 }
+//[ ] LiveQueryKeepAliveResult from TBD is not exported
 export declare type InsertOrUpdateOptions = {
   select?: "none"
   /**
@@ -2194,6 +2197,11 @@ export declare type LiveQueryChange =
         id: any
       }
     }
+  | {
+      type: "version"
+      from: number
+      to: number
+    }
 export interface LiveQueryChangeInfo<entityType> {
   /**
    * The updated array of result items.
@@ -2238,7 +2246,9 @@ export interface LiveQueryStorage {
       setData(data: any): Promise<void>
     }) => Promise<void>,
   ): Promise<void>
-  keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<string[]>
+  keepAliveAndReturnUnknownQueryIds(
+    queryIds: string[],
+  ): Promise<LiveQueryKeepAliveResult>
 }
 export declare type MembersOnly<T> = {
   [K in keyof Omit<T, keyof EntityBase> as T[K] extends Function
@@ -3329,11 +3339,17 @@ export interface SubscriptionClientConnection {
     onError: (err: any) => void,
   ): Promise<Unsubscribe>
   close(): void
+  /** SSE clients set this; missing means no heartbeat tracking (Ably, tests). */
+  lastServerEvent?: number
+  /** Foreground / online: reconnect now, skip backoff. `force` kills an OPEN zombie. */
+  resume?: (force?: boolean) => void
 }
 export interface SubscriptionListener<type> {
   next(message: type): void
   error(err: any): void
   complete(): void
+  /** The connection was re-established; messages published meanwhile were lost, refetch state if needed. */
+  reconnect?(): void
 }
 export interface SubscriptionServer {
   publishMessage<T>(channel: string, message: T): Promise<void>
@@ -3824,7 +3840,10 @@ export declare class DataProviderLiveQueryStorage
       setData(data: any): Promise<void>
     }) => Promise<void>,
   ): Promise<void>
-  keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<string[]>
+  keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<{
+    unknownQueryIds: string[]
+    versions: Record<string, number>
+  }>
 }
 //[ ] Repository from TBD is not exported
 //[ ] LiveQueryStorageEntity from TBD is not exported
@@ -4097,7 +4116,10 @@ export declare class DataProviderLiveQueryStorage
       setData(data: any): Promise<void>
     }) => Promise<void>,
   ): Promise<void>
-  keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<string[]>
+  keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<{
+    unknownQueryIds: string[]
+    versions: Record<string, number>
+  }>
 }
 //[ ] Repository from TBD is not exported
 //[ ] LiveQueryStorageEntity from TBD is not exported
@@ -4965,6 +4987,12 @@ export const fieldOptionsEnricher: {
 }
 export const flags: {
   error500RetryCount: number
+  /** Client treats SSE as dead if no event for this long. Server pings every 15s; two missed pings plus slack, so a stalled event loop does not trigger a reconnect storm */
+  sseStaleMs: number
+  /** HTTP keep-alive while SSE is healthy (touches lastUsed) */
+  liveQueryKeepAliveMs: number
+  /** Version poll while SSE is stale */
+  liveQueryPollWhenStaleMs: number
 }
 export declare function getControllerRef<fieldsContainerType>(
   container: fieldsContainerType,
@@ -5034,6 +5062,14 @@ export declare function sqlRelationsFilter<entityType>(
     ArrayItemType<NonNullable<entityType[p]>>
   >
 }
+export declare class SseSubscriptionClient implements SubscriptionClient {
+  openConnection(
+    onReconnect: VoidFunction,
+  ): Promise<SubscriptionClientConnection>
+  static createEventSource(url: string): EventSource
+}
+//[ ] SubscriptionClientConnection from TBD is not exported
+//[ ] EventSource from TBD is not exported
 ```
 
 ## ./remult-nuxt.js

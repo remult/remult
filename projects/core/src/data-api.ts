@@ -437,6 +437,7 @@ export class DataApi<T = unknown> {
           this.repository.metadata,
         ),
         lastIds: r.r.map((y) => this.repository.metadata.idMetadata.getId(y)),
+        version: 0,
       }
       await this.remult.liveQueryStorage!.add({
         entityKey: this.repository.metadata.key,

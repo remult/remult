@@ -63,6 +63,16 @@ notif.subscribe((message) => {
    console.log(`Chart updated: ${message.kind}`, message.data);
  });
  ```
+
+ #### Recovering after a dropped connection
+ Messages published while the connection was down are not replayed.
+ Use the `reconnect` listener to refetch state:
+ ```ts
+ chart.subscribe({
+   next: (message) => (chartData = message.data),
+   reconnect: () => loadChartData(),
+ });
+ ```
 ## constructor
 Constructs a new `SubscriptionChannel` instance.
 

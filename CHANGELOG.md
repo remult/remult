@@ -1,6 +1,6 @@
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [3.4.0] - 2026-09-07
 
 ### Breaking
 
@@ -17,6 +17,22 @@ All notable changes to this project will be documented in this file.
 
 - `repo.insert([a, b, c])` is sequential by default again (`this.insert(item)` per row). `saving` and `Validators.unique` see prior rows in the same call. Not a hook/unique break.
 - SQL/knex multi-row `INSERT ... VALUES (...),(...)` batched under bind-variable limits (default 2000, sqlite 999, D1 100). Pass `{ bulk: true }` to use it from `repo.insert`.
+
+# Live query / SSE resilience.
+
+- The client no longer loses updates when the SSE stream dies while HTTP still works.
+
+- Each server-side live query carries a version, sent with every change and returned by the keep-alive. The client refetches the snapshot on any version gap, so a dead socket, a half-open socket or a missed message is recovered within one keep-alive
+- `SseSubscriptionClient` reconnects forever with backoff (was 4 tries), reconnects on `visibilitychange` / `online` / `pageshow`, and recreates a socket that stops delivering events for `flags.sseStaleMs`
+- `liveQuery` first `next()` no longer waits for the SSE connection
+- Server SSE ping every 15s (was 45s), exported as `ssePingMs`
+- New `flags.sseStaleMs` (40s), `flags.liveQueryKeepAliveMs` (30s), `flags.liveQueryPollWhenStaleMs` (1s)
+- `SubscriptionListener.reconnect?()` lets `SubscriptionChannel` subscribers refetch state after a dropped connection
+- `LiveQueryChange` has an internal `{ type: 'version', from, to }` member, filtered out before reaching `liveQuery` listeners
+- **Breaking** for custom `LiveQueryStorage`: `keepAliveAndReturnUnknownQueryIds` returns `{ unknownQueryIds, versions }` instead of `string[]`. The keep-alive route still accepts the old array body from older clients
+- `SubscriptionClientConnection` gained optional `lastServerEvent` and `resume(force?)`; custom clients (Ably, ...) can ignore them
+- Fixed REST `_select` / `find({ select })` serializing omitted fields through `toApiJson`, so dates and custom converters leaked as `''` instead of being absent
+- REST docs fixes
 
 ## [3.3.18] - 2026-08-30
 
