@@ -931,6 +931,17 @@ describe('data api', () => {
     await c.insert({})
     expect(await c.count()).toBe(0)
   })
+  it('prevent default works for bulk insert', async () => {
+    @Entity<type>('testPDefaultBulk', {
+      saving: (e, { preventDefault }) => {
+        if (e.id === 2) preventDefault()
+        },
+    })
+    class type extends newCategories {}
+    const c = new Remult(new InMemoryDataProvider()).repo(type)
+    await c.insert([{ id: 1 }, { id: 2 }, { id: 3 }], { bulk: true })
+    expect((await c.find()).map((x) => x.id)).toEqual([1, 3])
+  })
   it('get based on id with excluded columns', async () => {
     let type = class extends newCategories {
       categoryName!: string
