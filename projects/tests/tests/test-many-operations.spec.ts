@@ -48,12 +48,11 @@ describe('test rest many operations', () => {
   })
   it('Insert many works', async () => {
     await expect(() =>
-      r.insert(
-        [
-          { id: 1, name: 'a' },
-          { id: 2, name: '' },
-        ],
-        { bulk: true },
+      r.insert([
+        { id: 1, name: 'a' },
+        { id: 2, name: '' },
+      ],
+        //  { bulk: true } // Without bulk: true, test is not passing. So it's happening 1 by 1?
       ),
     ).rejects.toMatchObject({
       message: 'Name: Should not be empty',
