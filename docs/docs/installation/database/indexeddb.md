@@ -78,22 +78,27 @@ const db = new IndexedDbDataProvider('remult', {
 })
 ```
 
-## Filter prefetch
+## How filters run
 
-`find` / `count` / `groupBy` first try to load a subset from IDB, then apply the rest of the filter in memory.
+IndexedDB has no query language: it can only read a whole store, one key, or a key range on the primary key or an index. So `find` / `count` / `groupBy` first try to load a subset from IDB, then apply the full filter in memory.
 
-Order:
+Order (first hit wins):
 
 1. Primary key (single-id entities): `eq`, `in`, range (`$gt` / `$gte` / `$lt` / `$lte`)
-2. Declared indexes, longest compound first — same operators
-3. `$or` of prefetchable branches is merged
+2. Declared indexes, longest compound first - same operators
+3. `$or` where every branch matches 1 or 2: branches are read separately and merged
 
-Extra predicates still run in memory. `$ne`, `null`, and custom filters do not narrow the IDB read (full scan).
+Extra predicates still run in memory. `$ne`, `null`, `$contains`, custom filters and fields without an index do not narrow the IDB read (full scan). `orderBy` / `limit` / `page` always run in memory.
 
 ```ts
 await tasks.find({ where: { status: 'open', title: 'hi' } })
-// prefetches via `status` index, then filters `title` in memory
+// reads rows with status = 'open' via the `status` index, then filters `title` in memory
+
+await tasks.find({ where: { title: 'hi' } })
+// no index on title: full scan, filtered in memory
 ```
+
+Rule of thumb: index the fields you filter by most; put the most selective one first in a compound index.
 
 ## Batch insert / delete
 
