@@ -933,14 +933,41 @@ describe('data api', () => {
   })
   it('prevent default works for bulk insert', async () => {
     @Entity<type>('testPDefaultBulk', {
+      bulkInsert: true,
       saving: (e, { preventDefault }) => {
         if (e.id === 2) preventDefault()
-        },
+      },
     })
     class type extends newCategories {}
     const c = new Remult(new InMemoryDataProvider()).repo(type)
-    await c.insert([{ id: 1 }, { id: 2 }, { id: 3 }], { bulk: true })
+    await c.insert([{ id: 1 }, { id: 2 }, { id: 3 }])
     expect((await c.find()).map((x) => x.id)).toEqual([1, 3])
+  })
+  it('insert array is sequential unless bulkInsert', async () => {
+    const counts: number[] = []
+    @Entity<type>('testSeqInsert', {
+      saving: async (_e, event) => {
+        counts.push(await event.repository.count())
+      },
+    })
+    class type extends newCategories {}
+    const c = new Remult(new InMemoryDataProvider()).repo(type)
+    await c.insert([{ id: 1 }, { id: 2 }, { id: 3 }])
+    expect(counts).toEqual([0, 1, 2])
+  })
+  it('bulkInsert runs all saving hooks before any write', async () => {
+    const counts: number[] = []
+    @Entity<type>('testBulkInsert', {
+      bulkInsert: true,
+      saving: async (_e, event) => {
+        counts.push(await event.repository.count())
+      },
+    })
+    class type extends newCategories {}
+    const c = new Remult(new InMemoryDataProvider()).repo(type)
+    await c.insert([{ id: 1 }, { id: 2 }, { id: 3 }])
+    expect(counts).toEqual([0, 0, 0])
+    expect(await c.count()).toBe(3)
   })
   it('get based on id with excluded columns', async () => {
     let type = class extends newCategories {

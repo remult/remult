@@ -51,9 +51,7 @@ describe('test rest many operations', () => {
       r.insert([
         { id: 1, name: 'a' },
         { id: 2, name: '' },
-      ],
-        //  { bulk: true } // Without bulk: true, test is not passing. So it's happening 1 by 1?
-      ),
+      ]),
     ).rejects.toMatchObject({
       message: 'Name: Should not be empty',
       modelState: {
@@ -61,6 +59,29 @@ describe('test rest many operations', () => {
       },
     })
     expect(await r.count()).toBe(0)
+  })
+  it('frontend array insert honors entity bulkInsert', async () => {
+    const counts: number[] = []
+    @Entity('eBulk', {
+      allowApiCrud: true,
+      bulkInsert: true,
+      saving: async (_e, event) => {
+        counts.push(await event.repository.count())
+      },
+    })
+    class eBulk {
+      @Fields.integer()
+      id!: number
+      @Fields.string()
+      name = ''
+    }
+    const repo = new Remult(TestApiDataProvider()).repo(eBulk)
+    await repo.insert([
+      { id: 1, name: 'a' },
+      { id: 2, name: 'b' },
+      { id: 3, name: 'c' },
+    ])
+    expect(counts).toEqual([0, 0, 0])
   })
   it('test delete many without a filter shoud throw', async () => {
     await expect(() => r.deleteMany({ where: {} })).rejects

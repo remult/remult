@@ -770,6 +770,18 @@ export interface EntityOptions<entityType = unknown> {
    * defaultOrderBy: { price: "desc", name: "asc" }
    */
   defaultOrderBy?: EntityOrderBy<entityType>
+  /**
+   * When true, `insert([...])` on the backend uses one provider statement/txn
+   * (SQL multi-row `INSERT`, one IndexedDB txn) after all `saving` hooks.
+   *
+   * Default (`false`): arrays insert one-by-one so `saving` and `Validators.unique`
+   * see prior rows in the same call.
+   *
+   * The frontend always POSTs the array in one request; this option is only
+   * honored on the backend. Do not enable if `saving` / `validation` logic
+   * depends on seeing sibling rows already persisted.
+   */
+  bulkInsert?: boolean
   /** An event that will be fired before the Entity will be saved to the database.
    * If the `error` property of the entity's ref or any of its fields will be set, the save will be aborted and an exception will be thrown.
    * this is the place to run logic that we want to run in any case before an entity is saved.
@@ -2021,16 +2033,6 @@ export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
 //[ ] LiveQueryKeepAliveResult from TBD is not exported
 export declare type InsertOrUpdateOptions = {
   select?: "none"
-  /**
-   * One provider statement/txn (SQL multi-row `INSERT`, IDB one txn).
-   *
-   * Default / omitted (`false`): `insert([a,b,c])` inserts one-by-one so
-   * `saving` and `Validators.unique` see prior rows in the same call.
-   *
-   * When `true`: all `saving` hooks run before any write; `Validators.unique`
-   * / `count()` only see the DB, not siblings in the same array.
-   */
-  bulk?: boolean
 }
 export declare function isBackend(): boolean
 export declare class JsonDataProvider implements DataProvider {
@@ -2883,13 +2885,12 @@ export interface Repository<entityType> {
     options?: InsertOrUpdateOptions,
   ): Promise<entityType>
   /**Insert an item or item[] to the data source.
-   * Arrays insert one-by-one by default. Pass `{ bulk: true }` for one provider statement/txn.
+   * Arrays insert one-by-one by default. Set `{ bulkInsert: true }` on `@Entity` for one provider statement/txn.
+   * From the frontend, an array is always sent in one request; the backend decides whether to bulk insert.
    * @example
    * await taskRepo.insert({title:"task a"})
    * @example
    * await taskRepo.insert([{title:"task a"}, {title:"task b", completed:true }])
-   * @example
-   * await taskRepo.insert([{title:"a"}, {title:"b"}], { bulk: true })
    */
   insert(
     item: Partial<MembersOnly<entityType>>[],

@@ -542,14 +542,20 @@ export class RepositoryImplementation<entityType>
     options?: InsertOrUpdateOptions,
   ): Promise<entityType | entityType[]> {
     if (Array.isArray(entity)) {
-      if (!options?.bulk) {
+      const useBulk =
+        this._dataProvider.isProxy || this.metadata.options.bulkInsert
+      if (!useBulk) {
         const r = []
         for (const item of entity) r.push(await this.insert(item, options))
         if (options?.select === 'none') return undefined!
         return r
       }
-      let refs: rowHelperImplementation<entityType>[] = []
-      let raw: any[] = []
+      const slots: {
+        ref: rowHelperImplementation<entityType>
+        skip: boolean
+        row?: any
+      }[] = []
+      const raw: any[] = []
       for (const item of entity) {
         this.__cleanupPartialObject(item)
         let ref = getEntityRef(
@@ -563,12 +569,23 @@ export class RepositoryImplementation<entityType>
             this.create(item),
           ) as rowHelperImplementation<entityType>
         }
-        refs.push(ref)
-        raw.push(await ref.buildDtoForInsert())
+        const dto = await ref.buildDtoForInsert()
+        if (dto === null) {
+          slots.push({ ref, skip: true })
+        } else {
+          slots.push({ ref, skip: false })
+          raw.push(dto)
+        }
       }
-      const inserted = await this._edp.insert(raw, options)
-      const result = await promiseAll(inserted, (row, i) =>
-        refs[i].processInsertResponseDto(row),
+      if (raw.length) {
+        const inserted = await this._edp.insert(raw, options)
+        let i = 0
+        for (const slot of slots) {
+          if (!slot.skip) slot.row = inserted[i++]
+        }
+      }
+      const result = await promiseAll(slots, (slot) =>
+        slot.ref.processInsertResponseDto(slot.row),
       )
       if (options?.select === 'none') return undefined!
       return result
@@ -2149,9 +2166,12 @@ export class rowHelperImplementation<T>
       throw await this.catchSaveErrors(err)
     }
   }
-  async buildDtoForInsert(): Promise<any> {
+  async buildDtoForInsert(): Promise<any | null> {
     await this.__validateEntity()
-    const e = this.buildLifeCycleEvent()
+    let skip = false
+    const e = this.buildLifeCycleEvent(() => {
+      skip = true
+    })
     if (!this.repo._dataProvider.isProxy) {
       for (const col of this.fields) {
         if (col.metadata.options.saving)
@@ -2171,6 +2191,7 @@ export class rowHelperImplementation<T>
         f.value = f.originalValue
       }
     }
+    if (skip) return null
     return d
   }
 

@@ -11,12 +11,13 @@ All notable changes to this project will be documented in this file.
 
 - Native `IndexedDbDataProvider`: PK + declared indexes, filter prefetch, batch insert/delete in one IDB txn, optional `encrypt: true` (AES-GCM, non-extractable key in `__remult_keys`, PK+index fields plaintext, rest `_enc`+`_iv`). Docs: installation/database/indexeddb — see docs for threat model.
 - `DroppableDataProvider` (`dropDatabase` / `dropTable`) on `IndexedDbDataProvider` and `InMemoryDataProvider`. `dropTable(Task)` or metadata; store + indexes recreated on next use.
-- `insert([a, b], { bulk: true })` — one `EntityDataProvider.insert` after all `saving` hooks. Use for SQL multi-row `INSERT` / one IDB txn. `Validators.unique` / `count()` only see the DB, not siblings in the same array.
+- `@Entity({ bulkInsert: true })` — backend `insert([a, b])` uses one `EntityDataProvider.insert` after all `saving` hooks (SQL multi-row `INSERT` / one IDB txn). `Validators.unique` / `count()` only see the DB, not siblings in the same array. Frontend always POSTs the array; the entity option is what the backend honors. Do not enable if `saving` / `validation` depends on sibling rows already persisted.
 
 ### Changed
 
-- `repo.insert([a, b, c])` is sequential by default again (`this.insert(item)` per row). `saving` and `Validators.unique` see prior rows in the same call. Not a hook/unique break.
-- SQL/knex multi-row `INSERT ... VALUES (...),(...)` batched under bind-variable limits (default 2000, sqlite 999, D1 100). Pass `{ bulk: true }` to use it from `repo.insert`.
+- `repo.insert([a, b, c])` is sequential by default (`this.insert(item)` per row). `saving` and `Validators.unique` see prior rows in the same call.
+- From the frontend, `insert([...])` always sends the array in one request. The backend wraps it in a transaction and uses bulk only when the entity has `bulkInsert: true`.
+- SQL/knex multi-row `INSERT ... VALUES (...),(...)` batched under bind-variable limits (default 2000, sqlite 999, D1 100). Used when the entity has `bulkInsert: true`.
 
 # Live query / SSE resilience.
 
