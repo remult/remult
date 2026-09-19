@@ -261,6 +261,10 @@ export const sidebar = tutorials.reduce(
                 text: 'Json files',
                 link: '/docs/installation/database/json',
               },
+              {
+                text: 'IndexedDB',
+                link: '/docs/installation/database/indexeddb',
+              },
             ],
           },
         ],

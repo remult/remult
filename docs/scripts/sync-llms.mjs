@@ -208,7 +208,7 @@ const header = `# Remult
 - **Custom filters** - \`Filter.createCustom\` / \`SqlDatabase.filterToRaw\` to express complex queries that round-trip to the server safely.
 - **Validators** - built-ins under \`Validators.*\` (\`required\`, \`min\`, \`max\`, \`email\`, \`url\`, \`unique\`, \`regex\`, \`enum\`, ...) or \`validate: (entity) => string | undefined\` for custom logic.
 - **Admin UI** - turnkey \`/api/admin\` panel via \`admin: true\` (or \`admin: { allow: 'admin' }\`) in \`remultApi()\`.
-- **Stacks** - frameworks: React, Angular, Vue, SvelteKit, Next.js, SolidStart, Nuxt. Servers: Express, Fastify, Hono, Elysia, Hapi, Koa, NestJS. Databases: PostgreSQL, MySQL, MongoDB, SQLite (better/sqljs/bun), MSSQL, Turso, DuckDB, Oracle, Cloudflare D1, JSON files.
+- **Stacks** - frameworks: React, Angular, Vue, SvelteKit, Next.js, SolidStart, Nuxt. Servers: Express, Fastify, Hono, Elysia, Hapi, Koa, NestJS. Databases: PostgreSQL, MySQL, MongoDB, SQLite (better/sqljs/bun), MSSQL, Turso, DuckDB, Oracle, Cloudflare D1, JSON files, IndexedDB.
 
 `
 

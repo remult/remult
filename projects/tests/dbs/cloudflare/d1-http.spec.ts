@@ -88,6 +88,5 @@ describe.skipIf(
   },
   15_000,
 )
-// NOTE: need to set this because the aggregation test "basic test" needs more time to make the multiple network roundtrips.
-// for the array insert. Default vitest timeout is 5000ms. It looks like RepositoryImplementation does not do bulk insert
-// unless data provider `isProxy`
+// NOTE: need to set this because the aggregation test "basic test" needs more time to make the multiple network roundtrips
+// for the array insert. Default vitest timeout is 5000ms. Array insert is sequential unless the entity has `bulkInsert: true`.

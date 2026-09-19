@@ -1,28 +1,44 @@
+/// <reference types="@vitest/browser/providers/webdriverio" />
 import { config } from 'dotenv'
 import { defineConfig } from 'vitest/config'
 
 config()
 
+process.env['IGNORE_GLOBAL_REMULT_IN_TESTS'] = 'true'
+
+const ci = !!process.env.CI
+
 export default defineConfig({
   test: {
-    threads: false,
-
-    include: [
-      './projects/tests/**/*.spec-browser.ts',
-      //'./projects/tests/tests/try-test.spec-browser.ts',
-      //'./projects/tests/dbs/sql-lite.spec.ts',
-    ],
-    //  reporters: ['dot'],
+    include: ['./projects/tests/**/*.spec-browser.ts'],
+    reporters: ['default', 'junit'],
+    outputFile: './test-results.xml',
     globals: false,
-    browser: {
-      name: 'chrome',
-      enabled: true,
+    setupFiles: ['./projects/tests/browser-setup.ts'],
+    coverage: {
+      enabled: false,
+      provider: 'istanbul',
+      reporter: ['json', 'html'],
+      include: ['projects/core/**'],
     },
-    // coverage: {
-    //   enabled: false,
-    //   provider: 'v8',
-    //   reporter: ['text', 'json', 'html'],
-    //   include: ['**'],
-    // },
+    browser: {
+      enabled: true,
+      provider: 'webdriverio',
+      headless: ci,
+      instances: [
+        {
+          browser: 'chrome',
+          ...(ci
+            ? {
+                capabilities: {
+                  'goog:chromeOptions': {
+                    args: ['--no-sandbox', '--disable-dev-shm-usage'],
+                  },
+                },
+              }
+            : {}),
+        },
+      ],
+    },
   },
 })

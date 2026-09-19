@@ -20,7 +20,6 @@ import {
   type EntityMetadata,
   type FindOptions,
   type Repository,
-  type InsertOrUpdateOptions,
 } from './remult3/remult3.js'
 import type { rowHelperImplementation } from './remult3/RepositoryImplementation.js'
 
@@ -629,11 +628,25 @@ export class DataApi<T = unknown> {
       return this.repository.getEntityRef(newr).toApiJson()
     }
     if (Array.isArray(body)) {
-      const result: any[] = []
+      let result: any[] = []
       await doTransaction(this.remult, async () => {
+        const items: T[] = []
         for (const item of body) {
-          result.push(await insert(item))
+          let newr = this.repository.create()
+          await (
+            this.repository.getEntityRef(newr) as rowHelperImplementation<T>
+          )._updateEntityBasedOnApi(item)
+          if (!this.repository.getEntityRef(newr).apiInsertAllowed) {
+            throw new ForbiddenError()
+          }
+          items.push(newr)
         }
+        const inserted = await this.repository.insert(items, options)
+        if (options?.select === 'none') result = items.map(() => undefined)
+        else
+          result = (inserted as T[]).map((row) =>
+            this.repository.getEntityRef(row).toApiJson(),
+          )
       })
       return result
     } else return await insert(body)

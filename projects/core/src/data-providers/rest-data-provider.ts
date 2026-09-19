@@ -353,32 +353,32 @@ export class RestEntityDataProvider
     return result
   }
 
-  async delete(id: any): Promise<void> {
-    if (id == '')
-      await this.deleteMany(
-        Filter.fromEntityFilter(
-          this.entity,
-          this.entity.idMetadata.getIdFilter(id),
-        ),
+  async delete(ids: any[]): Promise<void> {
+    if (ids.length === 0) return
+    if (ids.length === 1 && ids[0] !== '')
+      return this.http().delete(
+        this.url() + '/' + encodeURIComponent(ids[0]),
       )
-    else return this.http().delete(this.url() + '/' + encodeURIComponent(id))
+    await this.deleteMany(
+      Filter.fromEntityFilter(
+        this.entity,
+        this.entity.idMetadata.getIdFilter(...ids),
+      ),
+    )
   }
 
-  public insert(data: any, options?: InsertOrUpdateOptions): Promise<any> {
+  public insert(data: any[], options?: InsertOrUpdateOptions): Promise<any[]> {
     return this.http()
       .post(
         this.url() + (options?.select === 'none' ? '?_select=$none' : ''),
-        this.translateToJson(data),
+        data.map((row) => this.translateToJson(row)),
       )
-      .then((y) => this.translateFromJson(y))
-  }
-  insertMany(data: any[], options?: InsertOrUpdateOptions): Promise<any[]> {
-    return this.http()
-      .post(
-        this.url() + (options?.select === 'none' ? '?_select=$none' : ''),
-        data.map((data) => this.translateToJson(data)),
-      )
-      .then((y) => y.map((y: any) => this.translateFromJson(y)))
+      .then((y) => {
+        const rows = Array.isArray(y) ? y : [y]
+        return rows.map((row: any) =>
+          row ? this.translateFromJson(row) : undefined,
+        )
+      })
   }
 }
 

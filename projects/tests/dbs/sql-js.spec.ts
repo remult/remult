@@ -75,4 +75,45 @@ describe('Sql JS', () => {
       '"alter table `my` add column `name` text default \'\' not null "',
     )
   })
+  it('multi-row insert batches by bind limit', async () => {
+    @Entity('batch_ins')
+    class BatchIns {
+      @Fields.integer()
+      id = 0
+      @Fields.string()
+      name = ''
+    }
+    const repo = remult.repo(BatchIns)
+    await db.ensureSchema([repo.metadata])
+    db._getSourceSql().maxParametersInOneSqlStatement = 7
+    const rows = Array.from({ length: 10 }, (_, i) => ({
+      id: i + 1,
+      name: 'n' + i,
+    }))
+    const inserted = await repo.insert(rows)
+    expect(inserted.map((x) => ({ id: x.id, name: x.name }))).toEqual(rows)
+    expect(await repo.count()).toBe(10)
+  })
+  it('multi-row insert unions sparse columns', async () => {
+    @Entity('sparse_ins')
+    class SparseIns {
+      @Fields.integer()
+      id = 0
+      @Fields.string({ allowNull: true })
+      a?: string
+      @Fields.string({ allowNull: true })
+      b?: string
+    }
+    const repo = remult.repo(SparseIns)
+    await db.ensureSchema([repo.metadata])
+    await db.getEntityDataProvider(repo.metadata).insert([
+      { id: 1, a: 'x' },
+      { id: 2, b: 'y' },
+    ])
+    const found = await repo.find({ orderBy: { id: 'asc' } })
+    expect(found.map((x) => ({ id: x.id, a: x.a, b: x.b }))).toEqual([
+      { id: 1, a: 'x', b: null },
+      { id: 2, a: null, b: 'y' },
+    ])
+  })
 })

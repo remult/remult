@@ -931,6 +931,44 @@ describe('data api', () => {
     await c.insert({})
     expect(await c.count()).toBe(0)
   })
+  it('prevent default works for bulk insert', async () => {
+    @Entity<type>('testPDefaultBulk', {
+      bulkInsert: true,
+      saving: (e, { preventDefault }) => {
+        if (e.id === 2) preventDefault()
+      },
+    })
+    class type extends newCategories {}
+    const c = new Remult(new InMemoryDataProvider()).repo(type)
+    await c.insert([{ id: 1 }, { id: 2 }, { id: 3 }])
+    expect((await c.find()).map((x) => x.id)).toEqual([1, 3])
+  })
+  it('insert array is sequential unless bulkInsert', async () => {
+    const counts: number[] = []
+    @Entity<type>('testSeqInsert', {
+      saving: async (_e, event) => {
+        counts.push(await event.repository.count())
+      },
+    })
+    class type extends newCategories {}
+    const c = new Remult(new InMemoryDataProvider()).repo(type)
+    await c.insert([{ id: 1 }, { id: 2 }, { id: 3 }])
+    expect(counts).toEqual([0, 1, 2])
+  })
+  it('bulkInsert runs all saving hooks before any write', async () => {
+    const counts: number[] = []
+    @Entity<type>('testBulkInsert', {
+      bulkInsert: true,
+      saving: async (_e, event) => {
+        counts.push(await event.repository.count())
+      },
+    })
+    class type extends newCategories {}
+    const c = new Remult(new InMemoryDataProvider()).repo(type)
+    await c.insert([{ id: 1 }, { id: 2 }, { id: 3 }])
+    expect(counts).toEqual([0, 0, 0])
+    expect(await c.count()).toBe(3)
+  })
   it('get based on id with excluded columns', async () => {
     let type = class extends newCategories {
       categoryName!: string
@@ -1871,21 +1909,23 @@ describe('test rest data provider translates data correctly', () => {
         get: () => undefined!,
         post: async (x, data) => {
           done.ok()
-          expect(data.a).toBe(1)
-          expect(data.b).toBe('2021-05-16T08:32:19.905Z')
+          expect(data[0].a).toBe(1)
+          expect(data[0].b).toBe('2021-05-16T08:32:19.905Z')
           return data
         },
         put: () => undefined!,
       },
     }))
     let x = z.getEntityDataProvider(c.metadata)
-    let r = await x.insert({
-      a: 1,
-      b: new Date('2021-05-16T08:32:19.905Z'),
-    })
-    expect(r.a).toBe(1)
-    expect(r.b instanceof Date).toBe(true)
-    expect(r.b.toISOString()).toBe('2021-05-16T08:32:19.905Z')
+    let r = await x.insert([
+      {
+        a: 1,
+        b: new Date('2021-05-16T08:32:19.905Z'),
+      },
+    ])
+    expect(r[0].a).toBe(1)
+    expect(r[0].b instanceof Date).toBe(true)
+    expect(r[0].b.toISOString()).toBe('2021-05-16T08:32:19.905Z')
     done.test()
   })
 })

@@ -105,8 +105,8 @@ export declare class ArrayEntityDataProvider implements EntityDataProvider {
   count(where?: Filter): Promise<number>
   find(options?: EntityDataProviderFindOptions): Promise<any[]>
   update(id: any, data: any): Promise<any>
-  delete(id: any): Promise<void>
-  insert(data: any): Promise<any>
+  delete(ids: any[]): Promise<void>
+  insert(data: any[]): Promise<any[]>
 }
 //[ ] CustomArrayFilter from TBD is not exported
 export declare function BackendMethod<type = unknown>(
@@ -448,6 +448,11 @@ export declare function describeEntity<entityType extends ClassType<any>>(
   fields: FieldsDescriptor<entityType>,
   options?: EntityOptions<InstanceType<entityType>>,
 ): void
+export interface DroppableDataProvider extends DataProvider {
+  dropDatabase(): Promise<void>
+  /** Recreated with indexes on next use (`ensureSchema` / first write). */
+  dropTable(entity: EntityMetadataOverloads): Promise<void>
+}
 export declare function Entity<entityType>(
   key: string,
   ...options: (
@@ -485,8 +490,8 @@ export interface EntityDataProvider {
   find(options?: EntityDataProviderFindOptions): Promise<Array<any>>
   groupBy(options?: EntityDataProviderGroupByOptions): Promise<any[]>
   update(id: any, data: any, options?: InsertOrUpdateOptions): Promise<any>
-  delete(id: any): Promise<void>
-  insert(data: any, options?: InsertOrUpdateOptions): Promise<any>
+  delete(ids: any[]): Promise<void>
+  insert(data: any[], options?: InsertOrUpdateOptions): Promise<any[]>
 }
 export interface EntityDataProviderFindOptions {
   select?: string[]
@@ -765,6 +770,18 @@ export interface EntityOptions<entityType = unknown> {
    * defaultOrderBy: { price: "desc", name: "asc" }
    */
   defaultOrderBy?: EntityOrderBy<entityType>
+  /**
+   * When true, `insert([...])` on the backend uses one provider statement/txn
+   * (SQL multi-row `INSERT`, one IndexedDB txn) after all `saving` hooks.
+   *
+   * Default (`false`): arrays insert one-by-one so `saving` and `Validators.unique`
+   * see prior rows in the same call.
+   *
+   * The frontend always POSTs the array in one request; this option is only
+   * honored on the backend. Do not enable if `saving` / `validation` logic
+   * depends on seeing sibling rows already persisted.
+   */
+  bulkInsert?: boolean
   /** An event that will be fired before the Entity will be saved to the database.
    * If the `error` property of the entity's ref or any of its fields will be set, the save will be aborted and an exception will be thrown.
    * this is the place to run logic that we want to run in any case before an entity is saved.
@@ -1934,14 +1951,62 @@ export interface IdMetadata<entityType = unknown> {
     items: Partial<MembersOnly<entityType>>[],
   ): EntityFilter<entityType>
 }
+export declare class IndexedDbDataProvider implements DroppableDataProvider {
+  private dbName
+  constructor(dbName?: string, options?: IndexedDbDataProviderOptions)
+  getEntityDataProvider(entity: EntityMetadata): EntityDataProvider
+  transaction(
+    action: (dataProvider: DataProvider) => Promise<void>,
+  ): Promise<void>
+  ensureSchema(entities: EntityMetadata[]): Promise<void>
+  close(): void
+  dropDatabase(): Promise<void>
+  dropTable(entity: EntityMetadataOverloads): Promise<void>
+}
+export type IndexedDbDataProviderOptions = {
+  /** IDB-only indexes (not unique). PK is skipped. Compound names join db names with `_`. */
+  indexes?: (x: IndexedDbIndexBuilder) => void
+  /**
+   * AES-GCM 256 on non-indexed fields (`_enc` + `_iv`). Requires `crypto.subtle`.
+   *
+   * Not full security. Stops casual disk/profile dump and other origins
+   * (non-extractable `CryptoKey` wrapped by the browser). Does **not** protect
+   * against same-origin XSS / any JS that can use the stored `CryptoKey` to decrypt.
+   *
+   * PK + `ensureIndexes` fields stay plaintext (required for IDB keyPath/indexes).
+   * Only non-indexed fields go into `_enc`.
+   *
+   * Default auto-key is origin-bound theater vs XSS. Pass `getEncryptionKey` for
+   * a stronger secret you control.
+   */
+  encrypt?: boolean
+  /**
+   * Your AES-GCM `CryptoKey` (or Promise). Skips `__remult_keys`. Stronger than
+   * the default origin-bound auto-key — still not XSS-safe if same-origin JS can
+   * call this and decrypt.
+   */
+  getEncryptionKey?: () => CryptoKey | Promise<CryptoKey>
+}
+//[ ] CryptoKey from TBD is not exported
+export declare class IndexedDbIndexBuilder {
+  ensureIndexes<entityType>(
+    entity: ClassType<entityType>,
+    indexes: readonly IndexedDbIndexDef<entityType>[],
+  ): this
+}
+export type IndexedDbIndexDef<entityType> =
+  | keyof MembersOnly<entityType>
+  | readonly (keyof MembersOnly<entityType>)[]
 export declare class InMemoryDataProvider
-  implements DataProvider, __RowsOfDataForTesting
+  implements DroppableDataProvider, __RowsOfDataForTesting
 {
   transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
   ): Promise<void>
   rows: any
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider
+  dropDatabase(): Promise<void>
+  dropTable(entity: EntityMetadataOverloads): Promise<void>
   toString(): string
 }
 export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
@@ -1967,7 +2032,7 @@ export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
 }
 //[ ] LiveQueryKeepAliveResult from TBD is not exported
 export declare type InsertOrUpdateOptions = {
-  select: "none"
+  select?: "none"
 }
 export declare function isBackend(): boolean
 export declare class JsonDataProvider implements DataProvider {
@@ -2190,7 +2255,9 @@ export interface LiveQueryStorage {
 export declare type MembersOnly<T> = {
   [K in keyof Omit<T, keyof EntityBase> as T[K] extends Function
     ? never
-    : K]: T[K]
+    : K extends string
+      ? K
+      : never]: T[K]
 }
 export type MembersToInclude<T> = {
   [K in keyof ObjectMembersOnly<T>]?:
@@ -2803,7 +2870,7 @@ export interface Repository<entityType> {
    */
   validate(
     item: Partial<entityType>,
-    ...fields: Extract<keyof MembersOnly<entityType>, string>[]
+    ...fields: (keyof MembersOnly<entityType>)[]
   ): Promise<ErrorInfo<entityType> | undefined>
   /** saves an item or item[] to the data source. It assumes that if an `id` value exists, it's an existing row - otherwise it's a new row
    * @example
@@ -2817,7 +2884,9 @@ export interface Repository<entityType> {
     item: Partial<MembersOnly<entityType>>,
     options?: InsertOrUpdateOptions,
   ): Promise<entityType>
-  /**Insert an item or item[] to the data source
+  /**Insert an item or item[] to the data source.
+   * Arrays insert one-by-one by default. Set `{ bulkInsert: true }` on `@Entity` for one provider statement/txn.
+   * From the frontend, an array is always sent in one request; the backend decides whether to bulk insert.
    * @example
    * await taskRepo.insert({title:"task a"})
    * @example
@@ -3193,6 +3262,8 @@ export interface SqlImplementation extends HasWrapIdentifier {
   doesNotSupportReturningSyntax?: boolean
   doesNotSupportReturningSyntaxOnlyForUpdate?: boolean
   orderByNullsFirst?: boolean
+  /** Bound-variable cap per statement. Default 2000 (SQL Server is 2100). */
+  maxParametersInOneSqlStatement?: number
   end(): Promise<void>
   afterMutation?: VoidFunction
 }
@@ -3202,7 +3273,7 @@ export interface SqlResult {
 }
 export declare function standardSchema<
   entityType,
-  fieldsType extends Extract<keyof MembersOnly<entityType>, string>[] = [],
+  fieldsType extends (keyof MembersOnly<entityType>)[] = [],
 >(
   repo: Repository<entityType>,
   ...fields: fieldsType
@@ -4617,6 +4688,7 @@ export declare class SqliteCoreDataProvider
     doesNotSupportReturningSyntaxOnlyForUpdate?: boolean,
   )
   orderByNullsFirst?: boolean
+  maxParametersInOneSqlStatement: number
   getLimitSqlSyntax(limit: number, offset: number): string
   afterMutation?: VoidFunction
   provideMigrationBuilder(builder: MigrationCode): MigrationBuilder
@@ -4735,6 +4807,7 @@ export interface D1Client {
 }
 export declare class D1DataProvider extends SqliteCoreDataProvider {
   private d1
+  maxParametersInOneSqlStatement: number
   /**
    * For production or local d1 using binding
    *
