@@ -681,6 +681,7 @@ export class RepositoryImplementation<entityType>
       if (ref)
         return returnResult((await ref.save(options)) as unknown as entityType)
     }
+    if (id === undefined || id === null) throw this._notFoundError(id)
     {
       let ref = getEntityRef(id, false)
       if (ref) {
