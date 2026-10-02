@@ -1,0 +1,46 @@
+{
+  "name": "@remult/sv",
+  "version": "0.0.1",
+  "description": "sv add-on for remult: a full-stack, type-safe SvelteKit app in one command",
+  "type": "module",
+  "license": "MIT",
+  "author": "Jean-Yves Couët",
+  "keywords": ["sv-add", "svelte", "sveltekit", "remult", "firstly"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/remult/remult.git",
+    "directory": "projects/sv-addon"
+  },
+  "files": ["dist"],
+  "exports": {
+    ".": {
+      "default": "./dist/index.mjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "check": "tsc --noEmit",
+    "demo-create": "rimraf demo && sv create demo --types ts --template minimal --no-add-ons --no-install",
+    "demo-add": "npm run build && sv add tailwindcss=plugins:none paraglide=languageTags:en,fr+demo:false vitest=usages:unit ai-tools=ide:claude-code+delivery:tools+tools:mcp,svelte-code-writer,svelte-core-bestpractices,svelte-file-editor+mcpSetup:remote file:../ --cwd demo --no-git-check --no-download-check --no-install",
+    "demo-add:full": "npm run build && sv add tailwindcss=plugins:none paraglide=languageTags:en,fr+demo:false vitest=usages:unit ai-tools=ide:claude-code+delivery:tools+tools:mcp,svelte-code-writer,svelte-core-bestpractices,svelte-file-editor+mcpSetup:remote file:../=preset:full --cwd demo --no-git-check --no-download-check --no-install",
+    "prepublishOnly": "npm run build",
+    "railway:template": "./railway/make-template.sh",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "sv": "^1.0.0-next.7"
+  },
+  "devDependencies": {
+    "@sveltejs/sv-utils": "^1.0.0-next.4",
+    "@types/node": "^22.10.2",
+    "rimraf": "^6.0.1",
+    "sv": "^1.0.0-next.7",
+    "tsdown": "^0.22.1",
+    "typescript": "^5.7.2",
+    "vitest": "4.1.11",
+    "@playwright/test": "^1.60.0"
+  }
+}
