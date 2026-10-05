@@ -1,3 +1,4 @@
+import { SseSubscriptionServer } from '../../SseSubscriptionServer.js'
 import type { itemChange } from '../context.js'
 import { findOptionsFromJson } from '../data-providers/rest-data-provider.js'
 import type { Repository } from '../remult3/remult3.js'
@@ -5,6 +6,29 @@ import type { LiveQueryChange } from './SubscriptionChannel.js'
 
 export interface SubscriptionServer {
   publishMessage<T>(channel: string, message: T): Promise<void>
+}
+
+export class SubscriptionServerOrchestrator implements SubscriptionServer {
+  constructor(private servers: SubscriptionServer[]) {
+    // Error on duplicate servers based on class
+    const serverClasses = new Set()
+    for (const s of this.servers) {
+      const cls = s.constructor
+      if (serverClasses.has(cls)) {
+        throw new Error(`Duplicate subscription server '${cls.name}' found`)
+      }
+      serverClasses.add(cls)
+    }
+  }
+  async publishMessage<T>(channel: string, message: T) {
+    for (const s of this.servers) {
+      await s.publishMessage(channel, message)
+    }
+  }
+
+  getSseServer() {
+    return this.servers.find((x) => x instanceof SseSubscriptionServer)
+  }
 }
 
 /* @internal*/
