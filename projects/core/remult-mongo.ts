@@ -155,6 +155,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
   translateToDb(row: any, nameProvider: EntityDbNamesBase) {
     let result: any = {}
     for (const col of this.entity.fields) {
+      if (col.dbReadOnly || col.isServerExpression) continue
       let val = toDb(col, row[col.key])
       if (val === null) val = NULL
       result[nameProvider.$dbNameOf(col)] = val
