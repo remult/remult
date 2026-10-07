@@ -440,23 +440,35 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
     this.add(col, val, '$lt')
   }
   public containsCaseInsensitive(col: FieldMetadata, val: any): void {
-    this.add(col, val, '$regex', { $options: 'i' })
+    this.addRegex(col, val)
   }
   public notContainsCaseInsensitive(col: FieldMetadata, val: any): void {
-    this.result.push(() => ({
-      [this.nameProvider.$dbNameOf(col)]: {
-        $not: {
-          $regex: isNull(val) ? val : toDb(col, val),
-          $options: 'i',
-        },
-      },
-    }))
+    this.addRegex(col, val, '', '', true)
   }
   public startsWithCaseInsensitive(col: FieldMetadata, val: any): void {
-    this.add(col, `^${val}`, '$regex', { $options: 'i' })
+    this.addRegex(col, val, '^')
   }
   public endsWithCaseInsensitive(col: FieldMetadata, val: any): void {
-    this.add(col, `${val}$`, '$regex', { $options: 'i' })
+    this.addRegex(col, val, '', '$')
+  }
+
+  private addRegex(
+    col: FieldMetadata,
+    val: string,
+    start = '',
+    end = '',
+    negate = false,
+  ) {
+    this.result.push(() => {
+      const regex = {
+        $regex:
+          start + toDb(col, val).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + end,
+        $options: 'i',
+      }
+      return {
+        [this.nameProvider.$dbNameOf(col)]: negate ? { $not: regex } : regex,
+      }
+    })
   }
 
   private add(
