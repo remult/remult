@@ -108,7 +108,7 @@ export class DataApi<T = unknown> {
           res.success('ok')
           return
         case 'query':
-          return res.success(await this.query(res, req, body))
+          return this.query(res, req, body)
         default:
           return res.created(await this.post(body, req))
       }
@@ -162,10 +162,10 @@ export class DataApi<T = unknown> {
         this.getArrayImpl(request, rest),
         this.groupBy(aggregateRequest, { ...aggregate, where: body.where }),
       ])
-      return {
+      return response.success({
         items: r,
         aggregates,
-      }
+      })
     } catch (err: any) {
       if (err.isForbiddenError) response.forbidden()
       else response.error(err, this.repository.metadata)
