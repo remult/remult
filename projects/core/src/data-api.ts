@@ -31,7 +31,7 @@ export class DataApi<T = unknown> {
     private repository: Repository<T>,
     private remult: Remult,
   ) {}
-  httpGet(
+  async httpGet(
     res: DataApiResponse,
     req: DataApiRequest,
     serializeContext: () => Promise<any>,
@@ -51,11 +51,11 @@ export class DataApi<T = unknown> {
         case 'count':
           return this.count(res, req, undefined)
         case 'groupBy':
-          return res.success(this.groupBy(req, undefined))
+          return res.success(await this.groupBy(req, undefined))
       }
       return this.getArray(res, req, undefined)
     } catch (err: any) {
-      if (err.isForbiddenError) res.forbidden(err)
+      if (err.isForbiddenError) res.forbidden(err.message)
       else res.error(err, this.repository.metadata)
     }
   }
