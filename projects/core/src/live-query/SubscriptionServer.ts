@@ -2,9 +2,13 @@ import type { itemChange } from '../context.js'
 import { findOptionsFromJson } from '../data-providers/rest-data-provider.js'
 import type { Repository } from '../remult3/remult3.js'
 import type { LiveQueryChange } from './SubscriptionChannel.js'
+import type { SubscriptionServerRouteApi } from '../../server/remult-api-server.js'
 
 export interface SubscriptionServer {
   publishMessage<T>(channel: string, message: T): Promise<void>
+  /** A subscription server that also needs to serve http routes (for example SSE),
+   * can implement this method to register them on the api server */
+  initApiServer?(api: SubscriptionServerRouteApi): void
 }
 
 /* @internal*/
