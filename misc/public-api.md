@@ -105,8 +105,8 @@ export declare class ArrayEntityDataProvider implements EntityDataProvider {
   count(where?: Filter): Promise<number>
   find(options?: EntityDataProviderFindOptions): Promise<any[]>
   update(id: any, data: any): Promise<any>
-  delete(id: any): Promise<void>
-  insert(data: any): Promise<any>
+  delete(ids: any[]): Promise<void>
+  insert(data: any[]): Promise<any[]>
 }
 //[ ] CustomArrayFilter from TBD is not exported
 export declare function BackendMethod<type = unknown>(
@@ -448,6 +448,11 @@ export declare function describeEntity<entityType extends ClassType<any>>(
   fields: FieldsDescriptor<entityType>,
   options?: EntityOptions<InstanceType<entityType>>,
 ): void
+export interface DroppableDataProvider extends DataProvider {
+  dropDatabase(): Promise<void>
+  /** Recreated with indexes on next use (`ensureSchema` / first write). */
+  dropTable(entity: EntityMetadataOverloads): Promise<void>
+}
 export declare function Entity<entityType>(
   key: string,
   ...options: (
@@ -485,8 +490,8 @@ export interface EntityDataProvider {
   find(options?: EntityDataProviderFindOptions): Promise<Array<any>>
   groupBy(options?: EntityDataProviderGroupByOptions): Promise<any[]>
   update(id: any, data: any, options?: InsertOrUpdateOptions): Promise<any>
-  delete(id: any): Promise<void>
-  insert(data: any, options?: InsertOrUpdateOptions): Promise<any>
+  delete(ids: any[]): Promise<void>
+  insert(data: any[], options?: InsertOrUpdateOptions): Promise<any[]>
 }
 export interface EntityDataProviderFindOptions {
   select?: string[]
@@ -765,6 +770,18 @@ export interface EntityOptions<entityType = unknown> {
    * defaultOrderBy: { price: "desc", name: "asc" }
    */
   defaultOrderBy?: EntityOrderBy<entityType>
+  /**
+   * When true, `insert([...])` on the backend uses one provider statement/txn
+   * (SQL multi-row `INSERT`, one IndexedDB txn) after all `saving` hooks.
+   *
+   * Default (`false`): arrays insert one-by-one so `saving` and `Validators.unique`
+   * see prior rows in the same call.
+   *
+   * The frontend always POSTs the array in one request; this option is only
+   * honored on the backend. Do not enable if `saving` / `validation` logic
+   * depends on seeing sibling rows already persisted.
+   */
+  bulkInsert?: boolean
   /** An event that will be fired before the Entity will be saved to the database.
    * If the `error` property of the entity's ref or any of its fields will be set, the save will be aborted and an exception will be thrown.
    * this is the place to run logic that we want to run in any case before an entity is saved.
@@ -1934,20 +1951,70 @@ export interface IdMetadata<entityType = unknown> {
     items: Partial<MembersOnly<entityType>>[],
   ): EntityFilter<entityType>
 }
+export declare class IndexedDbDataProvider implements DroppableDataProvider {
+  private dbName
+  constructor(dbName?: string, options?: IndexedDbDataProviderOptions)
+  getEntityDataProvider(entity: EntityMetadata): EntityDataProvider
+  transaction(
+    action: (dataProvider: DataProvider) => Promise<void>,
+  ): Promise<void>
+  ensureSchema(entities: EntityMetadata[]): Promise<void>
+  close(): void
+  dropDatabase(): Promise<void>
+  dropTable(entity: EntityMetadataOverloads): Promise<void>
+}
+export type IndexedDbDataProviderOptions = {
+  /** IDB-only indexes (not unique). PK is skipped. Compound names join db names with `_`. */
+  indexes?: (x: IndexedDbIndexBuilder) => void
+  /**
+   * AES-GCM 256 on non-indexed fields (`_enc` + `_iv`). Requires `crypto.subtle`.
+   *
+   * Not full security. Stops casual disk/profile dump and other origins
+   * (non-extractable `CryptoKey` wrapped by the browser). Does **not** protect
+   * against same-origin XSS / any JS that can use the stored `CryptoKey` to decrypt.
+   *
+   * PK + `ensureIndexes` fields stay plaintext (required for IDB keyPath/indexes).
+   * Only non-indexed fields go into `_enc`.
+   *
+   * Default auto-key is origin-bound theater vs XSS. Pass `getEncryptionKey` for
+   * a stronger secret you control.
+   */
+  encrypt?: boolean
+  /**
+   * Your AES-GCM `CryptoKey` (or Promise). Skips `__remult_keys`. Stronger than
+   * the default origin-bound auto-key — still not XSS-safe if same-origin JS can
+   * call this and decrypt.
+   */
+  getEncryptionKey?: () => CryptoKey | Promise<CryptoKey>
+}
+//[ ] CryptoKey from TBD is not exported
+export declare class IndexedDbIndexBuilder {
+  ensureIndexes<entityType>(
+    entity: ClassType<entityType>,
+    indexes: readonly IndexedDbIndexDef<entityType>[],
+  ): this
+}
+export type IndexedDbIndexDef<entityType> =
+  | keyof MembersOnly<entityType>
+  | readonly (keyof MembersOnly<entityType>)[]
 export declare class InMemoryDataProvider
-  implements DataProvider, __RowsOfDataForTesting
+  implements DroppableDataProvider, __RowsOfDataForTesting
 {
   transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
   ): Promise<void>
   rows: any
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider
+  dropDatabase(): Promise<void>
+  dropTable(entity: EntityMetadataOverloads): Promise<void>
   toString(): string
 }
 export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
   debugFileSaver: (x: any) => void
   debug(): void
-  keepAliveAndReturnUnknownQueryIds(ids: string[]): Promise<string[]>
+  keepAliveAndReturnUnknownQueryIds(
+    ids: string[],
+  ): Promise<LiveQueryKeepAliveResult>
   queries: (StoredQuery & {
     lastUsed: string
   })[]
@@ -1963,8 +2030,9 @@ export declare class InMemoryLiveQueryStorage implements LiveQueryStorage {
     }) => Promise<void>,
   ): Promise<void>
 }
+//[ ] LiveQueryKeepAliveResult from TBD is not exported
 export declare type InsertOrUpdateOptions = {
-  select: "none"
+  select?: "none"
 }
 export declare function isBackend(): boolean
 export declare class JsonDataProvider implements DataProvider {
@@ -2131,6 +2199,11 @@ export declare type LiveQueryChange =
         id: any
       }
     }
+  | {
+      type: "version"
+      from: number
+      to: number
+    }
 export interface LiveQueryChangeInfo<entityType> {
   /**
    * The updated array of result items.
@@ -2175,12 +2248,16 @@ export interface LiveQueryStorage {
       setData(data: any): Promise<void>
     }) => Promise<void>,
   ): Promise<void>
-  keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<string[]>
+  keepAliveAndReturnUnknownQueryIds(
+    queryIds: string[],
+  ): Promise<LiveQueryKeepAliveResult>
 }
 export declare type MembersOnly<T> = {
   [K in keyof Omit<T, keyof EntityBase> as T[K] extends Function
     ? never
-    : K]: T[K]
+    : K extends string
+      ? K
+      : never]: T[K]
 }
 export type MembersToInclude<T> = {
   [K in keyof ObjectMembersOnly<T>]?:
@@ -2269,6 +2346,14 @@ export interface QueryResult<
   forEach(what: (item: entityType) => Promise<any>): Promise<number>
   /** Returns a `Paginator` object that is used for efficient paging */
   paginator(): Promise<Paginator<entityType, AggregateResult>>
+}
+export interface RawSelectOptions {
+  sqlCommand?: SqlCommandWithParameters
+  /** Replace `$entityName` here to address another database or an alias: `{ ...await dbNamesOf(Task), $entityName: '[other].dbo.tasks' }`. */
+  dbNames?: EntityDbNamesBase
+  wrapIdentifier?: (name: string) => string
+  /** Required only with `limit`: `(limit, offset) => 'limit 10 offset 20'`. */
+  limitSyntax?: (limit: number, offset: number) => string
 }
 export declare type RefSubscriber = (() => void) | RefSubscriberBase
 export interface RefSubscriberBase {
@@ -2793,7 +2878,7 @@ export interface Repository<entityType> {
    */
   validate(
     item: Partial<entityType>,
-    ...fields: Extract<keyof MembersOnly<entityType>, string>[]
+    ...fields: (keyof MembersOnly<entityType>)[]
   ): Promise<ErrorInfo<entityType> | undefined>
   /** saves an item or item[] to the data source. It assumes that if an `id` value exists, it's an existing row - otherwise it's a new row
    * @example
@@ -2807,7 +2892,9 @@ export interface Repository<entityType> {
     item: Partial<MembersOnly<entityType>>,
     options?: InsertOrUpdateOptions,
   ): Promise<entityType>
-  /**Insert an item or item[] to the data source
+  /**Insert an item or item[] to the data source.
+   * Arrays insert one-by-one by default. Set `{ bulkInsert: true }` on `@Entity` for one provider statement/txn.
+   * From the frontend, an array is always sent in one request; the backend decides whether to bulk insert.
    * @example
    * await taskRepo.insert({title:"task a"})
    * @example
@@ -3141,6 +3228,62 @@ export declare class SqlDatabase
     wrapIdentifier?: (name: string) => string,
   ): Promise<string>
   /**
+   * Builds the select that `repo.groupBy` would run, without running it - for a statement remult cannot run on its own, such as one `UNION ALL` over several databases.
+   * @returns `sql`, and `toResult`, which maps a result row (read by column alias) to the shape `groupBy` returns.
+   * @see [Building a select with remult](https://remult.dev/docs/running-sql-on-the-server#building-a-select-with-remult)
+   */
+  static groupByToRaw<
+    entityType,
+    groupByFields extends
+      | (keyof MembersOnly<entityType>)[]
+      | undefined = undefined,
+    sumFields extends NumericKeys<entityType>[] | undefined = undefined,
+    averageFields extends NumericKeys<entityType>[] | undefined = undefined,
+    minFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
+    maxFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
+    distinctCountFields extends
+      | (keyof MembersOnly<entityType>)[]
+      | undefined = undefined,
+  >(
+    repo: RepositoryOverloads<entityType>,
+    options: GroupByOptions<
+      entityType,
+      groupByFields extends undefined ? never : groupByFields,
+      sumFields extends undefined ? never : sumFields,
+      averageFields extends undefined ? never : averageFields,
+      minFields extends undefined ? never : minFields,
+      maxFields extends undefined ? never : maxFields,
+      distinctCountFields extends undefined ? never : distinctCountFields
+    >,
+    sql?: RawSelectOptions,
+  ): Promise<{
+    sql: string
+    toResult: (
+      row: Record<string, any>,
+    ) => GroupByResult<
+      entityType,
+      groupByFields extends undefined ? never : groupByFields,
+      sumFields extends undefined ? never : sumFields,
+      averageFields extends undefined ? never : averageFields,
+      minFields extends undefined ? never : minFields,
+      maxFields extends undefined ? never : maxFields,
+      distinctCountFields extends undefined ? never : distinctCountFields
+    >
+  }>
+  /**
+   * Builds the select that `repo.find` would run, without running it. Columns are aliased by field key; no default order is added, so the sql can be a branch of a `UNION`.
+   * @returns `sql`, and `toResult`, which maps a result row (read by column alias) to the fields' values.
+   * @see [Building a select with remult](https://remult.dev/docs/running-sql-on-the-server#building-a-select-with-remult)
+   */
+  static selectToRaw<entityType>(
+    repo: RepositoryOverloads<entityType>,
+    options?: FindOptions<entityType>,
+    sql?: RawSelectOptions,
+  ): Promise<{
+    sql: string
+    toResult: (row: Record<string, any>) => Partial<MembersOnly<entityType>>
+  }>
+  /**
    * `false` _(default)_ - No logging
    *
    * `true` - to log all queries to the console
@@ -3183,6 +3326,8 @@ export interface SqlImplementation extends HasWrapIdentifier {
   doesNotSupportReturningSyntax?: boolean
   doesNotSupportReturningSyntaxOnlyForUpdate?: boolean
   orderByNullsFirst?: boolean
+  /** Bound-variable cap per statement. Default 2000 (SQL Server is 2100). */
+  maxParametersInOneSqlStatement?: number
   end(): Promise<void>
   afterMutation?: VoidFunction
 }
@@ -3192,7 +3337,7 @@ export interface SqlResult {
 }
 export declare function standardSchema<
   entityType,
-  fieldsType extends Extract<keyof MembersOnly<entityType>, string>[] = [],
+  fieldsType extends (keyof MembersOnly<entityType>)[] = [],
 >(
   repo: Repository<entityType>,
   ...fields: fieldsType
@@ -3259,11 +3404,17 @@ export interface SubscriptionClientConnection {
     onError: (err: any) => void,
   ): Promise<Unsubscribe>
   close(): void
+  /** SSE clients set this; missing means no heartbeat tracking (Ably, tests). */
+  lastServerEvent?: number
+  /** Foreground / online: reconnect now, skip backoff. `force` kills an OPEN zombie. */
+  resume?: (force?: boolean) => void
 }
 export interface SubscriptionListener<type> {
   next(message: type): void
   error(err: any): void
   complete(): void
+  /** The connection was re-established; messages published meanwhile were lost, refetch state if needed. */
+  reconnect?(): void
 }
 export interface SubscriptionServer {
   publishMessage<T>(channel: string, message: T): Promise<void>
@@ -3433,6 +3584,7 @@ export interface ValueConverter<valueType> {
   toJson?(val: valueType): any
   /**
    * Converts a value from the database format to the valueType.
+   * Defaults to `fromJson` when not provided.
    *
    * @param val The value to convert.
    * @returns The converted value.
@@ -3443,6 +3595,7 @@ export interface ValueConverter<valueType> {
   fromDb?(val: any): valueType
   /**
    * Converts a value of valueType to the database format.
+   * Defaults to `toJson` when not provided.
    *
    * @param val The value to convert.
    * @returns The converted value.
@@ -3454,6 +3607,7 @@ export interface ValueConverter<valueType> {
   toDbSql?(val: string): string
   /**
    * Converts a value of valueType to a string suitable for an HTML input element.
+   * Defaults to `toJson` when not provided.
    *
    * @param val The value to convert.
    * @param inputType The type of the input element (optional).
@@ -3465,6 +3619,7 @@ export interface ValueConverter<valueType> {
   toInput?(val: valueType, inputType?: string): string
   /**
    * Converts a string from an HTML input element to the valueType.
+   * Defaults to `fromJson` when not provided.
    *
    * @param val The value to convert.
    * @param inputType The type of the input element (optional).
@@ -3754,7 +3909,10 @@ export declare class DataProviderLiveQueryStorage
       setData(data: any): Promise<void>
     }) => Promise<void>,
   ): Promise<void>
-  keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<string[]>
+  keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<{
+    unknownQueryIds: string[]
+    versions: Record<string, number>
+  }>
 }
 //[ ] Repository from TBD is not exported
 //[ ] LiveQueryStorageEntity from TBD is not exported
@@ -4029,7 +4187,10 @@ export declare class DataProviderLiveQueryStorage
       setData(data: any): Promise<void>
     }) => Promise<void>,
   ): Promise<void>
-  keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<string[]>
+  keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<{
+    unknownQueryIds: string[]
+    versions: Record<string, number>
+  }>
 }
 //[ ] Repository from TBD is not exported
 //[ ] LiveQueryStorageEntity from TBD is not exported
@@ -4494,7 +4655,7 @@ export declare class KnexDataProvider
     wrapIdentifier?: (name: string) => string,
   ): Promise<(knex: Knex.QueryBuilder) => void>
   isProxy?: boolean
-  ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
+  ensureSchema(entities: EntityMetadata[]): Promise<void>
 }
 //[ ] MigrationCode from ../migrations/migration-types.js is not exported
 //[ ] MigrationBuilder from ../migrations/migration-types.js is not exported
@@ -4507,7 +4668,7 @@ export declare class KnexDataProvider
 //[ ] RepositoryOverloads from ../src/remult3/RepositoryImplementation.js is not exported
 export declare class KnexSchemaBuilder {
   private knex
-  ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
+  ensureSchema(entities: EntityMetadata[]): Promise<void>
   createIfNotExist(entity: EntityMetadata): Promise<void>
   createTableKnexCommand(
     entity: EntityMetadata,
@@ -4599,6 +4760,7 @@ export declare class SqliteCoreDataProvider
     doesNotSupportReturningSyntaxOnlyForUpdate?: boolean,
   )
   orderByNullsFirst?: boolean
+  maxParametersInOneSqlStatement: number
   getLimitSqlSyntax(limit: number, offset: number): string
   afterMutation?: VoidFunction
   provideMigrationBuilder(builder: MigrationCode): MigrationBuilder
@@ -4717,6 +4879,7 @@ export interface D1Client {
 }
 export declare class D1DataProvider extends SqliteCoreDataProvider {
   private d1
+  maxParametersInOneSqlStatement: number
   /**
    * For production or local d1 using binding
    *
@@ -4911,6 +5074,12 @@ export const fieldOptionsEnricher: {
 }
 export const flags: {
   error500RetryCount: number
+  /** Client treats SSE as dead if no event for this long. Server pings every 15s; two missed pings plus slack, so a stalled event loop does not trigger a reconnect storm */
+  sseStaleMs: number
+  /** HTTP keep-alive while SSE is healthy (touches lastUsed) */
+  liveQueryKeepAliveMs: number
+  /** Version poll while SSE is stale */
+  liveQueryPollWhenStaleMs: number
 }
 export declare function getControllerRef<fieldsContainerType>(
   container: fieldsContainerType,
@@ -4980,6 +5149,14 @@ export declare function sqlRelationsFilter<entityType>(
     ArrayItemType<NonNullable<entityType[p]>>
   >
 }
+export declare class SseSubscriptionClient implements SubscriptionClient {
+  openConnection(
+    onReconnect: VoidFunction,
+  ): Promise<SubscriptionClientConnection>
+  static createEventSource(url: string): EventSource
+}
+//[ ] SubscriptionClientConnection from TBD is not exported
+//[ ] EventSource from TBD is not exported
 export interface SubscriptionServerRouteApi {
   rootPath: string
   addRoute(

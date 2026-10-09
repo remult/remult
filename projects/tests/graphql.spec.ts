@@ -36,8 +36,7 @@ class Category {
   @Fields.string({
     allowApiUpdate: false,
     saving: async (_, ref, { repository }) => {
-      // created a consistent id for testing
-      ref.value = (await repository.count()).toString()
+      if (!ref.value) ref.value = (await repository.count()).toString()
     },
   })
   id = ''
@@ -139,7 +138,7 @@ describe('graphql', () => {
   it('test nodes', async () => {
     const cat = await remult
       .repo(Category)
-      .insert([{ name: 'c1' }, { name: 'c2' }])
+      .insert([{ id: '0', name: 'c1' }, { id: '1', name: 'c2' }])
 
     const catMore = await remult
       .repo(CategoryMore)
@@ -443,7 +442,7 @@ describe('graphql', () => {
   it('gets related entities', async () => {
     const cat = await remult
       .repo(Category)
-      .insert([{ name: 'c1' }, { name: 'c2' }])
+      .insert([{ id: '0', name: 'c1' }, { id: '1', name: 'c2' }])
     await remult.repo(Task).insert({
       title: 'task a',
       category: cat[0],

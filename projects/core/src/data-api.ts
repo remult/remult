@@ -20,7 +20,6 @@ import {
   type EntityMetadata,
   type FindOptions,
   type Repository,
-  type InsertOrUpdateOptions,
 } from './remult3/remult3.js'
 import type { rowHelperImplementation } from './remult3/RepositoryImplementation.js'
 
@@ -31,7 +30,7 @@ export class DataApi<T = unknown> {
     private repository: Repository<T>,
     private remult: Remult,
   ) {}
-  httpGet(
+  async httpGet(
     res: DataApiResponse,
     req: DataApiRequest,
     serializeContext: () => Promise<any>,
@@ -51,11 +50,11 @@ export class DataApi<T = unknown> {
         case 'count':
           return this.count(res, req, undefined)
         case 'groupBy':
-          return res.success(this.groupBy(req, undefined))
+          return res.success(await this.groupBy(req, undefined))
       }
       return this.getArray(res, req, undefined)
     } catch (err: any) {
-      if (err.isForbiddenError) res.forbidden(err)
+      if (err.isForbiddenError) res.forbidden(err.message)
       else res.error(err, this.repository.metadata)
     }
   }
@@ -108,7 +107,7 @@ export class DataApi<T = unknown> {
           res.success('ok')
           return
         case 'query':
-          return res.success(await this.query(res, req, body))
+          return this.query(res, req, body)
         default:
           return res.created(await this.post(body, req))
       }
@@ -162,10 +161,10 @@ export class DataApi<T = unknown> {
         this.getArrayImpl(request, rest),
         this.groupBy(aggregateRequest, { ...aggregate, where: body.where }),
       ])
-      return {
+      return response.success({
         items: r,
         aggregates,
-      }
+      })
     } catch (err: any) {
       if (err.isForbiddenError) response.forbidden()
       else response.error(err, this.repository.metadata)
@@ -437,6 +436,7 @@ export class DataApi<T = unknown> {
           this.repository.metadata,
         ),
         lastIds: r.r.map((y) => this.repository.metadata.idMetadata.getId(y)),
+        version: 0,
       }
       await this.remult.liveQueryStorage!.add({
         entityKey: this.repository.metadata.key,
@@ -628,11 +628,25 @@ export class DataApi<T = unknown> {
       return this.repository.getEntityRef(newr).toApiJson()
     }
     if (Array.isArray(body)) {
-      const result: any[] = []
+      let result: any[] = []
       await doTransaction(this.remult, async () => {
+        const items: T[] = []
         for (const item of body) {
-          result.push(await insert(item))
+          let newr = this.repository.create()
+          await (
+            this.repository.getEntityRef(newr) as rowHelperImplementation<T>
+          )._updateEntityBasedOnApi(item)
+          if (!this.repository.getEntityRef(newr).apiInsertAllowed) {
+            throw new ForbiddenError()
+          }
+          items.push(newr)
         }
+        const inserted = await this.repository.insert(items, options)
+        if (options?.select === 'none') result = items.map(() => undefined)
+        else
+          result = (inserted as T[]).map((row) =>
+            this.repository.getEntityRef(row).toApiJson(),
+          )
       })
       return result
     } else return await insert(body)

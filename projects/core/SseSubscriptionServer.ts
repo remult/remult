@@ -7,6 +7,9 @@ import { streamUrl } from './src/live-query/SubscriptionChannel.js'
 import type { ServerEventChannelSubscribeDTO } from './src/live-query/SubscriptionChannel.js'
 import type { SubscriptionServer } from './src/live-query/SubscriptionServer.js'
 
+/** Keep below typical proxy idle (30s) and Heroku H15 (55s). */
+export const ssePingMs = 15_000
+
 export class SseSubscriptionServer implements SubscriptionServer {
   initApiServer(api: SubscriptionServerRouteApi) {
     const streamPath = '/' + streamUrl
@@ -147,6 +150,6 @@ export class clientConnection {
     this.write('', 'keep-alive')
     this.timeOutRef = setTimeout(() => {
       this.sendLiveMessage()
-    }, 45000)
+    }, ssePingMs)
   }
 }

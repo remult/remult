@@ -213,7 +213,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
     return this.__names
   }
   //@internal
-  private verifyThatRowHasAllNotNullColumns(r: any, names: EntityDbNamesBase) {
+  verifyThatRowHasAllNotNullColumns(r: any, names: EntityDbNamesBase) {
     for (const f of this.entity.fields) {
       const key = names.$dbNameOf(f)
       if (!f.isServerExpression)
@@ -280,8 +280,13 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
   translateToJson(row: any, dbNames: EntityDbNamesBase) {
     let result: any = {}
     for (const col of this.entity.fields) {
-      if (!isDbReadonly(col, dbNames))
-        result[dbNames.$dbNameOf(col)] = col.valueConverter.toJson(row[col.key])
+      if (!isDbReadonly(col, dbNames)) {
+        let val = row[col.key]
+        if (val === undefined) {
+          if (col.allowNull) val = null
+        }
+        result[dbNames.$dbNameOf(col)] = col.valueConverter.toJson(val)
+      }
     }
     return result
   }
@@ -334,20 +339,30 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
       `ArrayEntityDataProvider: Couldn't find row with id "${id}" in entity "${this.entity.key}" to update`,
     )
   }
-  async delete(id: any): Promise<void> {
+  async delete(ids: any[]): Promise<void> {
+    for (const id of ids) await this.deleteOne(id)
+  }
+  //@internal
+  async deleteOne(id: any): Promise<void> {
     const names = await this.init()
     let idMatches = this.idMatches(id, names)
     for (let i = 0; i < this.rows().length; i++) {
       if (idMatches(this.rows()[i])) {
         this.rows().splice(i, 1)
-        return Promise.resolve()
+        return
       }
     }
     throw new Error(
       `ArrayEntityDataProvider: Couldn't find row with id "${id}" in entity "${this.entity.key}" to delete`,
     )
   }
-  async insert(data: any): Promise<any> {
+  async insert(data: any[]): Promise<any[]> {
+    const result: any[] = []
+    for (const row of data) result.push(await this.insertOne(row))
+    return result
+  }
+  //@internal
+  async insertOne(data: any): Promise<any> {
     const names = await this.init()
     let j = this.translateToJson(data, names)
     let idf = this.entity.idMetadata.field

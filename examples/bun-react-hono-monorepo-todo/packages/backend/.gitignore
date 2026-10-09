@@ -1,2 +1,4 @@
 node_modules
-db
+
+# Local data: the default JSON store (JsonDataProvider)
+/db

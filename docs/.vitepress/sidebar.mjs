@@ -261,6 +261,10 @@ export const sidebar = tutorials.reduce(
                 text: 'Json files',
                 link: '/docs/installation/database/json',
               },
+              {
+                text: 'IndexedDB',
+                link: '/docs/installation/database/indexeddb',
+              },
             ],
           },
         ],
@@ -376,7 +380,8 @@ export const sidebar = tutorials.reduce(
           },
           { text: 'migrate', link: '/docs/ref_migrate' },
           { text: 'Async Hooks', link: '/docs/ref_initasynchooks' },
-          { text: 'REST API Spec', link: '/docs/rest-api' },
+          { text: 'REST API (read)', link: '/docs/rest-api' },
+          { text: 'REST API (mutations)', link: '/docs/rest-api-mutations' },
           {
             text: 'Active Record & Mutable',
             collapsed: true,

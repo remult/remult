@@ -22,7 +22,7 @@ jobs:
       - name: 🧑‍💻 Setup env
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
       - name: 📦 install things
         run: npm i
@@ -46,7 +46,7 @@ jobs:
       - name: 🧑‍💻 Setup env
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
       - name: 📦 Install dependencies
         run: cd projects/create-remult && npm i
@@ -110,7 +110,7 @@ jobs:
       - name: 🧑‍💻 Setup env
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
       - name: 🛠️ Build create-remult
         run: cd projects/create-remult && npm i && npm run build

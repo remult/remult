@@ -301,6 +301,7 @@ export interface ValueConverter<valueType> {
 
   /**
    * Converts a value from the database format to the valueType.
+   * Defaults to `fromJson` when not provided.
    *
    * @param val The value to convert.
    * @returns The converted value.
@@ -312,6 +313,7 @@ export interface ValueConverter<valueType> {
 
   /**
    * Converts a value of valueType to the database format.
+   * Defaults to `toJson` when not provided.
    *
    * @param val The value to convert.
    * @returns The converted value.
@@ -325,6 +327,7 @@ export interface ValueConverter<valueType> {
 
   /**
    * Converts a value of valueType to a string suitable for an HTML input element.
+   * Defaults to `toJson` when not provided.
    *
    * @param val The value to convert.
    * @param inputType The type of the input element (optional).
@@ -337,6 +340,7 @@ export interface ValueConverter<valueType> {
 
   /**
    * Converts a string from an HTML input element to the valueType.
+   * Defaults to `fromJson` when not provided.
    *
    * @param val The value to convert.
    * @param inputType The type of the input element (optional).

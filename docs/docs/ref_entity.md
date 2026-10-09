@@ -147,6 +147,16 @@ defaultOrderBy: { name: "asc" }
 ```ts
 defaultOrderBy: { price: "desc", name: "asc" }
 ```
+## bulkInsert
+When true, `insert([...])` on the backend uses one provider statement/txn
+(SQL multi-row `INSERT`, one IndexedDB txn) after all `saving` hooks.
+
+Default (`false`): arrays insert one-by-one so `saving` and `Validators.unique`
+see prior rows in the same call.
+
+The frontend always POSTs the array in one request; this option is only
+honored on the backend. Do not enable if `saving` / `validation` logic
+depends on seeing sibling rows already persisted.
 ## saving
 An event that will be fired before the Entity will be saved to the database.
 If the `error` property of the entity's ref or any of its fields will be set, the save will be aborted and an exception will be thrown.

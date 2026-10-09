@@ -501,7 +501,9 @@ await taskRepo.save({...task, completed:true })
 Arguments:
 * **item**
 ## insert
-Insert an item or item[] to the data source
+Insert an item or item[] to the data source.
+Arrays insert one-by-one by default. Set `{ bulkInsert: true }` on `@Entity` for one provider statement/txn.
+From the frontend, an array is always sent in one request; the backend decides whether to bulk insert.
 
 
 #### example:

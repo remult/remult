@@ -209,6 +209,43 @@ describe('Rest', () => {
       `[Error: You must specify a done filter]`,
     )
   })
+  it('client update should not delete includeInApi:false fields', async () => {
+    @Entity('users_include_in_api_false', { allowApiCrud: true })
+    class User {
+      @Fields.integer()
+      id = 0
+      @Fields.string()
+      name = ''
+      @Fields.string({
+        dbName: 'password',
+        includeInApi: false,
+      })
+      realStoredPassword = 'SHOULD_NOT_APPEAR'
+    }
+    await repoServer(User).insert({
+      id: 1,
+      name: 'noam',
+      realStoredPassword: 'secret',
+    })
+    const user = (await repo(User).findId(1))!
+    expect(user).toMatchInlineSnapshot(`
+      User {
+        "id": 1,
+        "name": "noam",
+      }
+    `)
+    getEntityRef(user).subscribe(() => {})
+    user.name = 'updated'
+    await repo(User).save(user)
+    expect(user).toMatchInlineSnapshot(`
+      User {
+        "id": 1,
+        "name": "updated",
+        "realStoredPassword": undefined,
+      }
+    `)
+    expect((await repoServer(User).findId(1))!.realStoredPassword).toBe('secret')
+  })
   it('aggregate sould match count when using or', async () => {
     @Entity('tasks_123', {
       allowApiCrud: true,

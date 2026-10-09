@@ -359,6 +359,33 @@ export function commonDbTests(
 
     expect(r.$.d.originalValue!.getFullYear()).toBe(1976)
   })
+  it('test date with null with undefined', async () => {
+    @Entity('otherTestDateWithNull', { allowApiCrud: true })
+    class otherTestDateWithNull {
+      @Fields.integer()
+      id: number = 0
+      @Fields.date({ allowNull: true })
+      d!: Date | null
+    }
+    let r = await await createEntity(otherTestDateWithNull)
+    const d = new Date(2025, 0, 1)
+    await r.insert([
+      { id: 1 },
+      { id: 2, d: undefined! },
+      { id: 3, d: null },
+      { id: 4, d },
+    ])
+    expect(
+      (await r.find()).map((x) => ({ id: x.id, d: x.d })),
+    ).toEqual([
+      { id: 1, d: null },
+      { id: 2, d: null },
+      { id: 3, d: null },
+      { id: 4, d },
+    ])
+    expect(await r.count({ d: null! })).toBe(3)
+    expect(await r.count({ d: { $ne: null! } })).toBe(1)
+  })
 
   @Entity('testDateWithNull', { allowApiCrud: true })
   class testDateWithNull extends EntityBase {
@@ -1092,7 +1119,9 @@ export function commonDbTests(
     await x.forEach('x', async (args) => {
       expect(args.query.data).toBe('noam')
     })
-    expect(await x.keepAliveAndReturnUnknownQueryIds([id])).toEqual([])
+    expect(
+      (await x.keepAliveAndReturnUnknownQueryIds([id])).unknownQueryIds,
+    ).toEqual([])
   })
 
   it('test ensure schema adds missing columns', async () => {

@@ -16,6 +16,7 @@ import {
 } from '../../../core'
 import { Categories as newCategories } from '../remult-3-entities'
 import { testAsIfOnBackend } from '../testHelper'
+import { TestApiDataProvider } from '../../../core/server/test-api-data-provider.js'
 
 describe('data api', () => {
   let remult = new Remult()
@@ -359,6 +360,37 @@ describe('test backend filter and update', () => {
         "message": "id 2 not found in entity t",
       }
     `)
+  })
+  it('update with undefined id fails with not found', async () => {
+    const proxy = new Remult(
+      TestApiDataProvider({ dataProvider: remult.dataProvider }),
+    ).repo(t)
+    await expect(() => r.update(undefined!, { name: 'z' })).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
+      {
+        "httpStatusCode": 404,
+        "message": "id undefined not found in entity t",
+      }
+    `)
+    await expect(() => r.update(null!, { name: 'z' })).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
+      {
+        "httpStatusCode": 404,
+        "message": "id null not found in entity t",
+      }
+    `)
+    await expect(() => proxy.update(undefined!, { name: 'z' })).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
+      {
+        "httpStatusCode": 404,
+        "message": "id undefined not found in entity t",
+      }
+    `)
+    expect((await r.find()).map((x) => x.name)).toEqual([
+      'noam',
+      'yael',
+      'yoni',
+    ])
   })
   it('save fails 2', async () => {
     const item = await r.findId(2)
