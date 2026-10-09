@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 - `EntityDataProvider.insert` is now `insert(data: any[], options?): Promise<any[]>` (not one object). `insertMany` removed from `ProxyEntityDataProvider`.
 - `EntityDataProvider.delete` is now `delete(ids: any[]): Promise<void>`. REST: 1 id → DELETE, N → existing deleteMany.
+- Custom `LiveQueryStorage`: `keepAliveAndReturnUnknownQueryIds` returns `{ unknownQueryIds, versions }` instead of `string[]`. The keep-alive route still accepts the old array body from older clients.
 
 ### Added
 
@@ -13,6 +14,10 @@ All notable changes to this project will be documented in this file.
 - `DroppableDataProvider` (`dropDatabase` / `dropTable`) on `IndexedDbDataProvider` and `InMemoryDataProvider`. `dropTable(Task)` or metadata; store + indexes recreated on next use.
 - `@Entity({ bulkInsert: true })` — backend `insert([a, b])` uses one `EntityDataProvider.insert` after all `saving` hooks (SQL multi-row `INSERT` / one IDB txn). `Validators.unique` / `count()` only see the DB, not siblings in the same array. Frontend always POSTs the array; the entity option is what the backend honors. Do not enable if `saving` / `validation` depends on sibling rows already persisted.
 - `SqlDatabase.groupByToRaw(repo, options, { sqlCommand, dbNames, wrapIdentifier, limitSyntax })` and `SqlDatabase.selectToRaw(repo, findOptions, …)` build the select that `groupBy` / `find` would run without running it, and return a `toResult` that maps a result row (by column alias) to the same shape the repository method returns. For statements remult can't run on its own, such as one `UNION ALL` over several databases; replace `dbNames.$entityName` to address another database. Docs: [Building a select with remult](https://remult.dev/docs/running-sql-on-the-server#building-a-select-with-remult).
+- `SubscriptionServer.initApiServer?` — a custom subscription server registers its own HTTP routes (SSE does this itself). `SseSubscriptionClient`, `SubscriptionServerRouteApi`, and `DataApiResponse` are exported from `remult/internals` ([#1036](https://github.com/remult/remult/pull/1036)).
+- `SubscriptionListener.reconnect?()` lets `SubscriptionChannel` subscribers refetch state after a dropped connection.
+- `SubscriptionClientConnection` gained optional `lastServerEvent` and `resume(force?)`; custom clients (Ably, ...) can ignore them.
+- `flags.sseStaleMs` (40s), `flags.liveQueryKeepAliveMs` (30s), `flags.liveQueryPollWhenStaleMs` (1s). Server SSE ping every 15s (was 45s), exported as `ssePingMs`.
 
 ### Changed
 
@@ -20,22 +25,25 @@ All notable changes to this project will be documented in this file.
 - From the frontend, `insert([...])` always sends the array in one request. The backend wraps it in a transaction and uses bulk only when the entity has `bulkInsert: true`.
 - SQL/knex multi-row `INSERT ... VALUES (...),(...)` batched under bind-variable limits (default 2000, sqlite 999, D1 100). Used when the entity has `bulkInsert: true`.
 - The SQL that `groupBy` runs now aliases every column through `wrapIdentifier` (`count(*) as "count"`, `"status" as "status"`, `sum("amount") as "amount_sum"`). Results are unchanged; only the statement text differs.
+- `InsertOrUpdateOptions.select` is optional.
+- `SseSubscriptionClient` reconnects forever with backoff (was 4 tries), reconnects on `visibilitychange` / `online` / `pageshow`, and recreates a socket that stops delivering events for `flags.sseStaleMs`.
+- `liveQuery` first `next()` no longer waits for the SSE connection.
+- Each server-side live query carries a version, sent with every change and returned by the keep-alive. The client refetches the snapshot on any version gap, so a dead socket, a half-open socket, or a missed message is recovered within one keep-alive. `LiveQueryChange` has an internal `{ type: 'version', from, to }` member, filtered out before reaching `liveQuery` listeners.
 
-# Live query / SSE resilience.
+### Fixed
 
-- The client no longer loses updates when the SSE stream dies while HTTP still works.
-
-- Each server-side live query carries a version, sent with every change and returned by the keep-alive. The client refetches the snapshot on any version gap, so a dead socket, a half-open socket or a missed message is recovered within one keep-alive
-- `SseSubscriptionClient` reconnects forever with backoff (was 4 tries), reconnects on `visibilitychange` / `online` / `pageshow`, and recreates a socket that stops delivering events for `flags.sseStaleMs`
-- `liveQuery` first `next()` no longer waits for the SSE connection
-- Server SSE ping every 15s (was 45s), exported as `ssePingMs`
-- New `flags.sseStaleMs` (40s), `flags.liveQueryKeepAliveMs` (30s), `flags.liveQueryPollWhenStaleMs` (1s)
-- `SubscriptionListener.reconnect?()` lets `SubscriptionChannel` subscribers refetch state after a dropped connection
-- `LiveQueryChange` has an internal `{ type: 'version', from, to }` member, filtered out before reaching `liveQuery` listeners
-- **Breaking** for custom `LiveQueryStorage`: `keepAliveAndReturnUnknownQueryIds` returns `{ unknownQueryIds, versions }` instead of `string[]`. The keep-alive route still accepts the old array body from older clients
-- `SubscriptionClientConnection` gained optional `lastServerEvent` and `resume(force?)`; custom clients (Ably, ...) can ignore them
-- Fixed REST `_select` / `find({ select })` serializing omitted fields through `toApiJson`, so dates and custom converters leaked as `''` instead of being absent
-- REST docs fixes
+- Live query no longer drops updates when the SSE stream dies while HTTP still works.
+- REST `_select` / `find({ select })` serialized omitted fields through `toApiJson`, so dates and custom converters leaked as `''` instead of being absent.
+- `repo.update(undefined | null, data)` threw `entity is undefined` instead of the same not-found error as any other missing id ([#1001](https://github.com/remult/remult/issues/1001), [#1047](https://github.com/remult/remult/pull/1047)).
+- Thanks to @drakeo338 for their first contribution
+- Mongo updates wrote the field key instead of the database field name ([#1049](https://github.com/remult/remult/pull/1049)).
+- Mongo inserts wrote `dbReadOnly` / `serverExpression` fields, which cleared an explicit foreign key when the relation was declared before the id field ([#1048](https://github.com/remult/remult/pull/1048)).
+- Mongo `contains` / `startsWith` / `endsWith` treated the search string as a regex. Metacharacters are escaped, so the filter is a literal ([#1050](https://github.com/remult/remult/pull/1050)).
+- GET `__action=groupBy` responded before the query finished. Forbidden GET errors now send `err.message` ([#1051](https://github.com/remult/remult/pull/1051)).
+- POST `__action=query` sent the body twice ([#1052](https://github.com/remult/remult/pull/1052)).
+- Thanks to @raashish1601 for their first contribution
+- Docs: REST split into read and mutations, `describeEntity` argument order ([#1046](https://github.com/remult/remult/pull/1046)).
+- Thanks to @pluxain for their first contribution to the docs
 
 ## [3.3.18] - 2026-08-30
 
