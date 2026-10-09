@@ -34,7 +34,13 @@ import {
   GroupByOperators,
   type EntityFilter,
   type EntityMetadata,
+  type FindOptions,
+  type GroupByOptions,
+  type GroupByResult,
   type InsertOrUpdateOptions,
+  type MembersOnly,
+  type NumericKeys,
+  type Repository,
 } from '../remult3/remult3.js'
 import type {
   EntityBase,
@@ -239,6 +245,100 @@ export class SqlDatabase
     return await b.resolveWhere()
   }
   /**
+   * Builds the select that `repo.groupBy` would run, without running it - for a statement remult cannot run on its own, such as one `UNION ALL` over several databases.
+   * @returns `sql`, and `toResult`, which maps a result row (read by column alias) to the shape `groupBy` returns.
+   * @see [Building a select with remult](https://remult.dev/docs/running-sql-on-the-server#building-a-select-with-remult)
+   */
+  static async groupByToRaw<
+    entityType,
+    groupByFields extends
+      | (keyof MembersOnly<entityType>)[]
+      | undefined = undefined,
+    sumFields extends NumericKeys<entityType>[] | undefined = undefined,
+    averageFields extends NumericKeys<entityType>[] | undefined = undefined,
+    minFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
+    maxFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
+    distinctCountFields extends
+      | (keyof MembersOnly<entityType>)[]
+      | undefined = undefined,
+  >(
+    repo: RepositoryOverloads<entityType>,
+    options: GroupByOptions<
+      entityType,
+      groupByFields extends undefined ? never : groupByFields,
+      sumFields extends undefined ? never : sumFields,
+      averageFields extends undefined ? never : averageFields,
+      minFields extends undefined ? never : minFields,
+      maxFields extends undefined ? never : maxFields,
+      distinctCountFields extends undefined ? never : distinctCountFields
+    >,
+    sql?: RawSelectOptions,
+  ): Promise<{
+    sql: string
+    toResult: (
+      row: Record<string, any>,
+    ) => GroupByResult<
+      entityType,
+      groupByFields extends undefined ? never : groupByFields,
+      sumFields extends undefined ? never : sumFields,
+      averageFields extends undefined ? never : averageFields,
+      minFields extends undefined ? never : minFields,
+      maxFields extends undefined ? never : maxFields,
+      distinctCountFields extends undefined ? never : distinctCountFields
+    >
+  }> {
+    const r = getRepository(repo)
+    const built = await buildGroupBySql(
+      await getRepositoryInternals(r).__buildGroupByOptions(options),
+      sql?.dbNames ??
+        (await dbNamesOfWithForceSqlExpression(
+          r.metadata,
+          sql?.wrapIdentifier ?? wrapIdentifierOf(r),
+        )),
+      sql?.sqlCommand ?? new myDummySQLCommand(),
+      false,
+      sql?.limitSyntax ?? limitSyntaxRequired,
+    )
+    return {
+      sql: built.select,
+      toResult: (row) => built.toResult((_, alias) => row[alias]),
+    }
+  }
+  /**
+   * Builds the select that `repo.find` would run, without running it. Columns are aliased by field key; no default order is added, so the sql can be a branch of a `UNION`.
+   * @returns `sql`, and `toResult`, which maps a result row (read by column alias) to the fields' values.
+   * @see [Building a select with remult](https://remult.dev/docs/running-sql-on-the-server#building-a-select-with-remult)
+   */
+  static async selectToRaw<entityType>(
+    repo: RepositoryOverloads<entityType>,
+    options?: FindOptions<entityType>,
+    sql?: RawSelectOptions,
+  ): Promise<{
+    sql: string
+    toResult: (row: Record<string, any>) => Partial<MembersOnly<entityType>>
+  }> {
+    const r = getRepository(repo)
+    const built = await buildFindSql(
+      r.metadata,
+      await getRepositoryInternals(r)._buildEntityDataProviderFindOptions(
+        options ?? {},
+      ),
+      sql?.dbNames ??
+        (await dbNamesOfWithForceSqlExpression(
+          r.metadata,
+          sql?.wrapIdentifier ?? wrapIdentifierOf(r),
+        )),
+      sql?.sqlCommand ?? new myDummySQLCommand(),
+      false,
+      sql?.limitSyntax ?? limitSyntaxRequired,
+      { aliasColumns: true, defaultOrderBy: false },
+    )
+    return {
+      sql: built.select,
+      toResult: (row) => built.toResult((_, alias) => row[alias]),
+    }
+  }
+  /**
    * `false` _(default)_ - No logging
    *
    * `true` - to log all queries to the console
@@ -425,86 +525,27 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
   }
 
   async find(options?: EntityDataProviderFindOptions): Promise<any[]> {
-    let e = await this.init()
-
-    let r = this.sql.createCommand()
-    let { colKeys, select } = await this.buildSelect(
+    const e = await this.init()
+    const r = this.sql.createCommand()
+    const { select, toResult } = await buildFindSql(
+      this.entity,
+      options,
       e,
       r,
-      options?.select,
-      options?.args,
+      this.sql._getSourceSql().orderByNullsFirst,
+      (limit, offset) => this.strategy.getLimitSqlSyntax(limit, offset),
     )
-    select = 'select ' + select
-
-    select += '\n from ' + e.$entityName
-    if (options) {
-      if (options.where) {
-        let where = new FilterConsumerBridgeToSqlRequest(r, e)
-        options.where.__applyToConsumer(where)
-        select += await where.resolveWhere()
-      }
-      if (options.limit) {
-        options.orderBy = Sort.createUniqueSort(this.entity, options.orderBy)
-      }
-      if (!options.orderBy) {
-        options.orderBy = Sort.createUniqueSort(this.entity, new Sort())
-      }
-      if (options.orderBy) {
-        let first = true
-        let segs: SortSegment[] = []
-        for (const s of options.orderBy.Segments) {
-          segs.push(s)
-        }
-        for (const c of segs) {
-          if (first) {
-            select += ' Order By '
-            first = false
-          } else select += ', '
-
-          select += c.field.options.sqlExpression
-            ? c.field.options.key
-            : await e.$dbNameOf(c.field)
-          if (c.isDescending) select += ' desc'
-          if (this.sql._getSourceSql().orderByNullsFirst) {
-            if (c.isDescending) select += ' nulls last'
-            else select += ' nulls first'
-          }
-        }
-      }
-
-      if (options.limit) {
-        let page = 1
-        if (options.page) page = options.page
-        if (page < 1) page = 1
-        select +=
-          ' ' +
-          this.strategy.getLimitSqlSyntax(
-            options.limit,
-            (page - 1) * options.limit,
-          )
-      }
-    }
-
-    return r.execute(select).then((r) => {
-      return r.rows.map((y) => {
-        return this.buildResultRow(colKeys, y, r)
-      })
-    })
+    const result = await r.execute(select)
+    return result.rows.map((y) =>
+      toResult((i) => y[result.getColumnKeyInResultForIndexInSelect(i)]),
+    )
   }
 
   private buildResultRow(colKeys: FieldMetadata<any>[], y: any, r: SqlResult) {
-    let result: any = {}
-    for (let index = 0; index < colKeys.length; index++) {
-      const col = colKeys[index]
-      try {
-        result[col.key] = col.valueConverter.fromDb(
-          y[r.getColumnKeyInResultForIndexInSelect(index)],
-        )
-      } catch (err) {
-        throw new Error('Failed to load from db:' + col.key + '\r\n' + err)
-      }
-    }
-    return result
+    return resultRow(
+      colKeys,
+      (i) => y[r.getColumnKeyInResultForIndexInSelect(i)],
+    )
   }
 
   private async buildSelect(
@@ -513,27 +554,7 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
     selectedFields?: string[],
     args?: any,
   ) {
-    let select = ''
-    let colKeys: FieldMetadata[] = []
-    for (const x of this.entity.fields) {
-      if (selectedFields && !selectedFields.includes(x.key)) continue
-      if (x.isServerExpression) {
-      } else {
-        if (colKeys.length > 0) select += ', '
-        if (typeof x.options.sqlExpression === 'function') {
-          let sql = await (x as any)[originalSqlExpressionKey](
-            this.entity,
-            args,
-            r,
-          )
-          if (sql.includes(' ')) select += '(' + sql + ')'
-          else select += sql
-        } else select += e.$dbNameOf(x)
-        if (x.options.sqlExpression) select += ' as ' + x.key
-        colKeys.push(x)
-      }
-    }
-    return { colKeys, select }
+    return selectColumns(this.entity, e, r, selectedFields, args, false)
   }
 
   async update(
@@ -714,6 +735,30 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
   }
 }
 
+/** Where a raw select is built: the command that collects its parameters, the names it addresses the table and columns by, and the dialect's paging syntax. */
+export interface RawSelectOptions {
+  sqlCommand?: SqlCommandWithParameters
+  /** Replace `$entityName` here to address another database or an alias: `{ ...await dbNamesOf(Task), $entityName: '[other].dbo.tasks' }`. */
+  dbNames?: EntityDbNamesBase
+  wrapIdentifier?: (name: string) => string
+  /** Required only with `limit`: `(limit, offset) => 'limit 10 offset 20'`. */
+  limitSyntax?: (limit: number, offset: number) => string
+}
+
+/** The quoting of the repository's own data provider, so a raw select matches the SQL remult would run against it. */
+function wrapIdentifierOf(r: Repository<any>) {
+  const dp = getRepositoryInternals(r)._dataProvider
+  if (isOfType<HasWrapIdentifier>(dp, 'wrapIdentifier'))
+    return dp.wrapIdentifier?.bind(dp)
+  return undefined
+}
+
+function limitSyntaxRequired(): string {
+  throw new Error(
+    'A raw select with a limit needs limitSyntax, for example SqlDatabase.getDb()._getSourceSql().getLimitSqlSyntax',
+  )
+}
+
 class myDummySQLCommand implements SqlCommand {
   execute(sql: string): Promise<SqlResult> {
     throw new Error('Method not implemented.')
@@ -757,6 +802,116 @@ export function getRowAfterUpdate<entityType>(
     })
 }
 
+/** The select that `find` runs, and the mapping of one result row to field values. With `aliasColumns`, every column is aliased through `wrapIdentifier`, so a row can be read by alias as well as by position. */
+export async function buildFindSql(
+  entity: EntityMetadata,
+  options: EntityDataProviderFindOptions | undefined,
+  e: EntityDbNamesBase,
+  r: SqlCommandWithParameters,
+  orderByNullsFirst: boolean | undefined,
+  limitSyntax: (limit: number, offset: number) => string,
+  { aliasColumns = false, defaultOrderBy = true } = {},
+) {
+  const { colKeys, select: columns } = await selectColumns(
+    entity,
+    e,
+    r,
+    options?.select,
+    options?.args,
+    aliasColumns,
+  )
+  let select = 'select ' + columns + '\n from ' + e.$entityName
+  if (options) {
+    if (options.where) {
+      let where = new FilterConsumerBridgeToSqlRequest(r, e)
+      options.where.__applyToConsumer(where)
+      select += await where.resolveWhere()
+    }
+    if (options.limit) {
+      options.orderBy = Sort.createUniqueSort(entity, options.orderBy)
+    }
+    if (!options.orderBy && defaultOrderBy) {
+      options.orderBy = Sort.createUniqueSort(entity, new Sort())
+    }
+    if (options.orderBy) {
+      let first = true
+      for (const c of options.orderBy.Segments) {
+        if (first) {
+          select += ' Order By '
+          first = false
+        } else select += ', '
+
+        select += c.field.options.sqlExpression
+          ? c.field.options.key
+          : await e.$dbNameOf(c.field)
+        if (c.isDescending) select += ' desc'
+        if (orderByNullsFirst) {
+          if (c.isDescending) select += ' nulls last'
+          else select += ' nulls first'
+        }
+      }
+    }
+
+    if (options.limit) {
+      let page = 1
+      if (options.page) page = options.page
+      if (page < 1) page = 1
+      select += ' ' + limitSyntax(options.limit, (page - 1) * options.limit)
+    }
+  }
+  return {
+    select,
+    colKeys,
+    /** `valueAt` reads one column of a result row, by its position in the select or by its alias (the field key). */
+    toResult(valueAt: (indexInSelect: number, alias: string) => any) {
+      return resultRow(colKeys, valueAt)
+    },
+  }
+}
+
+async function selectColumns(
+  entity: EntityMetadata,
+  e: EntityDbNamesBase,
+  r: SqlCommandWithParameters,
+  selectedFields: string[] | undefined,
+  args: any,
+  aliasColumns: boolean,
+) {
+  let select = ''
+  let colKeys: FieldMetadata[] = []
+  for (const x of entity.fields) {
+    if (selectedFields && !selectedFields.includes(x.key)) continue
+    if (x.isServerExpression) {
+    } else {
+      if (colKeys.length > 0) select += ', '
+      if (typeof x.options.sqlExpression === 'function') {
+        let sql = await (x as any)[originalSqlExpressionKey](entity, args, r)
+        if (sql.includes(' ')) select += '(' + sql + ')'
+        else select += sql
+      } else select += e.$dbNameOf(x)
+      if (aliasColumns) select += ' as ' + e.wrapIdentifier(x.key)
+      else if (x.options.sqlExpression) select += ' as ' + x.key
+      colKeys.push(x)
+    }
+  }
+  return { colKeys, select }
+}
+
+function resultRow(
+  colKeys: FieldMetadata[],
+  valueAt: (indexInSelect: number, alias: string) => any,
+) {
+  let result: any = {}
+  colKeys.forEach((col, index) => {
+    try {
+      result[col.key] = col.valueConverter.fromDb(valueAt(index, col.key))
+    } catch (err) {
+      throw new Error('Failed to load from db:' + col.key + '\r\n' + err)
+    }
+  })
+  return result
+}
+
 export async function groupByImpl(
   options: EntityDataProviderGroupByOptions | undefined,
   e: EntityDbNamesBase,
@@ -764,7 +919,33 @@ export async function groupByImpl(
   orderByNullFirst: boolean | undefined,
   limitSyntax: (limit: number, offset: number) => string,
 ) {
-  let select = 'select count(*) as count'
+  const { select, toResult } = await buildGroupBySql(
+    options,
+    e,
+    r,
+    orderByNullFirst,
+    limitSyntax,
+  )
+  const result = await r.execute(select)
+  return result.rows.map((sql) =>
+    toResult((i) => sql[result.getColumnKeyInResultForIndexInSelect(i)]),
+  )
+}
+
+/** The select that `groupBy` runs, and the mapping of one result row back to a `GroupByResult`. Every column is aliased through `wrapIdentifier`, so a row can be read by alias as well as by position. */
+export async function buildGroupBySql(
+  options: EntityDataProviderGroupByOptions | undefined,
+  e: EntityDbNamesBase,
+  r: SqlCommandWithParameters,
+  orderByNullFirst: boolean | undefined,
+  limitSyntax: (limit: number, offset: number) => string,
+) {
+  const aliases: string[] = []
+  function alias(name: string) {
+    aliases.push(name)
+    return e.wrapIdentifier(name)
+  }
+  let select = 'select count(*) as ' + alias('count')
   let groupBy = ''
   const groupByCols: string[] = []
   const processResultRow: ((sqlResult: any, theResult: any) => void)[] = []
@@ -776,8 +957,7 @@ export async function groupByImpl(
     for (const x of options?.group) {
       if (x.isServerExpression) {
       } else {
-        select += ', ' + e.$dbNameOf(x)
-        if (x.options.sqlExpression) select += ' as ' + x.key
+        select += ', ' + e.$dbNameOf(x) + ' as ' + alias(x.key)
         if (groupBy == '') groupBy = ' group by '
         else groupBy += ', '
         groupBy += e.$dbNameOf(x)
@@ -795,9 +975,9 @@ export async function groupByImpl(
         if (x.isServerExpression) {
         } else {
           const dbName = await e.$dbNameOf(x)
-          select += `, ${aggregateSqlSyntax(operator, dbName)} as ${
-            x.key
-          }_${operator}`
+          select += `, ${aggregateSqlSyntax(operator, dbName)} as ${alias(
+            x.key + '_' + operator,
+          )}`
         }
 
         const turnToNumber =
@@ -853,14 +1033,15 @@ export async function groupByImpl(
     select += ' ' + limitSyntax(options.limit, (page - 1) * options.limit)
   }
 
-  const result = await r.execute(select)
-  return result.rows.map((sql) => {
-    let theResult: any = {}
-    processResultRow.forEach((x, i) =>
-      x(sql[result.getColumnKeyInResultForIndexInSelect(i)], theResult),
-    )
-    return theResult
-  })
+  return {
+    select,
+    /** `valueAt` reads one column of a result row, by its position in the select or by its alias. */
+    toResult(valueAt: (indexInSelect: number, alias: string) => any) {
+      let theResult: any = {}
+      processResultRow.forEach((x, i) => x(valueAt(i, aliases[i]), theResult))
+      return theResult
+    },
+  }
 
   function aggregateSqlSyntax(
     operator: (typeof GroupByOperators)[number],

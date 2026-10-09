@@ -114,6 +114,7 @@ export type {
 export { RestDataProvider } from './src/data-providers/rest-data-provider.js' //V
 export { InMemoryDataProvider } from './src/data-providers/in-memory-database.js' //V
 export { SqlDatabase } from './src/data-providers/sql-database.js' //V
+export type { RawSelectOptions } from './src/data-providers/sql-database.js'
 
 export {
   CustomSqlFilterBuilder,

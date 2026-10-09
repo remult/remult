@@ -2347,6 +2347,14 @@ export interface QueryResult<
   /** Returns a `Paginator` object that is used for efficient paging */
   paginator(): Promise<Paginator<entityType, AggregateResult>>
 }
+export interface RawSelectOptions {
+  sqlCommand?: SqlCommandWithParameters
+  /** Replace `$entityName` here to address another database or an alias: `{ ...await dbNamesOf(Task), $entityName: '[other].dbo.tasks' }`. */
+  dbNames?: EntityDbNamesBase
+  wrapIdentifier?: (name: string) => string
+  /** Required only with `limit`: `(limit, offset) => 'limit 10 offset 20'`. */
+  limitSyntax?: (limit: number, offset: number) => string
+}
 export declare type RefSubscriber = (() => void) | RefSubscriberBase
 export interface RefSubscriberBase {
   reportChanged: () => void
@@ -3219,6 +3227,62 @@ export declare class SqlDatabase
     dbNames?: EntityDbNamesBase,
     wrapIdentifier?: (name: string) => string,
   ): Promise<string>
+  /**
+   * Builds the select that `repo.groupBy` would run, without running it - for a statement remult cannot run on its own, such as one `UNION ALL` over several databases.
+   * @returns `sql`, and `toResult`, which maps a result row (read by column alias) to the shape `groupBy` returns.
+   * @see [Building a select with remult](https://remult.dev/docs/running-sql-on-the-server#building-a-select-with-remult)
+   */
+  static groupByToRaw<
+    entityType,
+    groupByFields extends
+      | (keyof MembersOnly<entityType>)[]
+      | undefined = undefined,
+    sumFields extends NumericKeys<entityType>[] | undefined = undefined,
+    averageFields extends NumericKeys<entityType>[] | undefined = undefined,
+    minFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
+    maxFields extends (keyof MembersOnly<entityType>)[] | undefined = undefined,
+    distinctCountFields extends
+      | (keyof MembersOnly<entityType>)[]
+      | undefined = undefined,
+  >(
+    repo: RepositoryOverloads<entityType>,
+    options: GroupByOptions<
+      entityType,
+      groupByFields extends undefined ? never : groupByFields,
+      sumFields extends undefined ? never : sumFields,
+      averageFields extends undefined ? never : averageFields,
+      minFields extends undefined ? never : minFields,
+      maxFields extends undefined ? never : maxFields,
+      distinctCountFields extends undefined ? never : distinctCountFields
+    >,
+    sql?: RawSelectOptions,
+  ): Promise<{
+    sql: string
+    toResult: (
+      row: Record<string, any>,
+    ) => GroupByResult<
+      entityType,
+      groupByFields extends undefined ? never : groupByFields,
+      sumFields extends undefined ? never : sumFields,
+      averageFields extends undefined ? never : averageFields,
+      minFields extends undefined ? never : minFields,
+      maxFields extends undefined ? never : maxFields,
+      distinctCountFields extends undefined ? never : distinctCountFields
+    >
+  }>
+  /**
+   * Builds the select that `repo.find` would run, without running it. Columns are aliased by field key; no default order is added, so the sql can be a branch of a `UNION`.
+   * @returns `sql`, and `toResult`, which maps a result row (read by column alias) to the fields' values.
+   * @see [Building a select with remult](https://remult.dev/docs/running-sql-on-the-server#building-a-select-with-remult)
+   */
+  static selectToRaw<entityType>(
+    repo: RepositoryOverloads<entityType>,
+    options?: FindOptions<entityType>,
+    sql?: RawSelectOptions,
+  ): Promise<{
+    sql: string
+    toResult: (row: Record<string, any>) => Partial<MembersOnly<entityType>>
+  }>
   /**
    * `false` _(default)_ - No logging
    *
