@@ -23,4 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 .env
-db
+
+# Local data: the default JSON store (JsonDataProvider)
+/db

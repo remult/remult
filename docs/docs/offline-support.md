@@ -1,5 +1,5 @@
 ---
-llm: "Browser-side dataProviders - JsonDataProvider over localStorage, sessionStorage, IndexedDB, or OPFS."
+llm: "Browser-side dataProviders - IndexedDbDataProvider, or JsonDataProvider over localStorage, sessionStorage, IndexedDB blobs, or OPFS."
 ---
 
 # Offline Support
@@ -29,9 +29,19 @@ export const remultLocalStorage = new Remult(new JsonDataProvider(localStorage))
 
 This approach is straightforward and suitable for small datasets that need to persist across sessions or page reloads.
 
+## Native IndexedDB
+
+For structured per-entity stores, indexes, and optional at-rest encryption, use [`IndexedDbDataProvider`](/docs/installation/database/indexeddb):
+
+```typescript
+import { IndexedDbDataProvider, Remult } from 'remult'
+
+const remult = new Remult(new IndexedDbDataProvider())
+```
+
 ## JSON Storage in IndexedDB
 
-For more complex offline storage needs, such as larger datasets and structured queries, `IndexedDB` provides a robust solution. Using Remult’s `JsonEntityIndexedDbStorage`, you can store entities in `IndexedDB`, which is supported across all major browsers. This allows for efficient offline data management while offering support for larger volumes of data compared to `localStorage` or `sessionStorage`.
+`JsonEntityIndexedDbStorage` stores each entity as one JSON blob in a shared IndexedDB store (via `JsonDataProvider`). Prefer `IndexedDbDataProvider` when you want native object stores and indexes.
 
 ```typescript
 import { JsonDataProvider } from 'remult'
@@ -44,7 +54,7 @@ const db = new JsonDataProvider(new JsonEntityIndexedDbStorage())
 console.table(await repo(Task, db).find())
 ```
 
-In this example, `JsonEntityIndexedDbStorage` is used to persist the data to `IndexedDB`. This method is ideal for applications with large data sets or those requiring more complex interactions with the stored data in offline mode.
+Use this when you already wrap storage in `JsonDataProvider`. For native stores and indexes, use `IndexedDbDataProvider`.
 
 ## JSON Storage in OPFS (Origin Private File System)
 

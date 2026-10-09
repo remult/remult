@@ -131,9 +131,87 @@ describe('test sql implementation', () => {
     })
     expect(commands).toMatchInlineSnapshot(`
       [
-        "select count(*) as count, [title]
+        "select count(*) as [count], [title] as [title]
        from [tasks] group by [title] order by count(*) desc",
       ]
+    `)
+  })
+  it('groupByToRaw builds the group by select and maps a row by alias', async () => {
+    const { sql, toResult } = await SqlDatabase.groupByToRaw(repo, {
+      group: ['title'],
+      sum: ['id'],
+      max: ['completed'],
+      where: { completed: true },
+    })
+    expect(sql).toMatchInlineSnapshot(`
+      "select count(*) as [count], [title] as [title], sum( [id] ) as [id_sum], max( [completed] ) as [completed_max]
+       from [tasks] where [completed] = true group by [title]"
+    `)
+    expect(
+      toResult({ count: '2', title: 'a', id_sum: '7', completed_max: true }),
+    ).toEqual({
+      $count: 2,
+      title: 'a',
+      id: { sum: 7 },
+      completed: { max: true },
+    })
+    expect(commands).toEqual([])
+  })
+  it('groupByToRaw addresses the table the caller names', async () => {
+    const names = await dbNamesOf(repo, db.wrapIdentifier)
+    const { sql } = await SqlDatabase.groupByToRaw(
+      repo,
+      { group: ['title'] },
+      { dbNames: { ...names, $entityName: '[other].dbo.[tasks]' } },
+    )
+    expect(sql).toMatchInlineSnapshot(`
+      "select count(*) as [count], [title] as [title]
+       from [other].dbo.[tasks] group by [title]"
+    `)
+  })
+  it('groupByToRaw binds parameters through the given command', async () => {
+    const params: any[] = []
+    const { sql } = await SqlDatabase.groupByToRaw(
+      repo,
+      { where: { title: 'x' } },
+      {
+        sqlCommand: {
+          param: (v) => `@p${params.push(v)}`,
+          addParameterAndReturnSqlToken: (v) => `@p${params.push(v)}`,
+        },
+      },
+    )
+    expect(sql).toMatchInlineSnapshot(`
+      "select count(*) as [count]
+       from [tasks] where [title] = @p1"
+    `)
+    expect(params).toEqual(['x'])
+  })
+  it('groupByToRaw refuses a limit without a limit syntax', async () => {
+    await expect(
+      SqlDatabase.groupByToRaw(repo, { group: ['title'], limit: 5 }),
+    ).rejects.toThrow(/limitSyntax/)
+  })
+  it('selectToRaw aliases every column and adds no order of its own', async () => {
+    const { sql, toResult } = await SqlDatabase.selectToRaw(repo, {
+      where: { completed: true },
+      select: { id: true, exp: true },
+    })
+    expect(sql).toMatchInlineSnapshot(`
+      "select [id] as [id], a+b as [exp]
+       from [tasks] where [completed] = true"
+    `)
+    expect(toResult({ id: 3, exp: 'ab' })).toEqual({ id: 3, exp: 'ab' })
+    expect(commands).toEqual([])
+  })
+  it('selectToRaw keeps an order that was asked for', async () => {
+    const { sql } = await SqlDatabase.selectToRaw(repo, {
+      orderBy: { title: 'desc' },
+      select: { id: true },
+    })
+    expect(sql).toMatchInlineSnapshot(`
+      "select [id] as [id]
+       from [tasks] Order By [title] desc"
     `)
   })
   it('test to db sql', async () => {

@@ -31,5 +31,32 @@ export function manyOperations({ createEntity }: DbTestProps) {
       expect(await r.updateMany({ where: 'all', set: { name: 'yo' } })).toBe(3)
       expect(await r.count()).toBe(3)
     })
+
+    it('insert many select none', async () => {
+      const result = await r.insert([{ name: 'a' }, { name: 'b' }], {
+        select: 'none',
+      })
+      expect(result).toBeUndefined()
+      expect(await r.count()).toBe(2)
+    })
+
+    it('insert many autoincrement', async () => {
+      let e = class {
+        id!: number
+        name?: string
+      }
+      describeClass(e, Entity('many_ai', { allowApiCrud: true }), {
+        id: Fields.autoIncrement(),
+        name: Fields.string(),
+      })
+      const repo = await createEntity(e)
+      const inserted = await repo.insert([
+        { name: 'a' },
+        { name: 'b' },
+        { name: 'c' },
+      ])
+      expect(inserted.map((x: any) => x.name)).toEqual(['a', 'b', 'c'])
+      expect(inserted.map((x: any) => x.id)).toEqual([1, 2, 3])
+    })
   })
 }

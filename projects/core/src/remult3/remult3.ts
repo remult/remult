@@ -311,7 +311,9 @@ export interface EntityMetadata<entityType = unknown> {
 export declare type MembersOnly<T> = {
   [K in keyof Omit<T, keyof EntityBase> as T[K] extends Function
     ? never
-    : K]: T[K]
+    : K extends string
+      ? K
+      : never]: T[K]
 }
 //Pick<
 //   T,
@@ -740,7 +742,7 @@ export interface Repository<entityType> {
    */
   validate(
     item: Partial<entityType>,
-    ...fields: Extract<keyof MembersOnly<entityType>, string>[]
+    ...fields: (keyof MembersOnly<entityType>)[]
   ): Promise<ErrorInfo<entityType> | undefined>
   /** saves an item or item[] to the data source. It assumes that if an `id` value exists, it's an existing row - otherwise it's a new row
    * @example
@@ -756,7 +758,9 @@ export interface Repository<entityType> {
     options?: InsertOrUpdateOptions,
   ): Promise<entityType>
 
-  /**Insert an item or item[] to the data source
+  /**Insert an item or item[] to the data source.
+   * Arrays insert one-by-one by default. Set `{ bulkInsert: true }` on `@Entity` for one provider statement/txn.
+   * From the frontend, an array is always sent in one request; the backend decides whether to bulk insert.
    * @example
    * await taskRepo.insert({title:"task a"})
    * @example
@@ -1513,7 +1517,9 @@ export declare type EntityIdFields<entityType> = {
 export declare type EntitySelectFields<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?: boolean
 }
-export declare type InsertOrUpdateOptions = { select: 'none' }
+export declare type InsertOrUpdateOptions = {
+  select?: 'none'
+}
 
 export interface ClassFieldDecoratorContextStub<entityType, valueType> {
   readonly access: {

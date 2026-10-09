@@ -1,8 +1,29 @@
 All notable changes to this project will be documented in this file.
 
-## [3.4.0] - 2026-09-07
+## [3.4.0] - [Unreleased]
 
-Live query / SSE resilience. The client no longer loses updates when the SSE stream dies while HTTP still works.
+### Breaking
+
+- `EntityDataProvider.insert` is now `insert(data: any[], options?): Promise<any[]>` (not one object). `insertMany` removed from `ProxyEntityDataProvider`.
+- `EntityDataProvider.delete` is now `delete(ids: any[]): Promise<void>`. REST: 1 id → DELETE, N → existing deleteMany.
+
+### Added
+
+- Native `IndexedDbDataProvider`: PK + declared indexes, filter prefetch, batch insert/delete in one IDB txn, optional `encrypt: true` (AES-GCM, non-extractable key in `__remult_keys`, PK+index fields plaintext, rest `_enc`+`_iv`). Docs: installation/database/indexeddb — see docs for threat model.
+- `DroppableDataProvider` (`dropDatabase` / `dropTable`) on `IndexedDbDataProvider` and `InMemoryDataProvider`. `dropTable(Task)` or metadata; store + indexes recreated on next use.
+- `@Entity({ bulkInsert: true })` — backend `insert([a, b])` uses one `EntityDataProvider.insert` after all `saving` hooks (SQL multi-row `INSERT` / one IDB txn). `Validators.unique` / `count()` only see the DB, not siblings in the same array. Frontend always POSTs the array; the entity option is what the backend honors. Do not enable if `saving` / `validation` depends on sibling rows already persisted.
+- `SqlDatabase.groupByToRaw(repo, options, { sqlCommand, dbNames, wrapIdentifier, limitSyntax })` and `SqlDatabase.selectToRaw(repo, findOptions, …)` build the select that `groupBy` / `find` would run without running it, and return a `toResult` that maps a result row (by column alias) to the same shape the repository method returns. For statements remult can't run on its own, such as one `UNION ALL` over several databases; replace `dbNames.$entityName` to address another database. Docs: [Building a select with remult](https://remult.dev/docs/running-sql-on-the-server#building-a-select-with-remult).
+
+### Changed
+
+- `repo.insert([a, b, c])` is sequential by default (`this.insert(item)` per row). `saving` and `Validators.unique` see prior rows in the same call.
+- From the frontend, `insert([...])` always sends the array in one request. The backend wraps it in a transaction and uses bulk only when the entity has `bulkInsert: true`.
+- SQL/knex multi-row `INSERT ... VALUES (...),(...)` batched under bind-variable limits (default 2000, sqlite 999, D1 100). Used when the entity has `bulkInsert: true`.
+- The SQL that `groupBy` runs now aliases every column through `wrapIdentifier` (`count(*) as "count"`, `"status" as "status"`, `sum("amount") as "amount_sum"`). Results are unchanged; only the statement text differs.
+
+# Live query / SSE resilience.
+
+- The client no longer loses updates when the SSE stream dies while HTTP still works.
 
 - Each server-side live query carries a version, sent with every change and returned by the keep-alive. The client refetches the snapshot on any version gap, so a dead socket, a half-open socket or a missed message is recovered within one keep-alive
 - `SseSubscriptionClient` reconnects forever with backoff (was 4 tries), reconnects on `visibilitychange` / `online` / `pageshow`, and recreates a socket that stops delivering events for `flags.sseStaleMs`

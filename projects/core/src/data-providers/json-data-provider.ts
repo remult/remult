@@ -82,17 +82,17 @@ class JsonEntityDataProvider implements EntityDataProvider {
       ),
     ))
   }
-  delete(id: any): Promise<void> {
+  delete(ids: any[]): Promise<void> {
     return (this.p = this.p.then(() =>
       this.loadEntityData((dp, save) =>
-        dp.delete(id).then(async (x) => {
+        dp.delete(ids).then(async (x) => {
           await save()
           return x
         }),
       ),
     ))
   }
-  async insert(data: any): Promise<any> {
+  async insert(data: any[]): Promise<any[]> {
     return (this.p = this.p.then(() =>
       this.loadEntityData((dp, save) =>
         dp.insert(data).then(async (x) => {
