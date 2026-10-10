@@ -135,7 +135,7 @@ describe('test api data provider', () => {
     })
     expect(commands).toMatchInlineSnapshot(`
       [
-        "select count(*) as count, [venue]
+        "select count(*) as [count], [venue] as [venue]
        from [LoginAudit] group by [venue] order by count(*) desc  offset 0 rows fetch next 100 rows only",
       ]
     `)
