@@ -25,17 +25,17 @@ describe('mongo insert', () => {
           : { parentId: Fields.string(), parent: relation }),
       })
 
-      const insertOne = vi.fn(async () => ({ insertedId: 'child-1' }))
-      const mongo = { collection: () => ({ insertOne }) } as unknown as Db
+      const insertMany = vi.fn(async () => ({ insertedIds: { 0: 'child-1' } }))
+      const mongo = { collection: () => ({ insertMany }) } as unknown as Db
       const provider = new MongoDataProvider(mongo, undefined)
       const remult = new Remult(provider)
 
       await provider
         .getEntityDataProvider(remult.repo(Child).metadata)
-        .insert({ id: 'child-1', parentId: 'parent-1' }, { select: 'none' })
+        .insert([{ id: 'child-1', parentId: 'parent-1' }], { select: 'none' })
 
-      expect(insertOne).toHaveBeenCalledWith(
-        { id: 'child-1', parentId: 'parent-1' },
+      expect(insertMany).toHaveBeenCalledWith(
+        [{ id: 'child-1', parentId: 'parent-1' }],
         { session: undefined },
       )
     },
@@ -53,21 +53,20 @@ describe('mongo insert', () => {
       computed: Fields.string({ serverExpression: () => 'computed' }),
     })
 
-    const insertOne = vi.fn(async () => ({ insertedId: 'item-1' }))
-    const mongo = { collection: () => ({ insertOne }) } as unknown as Db
+    const insertMany = vi.fn(async () => ({ insertedIds: { 0: 'item-1' } }))
+    const mongo = { collection: () => ({ insertMany }) } as unknown as Db
     const provider = new MongoDataProvider(mongo, undefined)
     const remult = new Remult(provider)
 
     await provider
       .getEntityDataProvider(remult.repo(Item).metadata)
       .insert(
-        { id: 'item-1', readOnly: 'read-only', computed: 'computed' },
+        [{ id: 'item-1', readOnly: 'read-only', computed: 'computed' }],
         { select: 'none' },
       )
 
-    expect(insertOne).toHaveBeenCalledWith(
-      { id: 'item-1' },
-      { session: undefined },
-    )
+    expect(insertMany).toHaveBeenCalledWith([{ id: 'item-1' }], {
+      session: undefined,
+    })
   })
 })
