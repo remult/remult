@@ -3037,7 +3037,7 @@ export function ValueListFieldType<
 export interface ValueListFieldOptions<entityType, valueType>
   extends FieldOptions<entityType, valueType> {
   getValues?: () => valueType[]
-  /** Value used when a stored id is not in the list. A value, or `(id) => value`. @default undefined */
+  /** Value used when a stored id is not in the list. A value, or `(id) => value`. Only `null` and `undefined` stay `undefined`; a blank `''` uses this, which is the usual legacy column. A declared id of `''` is unaffected. @default undefined */
   unknownIdValue?: valueType | ((id: any) => valueType | undefined)
 }
 export class ValueListInfo<T extends ValueListItem>

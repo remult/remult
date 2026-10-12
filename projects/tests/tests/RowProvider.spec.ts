@@ -206,6 +206,18 @@ class FallbackStatusRow {
   name = ''
 }
 
+@ValueListFieldType({
+  unknownIdValue: () => BlankIsMember.Other,
+})
+class BlankIsMember {
+  static Blank = new BlankIsMember('', 'Blank')
+  static Other = new BlankIsMember('O', 'Other')
+  constructor(
+    public id: string,
+    public caption: string,
+  ) {}
+}
+
 let keptStatusConstructions = 0
 @ValueListFieldType({
   unknownIdValue: (id: string) => {
@@ -297,6 +309,12 @@ describe('ValueList unknown id', () => {
     mem.rows[repo.metadata.dbName] = [{ id: 1, status: 'D', name: 'n' }]
     const row = (await repo.findFirst())!
     expect(row.status).toBe(FallbackStatus.Open)
+    expect(ValueListInfo.get(FallbackStatus).fromJson('')).toBe(
+      FallbackStatus.Open,
+    )
+    expect(ValueListInfo.get(BlankIsMember).fromJson('')).toBe(
+      BlankIsMember.Blank,
+    )
     row.name = 'm'
     await repo.save(row)
     expect(mem.rows[repo.metadata.dbName][0]).toMatchObject({
