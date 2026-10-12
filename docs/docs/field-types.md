@@ -248,7 +248,7 @@ call('+' + person.country.phonePrefix + person.phone)
 
 Note: Only the `id` property is saved in the database and used in the API. Other properties, such as `label`, `currency`, and `phonePrefix`, are only accessible in the code and are not persisted in the database.
 
-An id the list doesn't declare reads as `undefined`. Set `unknownIdValue` to use something else: a value, or `(id) => value`. Only `null` and `undefined` stay `undefined`; a blank `''` uses `unknownIdValue`, so a blank column can map to a default. A declared id of `''` is unaffected. Saving the row keeps the stored id unless the field is new or the value changed, in which case it has to be one of the declared values. A `valueConverter` you set on the class replaces this.
+An id the list doesn't declare reads as `undefined`. Set `unknownIdValue` to use something else: a value, or `(id) => value`. Only `null` and `undefined` stay `undefined`; a blank `''` uses `unknownIdValue`, so a blank column can map to a default. A declared id of `''` is unaffected. `ValueListInfo.get(TheClass).byId(id, true)` applies that value; `byId(id)` returns only a declared id. Saving the row keeps the stored id unless the field is new or the value changed, in which case it has to be one of the declared values. A `valueConverter` you set on the class replaces this.
 
 ```ts
 @ValueListFieldType({ unknownIdValue: (id) => new Status(id, id) })

@@ -3101,17 +3101,18 @@ export class ValueListInfo<T extends ValueListItem>
   getValues() {
     return this.values
   }
-  byId(key: any) {
-    if (this.isNumeric) key = +key
-    return this.byIdMap.get(key)
+  /** Declared id only. Pass `useUnknownIdValue` to also apply `unknownIdValue` (`null` and `undefined` still return `undefined`). */
+  byId(key: any, useUnknownIdValue = false): T | undefined {
+    const lookupKey = this.isNumeric ? +key : key
+    const known = this.byIdMap.get(lookupKey)
+    if (known !== undefined || !useUnknownIdValue) return known
+    if (key == null) return undefined
+    const fallback = this.unknownIdValue
+    if (typeof fallback !== 'function') return fallback
+    return fallback(lookupKey)
   }
   fromJson(val: any): T {
-    const known = this.byId(val)
-    if (known !== undefined) return known
-    if (val == null) return undefined!
-    const fallback = this.unknownIdValue
-    if (typeof fallback !== 'function') return fallback as T
-    return fallback(this.isNumeric ? +val : val) as T
+    return this.byId(val, true)!
   }
   toJson(val: T) {
     if (!val) return undefined

@@ -312,6 +312,13 @@ describe('ValueList unknown id', () => {
     expect(ValueListInfo.get(FallbackStatus).fromJson('')).toBe(
       FallbackStatus.Open,
     )
+    const fallback = ValueListInfo.get(FallbackStatus)
+    expect(fallback.byId('D')).toBeUndefined()
+    expect(fallback.byId('D', false)).toBeUndefined()
+    expect(fallback.byId('D', true)).toBe(FallbackStatus.Open)
+    expect(fallback.byId('', true)).toBe(FallbackStatus.Open)
+    expect(fallback.byId(null, true)).toBeUndefined()
+    expect(fallback.byId('O', true)).toBe(FallbackStatus.Open)
     expect(ValueListInfo.get(BlankIsMember).fromJson('')).toBe(
       BlankIsMember.Blank,
     )

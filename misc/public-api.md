@@ -3776,7 +3776,7 @@ export declare class ValueListInfo<T extends ValueListItem>
   private unknownIdValue?
   private constructor()
   getValues(): T[]
-  byId(key: any): T | undefined
+  byId(key: any, useUnknownIdValue?: boolean): T | undefined
   fromJson(val: any): T
   toJson(val: T): any
   fromDb(val: any): T
