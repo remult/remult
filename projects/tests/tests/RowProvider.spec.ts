@@ -163,6 +163,198 @@ class valueList {
   ) { }
 }
 
+let legacyStatusConstructions = 0
+@ValueListFieldType()
+class LegacyStatus {
+  static Open = new LegacyStatus('O', 'Open')
+  static Closed = new LegacyStatus('C', 'Closed')
+  constructor(
+    public id?: string,
+    public caption?: string,
+  ) {
+    legacyStatusConstructions++
+  }
+}
+@Entity('legacyStatusRow')
+class LegacyStatusRow {
+  @Fields.integer()
+  id = 0
+  @Field(() => LegacyStatus)
+  status: LegacyStatus = LegacyStatus.Open
+  @Fields.string()
+  name = ''
+}
+
+@ValueListFieldType({
+  unknownIdValue: () => FallbackStatus.Open,
+})
+class FallbackStatus {
+  static Open = new FallbackStatus('O', 'Open')
+  static Closed = new FallbackStatus('C', 'Closed')
+  constructor(
+    public id: string,
+    public caption: string,
+  ) {}
+}
+@Entity('fallbackStatusRow')
+class FallbackStatusRow {
+  @Fields.integer()
+  id = 0
+  @Field(() => FallbackStatus)
+  status: FallbackStatus = FallbackStatus.Open
+  @Fields.string()
+  name = ''
+}
+
+let keptStatusConstructions = 0
+@ValueListFieldType({
+  unknownIdValue: (id: string) => {
+    const item = Object.create(KeptStatus.prototype) as KeptStatus
+    item.id = id
+    item.caption = id
+    return item
+  },
+})
+class KeptStatus {
+  static Open = new KeptStatus('O', 'Open')
+  constructor(
+    public id?: string,
+    public caption?: string,
+  ) {
+    keptStatusConstructions++
+  }
+}
+@Entity('keptStatusRow')
+class KeptStatusRow {
+  @Fields.integer()
+  id = 0
+  @Field(() => KeptStatus)
+  status: KeptStatus = KeptStatus.Open
+  @Fields.string()
+  name = ''
+}
+
+@ValueListFieldType({
+  valueConverter: {
+    fromJson: (val: string) =>
+      ValueListInfo.get(TerminalZone).byId(val) ?? TerminalZone.Pacific,
+    toJson: (val: TerminalZone) => val?.id,
+  },
+})
+class TerminalZone {
+  static Pacific = new TerminalZone('P', 'Pacific')
+  static Eastern = new TerminalZone('E', 'Eastern')
+  constructor(
+    public id: string,
+    public caption: string,
+  ) {}
+}
+@Entity('terminalZoneRow')
+class TerminalZoneRow {
+  @Fields.integer()
+  id = 0
+  @Field(() => TerminalZone)
+  zone: TerminalZone = TerminalZone.Pacific
+}
+
+describe('ValueList unknown id', () => {
+  it('reads an undeclared id as undefined', async () => {
+    const remult = new Remult(new InMemoryDataProvider())
+    const repo = remult.repo(LegacyStatusRow)
+    const mem = remult.dataProvider as InMemoryDataProvider
+    const before = legacyStatusConstructions
+    mem.rows[repo.metadata.dbName] = [{ id: 1, status: 'D', name: 'n' }]
+    const row = (await repo.findFirst())!
+    expect(row.status).toBeUndefined()
+    expect(legacyStatusConstructions).toBe(before)
+    expect(getValueList(LegacyStatus).map((s) => s.id)).toEqual(['O', 'C'])
+    const info = ValueListInfo.get(LegacyStatus)
+    expect(info.fromJson(null)).toBeUndefined()
+    expect(info.fromJson('')).toBeUndefined()
+    expect(info.fromJson('O')).toBe(LegacyStatus.Open)
+    expect(ValueListInfo.get(Language).fromJson(99)).toBeUndefined()
+    expect(ValueListInfo.get(Language).fromJson(0)).toBe(Language.Hebrew)
+    expect(getValueList(Language).map((s) => s.id)).toEqual([0, 10, 20])
+  })
+  it('saves another field and keeps the undeclared id', async () => {
+    const remult = new Remult(new InMemoryDataProvider())
+    const repo = remult.repo(LegacyStatusRow)
+    const mem = remult.dataProvider as InMemoryDataProvider
+    mem.rows[repo.metadata.dbName] = [{ id: 1, status: 'D', name: 'n' }]
+    const row = (await repo.findFirst())!
+    expect(row.status).toBeUndefined()
+    row.name = 'm'
+    await repo.save(row)
+    expect(mem.rows[repo.metadata.dbName][0]).toMatchObject({
+      status: 'D',
+      name: 'm',
+    })
+  })
+  it('unknownIdValue supplies the value for an undeclared id', async () => {
+    const remult = new Remult(new InMemoryDataProvider())
+    const repo = remult.repo(FallbackStatusRow)
+    const mem = remult.dataProvider as InMemoryDataProvider
+    mem.rows[repo.metadata.dbName] = [{ id: 1, status: 'D', name: 'n' }]
+    const row = (await repo.findFirst())!
+    expect(row.status).toBe(FallbackStatus.Open)
+    row.name = 'm'
+    await repo.save(row)
+    expect(mem.rows[repo.metadata.dbName][0]).toMatchObject({
+      status: 'D',
+      name: 'm',
+    })
+  })
+  it('unknownIdValue can build a value from the unknown id', async () => {
+    const remult = new Remult(new InMemoryDataProvider())
+    const repo = remult.repo(KeptStatusRow)
+    const mem = remult.dataProvider as InMemoryDataProvider
+    const before = keptStatusConstructions
+    mem.rows[repo.metadata.dbName] = [{ id: 1, status: 'D', name: 'n' }]
+    const row = (await repo.findFirst())!
+    expect(row.status).toBeInstanceOf(KeptStatus)
+    expect(row.status.id).toBe('D')
+    expect(row.status.caption).toBe('D')
+    expect(keptStatusConstructions).toBe(before)
+    row.name = 'm'
+    await repo.save(row)
+    expect(mem.rows[repo.metadata.dbName][0]).toMatchObject({
+      status: 'D',
+      name: 'm',
+    })
+  })
+  it('rejects an undeclared id on a new row', async () => {
+    const remult = new Remult(new InMemoryDataProvider())
+    const repo = remult.repo(LegacyStatusRow)
+    const row = repo.create()
+    row.id = 1
+    row.status = { id: 'D', caption: 'D' }
+    await expect(repo.save(row)).rejects.toMatchObject({
+      modelState: { status: 'Value must be one of: O, C' },
+    })
+  })
+  it('rejects changing to an undeclared id', async () => {
+    const remult = new Remult(new InMemoryDataProvider())
+    const repo = remult.repo(LegacyStatusRow)
+    const row = await repo.insert({
+      id: 1,
+      status: LegacyStatus.Open,
+      name: 'n',
+    })
+    row.status = { id: 'D', caption: 'D' }
+    await expect(repo.save(row)).rejects.toMatchObject({
+      modelState: { status: 'Value must be one of: O, C' },
+    })
+  })
+  it('a custom valueConverter is used for an unknown id', async () => {
+    const remult = new Remult(new InMemoryDataProvider())
+    const repo = remult.repo(TerminalZoneRow)
+    const mem = remult.dataProvider as InMemoryDataProvider
+    mem.rows[repo.metadata.dbName] = [{ id: 1, zone: 'X' }]
+    const row = (await repo.findFirst())!
+    expect(row.zone).toBe(TerminalZone.Pacific)
+  })
+})
+
 @Entity('entity with value list')
 class entityWithValueList extends EntityBase {
   @Fields.integer()

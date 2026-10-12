@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 - `EntityDataProvider.insert` is now `insert(data: any[], options?): Promise<any[]>` (not one object). `insertMany` removed from `ProxyEntityDataProvider`.
 - `EntityDataProvider.delete` is now `delete(ids: any[]): Promise<void>`. REST: 1 id → DELETE, N → existing deleteMany.
 - Custom `LiveQueryStorage`: `keepAliveAndReturnUnknownQueryIds` returns `{ unknownQueryIds, versions }` instead of `string[]`. The keep-alive route still accepts the old array body from older clients.
+- `Fields.literal`, `Fields.enum`, and `ValueListFieldType` validate only when the row is new or the value changed. A stored value outside the list no longer fails a save of another field.
 
 ### Added
 
@@ -18,6 +19,7 @@ All notable changes to this project will be documented in this file.
 - `SubscriptionListener.reconnect?()` lets `SubscriptionChannel` subscribers refetch state after a dropped connection.
 - `SubscriptionClientConnection` gained optional `lastServerEvent` and `resume(force?)`; custom clients (Ably, ...) can ignore them.
 - `flags.sseStaleMs` (40s), `flags.liveQueryKeepAliveMs` (30s), `flags.liveQueryPollWhenStaleMs` (1s). Server SSE ping every 15s (was 45s), exported as `ssePingMs`.
+- `ValueListFieldType({ unknownIdValue })` — value used when a stored id is not in the list (a value, or `(id) => value`). Default `undefined`. A custom `valueConverter` still replaces the default.
 
 ### Changed
 

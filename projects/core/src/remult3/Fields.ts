@@ -305,8 +305,11 @@ export class Fields {
   ): ClassFieldDecorator<entityType, valueType | undefined> {
     return Fields.string(
       {
-        validate: (entity, event) =>
-          Validators.in(optionalValues())(entity, event),
+        validate: (entity, event) => {
+          // A value already stored is a fact. Only a new row or a new value has to be in the list.
+          if (!event.isNew && !event.valueChanged()) return
+          return Validators.in(optionalValues())(entity, event)
+        },
         //@ts-expect-error as we are adding this to options without it being defined in options
         [fieldOptionalValuesFunctionKey]: optionalValues,
       },
@@ -329,8 +332,11 @@ export class Fields {
       //@ts-ignore
       () => enumType()!,
       {
-        validate: (entity, event) =>
-          Validators.enum(enumType() as any)(entity, event),
+        validate: (entity, event) => {
+          // A value already stored is a fact. Only a new row or a new value has to be in the enum.
+          if (!event.isNew && !event.valueChanged()) return
+          return Validators.enum(enumType() as any)(entity, event)
+        },
         [fieldOptionalValuesFunctionKey]: () => getEnumValues(enumType()!),
       },
       ...options,

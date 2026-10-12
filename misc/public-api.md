@@ -1146,7 +1146,11 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
    * @type {AllowedForInstance<entityType>}
    */
   allowApiUpdate?: AllowedForInstance<entityType>
-  /** An arrow function that'll be used to perform validations on it
+  /** An arrow function that'll be used to perform validations on it.
+   *
+   * `validate` from several option objects is additive: each one is appended.
+   * A function option is the only way to replace validators already set, including a built-in one:
+   * `(options) => { options.validate = ... }`.
    * @example
    * @Fields.string({
    *   validate: Validators.required
@@ -3750,6 +3754,8 @@ export type ValueFilter<valueType> =
 export interface ValueListFieldOptions<entityType, valueType>
   extends FieldOptions<entityType, valueType> {
   getValues?: () => valueType[]
+  /** Value used when a stored id is not in the list. A value, or `(id) => value`. @default undefined */
+  unknownIdValue?: valueType | ((id: any) => valueType | undefined)
 }
 export declare function ValueListFieldType<
   valueType extends ValueListItem = ValueListItem,
@@ -3767,6 +3773,7 @@ export declare class ValueListInfo<T extends ValueListItem>
   private byIdMap
   private values
   isNumeric: boolean
+  private unknownIdValue?
   private constructor()
   getValues(): T[]
   byId(key: any): T | undefined

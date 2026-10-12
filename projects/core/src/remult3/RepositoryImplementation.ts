@@ -3025,6 +3025,8 @@ export function ValueListFieldType<
           if (ref.value && !values.find((v) => v === ref.value)) {
             ref.value = values.find((v) => v.id === ref.value.id) || ref.value
           }
+          // A value already stored is a fact. Only a new row or a new value has to be in the list.
+          if (!ref.isNew && !ref.valueChanged()) return
           return Validators.in(values)(entity, ref)
         }
       },
@@ -3035,6 +3037,8 @@ export function ValueListFieldType<
 export interface ValueListFieldOptions<entityType, valueType>
   extends FieldOptions<entityType, valueType> {
   getValues?: () => valueType[]
+  /** Value used when a stored id is not in the list. A value, or `(id) => value`. @default undefined */
+  unknownIdValue?: valueType | ((id: any) => valueType | undefined)
 }
 export class ValueListInfo<T extends ValueListItem>
   implements ValueConverter<T>
@@ -3050,6 +3054,7 @@ export class ValueListInfo<T extends ValueListItem>
   private byIdMap = new Map<any, T>()
   private values: T[] = []
   isNumeric = false
+  private unknownIdValue?: T | ((id: any) => T | undefined)
   private constructor(private valueListType: any) {
     for (let member in this.valueListType) {
       let s = this.valueListType[member] as T
@@ -3071,7 +3076,8 @@ export class ValueListInfo<T extends ValueListItem>
 
     if (options) {
       for (const op of options) {
-        if (op?.getValues) {
+        if (!op || typeof op === 'function') continue
+        if (op.getValues) {
           this.values.splice(0, this.values.length, ...op.getValues())
           this.byIdMap.clear()
           this.values.forEach((s) => {
@@ -3079,6 +3085,7 @@ export class ValueListInfo<T extends ValueListItem>
             this.byIdMap.set(s.id, s)
           })
         }
+        if ('unknownIdValue' in op) this.unknownIdValue = op.unknownIdValue
       }
       if (this.values.find((s) => s.id === undefined))
         throw new Error(
@@ -3099,7 +3106,12 @@ export class ValueListInfo<T extends ValueListItem>
     return this.byIdMap.get(key)
   }
   fromJson(val: any): T {
-    return this.byId(val)!
+    const known = this.byId(val)
+    if (known !== undefined) return known
+    if (val == null) return undefined!
+    const fallback = this.unknownIdValue
+    if (typeof fallback !== 'function') return fallback as T
+    return fallback(this.isNumeric ? +val : val) as T
   }
   toJson(val: T) {
     if (!val) return undefined
