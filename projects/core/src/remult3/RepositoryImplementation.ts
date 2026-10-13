@@ -882,7 +882,18 @@ export class RepositoryImplementation<entityType>
     if (this._defaultFindOptions) {
       options = { ...this._defaultFindOptions, ...options }
     }
-    let opt = await this._buildEntityDataProviderFindOptions(options)
+    let findOptions = options
+    if (
+      (!findOptions.orderBy || Object.keys(findOptions.orderBy).length === 0) &&
+      !this._dataProvider.isProxy &&
+      this._info.entityInfo.defaultOrderBy
+    ) {
+      findOptions = {
+        ...findOptions,
+        orderBy: this._info.entityInfo.defaultOrderBy,
+      }
+    }
+    let opt = await this._buildEntityDataProviderFindOptions(findOptions)
     if (skipOrderByAndLimit) {
       delete opt.orderBy
       delete opt.limit
@@ -937,10 +948,6 @@ export class RepositoryImplementation<entityType>
             )
           return f.key
         })
-    }
-    if (!options.orderBy || Object.keys(options.orderBy).length === 0) {
-      if (!this._dataProvider.isProxy)
-        options.orderBy = this._info.entityInfo.defaultOrderBy
     }
     opt.where = await this._translateWhereToFilter(options.where)
     if (options.orderBy !== undefined)

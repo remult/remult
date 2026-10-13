@@ -331,7 +331,7 @@ export class SqlDatabase
       sql?.sqlCommand ?? new myDummySQLCommand(),
       false,
       sql?.limitSyntax ?? limitSyntaxRequired,
-      { aliasColumns: true, defaultOrderBy: false },
+      { aliasColumns: true },
     )
     return {
       sql: built.select,
@@ -527,6 +527,8 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
   async find(options?: EntityDataProviderFindOptions): Promise<any[]> {
     const e = await this.init()
     const r = this.sql.createCommand()
+    if (options && !options.orderBy)
+      options.orderBy = Sort.createUniqueSort(this.entity, new Sort())
     const { select, toResult } = await buildFindSql(
       this.entity,
       options,
@@ -810,7 +812,7 @@ export async function buildFindSql(
   r: SqlCommandWithParameters,
   orderByNullsFirst: boolean | undefined,
   limitSyntax: (limit: number, offset: number) => string,
-  { aliasColumns = false, defaultOrderBy = true } = {},
+  { aliasColumns = false } = {},
 ) {
   const { colKeys, select: columns } = await selectColumns(
     entity,
@@ -829,9 +831,6 @@ export async function buildFindSql(
     }
     if (options.limit) {
       options.orderBy = Sort.createUniqueSort(entity, options.orderBy)
-    }
-    if (!options.orderBy && defaultOrderBy) {
-      options.orderBy = Sort.createUniqueSort(entity, new Sort())
     }
     if (options.orderBy) {
       let first = true

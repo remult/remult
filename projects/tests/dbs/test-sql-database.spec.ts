@@ -214,6 +214,30 @@ describe('test sql implementation', () => {
        from [tasks] Order By [title] desc"
     `)
   })
+  it('find applies defaultOrderBy, selectToRaw does not', async () => {
+    @Entity('tasks', { defaultOrderBy: { title: 'asc' } })
+    class ordered {
+      @Fields.integer()
+      id = 0
+      @Fields.string()
+      title = ''
+    }
+    const orderedRepo = new Remult(db).repo(ordered)
+    await orderedRepo.find()
+    const { sql } = await SqlDatabase.selectToRaw(orderedRepo, {
+      select: { id: true },
+    })
+    expect(commands).toMatchInlineSnapshot(`
+      [
+        "select [id], [title]
+       from [tasks] Order By [title]",
+      ]
+    `)
+    expect(sql).toMatchInlineSnapshot(`
+      "select [id] as [id]
+       from [tasks]"
+    `)
+  })
   it('test to db sql', async () => {
     @Entity('myEntity')
     class myEntity {
