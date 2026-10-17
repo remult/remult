@@ -5,7 +5,9 @@ import type {
   EntityDataProviderFindOptions,
 } from '../data-interfaces.js'
 import type {
+  HasJsonColumnStorage,
   HasWrapIdentifier,
+  JsonColumnStorage,
   SqlCommand,
   SqlCommandFactory,
   SqlCommandWithParameters,
@@ -52,7 +54,7 @@ import {
 } from '../remult3/RepositoryImplementation.js'
 import type { SortSegment } from '../sort.js'
 import { Sort } from '../sort.js'
-import { ValueConverters } from '../valueConverters.js'
+import { fromDbColumn, toDbColumn } from '../valueConverters.js'
 import { getRepositoryInternals } from '../remult3/repository-internals.js'
 import type {
   CanBuildMigrations,
@@ -73,6 +75,7 @@ export class SqlDatabase
   implements
     DataProvider,
     HasWrapIdentifier,
+    HasJsonColumnStorage,
     CanBuildMigrations,
     SqlCommandFactory
 {
@@ -110,6 +113,9 @@ export class SqlDatabase
    */
 
   wrapIdentifier: (name: string) => string = (x) => x
+  get jsonColumnStorage(): JsonColumnStorage {
+    return this.sql.supportsJsonColumnType ? 'native' : 'text'
+  }
   /* @internal*/
   _getSourceSql() {
     return this.sql
@@ -124,19 +130,6 @@ export class SqlDatabase
    * @returns The entity data provider.
    */
   getEntityDataProvider(entity: EntityMetadata): EntityDataProvider {
-    if (!this.sql.supportsJsonColumnType) {
-      for (const f of entity.fields.toArray()) {
-        if (f.valueConverter.fieldTypeInDb === 'json') {
-          //@ts-ignore
-          f.valueConverter = {
-            ...f.valueConverter,
-            toDb: ValueConverters.JsonString.toDb,
-            fromDb: ValueConverters.JsonString.fromDb,
-          }
-        }
-      }
-    }
-
     return new ActualSQLEntityDataProvider(
       entity,
       this,
@@ -237,6 +230,7 @@ export class SqlDatabase
       sqlCommand,
       dbNames ||
         (await dbNamesOfWithForceSqlExpression(r.metadata, wrapIdentifier)),
+      jsonColumnStorageOf(r),
     )
     b._addWhere = false
     await (
@@ -298,6 +292,7 @@ export class SqlDatabase
       sql?.sqlCommand ?? new myDummySQLCommand(),
       false,
       sql?.limitSyntax ?? limitSyntaxRequired,
+      jsonColumnStorageForRaw(r, sql?.jsonAsString),
     )
     return {
       sql: built.select,
@@ -331,7 +326,10 @@ export class SqlDatabase
       sql?.sqlCommand ?? new myDummySQLCommand(),
       false,
       sql?.limitSyntax ?? limitSyntaxRequired,
-      { aliasColumns: true },
+      {
+        aliasColumns: true,
+        jsonColumnStorage: jsonColumnStorageForRaw(r, sql?.jsonAsString),
+      },
     )
     return {
       sql: built.select,
@@ -405,11 +403,12 @@ function countInsertBindParameters(
   entity: EntityMetadata,
   e: EntityDbNamesBase,
   row: any,
+  storage: JsonColumnStorage,
 ): number {
   let n = 0
   for (const x of entity.fields) {
     if (isDbReadonly(x, e)) continue
-    if (x.valueConverter.toDb(row[x.key]) != undefined) n++
+    if (toDbColumn(x, row[x.key], storage) != undefined) n++
   }
   return n
 }
@@ -505,7 +504,11 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
     let select = 'select count(*) count from ' + e.$entityName
     let r = this.sql.createCommand()
     if (where) {
-      let wc = new FilterConsumerBridgeToSqlRequest(r, e)
+      let wc = new FilterConsumerBridgeToSqlRequest(
+        r,
+        e,
+        this.sql.jsonColumnStorage,
+      )
       where.__applyToConsumer(wc)
       select += await wc.resolveWhere()
     }
@@ -521,6 +524,7 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
       this.sql.createCommand(),
       this.sql._getSourceSql().orderByNullsFirst,
       this.sql._getSourceSql().getLimitSqlSyntax,
+      this.sql.jsonColumnStorage,
     )
   }
 
@@ -536,6 +540,7 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
       r,
       this.sql._getSourceSql().orderByNullsFirst,
       (limit, offset) => this.strategy.getLimitSqlSyntax(limit, offset),
+      { jsonColumnStorage: this.sql.jsonColumnStorage },
     )
     const result = await r.execute(select)
     return result.rows.map((y) =>
@@ -547,6 +552,7 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
     return resultRow(
       colKeys,
       (i) => y[r.getColumnKeyInResultForIndexInSelect(i)],
+      this.sql.jsonColumnStorage,
     )
   }
 
@@ -573,7 +579,7 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
     for (const x of this.entity.fields) {
       if (isDbReadonly(x, e)) {
       } else if (data[x.key] !== undefined) {
-        let v = x.valueConverter.toDb(data[x.key])
+        let v = toDbColumn(x, data[x.key], this.sql.jsonColumnStorage)
         if (v !== undefined) {
           if (!added) added = true
           else statement += ', '
@@ -584,7 +590,11 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
     }
     const idFilter = this.entity.idMetadata.getIdFilter(id)
 
-    let f = new FilterConsumerBridgeToSqlRequest(r, e)
+    let f = new FilterConsumerBridgeToSqlRequest(
+      r,
+      e,
+      this.sql.jsonColumnStorage,
+    )
     Filter.fromEntityFilter(this.entity, idFilter).__applyToConsumer(f)
     statement += await f.resolveWhere()
     let { colKeys, select } = await this.buildSelect(e, r, undefined, undefined)
@@ -620,7 +630,11 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
     if (ids.length === 0) return
     let e = await this.init()
     let r = this.sql.createCommand()
-    let f = new FilterConsumerBridgeToSqlRequest(r, e)
+    let f = new FilterConsumerBridgeToSqlRequest(
+      r,
+      e,
+      this.sql.jsonColumnStorage,
+    )
     Filter.fromEntityFilter(
       this.entity,
       this.entity.idMetadata.getIdFilter(...ids),
@@ -639,7 +653,13 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
       defaultMaxParametersInOneSqlStatement
     const batches = splitByMaxParameters(
       data,
-      (row) => countInsertBindParameters(this.entity, e, row),
+      (row) =>
+        countInsertBindParameters(
+          this.entity,
+          e,
+          row,
+          this.sql.jsonColumnStorage,
+        ),
       maxParams,
     )
     const result: any[] = []
@@ -661,7 +681,12 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
     const cols: FieldMetadata[] = []
     for (const x of this.entity.fields) {
       if (isDbReadonly(x, e)) continue
-      if (batch.some((row) => x.valueConverter.toDb(row[x.key]) != undefined))
+      if (
+        batch.some(
+          (row) =>
+            toDbColumn(x, row[x.key], this.sql.jsonColumnStorage) != undefined,
+        )
+      )
         cols.push(x)
     }
 
@@ -677,7 +702,7 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
       for (let j = 0; j < cols.length; j++) {
         if (j) vals += ', '
         const x = cols[j]
-        const v = x.valueConverter.toDb(batch[i][x.key])
+        const v = toDbColumn(x, batch[i][x.key], this.sql.jsonColumnStorage)
         if (v != undefined) vals += toDbSql(r, x, v)
         else if (x.allowNull) vals += 'null'
         else vals += 'DEFAULT'
@@ -745,6 +770,12 @@ export interface RawSelectOptions {
   wrapIdentifier?: (name: string) => string
   /** Required only with `limit`: `(limit, offset) => 'limit 10 offset 20'`. */
   limitSyntax?: (limit: number, offset: number) => string
+  /**
+   * JSON columns are stored as text (SQL Server, sqlite, mysql).
+   * Defaults to the repository's data provider.
+   * Set when `sqlCommand` runs against a different database than that provider.
+   */
+  jsonAsString?: boolean
 }
 
 /** The quoting of the repository's own data provider, so a raw select matches the SQL remult would run against it. */
@@ -753,6 +784,21 @@ function wrapIdentifierOf(r: Repository<any>) {
   if (isOfType<HasWrapIdentifier>(dp, 'wrapIdentifier'))
     return dp.wrapIdentifier?.bind(dp)
   return undefined
+}
+
+export function jsonColumnStorageOf(r: Repository<any>): JsonColumnStorage {
+  const dp = getRepositoryInternals(r)._dataProvider
+  if (isOfType<HasJsonColumnStorage>(dp, 'jsonColumnStorage'))
+    return dp.jsonColumnStorage
+  return 'native'
+}
+
+function jsonColumnStorageForRaw(
+  r: Repository<any>,
+  jsonAsString: boolean | undefined,
+): JsonColumnStorage {
+  if (jsonAsString === undefined) return jsonColumnStorageOf(r)
+  return jsonAsString ? 'text' : 'native'
 }
 
 function limitSyntaxRequired(): string {
@@ -812,7 +858,13 @@ export async function buildFindSql(
   r: SqlCommandWithParameters,
   orderByNullsFirst: boolean | undefined,
   limitSyntax: (limit: number, offset: number) => string,
-  { aliasColumns = false } = {},
+  {
+    aliasColumns = false,
+    jsonColumnStorage = 'native',
+  }: {
+    aliasColumns?: boolean
+    jsonColumnStorage?: JsonColumnStorage
+  } = {},
 ) {
   const { colKeys, select: columns } = await selectColumns(
     entity,
@@ -825,7 +877,7 @@ export async function buildFindSql(
   let select = 'select ' + columns + '\n from ' + e.$entityName
   if (options) {
     if (options.where) {
-      let where = new FilterConsumerBridgeToSqlRequest(r, e)
+      let where = new FilterConsumerBridgeToSqlRequest(r, e, jsonColumnStorage)
       options.where.__applyToConsumer(where)
       select += await where.resolveWhere()
     }
@@ -863,7 +915,7 @@ export async function buildFindSql(
     colKeys,
     /** `valueAt` reads one column of a result row, by its position in the select or by its alias (the field key). */
     toResult(valueAt: (indexInSelect: number, alias: string) => any) {
-      return resultRow(colKeys, valueAt)
+      return resultRow(colKeys, valueAt, jsonColumnStorage)
     },
   }
 }
@@ -899,11 +951,12 @@ async function selectColumns(
 function resultRow(
   colKeys: FieldMetadata[],
   valueAt: (indexInSelect: number, alias: string) => any,
+  storage: JsonColumnStorage,
 ) {
   let result: any = {}
   colKeys.forEach((col, index) => {
     try {
-      result[col.key] = col.valueConverter.fromDb(valueAt(index, col.key))
+      result[col.key] = fromDbColumn(col, valueAt(index, col.key), storage)
     } catch (err) {
       throw new Error('Failed to load from db:' + col.key + '\r\n' + err)
     }
@@ -917,6 +970,7 @@ export async function groupByImpl(
   r: SqlCommand,
   orderByNullFirst: boolean | undefined,
   limitSyntax: (limit: number, offset: number) => string,
+  jsonColumnStorage: JsonColumnStorage = 'native',
 ) {
   const { select, toResult } = await buildGroupBySql(
     options,
@@ -924,6 +978,7 @@ export async function groupByImpl(
     r,
     orderByNullFirst,
     limitSyntax,
+    jsonColumnStorage,
   )
   const result = await r.execute(select)
   return result.rows.map((sql) =>
@@ -938,6 +993,7 @@ export async function buildGroupBySql(
   r: SqlCommandWithParameters,
   orderByNullFirst: boolean | undefined,
   limitSyntax: (limit: number, offset: number) => string,
+  jsonColumnStorage: JsonColumnStorage = 'native',
 ) {
   const aliases: string[] = []
   function alias(name: string) {
@@ -963,7 +1019,7 @@ export async function buildGroupBySql(
         groupByCols.push(e.$dbNameOf(x))
       }
       processResultRow.push((sqlResult, theResult) => {
-        theResult[x.key] = x.valueConverter.fromDb(sqlResult)
+        theResult[x.key] = fromDbColumn(x, sqlResult, jsonColumnStorage)
       })
     }
 
@@ -984,14 +1040,14 @@ export async function buildGroupBySql(
         processResultRow.push((sqlResult, theResult) => {
           if (turnToNumber) sqlResult = Number(sqlResult)
           if (operator === 'max' || operator === 'min')
-            sqlResult = x.valueConverter.fromDb(sqlResult)
+            sqlResult = fromDbColumn(x, sqlResult, jsonColumnStorage)
           theResult[x.key] = { ...theResult[x.key], [operator]: sqlResult }
         })
       }
   }
   select += '\n from ' + e.$entityName
   if (options?.where) {
-    let where = new FilterConsumerBridgeToSqlRequest(r, e)
+    let where = new FilterConsumerBridgeToSqlRequest(r, e, jsonColumnStorage)
     options?.where.__applyToConsumer(where)
     select += await where.resolveWhere()
   }

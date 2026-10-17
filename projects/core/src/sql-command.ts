@@ -21,6 +21,13 @@ export interface HasWrapIdentifier {
   wrapIdentifier?(name: string): string
 }
 
+/** How a provider stores `Fields.json`: a real json column, a text column, or text only on write (mysql2 parses on read). */
+export type JsonColumnStorage = 'native' | 'text' | 'textOnWrite'
+
+export interface HasJsonColumnStorage {
+  jsonColumnStorage: JsonColumnStorage
+}
+
 export interface SqlCommandFactory extends HasWrapIdentifier {
   createCommand(): SqlCommand
   execute(sql: string): Promise<SqlResult>

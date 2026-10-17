@@ -1,5 +1,6 @@
 import { InputTypes } from '../inputTypes.js'
-import type { ValueConverter } from './column-interfaces.js'
+import type { FieldMetadata, ValueConverter } from './column-interfaces.js'
+import type { JsonColumnStorage } from './sql-command.js'
 
 const zeroDate = new Date('0000-01-01')
 
@@ -194,6 +195,29 @@ export class ValueConverters {
     fieldTypeInDb: 'json',
   }
 }
+export function fromDbColumn(
+  field: FieldMetadata,
+  value: any,
+  storage: JsonColumnStorage,
+) {
+  if (storage === 'text' && field.valueConverter.fieldTypeInDb === 'json')
+    return ValueConverters.JsonString.fromDb!(value)
+  return field.valueConverter.fromDb(value)
+}
+
+export function toDbColumn(
+  field: FieldMetadata,
+  value: any,
+  storage: JsonColumnStorage,
+) {
+  if (
+    (storage === 'text' || storage === 'textOnWrite') &&
+    field.valueConverter.fieldTypeInDb === 'json'
+  )
+    return ValueConverters.JsonString.toDb!(value)
+  return field.valueConverter.toDb(value)
+}
+
 function enforceString(value: string) {
   if (value === null || value === undefined) return value
   if (typeof value !== 'string') return (value as any).toString()

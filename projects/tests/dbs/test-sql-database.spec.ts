@@ -10,6 +10,7 @@ import {
   type SqlImplementation,
   dbNamesOf,
 } from '../../core'
+import { KnexDataProvider } from '../../core/remult-knex'
 
 describe('test sql implementation', () => {
   @Entity('tasks')
@@ -258,6 +259,215 @@ describe('test sql implementation', () => {
        from [myEntity] where [exp] = 1+2 Order By [id]",
       ]
     `)
+  })
+})
+
+describe('json columns stored as text', () => {
+  function dbReturning(parts: any, supportsJsonColumnType?: boolean) {
+    return new SqlDatabase({
+      wrapIdentifier: (name: string) => '[' + name + ']',
+      createCommand: () =>
+        ({
+          addParameterAndReturnSqlToken: (val: any) => String(val),
+          param: (val: any) => String(val),
+          execute: async () => ({
+            rows: [{ id: 1, parts }],
+            getColumnKeyInResultForIndexInSelect: (i: number) =>
+              (['id', 'parts'] as const)[i],
+          }),
+        }) satisfies SqlCommand,
+      entityIsUsedForTheFirstTime: async () => {},
+      getLimitSqlSyntax: () => '',
+      transaction: undefined!,
+      end: async () => {},
+      supportsJsonColumnType,
+    } satisfies SqlImplementation)
+  }
+
+  function capturingCommand() {
+    const params: any[] = []
+    return {
+      params,
+      command: {
+        param: (v: any) => {
+          params.push(v)
+          return '@p' + params.length
+        },
+        addParameterAndReturnSqlToken: (v: any) => {
+          params.push(v)
+          return '@p' + params.length
+        },
+      } satisfies SqlCommandWithParameters,
+    }
+  }
+
+  it('selectToRaw and groupByToRaw parse json text before any find', async () => {
+    @Entity('jsonChats')
+    class chat {
+      @Fields.integer()
+      id = 0
+      @Fields.json()
+      parts: { name: string } | null = null
+    }
+    const repo = new Remult(dbReturning('["a","b"]')).repo(chat)
+    const selected = await SqlDatabase.selectToRaw(repo, {
+      select: { parts: true },
+    })
+    expect(selected.toResult({ parts: '["a","b"]' })).toEqual({
+      parts: ['a', 'b'],
+    })
+
+    const grouped = await SqlDatabase.groupByToRaw(repo, { group: ['parts'] })
+    expect(grouped.toResult({ count: '1', parts: '["a","b"]' })).toEqual({
+      $count: 1,
+      parts: ['a', 'b'],
+    })
+    const maxed = await SqlDatabase.groupByToRaw(repo, { max: ['parts'] })
+    expect(maxed.toResult({ count: '1', parts_max: '["c"]' })).toEqual({
+      $count: 1,
+      parts: { max: ['c'] },
+    })
+
+    const where = capturingCommand()
+    await SqlDatabase.selectToRaw(
+      repo,
+      { where: { parts: { name: 'a' } }, select: { id: true } },
+      { sqlCommand: where.command },
+    )
+    expect(where.params).toEqual(['{"name":"a"}'])
+
+    expect((await repo.find())[0].parts).toEqual(['a', 'b'])
+    expect(
+      repo.metadata.fields.parts.valueConverter.toDb({ name: 'a' }),
+    ).toEqual({ name: 'a' })
+  })
+
+  it('jsonAsString overrides the repository provider', async () => {
+    @Entity('jsonChatsOverride')
+    class chat {
+      @Fields.integer()
+      id = 0
+      @Fields.json()
+      parts: string[] = []
+    }
+    const text = new Remult(dbReturning('["a","b"]')).repo(chat)
+    const asString = await SqlDatabase.selectToRaw(
+      text,
+      { select: { parts: true } },
+      { jsonAsString: false },
+    )
+    expect(asString.toResult({ parts: '["a","b"]' })).toEqual({
+      parts: '["a","b"]',
+    })
+
+    const native = new Remult(dbReturning(['a', 'b'], true)).repo(chat)
+    const forced = await SqlDatabase.selectToRaw(
+      native,
+      { select: { parts: true } },
+      { jsonAsString: true },
+    )
+    expect(forced.toResult({ parts: '["a","b"]' })).toEqual({
+      parts: ['a', 'b'],
+    })
+  })
+
+  it('a text provider and a json provider do not change each other', async () => {
+    @Entity('jsonChatsTwoProviders')
+    class chat {
+      @Fields.integer()
+      id = 0
+      @Fields.json()
+      parts: { name: string } | null = null
+    }
+    const text = new Remult(dbReturning('["a","b"]', false)).repo(chat)
+    const native = new Remult(dbReturning(['a', 'b'], true)).repo(chat)
+
+    expect((await text.find())[0].parts).toEqual(['a', 'b'])
+    expect((await native.find())[0].parts).toEqual(['a', 'b'])
+    expect(
+      text.metadata.fields.parts.valueConverter.toDb({ name: 'a' }),
+    ).toEqual({ name: 'a' })
+
+    const nativeWhere = capturingCommand()
+    await SqlDatabase.selectToRaw(
+      native,
+      { where: { parts: { name: 'a' } }, select: { id: true } },
+      { sqlCommand: nativeWhere.command },
+    )
+    expect(nativeWhere.params).toEqual([{ name: 'a' }])
+  })
+
+  it('opening the json provider first still parses text on the other', async () => {
+    @Entity('jsonChatsNativeFirst')
+    class chat {
+      @Fields.integer()
+      id = 0
+      @Fields.json()
+      parts: string[] = []
+    }
+    const native = new Remult(dbReturning(['a', 'b'], true)).repo(chat)
+    const text = new Remult(dbReturning('["a","b"]')).repo(chat)
+    expect((await native.find())[0].parts).toEqual(['a', 'b'])
+    const selected = await SqlDatabase.selectToRaw(text, {
+      select: { parts: true },
+    })
+    expect(selected.toResult({ parts: '["a","b"]' })).toEqual({
+      parts: ['a', 'b'],
+    })
+    expect((await text.find())[0].parts).toEqual(['a', 'b'])
+    expect((await native.find())[0].parts).toEqual(['a', 'b'])
+  })
+
+  it('knex mssql parses json text and mysql2 only stringifies on write', async () => {
+    @Entity('jsonChatsKnex')
+    class chat {
+      @Fields.integer()
+      id = 0
+      @Fields.json()
+      parts: { name: string } | null = null
+    }
+    function knexRepo(client: string) {
+      return new Remult(
+        new KnexDataProvider({
+          client: { config: { client } },
+          ref: (name: string) => '[' + name + ']',
+        } as any),
+      ).repo(chat)
+    }
+    const mssql = knexRepo('mssql')
+    const selected = await SqlDatabase.selectToRaw(mssql, {
+      select: { parts: true },
+    })
+    expect(selected.toResult({ parts: '["a","b"]' })).toEqual({
+      parts: ['a', 'b'],
+    })
+    const mssqlWhere = capturingCommand()
+    await SqlDatabase.selectToRaw(
+      mssql,
+      { where: { parts: { name: 'a' } }, select: { id: true } },
+      { sqlCommand: mssqlWhere.command },
+    )
+    expect(mssqlWhere.params).toEqual(['{"name":"a"}'])
+
+    const mysql2 = knexRepo('mysql2')
+    const raw = await SqlDatabase.selectToRaw(mysql2, {
+      select: { parts: true },
+    })
+    expect(raw.toResult({ parts: '["a","b"]' })).toEqual({
+      parts: '["a","b"]',
+    })
+    const mysql2Where = capturingCommand()
+    await SqlDatabase.selectToRaw(
+      mysql2,
+      { where: { parts: { name: 'a' } }, select: { id: true } },
+      { sqlCommand: mysql2Where.command },
+    )
+    expect(mysql2Where.params).toEqual(['{"name":"a"}'])
+    expect(
+      mysql2.metadata.fields.parts.valueConverter.toDb({ name: 'a' }),
+    ).toEqual({
+      name: 'a',
+    })
   })
 })
 

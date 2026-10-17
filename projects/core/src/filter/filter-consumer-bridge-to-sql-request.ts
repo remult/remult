@@ -13,8 +13,10 @@ import type {
 } from '../remult3/remult3.js'
 import type {
   HasWrapIdentifier,
+  JsonColumnStorage,
   SqlCommandWithParameters,
 } from '../sql-command.js'
+import { toDbColumn } from '../valueConverters.js'
 import { entityDbName } from './entityDbName.js'
 import { fieldDbName } from './fieldDbName.js'
 import type { Filter, FilterConsumer } from './filter-interfaces.js'
@@ -37,6 +39,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   constructor(
     private r: SqlCommandWithParameters,
     private nameProvider: EntityDbNamesBase,
+    private jsonColumnStorage: JsonColumnStorage = 'native',
   ) {}
 
   custom(key: string, customItem: any): void {
@@ -51,6 +54,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
           let f = new FilterConsumerBridgeToSqlRequest(
             this.r,
             this.nameProvider,
+            this.jsonColumnStorage,
           )
           f._addWhere = false
           element.__applyToConsumer(f)
@@ -72,7 +76,11 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   not(element: Filter) {
     this.promises.push(
       (async () => {
-        let f = new FilterConsumerBridgeToSqlRequest(this.r, this.nameProvider)
+        let f = new FilterConsumerBridgeToSqlRequest(
+          this.r,
+          this.nameProvider,
+          this.jsonColumnStorage,
+        )
         f._addWhere = false
         element.__applyToConsumer(f)
         let where = await f.resolveWhere()
@@ -102,7 +110,13 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
             this.nameProvider.$dbNameOf(col) +
               ' in (' +
               val
-                .map((x) => toDbSql(this.r, col, col.valueConverter.toDb(x)))
+                .map((x) =>
+                  toDbSql(
+                    this.r,
+                    col,
+                    toDbColumn(col, x, this.jsonColumnStorage),
+                  ),
+                )
                 .join(',') +
               ')',
           )
@@ -189,7 +203,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
           ' ' +
           operator +
           ' ' +
-          toDbSql(this.r, col, col.valueConverter.toDb(val))
+          toDbSql(this.r, col, toDbColumn(col, val, this.jsonColumnStorage))
         this.addToWhere(x)
       })(),
     )
@@ -208,6 +222,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
           let item = new CustomSqlFilterBuilder(
             this.r,
             this.nameProvider.wrapIdentifier,
+            this.jsonColumnStorage,
           )
           let sql = await databaseCustom.buildSql(item)
           if (typeof sql !== 'string') sql = item.sql
@@ -242,6 +257,7 @@ export class CustomSqlFilterBuilder
   constructor(
     private r: SqlCommandWithParameters,
     public wrapIdentifier: (name: string) => string,
+    private jsonColumnStorage: JsonColumnStorage = 'native',
   ) {
     this.param.bind(this)
     this.filterToRaw.bind(this)
@@ -259,8 +275,8 @@ export class CustomSqlFilterBuilder
    * @returns {string} - The SQL token.
    */
   param = <valueType>(val: valueType, field?: FieldMetadata<valueType>) => {
-    if (typeof field === 'object' && field.valueConverter.toDb) {
-      val = field.valueConverter.toDb(val)
+    if (field) {
+      val = toDbColumn(field, val, this.jsonColumnStorage)
     }
 
     return this.r.param(val)
