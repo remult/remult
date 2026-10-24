@@ -474,6 +474,10 @@ export type GroupByResult<
 
 /** used to perform CRUD operations on an `entityType` */
 export interface Repository<entityType> {
+  /** returns an array based on the provided options. Relations named in a literal `include` are typed as loaded, see {@link Loaded} */
+  find<const include extends MembersToInclude<entityType>>(
+    options: FindOptions<entityType> & { include: include },
+  ): Promise<Loaded<entityType, include>[]>
   /** returns an array based on the provided options */
   find(options?: FindOptions<entityType>): Promise<entityType[]>
   /** Using the same options as the {@link find} method, but subscribing to entity changes.
@@ -489,6 +493,10 @@ export interface Repository<entityType> {
    * @example
    * await taskRepo.findFirst({ completed:false },{ createIfNotFound: true })
    *      */
+  findFirst<const include extends MembersToInclude<entityType>>(
+    where: EntityFilter<entityType> | undefined,
+    options: FindFirstOptions<entityType> & { include: include },
+  ): Promise<Loaded<entityType, include> | undefined>
   findFirst(
     where?: EntityFilter<entityType>,
     options?: FindFirstOptions<entityType>,
@@ -499,10 +507,17 @@ export interface Repository<entityType> {
    * @example
    * await taskRepo.findFirst({ where:{ completed:false }, createIfNotFound: true })
    *      */
+  findOne<const include extends MembersToInclude<entityType>>(
+    options: FindFirstOptions<entityType> & { include: include },
+  ): Promise<Loaded<entityType, include> | undefined>
   findOne(
     options?: FindFirstOptions<entityType>,
   ): Promise<entityType | undefined>
   /** returns the items that matches the id. If id is undefined | null, returns null */
+  findId<const include extends MembersToInclude<entityType>>(
+    id: idType<entityType>,
+    options: FindFirstOptionsBase<entityType> & { include: include },
+  ): Promise<Loaded<entityType, include> | undefined | null>
   findId(
     id: idType<entityType>,
     options?: FindFirstOptionsBase<entityType>,
@@ -1490,6 +1505,48 @@ export type MembersToInclude<T> = {
         ? FindOptions<NonNullable<T[K]>[number]>
         : FindFirstOptions<NonNullable<T[K]>>)
 }
+
+type LoadedTarget<target, include> = include extends {
+  include: infer nested
+}
+  ? Loaded<target, nested>
+  : target
+
+type LoadedRelation<value, include> =
+  NonNullable<value> extends (infer target)[]
+    ? LoadedTarget<target, include>[]
+    : null extends value
+      ? LoadedTarget<NonNullable<value>, include> | null
+      : LoadedTarget<NonNullable<value>, include>
+
+type LoadedKeys<entityType, include> = {
+  [K in keyof include & keyof entityType]-?: [include[K]] extends [
+    true | object,
+  ]
+    ? K
+    : never
+}[keyof include & keyof entityType]
+
+/**
+ * The type of an entity after `find` loaded the relations named in `include`.
+ * A relation included with `true` or an options object is no longer optional,
+ * and nested `include`s apply recursively. A relation declared `| null` stays
+ * nullable. Members included with `false`, `undefined` or a widened `boolean`
+ * keep their declared type.
+ * @example
+ * const tasks = await repo(Task).find({ include: { category: true } })
+ * tasks[0].category.name // `category` is loaded, no `?.` needed
+ */
+export type Loaded<entityType, include> = 0 extends 1 & (entityType | include)
+  ? entityType
+  : [LoadedKeys<entityType, include>] extends [never]
+    ? entityType
+    : Omit<entityType, LoadedKeys<entityType, include>> & {
+        [K in LoadedKeys<entityType, include>]-?: LoadedRelation<
+          Exclude<entityType[K], undefined>,
+          include[K]
+        >
+      }
 
 export type RepositoryRelations<entityType> = {
   [K in keyof ObjectMembersOnly<entityType>]-?: NonNullable<
