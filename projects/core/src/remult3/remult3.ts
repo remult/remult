@@ -474,7 +474,7 @@ export type GroupByResult<
 
 /** used to perform CRUD operations on an `entityType` */
 export interface Repository<entityType> {
-  /** returns an array based on the provided options. Relations named in a literal `include` are typed as loaded, see {@link Loaded} */
+  /** returns an array based on the provided options. Included relations drop their `?`, see {@link Loaded} */
   find<const include extends MembersToInclude<entityType>>(
     options: FindOptions<entityType> & { include: include },
   ): Promise<Loaded<entityType, include>[]>
@@ -1528,11 +1528,10 @@ type LoadedKeys<entityType, include> = {
 }[keyof include & keyof entityType]
 
 /**
- * The type of an entity after `find` loaded the relations named in `include`.
- * A relation included with `true` or an options object is no longer optional,
- * and nested `include`s apply recursively. A relation declared `| null` stays
- * nullable. Members included with `false`, `undefined` or a widened `boolean`
- * keep their declared type.
+ * The entity type `find` returns for a given `include`.
+ * Included relations drop their `?`, and nested `include`s work the same way.
+ * A relation declared `| null` stays nullable.
+ * A relation included with `false` or a widened `boolean` keeps its declared type.
  * @example
  * const tasks = await repo(Task).find({ include: { category: true } })
  * tasks[0].category.name // `category` is loaded, no `?.` needed
