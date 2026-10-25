@@ -89,6 +89,21 @@ describe('test server expression value', () => {
     item = await repo.insert({ id: '123', num: 2 })
     expect(item.id).toBe('123')
   })
+  it('Fields.uuid applies its options', async () => {
+    const e = class {
+      id = ''
+      num = 0
+    }
+    describeClass(e, Entity('x'), {
+      id: Fields.uuid({ allowApiUpdate: true }, (o) => (o.dbName = 'uid')),
+      num: Fields.number(),
+    })
+    const repo = new Remult(new InMemoryDataProvider()).repo(e)
+    expect(repo.metadata.fields.id.options.allowApiUpdate).toBe(true)
+    expect(repo.metadata.fields.id.options.dbName).toBe('uid')
+    const item = await repo.insert({ num: 1 })
+    expect(item.id.length).toBe(36)
+  })
   it('test cuid', async () => {
     const e = class {
       id = ''

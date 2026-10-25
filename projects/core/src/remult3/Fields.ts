@@ -177,10 +177,17 @@ export class Fields {
       | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, string | undefined> {
-    return Fields.id({
-      idFactory: () => crypto.randomUUID(),
+    return Field(
+      () => String as any,
+      {
+        allowApiUpdate: false,
+        defaultValue: () => crypto.randomUUID(),
+        saving: (_, r) => {
+          if (!r.value) r.value = crypto.randomUUID()
+        },
+      },
       ...options,
-    })
+    )
   }
 
   /**
