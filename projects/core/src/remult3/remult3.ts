@@ -325,16 +325,15 @@ export interface EntityMetadata<entityType = unknown> {
  *   get price(): Money { return new Money(this.priceCents, this.priceCurrency) }
  * }
  *
- * // A type error, instead of a "field not found" error at runtime
+ * // Type error. Without NotAField this typechecks and throws "field not found".
  * repo(Order).find({ where: { price: new Money(100, 'USD') } })
  */
 export interface NotAField {
   readonly [NotAField.symbol]: true
 }
 
-// The class only exists to hang the symbol off the interface's name, so users import one thing.
-// A namespace would do the same but breaks `erasableSyntaxOnly`, and a plain object widens the
-// symbol, which turns the interface into an index signature that any symbol satisfies.
+// This is a class so `NotAField.symbol` comes from the same import as the interface. A namespace
+// would break `erasableSyntaxOnly`, and a plain object widens the key so any symbol passes.
 export abstract class NotAField {
   static readonly symbol: unique symbol = Symbol('NotAField')
 }
