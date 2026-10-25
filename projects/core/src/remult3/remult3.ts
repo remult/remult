@@ -322,7 +322,7 @@ export interface EntityMetadata<entityType = unknown> {
  * class Order {
  *   @Fields.integer() priceCents = 0
  *   @Fields.string() priceCurrency = 'USD'
- *   get price() { return new Money(this.priceCents, this.priceCurrency) }
+ *   get price(): Money { return new Money(this.priceCents, this.priceCurrency) }
  * }
  *
  * // A type error, instead of a "field not found" error at runtime
