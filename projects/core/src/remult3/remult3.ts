@@ -309,8 +309,8 @@ export interface EntityMetadata<entityType = unknown> {
 }
 
 /**
- * Implement this on the type a getter returns when the getter isn't stored as a field. Then `where`,
- * `orderBy`, `insert` and the other field types leave that getter out.
+ * Marks a type that is never stored as a field. A getter that returns it stays out of `where`,
+ * `orderBy`, `insert` and the other field types.
  *
  * @example
  * class Money implements NotAField {
