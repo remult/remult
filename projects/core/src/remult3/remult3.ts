@@ -1595,9 +1595,10 @@ type UnselectedKeys<entityType, select, include> = Exclude<
  * The entity type `find` returns for a given `select` and `include`.
  * Members missing from `select`, or selected with `false`, are dropped. Included relations are kept and loaded, see {@link Loaded}.
  * A member selected with a widened `boolean` keeps its declared type.
+ * A `toOne` relation still needs its `field` selected, or it loads as `null`.
  * @example
  * const tasks = await repo(Task).find({
- *   select: { title: true },
+ *   select: { title: true, categoryId: true },
  *   include: { category: { select: { name: true } } },
  * })
  * tasks[0].title // ok
