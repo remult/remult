@@ -5,11 +5,11 @@ import {
   InMemoryDataProvider,
   Remult,
   type MembersOnly,
-  type NotAField,
+  NotAField,
 } from '../../core'
 
 class Money implements NotAField {
-  declare readonly isNotAField: true
+  declare readonly [NotAField.symbol]: true
   constructor(
     readonly cents: number,
     readonly currency: string,

@@ -314,7 +314,7 @@ export interface EntityMetadata<entityType = unknown> {
  *
  * @example
  * class Money implements NotAField {
- *   declare readonly isNotAField: true
+ *   declare readonly [NotAField.symbol]: true
  *   constructor(readonly cents: number, readonly currency: string) {}
  * }
  *
@@ -329,7 +329,14 @@ export interface EntityMetadata<entityType = unknown> {
  * repo(Order).find({ where: { price: new Money(100, 'USD') } })
  */
 export interface NotAField {
-  readonly isNotAField: true
+  readonly [NotAField.symbol]: true
+}
+
+// The class only exists to hang the symbol off the interface's name, so users import one thing.
+// A namespace would do the same but breaks `erasableSyntaxOnly`, and a plain object widens the
+// symbol, which turns the interface into an index signature that any symbol satisfies.
+export abstract class NotAField {
+  static readonly symbol: unique symbol = Symbol('NotAField')
 }
 
 export declare type MembersOnly<T> = {
