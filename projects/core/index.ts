@@ -57,6 +57,7 @@ export type {
   EntityRefForEntityBase,
   IdMetadata,
   FindFirstOptionsBase,
+  NotAField,
 } from './src/remult3/remult3.js'
 export { standardSchema } from './src/standard-schema/index.js'
 export {
