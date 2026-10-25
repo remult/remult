@@ -48,25 +48,25 @@ describe('NotAField types', () => {
     >()
   })
 
-  it('rejects NotAField properties where fields are expected', () => {
-    // Only typechecked. At runtime these throw "field not found" or drop the value.
-    const misuse = async () => {
-      const repo = remult.repo(Order)
-      const price = new Money(100, 'USD')
+  it('rejects NotAField properties where fields are expected', async () => {
+    const repo = remult.repo(Order)
+    const price = new Money(100, 'USD')
+    await expect(
       // @ts-expect-error not a field
-      await repo.find({ where: { price } })
+      repo.find({ where: { price } }),
+    ).rejects.toThrow('Field price not found')
+    // @ts-expect-error not a field
+    await repo.find({ orderBy: { price: 'asc' } })
+    // @ts-expect-error not a field
+    await repo.insert({ price })
+    // @ts-expect-error not a field
+    await repo.update(0, { discount: null })
+    await expect(
       // @ts-expect-error not a field
-      await repo.find({ orderBy: { price: 'asc' } })
-      // @ts-expect-error not a field
-      await repo.insert({ price })
-      // @ts-expect-error not a field
-      await repo.update(1, { discount: null })
-      // @ts-expect-error not a field
-      await repo.groupBy({ group: ['price'] })
-      // @ts-expect-error not a field
-      repo.fields.price
-    }
-    expect(misuse).toBeTypeOf('function')
+      repo.groupBy({ group: ['price'] }),
+    ).rejects.toThrow('key "price" not found')
+    // @ts-expect-error not a field
+    repo.fields.price
   })
 
   it('keeps the property on the entity', async () => {
