@@ -43,6 +43,7 @@ export type {
   MembersToInclude,
   Loaded,
   RemultTypeConfig,
+  Selected,
   RepositoryRelations,
   EntityIdFields,
   EntitySelectFields,
