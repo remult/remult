@@ -42,6 +42,7 @@ export type {
   ObjectMembersOnly,
   MembersToInclude,
   Loaded,
+  Selected,
   RepositoryRelations,
   EntityIdFields,
   EntitySelectFields,

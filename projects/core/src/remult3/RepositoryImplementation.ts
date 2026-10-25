@@ -508,7 +508,7 @@ export class RepositoryImplementation<entityType>
         if (rel && rel.type === 'toOne' && rel.options.field) {
           let fieldIndex = keys.indexOf(rel.options.field)
           if (fieldIndex > index) {
-            let relId = rel.toRepo.getEntityRef(item[key]).getId()
+            let relId = rel.toRepo.getEntityRef(item[key]!).getId()
             if (relId !== item[rel.options.field]) {
               delete item[key as keyof Partial<MembersOnly<entityType>>]
             }
