@@ -89,6 +89,22 @@ describe('test server expression value', () => {
     item = await repo.insert({ id: '123', num: 2 })
     expect(item.id).toBe('123')
   })
+  it('Fields.uuid generates a uuid the api cannot update', async () => {
+    const e = class {
+      id = ''
+      num = 0
+    }
+    describeClass(e, Entity('x'), {
+      id: Fields.uuid(),
+      num: Fields.number(),
+    })
+    const repo = new Remult(new InMemoryDataProvider()).repo(e)
+    expect(repo.metadata.fields.id.options.allowApiUpdate).toBe(false)
+    const item = await repo.insert({ num: 1 })
+    expect(item.id).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+    )
+  })
   it('Fields.uuid applies its options', async () => {
     const e = class {
       id = ''
