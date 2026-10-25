@@ -308,12 +308,38 @@ export interface EntityMetadata<entityType = unknown> {
   readonly idMetadata: IdMetadata<entityType>
 }
 
+/**
+ * Implement this on the type a getter returns when the getter isn't stored as a field. Then `where`,
+ * `orderBy`, `insert` and the other field types leave that getter out.
+ *
+ * @example
+ * class Money implements NotAField {
+ *   declare readonly isNotAField: true
+ *   constructor(readonly cents: number, readonly currency: string) {}
+ * }
+ *
+ * @Entity('orders')
+ * class Order {
+ *   @Fields.integer() priceCents = 0
+ *   @Fields.string() priceCurrency = 'USD'
+ *   get price() { return new Money(this.priceCents, this.priceCurrency) }
+ * }
+ *
+ * // A type error, instead of a "field not found" error at runtime
+ * repo(Order).find({ where: { price: new Money(100, 'USD') } })
+ */
+export interface NotAField {
+  readonly isNotAField: true
+}
+
 export declare type MembersOnly<T> = {
   [K in keyof Omit<T, keyof EntityBase> as T[K] extends Function
     ? never
-    : K extends string
-      ? K
-      : never]: T[K]
+    : NonNullable<T[K]> extends NotAField
+      ? never
+      : K extends string
+        ? K
+        : never]: T[K]
 }
 //Pick<
 //   T,
