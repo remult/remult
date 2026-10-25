@@ -329,6 +329,8 @@ export interface EntityMetadata<entityType = unknown> {
  * repo(Order).find({ where: { price: new Money(100, 'USD') } })
  */
 export interface NotAField {
+  // Makes this a tagged type, so `MembersOnly` can leave out getters that return it. A tagged type
+  // needs a property only it has, and a symbol key can't collide with a real one.
   readonly [NotAField.symbol]: true
 }
 
