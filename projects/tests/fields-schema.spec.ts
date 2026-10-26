@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { Entity, Fields, InMemoryDataProvider, Remult } from '../core/index.js'
 import type { StandardSchemaV1 } from '../core/src/standard-schema/StandardSchemaV1.js'
 
-function testSchema<output>(
+const testSchema = <output>(
   check: (value: unknown) => string | undefined,
   jsonSchema?: object,
-): StandardSchemaV1<output> {
+): StandardSchemaV1<output> => {
   const validate = (value: unknown) => {
     const message = check(value)
     return message ? { issues: [{ message }] } : { value: value as output }

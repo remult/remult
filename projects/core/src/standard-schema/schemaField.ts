@@ -26,10 +26,10 @@ const columnsByJsonType: Record<string, Column> = {
   string: { valueType: () => String, options: {} },
 }
 
-export function schemaFieldOptions(
+export const schemaFieldOptions = (
   schema: StandardSchemaV1,
   options: readonly unknown[],
-): Column {
+): Column => {
   const column = namesItsColumn(options)
     ? { valueType: undefined, options: {} }
     : columnFor(schema)
@@ -43,15 +43,14 @@ export function schemaFieldOptions(
   }
 }
 
-function namesItsColumn(options: readonly unknown[]) {
-  return options.some(
+const namesItsColumn = (options: readonly unknown[]) =>
+  options.some(
     (o) =>
       typeof o === 'object' &&
       ((o as FieldOptions).valueType || (o as FieldOptions).valueConverter),
   )
-}
 
-function columnFor(schema: StandardSchemaV1): Column {
+const columnFor = (schema: StandardSchemaV1): Column => {
   const jsonSchema = jsonSchemaOf(schema)
   const types = new Set(
     (jsonSchema.anyOf ?? [jsonSchema])
@@ -62,7 +61,7 @@ function columnFor(schema: StandardSchemaV1): Column {
   return (types.size === 1 && columnsByJsonType[type!]) || json
 }
 
-function jsonSchemaOf(schema: StandardSchemaV1): JsonSchema {
+const jsonSchemaOf = (schema: StandardSchemaV1): JsonSchema => {
   const converter = (schema['~standard'] as Partial<StandardJSONSchemaV1.Props>)
     .jsonSchema
   if (!converter)
@@ -82,20 +81,19 @@ const cantPickColumn = (reason: string) =>
   `Fields.schema can't pick a column for this schema (${reason}). Pass one, e.g. Fields.schema(schema, { valueType: Date }).`
 
 // Any Standard Schema can validate null, so nullability works without JSON Schema support.
-function acceptsNull(schema: StandardSchemaV1) {
+const acceptsNull = (schema: StandardSchemaV1) => {
   const result = schema['~standard'].validate(null)
   return !(result instanceof Promise) && !result.issues
 }
 
-function validatorFor(schema: StandardSchemaV1): FieldValidator<any, any> {
-  return (_, event) => {
+const validatorFor =
+  (schema: StandardSchemaV1): FieldValidator<any, any> =>
+  (_, event) => {
     const result = schema['~standard'].validate(event.value)
     return result instanceof Promise
       ? result.then(firstIssueMessage)
       : firstIssueMessage(result)
   }
-}
 
-function firstIssueMessage(result: StandardSchemaV1.Result<unknown>) {
-  return result.issues ? result.issues[0]!.message : true
-}
+const firstIssueMessage = (result: StandardSchemaV1.Result<unknown>) =>
+  result.issues ? result.issues[0]!.message : true
