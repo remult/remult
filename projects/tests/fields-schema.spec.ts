@@ -48,6 +48,7 @@ const tags = testSchema<string[]>(
   (v) => (Array.isArray(v) ? undefined : 'Needs a list'),
   { type: 'array', items: { type: 'string' } },
 )
+const metadata = testSchema<unknown>(() => undefined, {})
 const promisedBy = testSchema<Date>((v) =>
   v instanceof Date && v.getFullYear() >= 2020 ? undefined : 'Too far back',
 )
@@ -61,6 +62,7 @@ class Quote {
   @Fields.schema(weight) weight: number | null = null
   @Fields.schema(shipped) shipped = false
   @Fields.schema(tags) tags: string[] = []
+  @Fields.schema(metadata) metadata: unknown = {}
   @Fields.schema(promisedBy, { valueType: Date }) promisedBy = new Date()
 }
 
@@ -74,6 +76,7 @@ describe('Fields.schema', () => {
     expect(fields.weight.valueType).toBe(Number)
     expect(fields.shipped.valueType).toBe(Boolean)
     expect(fields.tags.valueConverter.fieldTypeInDb).toEqual('json')
+    expect(fields.metadata.valueConverter.fieldTypeInDb).toEqual('json')
   })
 
   it('allows null when the schema accepts null', () => {
@@ -113,6 +116,26 @@ describe('Fields.schema', () => {
   it('throws without a JSON Schema or a valueType', () => {
     expect(() => Fields.schema(promisedBy)).toThrowErrorMatchingInlineSnapshot(
       `[Error: Fields.schema can't pick a column for this schema (test doesn't implement Standard JSON Schema). Pass one, e.g. Fields.schema(schema, { valueType: Date }).]`,
+    )
+  })
+
+  it('throws when the schema has no JSON Schema form', () => {
+    const transformed: StandardSchemaV1<number> = {
+      '~standard': {
+        version: 1,
+        vendor: 'test',
+        validate: (v) => ({ value: Number(v) }),
+        jsonSchema: {
+          input: () => ({ type: 'string' }),
+          output: () => {
+            throw new Error('Transforms cannot be represented in JSON Schema')
+          },
+        },
+      } as StandardSchemaV1.Props<number>,
+    }
+
+    expect(() => Fields.schema(transformed)).toThrowErrorMatchingInlineSnapshot(
+      `[Error: Fields.schema can't pick a column for this schema (Transforms cannot be represented in JSON Schema). Pass one, e.g. Fields.schema(schema, { valueType: Date }).]`,
     )
   })
 
