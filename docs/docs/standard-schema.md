@@ -162,7 +162,7 @@ The property's type has to match the schema's output type, `null` included. Each
 count = ''
 
 @Fields.schema(z.string().nullable())
-note = ''
+note = '' // needs `note: string | null`
 ```
 
 Some schemas have no JSON Schema form, e.g. `z.date()` or a transform. Pass a `valueType` for those:
