@@ -80,6 +80,14 @@ describe('test include types', () => {
       null,
     ])
   })
+  it('included relation with a missing target is null', async () => {
+    await remult.repo(Category).insert({ id: 3, name: 'cat3', companyId: 99 })
+    const category = await remult
+      .repo(Category)
+      .findId(3, { include: { company: true } })
+    expect(category!.company).toBeNull()
+    expect(category!.companyId).toBe(99)
+  })
   it('nested include is loaded', async () => {
     const task = await remult
       .repo(Task)

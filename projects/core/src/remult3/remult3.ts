@@ -1532,7 +1532,8 @@ type LoadedKeys<entityType, include> = {
  * Included relations drop their `?`, and nested `include`s work the same way.
  * A relation declared `| null` stays nullable.
  * A relation included with `false` or a widened `boolean` keeps its declared type.
- * Declare a relation `| null` when a `backendPrefilter` can hide its target, because a hidden target loads as `null`.
+ * An included relation whose target row is missing loads as `null`.
+ * Declare it `| null` when that can happen, e.g. an optional FK or a target a `backendPrefilter` can hide.
  * @example
  * const tasks = await repo(Task).find({ include: { category: true } })
  * tasks[0].category.name // `category` is loaded, no `?.` needed
