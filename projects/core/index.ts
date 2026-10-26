@@ -47,6 +47,7 @@ export type {
   InsertOrUpdateOptions,
   ClassFieldDecorator,
   ClassFieldDecoratorContextStub, //n1 consider removing in ts5
+  SchemaFieldDecorator,
   LifecycleEvent,
   FieldsRefBase,
   FieldsRefForEntityBase,

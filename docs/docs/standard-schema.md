@@ -1,5 +1,5 @@
 ---
-llm: "standardSchema(repo(Entity)) - use entities as Standard Schema validators interoperable with zod, valibot, ArkType."
+llm: 'standardSchema(repo(Entity)) - use entities as Standard Schema validators interoperable with zod, valibot, ArkType.'
 ---
 
 # Standard Schema
@@ -129,6 +129,50 @@ const result = await validateWithAnyLibrary(taskSchema, {
 })
 // Returns: { issues: [{ message: 'Task My Task must be assigned with someone starting with [user:]', path: [] }] }
 ```
+
+## Declaring Fields with a Schema
+
+`Fields.schema` declares a field from a Standard Schema. The schema validates the field, and its [Standard JSON Schema](https://standardschema.dev/json-schema) picks the column, so the type is written once:
+
+```ts
+import { z } from 'zod'
+
+@Entity('quotes')
+class Quote {
+  @Fields.id()
+  id = ''
+
+  @Fields.schema(z.string().email('Needs a valid email'))
+  email = ''
+
+  @Fields.schema(z.number().int().min(1, 'At least one box'))
+  boxCount = 1 // integer column
+
+  @Fields.schema(z.string().max(500).nullable())
+  note: string | null = null // allowNull: true
+}
+```
+
+The column comes from the JSON Schema `type`. `integer`, `number`, `boolean` and `string` map to the matching field. Anything else is stored as JSON. The field allows null when the schema accepts `null`. Validation errors use the schema's first issue message.
+
+The property's type has to match the schema's output type, `null` included. Each of these fails to compile:
+
+```ts
+@Fields.schema(z.number())
+count = ''
+
+@Fields.schema(z.string().nullable())
+note = ''
+```
+
+Some schemas have no JSON Schema form, e.g. `z.date()` or a transform. Pass a `valueType` for those:
+
+```ts
+@Fields.schema(z.date().min(new Date('2020-01-01')), { valueType: Date })
+promisedBy = new Date()
+```
+
+Any other field option goes in the same argument, e.g. `{ allowApiUpdate: false }`.
 
 ## Benefits
 

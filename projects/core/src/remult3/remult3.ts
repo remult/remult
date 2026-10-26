@@ -1549,6 +1549,36 @@ export type ClassFieldDecorator<entityType, valueType> = ((
   readonly __fieldValueType?: valueType
 }
 
+type SameType<a, b> = [a] extends [b] ? ([b] extends [a] ? true : false) : false
+// On a mismatch the target needs a `propertyTypeMustBe` key, so the compile error names the
+// expected type.
+type PropertyTypeCheck<propertyType, valueType> =
+  SameType<
+    Exclude<propertyType, undefined>,
+    Exclude<valueType, undefined>
+  > extends true
+    ? unknown
+    : { propertyTypeMustBe: valueType }
+
+/** A field decorator that only fits a property of type `valueType`, `null` included. */
+export type SchemaFieldDecorator<valueType> = {
+  <entityType, key extends keyof entityType & string>(
+    target: entityType & {
+      [k in key]?: PropertyTypeCheck<entityType[key], valueType>
+    },
+    key: key,
+  ): void
+  <entityType, propertyType>(
+    target: undefined,
+    context: {
+      readonly name: string | symbol
+      readonly access: { get(object: entityType): propertyType }
+    } & PropertyTypeCheck<propertyType, valueType>,
+  ): void
+} & {
+  readonly __fieldValueType?: valueType
+}
+
 export const flags = {
   error500RetryCount: 4,
   /** Client treats SSE as dead if no event for this long. Server pings every 15s; two missed pings plus slack, so a stalled event loop does not trigger a reconnect storm */

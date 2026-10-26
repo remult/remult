@@ -6,6 +6,7 @@ import type {
   RelationOptions,
   ClassFieldDecorator,
   ClassFieldDecoratorContextStub,
+  SchemaFieldDecorator,
 } from './remult3.js'
 import { ValueConverters } from '../valueConverters.js'
 import {
@@ -23,6 +24,8 @@ import { remultStatic } from '../remult-static.js'
 import { addValidator } from './addValidator.js'
 import { isOfType } from '../isOfType.js'
 import { InputTypes } from '../../inputTypes.js'
+import type { StandardSchemaV1 } from '../standard-schema/StandardSchemaV1.js'
+import { schemaFieldOptions } from '../standard-schema/schemaField.js'
 
 const validateNumber = createValueValidator((x: number) => {
   return !isNaN(x) && isFinite(x)
@@ -378,6 +381,38 @@ export class Fields {
   ): ClassFieldDecorator<entityType, boolean | undefined> {
     return Field(() => Boolean as any, ...options)
   }
+  /**
+   * A field declared and validated by a [Standard Schema](https://standardschema.dev/). The column
+   * comes from the schema's [Standard JSON Schema](https://standardschema.dev/json-schema), and the
+   * property's type has to match the schema's output type.
+   * @example
+   * @Fields.schema(z.string().email())
+   * email = ''
+   * @example
+   * // z.date() has no JSON Schema form, so it needs a valueType
+   * @Fields.schema(z.date(), { valueType: Date })
+   * createdAt = new Date()
+   */
+  static schema<schemaType extends StandardSchemaV1, entityType = unknown>(
+    schema: schemaType,
+    ...options: (
+      | FieldOptions<entityType, StandardSchemaV1.InferOutput<schemaType>>
+      | ((
+          options: FieldOptions<
+            entityType,
+            StandardSchemaV1.InferOutput<schemaType>
+          >,
+          remult: Remult,
+        ) => void)
+    )[]
+  ): SchemaFieldDecorator<StandardSchemaV1.InferOutput<schemaType>> {
+    const derived = schemaFieldOptions(schema, options)
+    return Field<any, any>(
+      derived.valueType,
+      derived.options,
+      ...(options as any),
+    ) as SchemaFieldDecorator<StandardSchemaV1.InferOutput<schemaType>>
+  }
 }
 
 export class Relations {
@@ -445,8 +480,8 @@ export class Relations {
       (typeof options === 'string'
         ? { field: options }
         : !options
-        ? {}
-        : options) as any as RelationOptions<
+          ? {}
+          : options) as any as RelationOptions<
         entityType,
         toEntityType,
         entityType
@@ -575,10 +610,10 @@ export function Field<entityType = unknown, valueType = unknown>(
     | (() => valueType extends number
         ? Number
         : valueType extends string
-        ? String
-        : valueType extends boolean
-        ? Boolean
-        : ClassType<valueType>)
+          ? String
+          : valueType extends boolean
+            ? Boolean
+            : ClassType<valueType>)
     | undefined,
   ...options: (
     | FieldOptions<entityType, valueType>
