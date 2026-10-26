@@ -1,5 +1,5 @@
 ---
-llm: 'standardSchema(repo(Entity)) - use entities as Standard Schema validators interoperable with zod, valibot, ArkType.'
+llm: "standardSchema(repo(Entity)) - use entities as Standard Schema validators interoperable with zod, valibot, ArkType."
 ---
 
 # Standard Schema

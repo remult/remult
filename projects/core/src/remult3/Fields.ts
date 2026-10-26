@@ -480,8 +480,8 @@ export class Relations {
       (typeof options === 'string'
         ? { field: options }
         : !options
-          ? {}
-          : options) as any as RelationOptions<
+        ? {}
+        : options) as any as RelationOptions<
         entityType,
         toEntityType,
         entityType
@@ -610,10 +610,10 @@ export function Field<entityType = unknown, valueType = unknown>(
     | (() => valueType extends number
         ? Number
         : valueType extends string
-          ? String
-          : valueType extends boolean
-            ? Boolean
-            : ClassType<valueType>)
+        ? String
+        : valueType extends boolean
+        ? Boolean
+        : ClassType<valueType>)
     | undefined,
   ...options: (
     | FieldOptions<entityType, valueType>
