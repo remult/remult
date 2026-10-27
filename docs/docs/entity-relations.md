@@ -139,6 +139,19 @@ Here's an example result of running `JSON.stringify` on the `orders` array:
 
 As shown in the result, each `Order` object contains a nested `customer` object, which holds the details of the associated customer, including their `id`, `name`, and `city`. This structured data allows you to work seamlessly with the many-to-one relationship between `Order` and `Customer` entities .
 
+#### Typing the Result
+
+With a literal `include`, the result types each included relation as loaded. `orders[0].customer.name` compiles without a `?.`.
+
+An included `toOne` whose target row is missing loads as `null`. If that can happen, e.g. an optional FK or a target a `backendPrefilter` can hide, declare the relation `| null`. Otherwise it's typed as loaded and throws at runtime.
+
+```typescript
+@Fields.string()
+customerId = ''
+@Relations.toOne<Order, Customer>(() => Customer, { field: 'customerId' })
+customer?: Customer | null // [!code ++]
+```
+
 ### Querying a Single Item
 
 To retrieve a single `Order` item along with its associated `Customer`, you can use the `findFirst` method provided by your repository (`orderRepo` in this case). Here's an example of how to perform this query:

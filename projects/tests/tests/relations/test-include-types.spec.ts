@@ -41,6 +41,30 @@ class Task {
   category?: Category
 }
 
+@Entity('branch-customers')
+class BranchCustomer {
+  @Fields.integer()
+  id = 0
+  @Fields.integer()
+  branchId = 0
+  @Fields.string()
+  name = ''
+}
+
+@Entity('branch-orders')
+class BranchOrder {
+  @Fields.integer()
+  id = 0
+  @Fields.integer()
+  branchId = 0
+  @Fields.integer()
+  customerId = 0
+  @Relations.toOne<BranchOrder, BranchCustomer>(() => BranchCustomer, {
+    fields: { branchId: 'branchId', id: 'customerId' },
+  })
+  customer?: BranchCustomer | null
+}
+
 describe('test include types', () => {
   let remult: Remult
   beforeEach(async () => {
@@ -87,6 +111,21 @@ describe('test include types', () => {
       .findId(3, { include: { company: true } })
     expect(category!.company).toBeNull()
     expect(category!.companyId).toBe(99)
+  })
+  it('included fields relation with a missing target is null', async () => {
+    await remult.repo(BranchCustomer).insert({ id: 7, branchId: 1, name: 'c7' })
+    await remult.repo(BranchOrder).insert([
+      { id: 1, branchId: 1, customerId: 7 },
+      { id: 2, branchId: 2, customerId: 7 },
+    ])
+    const orders = await remult
+      .repo(BranchOrder)
+      .find({ include: { customer: true }, orderBy: { id: 'asc' } })
+    expectTypeOf(orders[0].customer).toEqualTypeOf<BranchCustomer | null>()
+    expect(orders[0].customer?.name).toBe('c7')
+    expect(orders[1].customer).toBeNull()
+    expect(orders[1].branchId).toBe(2)
+    expect(orders[1].customerId).toBe(7)
   })
   it('nested include is loaded', async () => {
     const task = await remult
