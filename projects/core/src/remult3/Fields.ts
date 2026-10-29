@@ -7,6 +7,7 @@ import type {
   ClassFieldDecorator,
   ClassFieldDecoratorContextStub,
   SchemaFieldDecorator,
+  AcceptsOwnOutput,
 } from './remult3.js'
 import { ValueConverters } from '../valueConverters.js'
 import {
@@ -384,7 +385,8 @@ export class Fields {
   /**
    * A field declared and validated by a [Standard Schema](https://standardschema.dev/). The column
    * comes from the schema's [Standard JSON Schema](https://standardschema.dev/json-schema), and the
-   * property's type has to match the schema's output type.
+   * property's type has to match the schema's output type. The schema's output is written back to the
+   * property, so the schema has to accept its own output.
    * @example
    * @Fields.schema(z.string().email())
    * email = ''
@@ -394,7 +396,7 @@ export class Fields {
    * createdAt = new Date()
    */
   static schema<schemaType extends StandardSchemaV1, entityType = unknown>(
-    schema: schemaType,
+    schema: schemaType & AcceptsOwnOutput<schemaType>,
     ...options: (
       | FieldOptions<entityType, StandardSchemaV1.InferOutput<schemaType>>
       | ((

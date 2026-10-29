@@ -153,7 +153,16 @@ class Quote {
 }
 ```
 
-The column comes from the JSON Schema `type`. `integer`, `number`, `boolean` and `string` map to the matching field. Anything else is stored as JSON. The field allows null when the schema accepts `null`. Validation errors use the schema's first issue message.
+The column comes from the JSON Schema `type`. `integer`, `number`, `boolean` and `string` map to the matching field. An `enum` or `const` without a `type` maps by its values, so arktype's `'a' | 'b'` is a string column. Anything else is stored as JSON. The field allows null when the JSON Schema includes `null`. Validation errors use the schema's first issue message.
+
+The schema's output is what gets saved, so transforms like `.trim()` and `.default()` apply:
+
+```ts
+@Fields.schema(z.string().trim())
+name = '' // '  bob  ' saves as 'bob'
+```
+
+`standardSchema(repo(Quote))` checks these fields with the same schemas, so validating the whole entity needs nothing extra.
 
 The property's type has to match the schema's output type, `null` included. Each of these fails to compile:
 
@@ -165,12 +174,24 @@ count = ''
 note = '' // needs `note: string | null`
 ```
 
+The schema also has to accept its own output. Every save runs the schema again on the saved value, so a parse that changes the type would reject its own result. This fails to compile:
+
+```ts
+// 'string -> boolean': flag = '1' saves as true, and the next save rejects true
+@Fields.schema(z.string().transform((v) => v === '1'))
+flag = false
+```
+
+Parse a value like that before it reaches the entity, e.g. in the form or with a `valueConverter`.
+
 Some schemas have no JSON Schema form, e.g. `z.date()` or a transform. Pass a `valueType` for those:
 
 ```ts
 @Fields.schema(z.date().min(new Date('2020-01-01')), { valueType: Date })
 promisedBy = new Date()
 ```
+
+Some libraries need an adapter for JSON Schema. For valibot, wrap the schema with `toStandardJsonSchema()` from `@valibot/to-json-schema`.
 
 Any other field option goes in the same argument, e.g. `{ allowApiUpdate: false }`.
 

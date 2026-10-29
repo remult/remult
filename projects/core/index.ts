@@ -48,6 +48,7 @@ export type {
   ClassFieldDecorator,
   ClassFieldDecoratorContextStub, //n1 consider removing in ts5
   SchemaFieldDecorator,
+  AcceptsOwnOutput,
   LifecycleEvent,
   FieldsRefBase,
   FieldsRefForEntityBase,

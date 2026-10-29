@@ -4,7 +4,13 @@ import { ValueConverters } from '../valueConverters.js'
 import type { StandardJSONSchemaV1 } from './StandardJSONSchemaV1.js'
 import type { StandardSchemaV1 } from './StandardSchemaV1.js'
 
-type JsonSchema = { type?: string | string[]; anyOf?: JsonSchema[] }
+type JsonSchema = {
+  type?: string | string[]
+  enum?: unknown[]
+  const?: unknown
+  anyOf?: JsonSchema[]
+  oneOf?: JsonSchema[]
+}
 type Column = {
   valueType: (() => any) | undefined
   options: FieldOptions<any, any>
@@ -30,14 +36,19 @@ export const schemaFieldOptions = (
   schema: StandardSchemaV1,
   options: readonly unknown[],
 ): Column => {
-  const column = namesItsColumn(options)
+  const passesColumn = namesItsColumn(options)
+  const jsonSchema = passesColumn
+    ? tryJsonSchemaOf(schema)
+    : jsonSchemaOf(schema)
+  const types = jsonSchema ? typesOf(jsonSchema) : new Set<string>()
+  const column = passesColumn
     ? { valueType: undefined, options: {} }
-    : columnFor(schema)
+    : columnFor(types)
   return {
     valueType: column.valueType,
     options: {
       ...column.options,
-      allowNull: acceptsNull(schema),
+      allowNull: types.size ? types.has('null') : acceptsNull(schema),
       validate: validatorFor(schema),
     },
   }
@@ -50,15 +61,20 @@ const namesItsColumn = (options: readonly unknown[]) =>
       ((o as FieldOptions).valueType || (o as FieldOptions).valueConverter),
   )
 
-const columnFor = (schema: StandardSchemaV1): Column => {
-  const jsonSchema = jsonSchemaOf(schema)
-  const types = new Set(
-    (jsonSchema.anyOf ?? [jsonSchema])
-      .flatMap((branch) => [branch.type ?? []].flat())
-      .filter((type) => type !== 'null'),
-  )
-  const [type] = types
-  return (types.size === 1 && columnsByJsonType[type!]) || json
+const columnFor = (types: Set<string>): Column => {
+  const [type, ...others] = [...types].filter((t) => t !== 'null')
+  return (!others.length && columnsByJsonType[type!]) || json
+}
+
+// Some libraries describe a union of literals with `enum` or `const` and no `type`, e.g. arktype's
+// `'a' | 'b'`, so the type comes from the values.
+const typesOf = (jsonSchema: JsonSchema): Set<string> => {
+  const branches = jsonSchema.anyOf ?? jsonSchema.oneOf
+  if (branches) return new Set(branches.flatMap((b) => [...typesOf(b)]))
+  if (jsonSchema.type) return new Set([jsonSchema.type].flat())
+  const values =
+    jsonSchema.enum ?? ('const' in jsonSchema ? [jsonSchema.const] : [])
+  return new Set(values.map((v) => (v === null ? 'null' : typeof v)))
 }
 
 const jsonSchemaOf = (schema: StandardSchemaV1): JsonSchema => {
@@ -68,7 +84,8 @@ const jsonSchemaOf = (schema: StandardSchemaV1): JsonSchema => {
     throw new Error(
       cantPickColumn(
         `${schema['~standard'].vendor} doesn't implement Standard JSON Schema`,
-      ),
+      ) +
+        ` If the library has an adapter, wrap the schema in it, e.g. valibot's toStandardJsonSchema(schema).`,
     )
   try {
     return converter.output({ target: 'draft-2020-12' }) as JsonSchema
@@ -77,23 +94,33 @@ const jsonSchemaOf = (schema: StandardSchemaV1): JsonSchema => {
   }
 }
 
+const tryJsonSchemaOf = (schema: StandardSchemaV1) => {
+  try {
+    return jsonSchemaOf(schema)
+  } catch {
+    return undefined
+  }
+}
+
 const cantPickColumn = (reason: string) =>
   `Fields.schema can't pick a column for this schema (${reason}). Pass one, e.g. Fields.schema(schema, { valueType: Date }).`
 
-// Any Standard Schema can validate null, so nullability works without JSON Schema support.
+// Only for schemas whose JSON Schema doesn't say. Running the schema is less exact, e.g. `z.coerce.number()`
+// turns null into 0 and passes.
 const acceptsNull = (schema: StandardSchemaV1) => {
   const result = schema['~standard'].validate(null)
   return !(result instanceof Promise) && !result.issues
 }
 
+// Writes the schema's output back, so transforms like `.trim()` and `.default()` reach the database.
 const validatorFor =
   (schema: StandardSchemaV1): FieldValidator<any, any> =>
-  (_, event) => {
+  (entity, event) => {
+    const apply = (result: StandardSchemaV1.Result<unknown>) => {
+      if (result.issues) return result.issues[0]!.message
+      ;(entity as any)[event.metadata.key] = result.value
+      return true
+    }
     const result = schema['~standard'].validate(event.value)
-    return result instanceof Promise
-      ? result.then(firstIssueMessage)
-      : firstIssueMessage(result)
+    return result instanceof Promise ? result.then(apply) : apply(result)
   }
-
-const firstIssueMessage = (result: StandardSchemaV1.Result<unknown>) =>
-  result.issues ? result.issues[0]!.message : true

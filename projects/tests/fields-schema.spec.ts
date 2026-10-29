@@ -22,6 +22,18 @@ const testSchema = <output>(
   }
 }
 
+const transformSchema = <input, output = input>(
+  validate: (value: unknown) => StandardSchemaV1.Result<output>,
+  jsonSchema: object,
+): StandardSchemaV1<input, output> => ({
+  '~standard': {
+    version: 1,
+    vendor: 'test',
+    validate,
+    jsonSchema: { input: () => jsonSchema, output: () => jsonSchema },
+  } as StandardSchemaV1.Props<input, output>,
+})
+
 const email = testSchema<string>(
   (v) =>
     typeof v === 'string' && v.includes('@') ? undefined : 'Needs an email',
@@ -49,6 +61,27 @@ const tags = testSchema<string[]>(
   { type: 'array', items: { type: 'string' } },
 )
 const metadata = testSchema<unknown>(() => undefined, {})
+const coercedCount = transformSchema<number>(
+  (v) => {
+    const n = Number(v)
+    return isNaN(n) ? { issues: [{ message: 'Needs a number' }] } : { value: n }
+  },
+  { type: 'number' },
+)
+const size = testSchema<'s' | 'm'>(
+  (v) => (v === 's' || v === 'm' ? undefined : 'Needs a size'),
+  { enum: ['s', 'm'] },
+)
+const color = testSchema<'red' | 'blue' | null>(() => undefined, {
+  anyOf: [{ const: 'red' }, { const: 'blue' }, { const: null }],
+})
+const name = transformSchema<string>((v) => ({ value: (v as string).trim() }), {
+  type: 'string',
+})
+const status = transformSchema<string>(
+  (v) => ({ value: (v as string | undefined) ?? 'draft' }),
+  { type: 'string' },
+)
 const promisedBy = testSchema<Date>((v) =>
   v instanceof Date && v.getFullYear() >= 2020 ? undefined : 'Too far back',
 )
@@ -63,6 +96,11 @@ class Quote {
   @Fields.schema(shipped) shipped = false
   @Fields.schema(tags) tags: string[] = []
   @Fields.schema(metadata) metadata: unknown = {}
+  @Fields.schema(coercedCount) coercedCount = 0
+  @Fields.schema(size) size: 's' | 'm' = 's'
+  @Fields.schema(color) color: 'red' | 'blue' | null = null
+  @Fields.schema(name) name = ''
+  @Fields.schema(status) status = ''
   @Fields.schema(promisedBy, { valueType: Date }) promisedBy = new Date()
 }
 
@@ -79,10 +117,29 @@ describe('Fields.schema', () => {
     expect(fields.metadata.valueConverter.fieldTypeInDb).toEqual('json')
   })
 
+  it('picks the column from enum and const values without a type', () => {
+    expect(fields.size.valueType).toBe(String)
+    expect(fields.color.valueType).toBe(String)
+    expect(fields.color.allowNull).toEqual(true)
+  })
+
   it('allows null when the schema accepts null', () => {
     expect(fields.note.allowNull).toEqual(true)
     expect(fields.weight.allowNull).toEqual(true)
     expect(fields.email.allowNull).toEqual(false)
+  })
+
+  it('takes null from the JSON Schema over running the schema', () => {
+    // coercedCount turns null into 0 and passes, but its JSON Schema has no null
+    expect(fields.coercedCount.allowNull).toEqual(false)
+  })
+
+  it('saves the schema output', async () => {
+    const saved = await repo.insert({ name: '  bob  ', status: undefined })
+
+    expect(saved.name).toEqual('bob')
+    expect(saved.status).toEqual('draft')
+    expect((await repo.findId(saved.id))!.name).toEqual('bob')
   })
 
   it('validates with the schema message', async () => {
@@ -115,7 +172,7 @@ describe('Fields.schema', () => {
 
   it('throws without a JSON Schema or a valueType', () => {
     expect(() => Fields.schema(promisedBy)).toThrowErrorMatchingInlineSnapshot(
-      `[Error: Fields.schema can't pick a column for this schema (test doesn't implement Standard JSON Schema). Pass one, e.g. Fields.schema(schema, { valueType: Date }).]`,
+      `[Error: Fields.schema can't pick a column for this schema (test doesn't implement Standard JSON Schema). Pass one, e.g. Fields.schema(schema, { valueType: Date }). If the library has an adapter, wrap the schema in it, e.g. valibot's toStandardJsonSchema(schema).]`,
     )
   })
 
@@ -183,5 +240,18 @@ describe('Fields.schema', () => {
     }
 
     expect(Mismatch).toBeDefined()
+  })
+
+  it("rejects a schema that doesn't accept its own output", () => {
+    const parsed = transformSchema<string, boolean>(
+      (v) => ({ value: v === '1' }),
+      { type: 'boolean' },
+    )
+    class Flags {
+      // @ts-expect-error a saved `true` would fail the next validation
+      @Fields.schema(parsed) flag = false
+    }
+
+    expect(Flags).toBeDefined()
   })
 })

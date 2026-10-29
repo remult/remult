@@ -1,3 +1,4 @@
+import type { StandardSchemaV1 } from '../standard-schema/StandardSchemaV1.js'
 import type { ErrorInfo, FieldOptions } from '../../index.js'
 import type { ClassType } from '../../classType.js'
 import type { entityEventListener } from '../__EntityValueProvider.js'
@@ -1559,6 +1560,15 @@ type PropertyTypeCheck<propertyType, valueType> =
   > extends true
     ? unknown
     : { propertyTypeMustBe: valueType }
+
+// The validator writes the schema's output back to the property. Every later save runs the schema
+// on it again. A schema whose output doesn't fit its input fails on that second run, e.g. a
+// `string -> boolean` parse turns `flag = '1'` into `flag = true`, then rejects `true` next save.
+export type AcceptsOwnOutput<schemaType extends StandardSchemaV1> = [
+  StandardSchemaV1.InferOutput<schemaType>,
+] extends [StandardSchemaV1.InferInput<schemaType>]
+  ? unknown
+  : { schemaMustAcceptItsOwnOutput: StandardSchemaV1.InferOutput<schemaType> }
 
 /** A field decorator that only fits a property of type `valueType`, `null` included. */
 export type SchemaFieldDecorator<valueType> = {
