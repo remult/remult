@@ -382,9 +382,11 @@ export declare class CustomSqlFilterBuilder
 {
   private r
   wrapIdentifier: (name: string) => string
+  private jsonColumnStorage
   constructor(
     r: SqlCommandWithParameters,
     wrapIdentifier: (name: string) => string,
+    jsonColumnStorage?: JsonColumnStorage,
   )
   sql: string
   /** @deprecated  use `param` instead*/
@@ -407,6 +409,7 @@ export declare class CustomSqlFilterBuilder
     condition: EntityFilter<entityType>,
   ) => Promise<string>
 }
+//[ ] JsonColumnStorage from TBD is not exported
 //[ ] RepositoryOverloads from TBD is not exported
 export type CustomSqlFilterBuilderFunction = (
   builder: CustomSqlFilterBuilder,
@@ -2358,6 +2361,12 @@ export interface RawSelectOptions {
   wrapIdentifier?: (name: string) => string
   /** Required only with `limit`: `(limit, offset) => 'limit 10 offset 20'`. */
   limitSyntax?: (limit: number, offset: number) => string
+  /**
+   * JSON columns are stored as text (SQL Server, sqlite, mysql).
+   * Defaults to the repository's data provider.
+   * Set when `sqlCommand` runs against a different database than that provider.
+   */
+  jsonAsString?: boolean
 }
 export declare type RefSubscriber = (() => void) | RefSubscriberBase
 export interface RefSubscriberBase {
@@ -3165,6 +3174,7 @@ export declare class SqlDatabase
   implements
     DataProvider,
     HasWrapIdentifier,
+    HasJsonColumnStorage,
     CanBuildMigrations,
     SqlCommandFactory
 {
@@ -3193,6 +3203,7 @@ export declare class SqlDatabase
    * Wraps an identifier with the database's identifier syntax.
    */
   wrapIdentifier: (name: string) => string
+  get jsonColumnStorage(): JsonColumnStorage
   ensureSchema(entities: EntityMetadata[]): Promise<void>
   /**
    * Gets the entity data provider.
@@ -4641,6 +4652,7 @@ export declare class KnexDataProvider
   implements
     DataProvider,
     HasWrapIdentifier,
+    HasJsonColumnStorage,
     SqlCommandFactory,
     CanBuildMigrations
 {
@@ -4652,6 +4664,7 @@ export declare class KnexDataProvider
   execute(sql: string): Promise<SqlResult>
   static getDb(dataProvider?: DataProvider): Knex<any, any[]>
   wrapIdentifier: (name: string) => string
+  get jsonColumnStorage(): JsonColumnStorage
   getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider
   transaction(
     action: (dataProvider: DataProvider) => Promise<void>,
@@ -4670,6 +4683,7 @@ export declare class KnexDataProvider
 //[ ] SqlCommand from ../src/sql-command.js is not exported
 //[ ] SqlResult from ../src/sql-command.js is not exported
 //[ ] DataProvider from ../src/data-interfaces.js is not exported
+//[ ] JsonColumnStorage from ../src/sql-command.js is not exported
 //[ ] EntityMetadata from ../src/remult3/remult3.js is not exported
 //[ ] EntityDataProvider from ../src/data-interfaces.js is not exported
 //[ ] EntityFilter from ../src/remult3/remult3.js is not exported
@@ -5105,6 +5119,7 @@ export declare function getRelationFieldInfo(
 export declare function getRelationInfo(options: FieldOptions): RelationInfo
 export declare function isOfType<T>(obj: any, checkMethod: keyof T): obj is T
 //[ ] FirstTypeNode from TBD is not exported
+export const omitFilterField: unique symbol
 export declare function pagedQueryResult<T>(
   pageSize: number,
   getPage: (pageNumber?: number) => Promise<T[]>,
@@ -5182,6 +5197,10 @@ export interface SubscriptionServerRouteHandlerArgs {
 }
 //[ ] GenericRequestInfo from TBD is not exported
 //[ ] GenericResponse from TBD is not exported
+export declare function walkFilter(
+  filter: unknown,
+  visit: (key: string, value: unknown) => unknown,
+): unknown
 ```
 
 ## ./remult-nuxt.js

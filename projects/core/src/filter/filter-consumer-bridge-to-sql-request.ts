@@ -21,7 +21,10 @@ import { entityDbName } from './entityDbName.js'
 import { fieldDbName } from './fieldDbName.js'
 import type { Filter, FilterConsumer } from './filter-interfaces.js'
 
-const REGEX_LIKE_SPECIAL = /[!%_]/g
+// `[` starts a character class in sql server's like. `]` on its own is a literal
+// everywhere, so escaping the opening bracket is enough. The other engines treat
+// an escaped non-wildcard as that literal, so one escape set works for all of them.
+const REGEX_LIKE_SPECIAL = /[!%_\[]/g
 // `!` not `\`: a backslash in a string literal is an escape in mysql and in pg without standard_conforming_strings
 export const LIKE_ESCAPE_SQL = " escape '!'"
 export function escapeLike(val: string) {

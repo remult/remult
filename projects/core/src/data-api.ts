@@ -483,8 +483,10 @@ export class DataApi<T = unknown> {
   private fieldIsInApi(key: string) {
     return this.repository.fields.find(key)?.includedInApi() === true
   }
-  private fieldsInApi(keys: string[] | undefined) {
-    return keys?.filter((key) => this.fieldIsInApi(key))
+  private fieldsInApi(keys: any): any[] | undefined {
+    return (keys as string[] | undefined)?.filter((key) =>
+      this.fieldIsInApi(key),
+    )
   }
 
   // Drop a field the api hides. Same as a field that is not on the entity:

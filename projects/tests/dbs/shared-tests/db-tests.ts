@@ -1270,6 +1270,7 @@ export function commonDbTests(
       { a: 3, firstName: 'a_b' },
       { a: 4, firstName: "o'hara" },
       { a: 5, firstName: 'back\\slash' },
+      { a: 6, firstName: 'a[b]c' },
     ])
     return async (
       firstName: EntityFilter<InstanceType<typeof e>>['firstName'],
@@ -1289,6 +1290,22 @@ export function commonDbTests(
     expect(await names({ $startsWith: 'a_' })).toEqual(['a_b'])
     expect(await names({ $endsWith: '%b' })).toEqual(['a%b'])
     expect(await names({ $notContains: '%' })).toEqual([
+      'axb',
+      'a_b',
+      "o'hara",
+      'back\\slash',
+      'a[b]c',
+    ])
+  })
+  it('text operators match a literal [ rather than a character class', async () => {
+    const names = await createSpecialNames()
+    expect(await names({ $contains: 'a[b]c' })).toEqual(['a[b]c'])
+    expect(await names({ $startsWith: 'a[' })).toEqual(['a[b]c'])
+    expect(await names({ $endsWith: ']c' })).toEqual(['a[b]c'])
+    // a character class would match 'axb' here
+    expect(await names({ $contains: 'a[xb]b' })).toEqual([])
+    expect(await names({ $notContains: '[' })).toEqual([
+      'a%b',
       'axb',
       'a_b',
       "o'hara",
