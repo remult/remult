@@ -1254,6 +1254,57 @@ export function commonDbTests(
     let item = await r.find({ where: { firstName: { $endsWith: 'b' } } })
     expect(item.length).toBe(0)
   })
+  async function createSpecialNames() {
+    const e = class {
+      a = 0
+      firstName = ''
+    }
+    describeClass(e, Entity('testNameContains', { allowApiCrud: true }), {
+      a: Fields.number(),
+      firstName: Fields.string(),
+    })
+    const r = await createEntity(e)
+    await r.insert([
+      { a: 1, firstName: 'a%b' },
+      { a: 2, firstName: 'axb' },
+      { a: 3, firstName: 'a_b' },
+      { a: 4, firstName: "o'hara" },
+      { a: 5, firstName: 'back\\slash' },
+    ])
+    return async (
+      firstName: EntityFilter<InstanceType<typeof e>>['firstName'],
+    ) =>
+      (await r.find({ where: { firstName }, orderBy: { a: 'asc' } })).map(
+        (x) => x.firstName,
+      )
+  }
+  it('$contains matches a literal % and _', async () => {
+    const names = await createSpecialNames()
+    expect(await names({ $contains: '%' })).toEqual(['a%b'])
+    expect(await names({ $contains: '_' })).toEqual(['a_b'])
+    expect(await names({ $contains: 'a%b' })).toEqual(['a%b'])
+  })
+  it('$startsWith, $endsWith and $notContains match a literal % and _', async () => {
+    const names = await createSpecialNames()
+    expect(await names({ $startsWith: 'a_' })).toEqual(['a_b'])
+    expect(await names({ $endsWith: '%b' })).toEqual(['a%b'])
+    expect(await names({ $notContains: '%' })).toEqual([
+      'axb',
+      'a_b',
+      "o'hara",
+      'back\\slash',
+    ])
+  })
+  it('text operators with a quote or backslash value do not alter the query', async () => {
+    const names = await createSpecialNames()
+    expect(await names({ $contains: "o'h" })).toEqual(["o'hara"])
+    expect(await names({ $startsWith: "o'" })).toEqual(["o'hara"])
+    expect(await names({ $contains: 'k\\s' })).toEqual(['back\\slash'])
+    expect(await names({ $endsWith: '\\slash' })).toEqual(['back\\slash'])
+    expect(await names({ $contains: '\\' })).toEqual(['back\\slash'])
+    expect(await names({ $contains: "\\') or 1=1 -- " })).toEqual([])
+    expect(await names({ $startsWith: "' or 'a'='a" })).toEqual([])
+  })
   it.skipIf(options?.excludeLiveQuery)('test live query storage', async () => {
     await createEntity(LiveQueryStorageEntity)
     const s = new DataProviderLiveQueryStorage(getDb())

@@ -4,6 +4,8 @@ import type { Remult } from '../src/context.js'
 import {
   CustomSqlFilterBuilder,
   dbNamesOfWithForceSqlExpression,
+  escapeLike,
+  LIKE_ESCAPE_SQL,
   type CustomSqlFilterObject,
   type EntityDbNamesBase,
 } from '../src/filter/filter-consumer-bridge-to-sql-request.js'
@@ -618,49 +620,26 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     this.add(col, val, '<')
   }
   public containsCaseInsensitive(col: FieldMetadata, val: any): void {
-    this.result.push((b) =>
-      b.whereRaw(
-        'lower (' +
-          b.client.ref(this.innerNameProvider.$dbNameOf(col)) +
-          ") like lower ('%" +
-          val.replace(/'/g, "''") +
-          "%')",
-      ),
-    )
-    this.promises.push((async () => {})())
+    this.like(col, '%' + escapeLike(val) + '%')
   }
   public notContainsCaseInsensitive(col: FieldMetadata, val: any): void {
-    this.result.push((b) =>
-      b.whereRaw(
-        'not lower (' +
-          b.client.ref(this.innerNameProvider.$dbNameOf(col)) +
-          ") like lower ('%" +
-          val.replace(/'/g, "''") +
-          "%')",
-      ),
-    )
-    this.promises.push((async () => {})())
+    this.like(col, '%' + escapeLike(val) + '%', 'not ')
   }
   public startsWithCaseInsensitive(col: FieldMetadata, val: any): void {
-    this.result.push((b) =>
-      b.whereRaw(
-        'lower (' +
-          b.client.ref(this.innerNameProvider.$dbNameOf(col)) +
-          ") like lower ('" +
-          val.replace(/'/g, "''") +
-          "%')",
-      ),
-    )
-    this.promises.push((async () => {})())
+    this.like(col, escapeLike(val) + '%')
   }
   public endsWithCaseInsensitive(col: FieldMetadata, val: any): void {
+    this.like(col, '%' + escapeLike(val))
+  }
+  private like(col: FieldMetadata, pattern: string, not = '') {
     this.result.push((b) =>
       b.whereRaw(
-        'lower (' +
+        not +
+          'lower (' +
           b.client.ref(this.innerNameProvider.$dbNameOf(col)) +
-          ") like lower ('%" +
-          val.replace(/'/g, "''") +
-          "')",
+          ') like lower (?)' +
+          LIKE_ESCAPE_SQL,
+        [pattern],
       ),
     )
     this.promises.push((async () => {})())

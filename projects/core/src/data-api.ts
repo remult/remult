@@ -10,6 +10,7 @@ import {
   buildFilterFromRequestParameters,
   customUrlToken,
 } from './filter/filter-interfaces.js'
+import { omitFilterField, walkFilter } from './filter/walk-filter.js'
 import type { QueryData } from './live-query/SubscriptionServer.js'
 import { getRelationFieldInfo } from './remult3/relationInfoMember.js'
 import {
@@ -54,8 +55,7 @@ export class DataApi<T = unknown> {
       }
       return this.getArray(res, req, undefined)
     } catch (err: any) {
-      if (err.isForbiddenError) res.forbidden(err.message)
-      else res.error(err, this.repository.metadata)
+      this.handleError(res, err)
     }
   }
   async httpPost(
@@ -112,8 +112,7 @@ export class DataApi<T = unknown> {
           return res.created(await this.post(body, req))
       }
     } catch (err: any) {
-      if (err.isForbiddenError) res.forbidden(err.message)
-      else res.error(err, this.repository.metadata)
+      this.handleError(res, err)
     }
   }
   async upsertMany(
@@ -166,8 +165,7 @@ export class DataApi<T = unknown> {
         aggregates,
       })
     } catch (err: any) {
-      if (err.isForbiddenError) response.forbidden()
-      else response.error(err, this.repository.metadata)
+      this.handleError(response, err)
     }
   }
   static defaultGetLimit = 0
@@ -192,7 +190,7 @@ export class DataApi<T = unknown> {
         )),
       })
     } catch (err: any) {
-      response.error(err, this.repository.metadata)
+      this.handleError(response, err)
     }
   }
   async deleteMany(
@@ -215,7 +213,7 @@ export class DataApi<T = unknown> {
         response.success({ deleted })
       })
     } catch (err: any) {
-      response.error(err, this.repository.metadata)
+      this.handleError(response, err)
     }
   }
   private async prepareWhereForManyOperation(
@@ -241,7 +239,7 @@ export class DataApi<T = unknown> {
         const direction = element.isDescending ? 'desc' : 'asc'
         if (
           element.operation !== 'count' &&
-          !this.repository.fields.find(element.field)?.includedInApi()
+          !this.fieldIsInApi(element.field)
         )
           continue
         switch (element.operation) {
@@ -261,15 +259,9 @@ export class DataApi<T = unknown> {
         }
       }
     }
-    const group = (body?.groupBy as any[])?.filter((x: string) =>
-      this.repository.fields.find(x).includedInApi(),
-    )
-    const min = (body?.min as any[])?.filter((x: string) =>
-      this.repository.fields.find(x).includedInApi(),
-    )
-    const max = (body?.max as any[])?.filter((x: string) =>
-      this.repository.fields.find(x).includedInApi(),
-    )
+    const group = this.fieldsInApi(body?.groupBy)
+    const min = this.fieldsInApi(body?.min)
+    const max = this.fieldsInApi(body?.max)
     let result = await this.repository.groupBy({
       where: findOptions.where,
       limit: findOptions.limit,
@@ -277,17 +269,11 @@ export class DataApi<T = unknown> {
       //@ts-expect-error internal key
       [GroupByForApiKey]: true,
       group,
-      sum: (body?.sum as any[])?.filter((x: string) =>
-        this.repository.fields.find(x).includedInApi(),
-      ),
-      avg: (body?.avg as any[])?.filter((x: string) =>
-        this.repository.fields.find(x).includedInApi(),
-      ),
+      sum: this.fieldsInApi(body?.sum),
+      avg: this.fieldsInApi(body?.avg),
       min,
       max,
-      distinctCount: (body?.distinctCount as any[])?.filter((x: string) =>
-        this.repository.fields.find(x).includedInApi(),
-      ),
+      distinctCount: this.fieldsInApi(body?.distinctCount),
       orderBy: orderBy,
     })
     if (group)
@@ -333,7 +319,9 @@ export class DataApi<T = unknown> {
       let sort = <string>request.get('_sort')
       if (sort != undefined) {
         let dir = request.get('_order')
-        findOptions.orderBy = determineSort(sort, dir)
+        findOptions.orderBy = this.omitFieldsHiddenFromApi(
+          determineSort(sort, dir),
+        )
       }
       let limit = +request.get('_limit')
       if (!limit && DataApi.defaultGetLimit) limit = DataApi.defaultGetLimit
@@ -412,8 +400,7 @@ export class DataApi<T = unknown> {
 
       response.success(r)
     } catch (err: any) {
-      if (err.isForbiddenError) response.forbidden(err.message)
-      else response.error(err, this.repository.metadata)
+      this.handleError(response, err)
     }
   }
   async liveQuery(
@@ -445,8 +432,7 @@ export class DataApi<T = unknown> {
       })
       response.success(r.r)
     } catch (err: any) {
-      if (err.isForbiddenError) response.forbidden()
-      else response.error(err, this.repository.metadata)
+      this.handleError(response, err)
     }
   }
   private async buildWhere(
@@ -475,6 +461,7 @@ export class DataApi<T = unknown> {
           return result
         },
       })
+      f = this.omitFieldsHiddenFromApi(f)
       if (this.repository.metadata.options.apiPreprocessFilter) {
         f = await this.repository.metadata.options.apiPreprocessFilter(f, {
           metadata: this.repository.metadata,
@@ -490,6 +477,32 @@ export class DataApi<T = unknown> {
     }
 
     return { $and: where }
+  }
+
+  // A hidden field is not on the api, same as a field that is not on the entity.
+  private fieldIsInApi(key: string) {
+    return this.repository.fields.find(key)?.includedInApi() === true
+  }
+  private fieldsInApi(keys: string[] | undefined) {
+    return keys?.filter((key) => this.fieldIsInApi(key))
+  }
+
+  // Drop a field the api hides. Same as a field that is not on the entity:
+  // refusing it would confirm the name exists.
+  private omitFieldsHiddenFromApi(filterOrSort: any): any {
+    const fields = this.repository.metadata.fields
+    return walkFilter(filterOrSort, function (key, value) {
+      if (
+        !key.startsWith(customUrlToken) &&
+        fields.find(key)?.includedInApi() === false
+      )
+        return omitFilterField
+      return value
+    })
+  }
+  private handleError(response: DataApiResponse, err: any) {
+    if (err.isForbiddenError) response.forbidden(err.message)
+    else response.error(err, this.repository.metadata)
   }
 
   private async doOnId(
@@ -565,7 +578,7 @@ export class DataApi<T = unknown> {
         response.success({ updated })
       })
     } catch (err: any) {
-      response.error(err, this.repository.metadata)
+      this.handleError(response, err)
     }
   }
 

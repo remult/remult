@@ -40,10 +40,11 @@ import { insertFourRows, Language } from './entities-for-tests.js'
 
 describe('grid filter stuff', () => {
   it('filter with contains', async () => {
+    const params: any[] = []
     let x = new FilterConsumerBridgeToSqlRequest(
       {
         addParameterAndReturnSqlToken: () => '',
-        param: () => '',
+        param: (v) => '$' + params.push(v),
       },
       {
         $entityName: '',
@@ -54,14 +55,16 @@ describe('grid filter stuff', () => {
 
     x.containsCaseInsensitive(new mockColumnDefs('col'), "no'am")
     expect(await x.resolveWhere()).toBe(
-      " where lower (col) like lower ('%no''am%')",
+      " where lower (col) like lower ($1) escape '!'",
     )
+    expect(params).toEqual(["%no'am%"])
   })
-  it('filter with contains', async () => {
+  it('filter with contains escapes like wildcards', async () => {
+    const params: any[] = []
     let x = new FilterConsumerBridgeToSqlRequest(
       {
         addParameterAndReturnSqlToken: () => '',
-        param: () => '',
+        param: (v) => '$' + params.push(v),
       },
       {
         $entityName: '',
@@ -70,10 +73,11 @@ describe('grid filter stuff', () => {
       },
     )
 
-    x.containsCaseInsensitive(new mockColumnDefs('col'), "no'a'm")
+    x.containsCaseInsensitive(new mockColumnDefs('col'), "n'o%a_m!")
     expect(await x.resolveWhere()).toBe(
-      " where lower (col) like lower ('%no''a''m%')",
+      " where lower (col) like lower ($1) escape '!'",
     )
+    expect(params).toEqual(["%n'o!%a!_m!!%"])
   })
 
   it('test in statement', async () => {

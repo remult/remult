@@ -20,6 +20,7 @@ export {
 } from './src/remult3/RepositoryImplementation.js'
 export { getEntitySettings } from './src/remult3/getEntityRef.js'
 export { __updateEntityBasedOnWhere } from './src/filter/filter-interfaces.js'
+export { omitFilterField, walkFilter } from './src/filter/walk-filter.js'
 export const actionInfo = remultStatic.actionInfo
 export { isOfType } from './src/isOfType.js'
 

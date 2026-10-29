@@ -21,6 +21,13 @@ import { entityDbName } from './entityDbName.js'
 import { fieldDbName } from './fieldDbName.js'
 import type { Filter, FilterConsumer } from './filter-interfaces.js'
 
+const REGEX_LIKE_SPECIAL = /[!%_]/g
+// `!` not `\`: a backslash in a string literal is an escape in mysql and in pg without standard_conforming_strings
+export const LIKE_ESCAPE_SQL = " escape '!'"
+export function escapeLike(val: string) {
+  return val.replace(REGEX_LIKE_SPECIAL, '!$&')
+}
+
 export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   private where = ''
   _addWhere = true
@@ -143,53 +150,28 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
     this.add(col, val, '<')
   }
   public containsCaseInsensitive(col: FieldMetadata, val: any): void {
-    this.promises.push(
-      (async () => {
-        this.addToWhere(
-          'lower (' +
-            this.nameProvider.$dbNameOf(col) +
-            ") like lower ('%" +
-            val.replace(/'/g, "''") +
-            "%')",
-        )
-      })(),
-    )
+    this.like(col, '%' + escapeLike(val) + '%')
   }
   public notContainsCaseInsensitive(col: FieldMetadata, val: any): void {
-    this.promises.push(
-      (async () => {
-        this.addToWhere(
-          'not lower (' +
-            this.nameProvider.$dbNameOf(col) +
-            ") like lower ('%" +
-            val.replace(/'/g, "''") +
-            "%')",
-        )
-      })(),
-    )
+    this.like(col, '%' + escapeLike(val) + '%', 'not ')
   }
   public startsWithCaseInsensitive(col: FieldMetadata, val: any): void {
-    this.promises.push(
-      (async () => {
-        this.addToWhere(
-          'lower (' +
-            this.nameProvider.$dbNameOf(col) +
-            ") like lower ('" +
-            val.replace(/'/g, "''") +
-            "%')",
-        )
-      })(),
-    )
+    this.like(col, escapeLike(val) + '%')
   }
   public endsWithCaseInsensitive(col: FieldMetadata, val: any): void {
+    this.like(col, '%' + escapeLike(val))
+  }
+  private like(col: FieldMetadata, pattern: string, not = '') {
     this.promises.push(
       (async () => {
         this.addToWhere(
-          'lower (' +
+          not +
+            'lower (' +
             this.nameProvider.$dbNameOf(col) +
-            ") like lower ('%" +
-            val.replace(/'/g, "''") +
-            "')",
+            ') like lower (' +
+            this.r.param(pattern) +
+            ')' +
+            LIKE_ESCAPE_SQL,
         )
       })(),
     )
