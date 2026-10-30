@@ -343,7 +343,10 @@ export abstract class NotAField {
 export declare type MembersOnly<T> = {
   [K in keyof Omit<T, keyof EntityBase> as T[K] extends Function
     ? never
-    : NonNullable<T[K]> extends NotAField
+    : // `null` or `undefined` alone reduces to `never`, which extends everything
+      (
+          T[K] extends null | undefined ? unknown : NonNullable<T[K]>
+        ) extends NotAField
       ? never
       : K extends string
         ? K

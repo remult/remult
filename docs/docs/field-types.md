@@ -515,3 +515,36 @@ export class Contact {
   phone?: Phone
 }
 ```
+
+## Getters that are not fields
+
+The types treat any getter on an entity as a field, so `where: { price }` compiles and then throws at runtime. Implement `NotAField` on the getter's return type to leave it out of `where`, `orderBy`, `insert`, `fields` and the other field types:
+
+```ts
+import { NotAField } from 'remult'
+
+class Money implements NotAField {
+  declare readonly [NotAField.symbol]: true
+  constructor(
+    readonly cents: number,
+    readonly currency: string,
+  ) {}
+}
+
+@Entity('orders')
+export class Order {
+  @Fields.integer()
+  priceCents = 0
+  @Fields.string()
+  priceCurrency = 'USD'
+  get price() {
+    return new Money(this.priceCents, this.priceCurrency)
+  }
+}
+```
+
+For a getter that returns a primitive, use `string & NotAField`.
+
+::: warning
+The marker goes on the type, not the getter. A property of that type that is stored as a real field (`Fields.json<Money>()`, a `valueConverter`) also disappears from `where`, `orderBy` and `fields`.
+:::
