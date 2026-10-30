@@ -20,6 +20,7 @@ All notable changes to this project will be documented in this file.
 - `SubscriptionClientConnection` gained optional `lastServerEvent` and `resume(force?)`; custom clients (Ably, ...) can ignore them.
 - `flags.sseStaleMs` (40s), `flags.liveQueryKeepAliveMs` (30s), `flags.liveQueryPollWhenStaleMs` (1s). Server SSE ping every 15s (was 45s), exported as `ssePingMs`.
 - `ValueListFieldType({ unknownIdValue })` — value used when a stored id is not in the list (a value, or `(id) => value`). Default `undefined`. Only `null` and `undefined` stay `undefined`; a blank `''` uses this value. A declared id of `''` is unaffected. A custom `valueConverter` still replaces the default. `ValueListInfo.byId(id, true)` applies it; `byId(id)` stays a declared-id lookup.
+- `NotAField` - a getter returning a type that implements it stays out of `where`, `orderBy`, `insert`, `fields` and the other field types. Types only.
 
 ### Changed
 

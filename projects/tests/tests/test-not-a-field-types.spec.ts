@@ -48,6 +48,23 @@ describe('NotAField types', () => {
     >()
   })
 
+  it('keeps properties that are only null or undefined', () => {
+    class Empty {
+      a: null = null
+      b: undefined = undefined
+    }
+    expectTypeOf<keyof MembersOnly<Empty>>().toEqualTypeOf<'a' | 'b'>()
+  })
+
+  it('leaves out primitives marked with NotAField', () => {
+    class Label {
+      get text() {
+        return '' as string & NotAField
+      }
+    }
+    expectTypeOf<keyof MembersOnly<Label>>().toEqualTypeOf<never>()
+  })
+
   it('rejects NotAField properties where fields are expected', async () => {
     const repo = remult.repo(Order)
     const price = new Money(100, 'USD')
