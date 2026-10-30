@@ -20,9 +20,11 @@ All notable changes to this project will be documented in this file.
 - `SubscriptionClientConnection` gained optional `lastServerEvent` and `resume(force?)`; custom clients (Ably, ...) can ignore them.
 - `flags.sseStaleMs` (40s), `flags.liveQueryKeepAliveMs` (30s), `flags.liveQueryPollWhenStaleMs` (1s). Server SSE ping every 15s (was 45s), exported as `ssePingMs`.
 - `ValueListFieldType({ unknownIdValue })` — value used when a stored id is not in the list (a value, or `(id) => value`). Default `undefined`. Only `null` and `undefined` stay `undefined`; a blank `''` uses this value. A declared id of `''` is unaffected. A custom `valueConverter` still replaces the default. `ValueListInfo.byId(id, true)` applies it; `byId(id)` stays a declared-id lookup.
+- A literal `include` types its relations as loaded in `find` results, so `task.category.name` needs no `?.`. Same for `findFirst`, `findOne` and `findId`. A relation declared `| null` stays nullable. Exports `Loaded<T, include>` ([#1053](https://github.com/remult/remult/pull/1053)).
 
 ### Changed
 
+- An included `toOne` with no target row is `null`, where a `field`/`fields` relation used to leave it `undefined`. The FK keeps its value.
 - `repo.insert([a, b, c])` is sequential by default (`this.insert(item)` per row). `saving` and `Validators.unique` see prior rows in the same call.
 - From the frontend, `insert([...])` always sends the array in one request. The backend wraps it in a transaction and uses bulk only when the entity has `bulkInsert: true`.
 - SQL/knex multi-row `INSERT ... VALUES (...),(...)` batched under bind-variable limits (default 2000, sqlite 999, D1 100). Used when the entity has `bulkInsert: true`.
