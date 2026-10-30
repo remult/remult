@@ -1,5 +1,11 @@
 All notable changes to this project will be documented in this file.
 
+## [3.4.1] - [2026-10-30]
+
+### Reverted
+
+- Typed `include` results ([#1053](https://github.com/remult/remult/pull/1053)) — `find`, `findFirst`, `findOne` and `findId` return the entity type again, and `Loaded` is no longer exported. The 3.4.0 types broke existing code: a variable holding an `include` result could no longer be reassigned from `insert`, and generic `repo(type)` helpers could no longer index results by `keyof T`. An included `toOne` with no target row is `undefined` again, as before 3.4.0.
+
 ## [3.4.0] - [2026-10-30]
 
 ### Breaking
@@ -21,9 +27,12 @@ All notable changes to this project will be documented in this file.
 - `flags.sseStaleMs` (40s), `flags.liveQueryKeepAliveMs` (30s), `flags.liveQueryPollWhenStaleMs` (1s). Server SSE ping every 15s (was 45s), exported as `ssePingMs`.
 - `walkFilter` and `omitFilterField` are exported from `remult/internals` for traversing and transforming nested filters ([#1058](https://github.com/remult/remult/pull/1058)).
 - `ValueListFieldType({ unknownIdValue })` — value used when a stored id is not in the list (a value, or `(id) => value`). Default `undefined`. Only `null` and `undefined` stay `undefined`; a blank `''` uses this value. A declared id of `''` is unaffected. A custom `valueConverter` still replaces the default. `ValueListInfo.byId(id, true)` applies it; `byId(id)` stays a declared-id lookup.
+- A literal `include` types its relations as loaded in `find` results, so `task.category.name` needs no `?.`. Same for `findFirst`, `findOne` and `findId`. A relation declared `| null` stays nullable. Exports `Loaded<T, include>` ([#1053](https://github.com/remult/remult/pull/1053)).
+- Thanks to @AndrewSouthpaw for their first contribution
 
 ### Changed
 
+- An included `toOne` with no target row is `null`, where a `field`/`fields` relation used to leave it `undefined`. The FK keeps its value.
 - `repo.insert([a, b, c])` is sequential by default (`this.insert(item)` per row). `saving` and `Validators.unique` see prior rows in the same call.
 - From the frontend, `insert([...])` always sends the array in one request. The backend wraps it in a transaction and uses bulk only when the entity has `bulkInsert: true`.
 - SQL/knex multi-row `INSERT ... VALUES (...),(...)` batched under bind-variable limits (default 2000, sqlite 999, D1 100). Used when the entity has `bulkInsert: true`.
