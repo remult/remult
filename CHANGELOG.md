@@ -19,8 +19,10 @@ All notable changes to this project will be documented in this file.
 - `SubscriptionListener.reconnect?()` lets `SubscriptionChannel` subscribers refetch state after a dropped connection.
 - `SubscriptionClientConnection` gained optional `lastServerEvent` and `resume(force?)`; custom clients (Ably, ...) can ignore them.
 - `flags.sseStaleMs` (40s), `flags.liveQueryKeepAliveMs` (30s), `flags.liveQueryPollWhenStaleMs` (1s). Server SSE ping every 15s (was 45s), exported as `ssePingMs`.
+- `walkFilter` and `omitFilterField` are exported from `remult/internals` for traversing and transforming nested filters ([#1058](https://github.com/remult/remult/pull/1058)).
 - `ValueListFieldType({ unknownIdValue })` — value used when a stored id is not in the list (a value, or `(id) => value`). Default `undefined`. Only `null` and `undefined` stay `undefined`; a blank `''` uses this value. A declared id of `''` is unaffected. A custom `valueConverter` still replaces the default. `ValueListInfo.byId(id, true)` applies it; `byId(id)` stays a declared-id lookup.
 - A literal `include` types its relations as loaded in `find` results, so `task.category.name` needs no `?.`. Same for `findFirst`, `findOne` and `findId`. A relation declared `| null` stays nullable. Exports `Loaded<T, include>` ([#1053](https://github.com/remult/remult/pull/1053)).
+- Thanks to @AndrewSouthpaw for their first contribution
 
 ### Changed
 
@@ -30,6 +32,7 @@ All notable changes to this project will be documented in this file.
 - SQL/knex multi-row `INSERT ... VALUES (...),(...)` batched under bind-variable limits (default 2000, sqlite 999, D1 100). Used when the entity has `bulkInsert: true`.
 - The SQL that `groupBy` runs now aliases every column through `wrapIdentifier` (`count(*) as "count"`, `"status" as "status"`, `sum("amount") as "amount_sum"`). Results are unchanged; only the statement text differs.
 - `InsertOrUpdateOptions.select` is optional.
+- `SqlDatabase.selectToRaw` and `groupByToRaw` map JSON columns using the provider's JSON storage mode; `jsonAsString` can override it when querying a different database.
 - `SseSubscriptionClient` reconnects forever with backoff (was 4 tries), reconnects on `visibilitychange` / `online` / `pageshow`, and recreates a socket that stops delivering events for `flags.sseStaleMs`.
 - `liveQuery` first `next()` no longer waits for the SSE connection.
 - Each server-side live query carries a version, sent with every change and returned by the keep-alive. The client refetches the snapshot on any version gap, so a dead socket, a half-open socket, or a missed message is recovered within one keep-alive. `LiveQueryChange` has an internal `{ type: 'version', from, to }` member, filtered out before reaching `liveQuery` listeners.
@@ -40,6 +43,8 @@ All notable changes to this project will be documented in this file.
 - REST `_select` / `find({ select })` serialized omitted fields through `toApiJson`, so dates and custom converters leaked as `''` instead of being absent.
 - `repo.update(undefined | null, data)` threw `entity is undefined` instead of the same not-found error as any other missing id ([#1001](https://github.com/remult/remult/issues/1001), [#1047](https://github.com/remult/remult/pull/1047)).
 - Thanks to @drakeo338 for their first contribution
+- REST filters, sorts, and `groupBy` now ignore fields hidden from the API just as they ignore unknown fields ([#1058](https://github.com/remult/remult/pull/1058)).
+- SQL `contains` / `startsWith` / `endsWith` filters now treat `[` literally instead of as a SQL Server `LIKE` character-class opener ([#1058](https://github.com/remult/remult/pull/1058)).
 - Mongo updates wrote the field key instead of the database field name ([#1049](https://github.com/remult/remult/pull/1049)).
 - Mongo inserts wrote `dbReadOnly` / `serverExpression` fields, which cleared an explicit foreign key when the relation was declared before the id field ([#1048](https://github.com/remult/remult/pull/1048)).
 - Mongo `contains` / `startsWith` / `endsWith` treated the search string as a regex. Metacharacters are escaped, so the filter is a literal ([#1050](https://github.com/remult/remult/pull/1050)).
