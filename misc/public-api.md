@@ -2259,18 +2259,6 @@ export interface LiveQueryStorage {
     queryIds: string[],
   ): Promise<LiveQueryKeepAliveResult>
 }
-export type Loaded<entityType, include> = 0 extends 1 & (entityType | include)
-  ? entityType
-  : [LoadedKeys<entityType, include>] extends [never]
-    ? entityType
-    : Omit<entityType, LoadedKeys<entityType, include>> & {
-        [K in LoadedKeys<entityType, include>]-?: LoadedRelation<
-          Exclude<entityType[K], undefined>,
-          include[K]
-        >
-      }
-//[ ] LoadedKeys from TBD is not exported
-//[ ] LoadedRelation from TBD is not exported
 export declare type MembersOnly<T> = {
   [K in keyof Omit<T, keyof EntityBase> as T[K] extends Function
     ? never
@@ -2640,12 +2628,6 @@ export declare function repo<entityType>(
   dataProvider?: DataProvider,
 ): import("./src/remult3/remult3.js").Repository<entityType>
 export interface Repository<entityType> {
-  /** returns an array based on the provided options. Included relations drop their `?`, see {@link Loaded} */
-  find<const include extends MembersToInclude<entityType>>(
-    options: FindOptions<entityType> & {
-      include: include
-    },
-  ): Promise<Loaded<entityType, include>[]>
   /** returns an array based on the provided options */
   find(options?: FindOptions<entityType>): Promise<entityType[]>
   /** Using the same options as the {@link find} method, but subscribing to entity changes.
@@ -2661,12 +2643,6 @@ export interface Repository<entityType> {
    * @example
    * await taskRepo.findFirst({ completed:false },{ createIfNotFound: true })
    *      */
-  findFirst<const include extends MembersToInclude<entityType>>(
-    where: EntityFilter<entityType> | undefined,
-    options: FindFirstOptions<entityType> & {
-      include: include
-    },
-  ): Promise<Loaded<entityType, include> | undefined>
   findFirst(
     where?: EntityFilter<entityType>,
     options?: FindFirstOptions<entityType>,
@@ -2677,21 +2653,10 @@ export interface Repository<entityType> {
    * @example
    * await taskRepo.findFirst({ where:{ completed:false }, createIfNotFound: true })
    *      */
-  findOne<const include extends MembersToInclude<entityType>>(
-    options: FindFirstOptions<entityType> & {
-      include: include
-    },
-  ): Promise<Loaded<entityType, include> | undefined>
   findOne(
     options?: FindFirstOptions<entityType>,
   ): Promise<entityType | undefined>
   /** returns the items that matches the id. If id is undefined | null, returns null */
-  findId<const include extends MembersToInclude<entityType>>(
-    id: idType<entityType>,
-    options: FindFirstOptionsBase<entityType> & {
-      include: include
-    },
-  ): Promise<Loaded<entityType, include> | undefined | null>
   findId(
     id: idType<entityType>,
     options?: FindFirstOptionsBase<entityType>,
