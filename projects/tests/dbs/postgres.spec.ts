@@ -161,6 +161,24 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
       }),
     ).rejects.toThrowErrorMatchingInlineSnapshot(`[Error: error]`)
   })
+  it('text operator value stays a value without standard_conforming_strings', async () => {
+    const r = await createEntity(
+      entity('t_like_value', { id: Fields.integer(), name: Fields.string() }),
+    )
+    await r.insert([
+      { id: 1, name: 'alice' },
+      { id: 2, name: 'bob' },
+    ])
+    await db.transaction(async (db) => {
+      if (isOfType<SqlDatabase>(db, 'execute'))
+        await db.execute('set local standard_conforming_strings = off')
+      expect(
+        await new Remult(db)
+          .repo(r.metadata.entityType)
+          .count({ name: { $contains: "\\') or 1=1 -- " } }),
+      ).toBe(0)
+    })
+  })
 
   it('ensure schema with dbNames that have quotes', async () => {
     const db = SqlDatabase.getDb(remult.dataProvider)
