@@ -1,6 +1,6 @@
 All notable changes to this project will be documented in this file.
 
-## [3.4.0] - [Unreleased]
+## [3.4.0] - [2026-10-30]
 
 ### Breaking
 
