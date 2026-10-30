@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
 import { Entity, EntityBase, Fields, SqlDatabase } from '../../core'
 import { describeClass } from '../../core/src/remult3/classDescribers'
@@ -199,6 +199,61 @@ class testServerExpression extends EntityBase {
   })
   testPromise!: number
 }
+describe('serverExpression with select', () => {
+  beforeEach(() => {
+    actionInfo.runningOnServer = true
+  })
+  afterEach(() => {
+    actionInfo.runningOnServer = false
+  })
+  it('only computes the selected ones', async () => {
+    let computed: string[] = []
+    @Entity('selected')
+    class Selected {
+      @Fields.integer()
+      id = 0
+      @Fields.string({
+        serverExpression: () => {
+          computed.push('a')
+          return 'a'
+        },
+      })
+      a = ''
+      @Fields.string({
+        serverExpression: () => {
+          computed.push('b')
+          return 'b'
+        },
+      })
+      b = ''
+    }
+    const r = new Remult(new InMemoryDataProvider()).repo(Selected)
+    await r.insert({ id: 1 })
+    computed = []
+    const [row] = await r.find({ select: { id: true, a: true } })
+    expect(computed).toEqual(['a'])
+    expect(row.a).toBe('a')
+    computed = []
+    await r.find()
+    expect(computed).toEqual(['a', 'b'])
+  })
+})
+describe('query keeps find args', () => {
+  it('in getPage and paginator', async () => {
+    @Entity('query-args')
+    class Item {
+      @Fields.integer()
+      id = 0
+    }
+    const r = new Remult(new InMemoryDataProvider()).repo(Item)
+    const find = vi.spyOn(r, 'find')
+    const args = { a: 1 }
+    await r.query({ args }).getPage()
+    await r.query({ args }).paginator()
+    expect(find).toHaveBeenCalledTimes(2)
+    for (const [options] of find.mock.calls) expect(options?.args).toBe(args)
+  })
+})
 describe('test dbnames with table name', () => {
   @Entity('testTableName')
   class testTableName extends EntityBase {

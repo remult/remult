@@ -2294,7 +2294,10 @@ export class rowHelperImplementation<T>
     if (!this.repo._dataProvider.isProxy)
       //y2 should be changed to be based on data provider - consider naming
       for (const col of this.info.fieldsMetadata) {
-        if (col.options.serverExpression) {
+        if (
+          col.options.serverExpression &&
+          !this._fieldsExcludedBySelect?.has(col.key)
+        ) {
           const result = (await col.options.serverExpression(
             this.instance,
           )) as any
