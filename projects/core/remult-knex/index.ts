@@ -4,6 +4,8 @@ import type { Remult } from '../src/context.js'
 import {
   CustomSqlFilterBuilder,
   dbNamesOfWithForceSqlExpression,
+  escapeLike,
+  LIKE_ESCAPE_SQL,
   type CustomSqlFilterObject,
   type EntityDbNamesBase,
 } from '../src/filter/filter-consumer-bridge-to-sql-request.js'
@@ -33,12 +35,18 @@ import {
   isAutoIncrement,
 } from '../src/remult3/RepositoryImplementation.js'
 import { Sort } from '../src/sort.js'
-import { ValueConverters } from '../src/valueConverters.js'
+import {
+  fromDbColumn,
+  toDbColumn,
+  ValueConverters,
+} from '../src/valueConverters.js'
 import type { StringFieldOptions } from '../src/remult3/Fields.js'
 import { getRepositoryInternals } from '../src/remult3/repository-internals.js'
 import { remultStatic } from '../src/remult-static.js'
 import type {
+  HasJsonColumnStorage,
   HasWrapIdentifier,
+  JsonColumnStorage,
   SqlCommand,
   SqlCommandFactory,
   SqlResult,
@@ -51,6 +59,7 @@ import type {
 import {
   groupByImpl,
   getRowAfterUpdate,
+  jsonColumnStorageOf,
 } from '../src/data-providers/sql-database.js'
 import type { InsertOrUpdateOptions } from '../src/remult3/remult3.js'
 
@@ -58,6 +67,7 @@ export class KnexDataProvider
   implements
     DataProvider,
     HasWrapIdentifier,
+    HasJsonColumnStorage,
     SqlCommandFactory,
     CanBuildMigrations
 {
@@ -99,31 +109,13 @@ export class KnexDataProvider
     return r.knex
   }
   wrapIdentifier: (name: string) => string = (x) => this.knex.ref(x) + ''
+  get jsonColumnStorage(): JsonColumnStorage {
+    if (!supportsJsonLoadingAndSaving(this.knex)) return 'text'
+    if (this.knex.client.config.client === 'mysql2') return 'textOnWrite'
+    return 'native'
+  }
 
   getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider {
-    if (!supportsJsonLoadingAndSaving(this.knex))
-      for (const f of entity.fields.toArray()) {
-        if (f.valueConverter.fieldTypeInDb === 'json') {
-          //@ts-ignore
-          f.valueConverter = {
-            ...f.valueConverter,
-            toDb: ValueConverters.JsonString.toDb,
-            fromDb: ValueConverters.JsonString.fromDb,
-          }
-        }
-      }
-    else if (this.knex.client.config.client === 'mysql2') {
-      for (const f of entity.fields.toArray()) {
-        if (f.valueConverter.fieldTypeInDb === 'json') {
-          //@ts-ignore
-          f.valueConverter = {
-            ...f.valueConverter,
-            toDb: ValueConverters.JsonString.toDb,
-          }
-        }
-      }
-    }
-
     return new KnexEntityDataProvider(
       entity,
       this.knex,
@@ -161,6 +153,7 @@ export class KnexDataProvider
     var b = new FilterConsumerBridgeToKnexRequest(
       await dbNamesOfWithForceSqlExpression(repo.metadata, wrapIdentifier),
       wrapIdentifier ?? wrapIdentifier,
+      jsonColumnStorageOf(repo),
     )
     b._addWhere = false
     await (
@@ -171,7 +164,7 @@ export class KnexDataProvider
   }
   isProxy?: boolean
 
-  async ensureSchema(entities: EntityMetadata<any>[]): Promise<void> {
+  async ensureSchema(entities: EntityMetadata[]): Promise<void> {
     var sb = new KnexSchemaBuilder(this.knex)
     await sb.ensureSchema(entities)
   }
@@ -197,6 +190,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
         this.knex.client.config.client?.includes('mssql')
           ? ' offset ' + offset + ' rows fetch next ' + limit + ' rows only'
           : ' limit ' + limit + ' offset ' + offset,
+      this.dp.jsonColumnStorage,
     )
   }
   getEntityFrom(e: EntityDbNamesBase): Knex.QueryBuilder {
@@ -209,6 +203,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
     const br = new FilterConsumerBridgeToKnexRequest(
       e,
       this.rawSqlWrapIdentifier,
+      this.dp.jsonColumnStorage,
     )
     where.__applyToConsumer(br)
     let r = await br.resolveWhere()
@@ -245,6 +240,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
       const br = new FilterConsumerBridgeToKnexRequest(
         e,
         this.rawSqlWrapIdentifier,
+        this.dp.jsonColumnStorage,
       )
       options.where.__applyToConsumer(br)
       let r = await br.resolveWhere()
@@ -274,7 +270,11 @@ class KnexEntityDataProvider implements EntityDataProvider {
       for (let m in y) {
         let field = colKeys[i++]
         try {
-          result[field.key] = field.valueConverter.fromDb(y[m])
+          result[field.key] = fromDbColumn(
+            field,
+            y[m],
+            this.dp.jsonColumnStorage,
+          )
         } catch (err) {
           throw new Error('Failed to load from db:' + field.key + '\r\n' + err)
         }
@@ -305,7 +305,11 @@ class KnexEntityDataProvider implements EntityDataProvider {
     options?: InsertOrUpdateOptions,
   ): Promise<any> {
     const e = await this.init()
-    let f = new FilterConsumerBridgeToKnexRequest(e, this.rawSqlWrapIdentifier)
+    let f = new FilterConsumerBridgeToKnexRequest(
+      e,
+      this.rawSqlWrapIdentifier,
+      this.dp.jsonColumnStorage,
+    )
     Filter.fromEntityFilter(
       this.entity,
       this.entity.idMetadata.getIdFilter(id),
@@ -315,7 +319,11 @@ class KnexEntityDataProvider implements EntityDataProvider {
     for (const x of this.entity.fields) {
       if (isDbReadonly(x, e)) {
       } else if (data[x.key] !== undefined) {
-        let v = translateValueAndHandleArrayAndHandleArray(x, data[x.key])
+        let v = translateValueAndHandleArrayAndHandleArray(
+          x,
+          data[x.key],
+          this.dp.jsonColumnStorage,
+        )
         if (v !== undefined) {
           let key = await e.$dbNameOf(x)
           updateObject[key] = v
@@ -330,26 +338,139 @@ class KnexEntityDataProvider implements EntityDataProvider {
     if (options?.select === 'none') return undefined!
     return getRowAfterUpdate(this.entity, this, data, id, 'update')
   }
-  async delete(id: any): Promise<void> {
+  async delete(ids: any[]): Promise<void> {
+    if (ids.length === 0) return
     const e = await this.init()
-    let f = new FilterConsumerBridgeToKnexRequest(e, this.rawSqlWrapIdentifier)
+    let f = new FilterConsumerBridgeToKnexRequest(
+      e,
+      this.rawSqlWrapIdentifier,
+      this.dp.jsonColumnStorage,
+    )
     Filter.fromEntityFilter(
       this.entity,
-      this.entity.idMetadata.getIdFilter(id),
+      this.entity.idMetadata.getIdFilter(...ids),
     ).__applyToConsumer(f)
     let where = await f.resolveWhere()
     await this.getEntityFrom(e)
       .delete()
       .where((b) => where.forEach((w) => w(b)))
   }
-  async insert(data: any, options?: InsertOrUpdateOptions): Promise<any> {
+  async insert(data: any[], options?: InsertOrUpdateOptions): Promise<any[]> {
+    if (data.length === 0) return []
+    if (
+      isMysqlKnex(this.knex) &&
+      isAutoIncrement(this.entity.idMetadata.field) &&
+      options?.select !== 'none'
+    ) {
+      const result: any[] = []
+      for (const row of data) result.push(await this.insertOne(row, options))
+      return result
+    }
+    const e = await this.init()
+    const batches = splitByMaxParameters(
+      data,
+      (row) =>
+        countKnexInsertBindParameters(
+          this.entity,
+          e,
+          row,
+          this.dp.jsonColumnStorage,
+        ),
+      knexMaxParametersInOneSqlStatement(this.knex),
+    )
+    const result: any[] = []
+    for (const batch of batches)
+      result.push(...(await this.insertBatch(batch, e, options)))
+    return result
+  }
+
+  private async insertBatch(
+    batch: any[],
+    e: EntityDbNamesBase,
+    options?: InsertOrUpdateOptions,
+  ): Promise<any[]> {
+    const cols: FieldMetadata[] = []
+    for (const x of this.entity.fields) {
+      if (isDbReadonly(x, e)) continue
+      if (
+        batch.some(
+          (row) =>
+            translateValueAndHandleArrayAndHandleArray(
+              x,
+              row[x.key],
+              this.dp.jsonColumnStorage,
+            ) != undefined,
+        )
+      )
+        cols.push(x)
+    }
+
+    const insertObjects = [] as any[]
+    for (const row of batch) {
+      const insertObject: any = {}
+      for (const x of cols) {
+        const v = translateValueAndHandleArrayAndHandleArray(
+          x,
+          row[x.key],
+          this.dp.jsonColumnStorage,
+        )
+        const key = await e.$dbNameOf(x)
+        if (v != undefined) insertObject[key] = v
+        else if (x.allowNull) insertObject[key] = null
+        else insertObject[key] = this.knex.raw('DEFAULT')
+      }
+      insertObjects.push(insertObject)
+    }
+
+    let insert = this.getEntityFrom(e).insert(insertObjects)
+    const wantRows = options?.select !== 'none'
+    if (isAutoIncrement(this.entity.idMetadata.field) && wantRows) {
+      const result = await insert.returning(this.entity.idMetadata.field.dbName)
+      const ids = result.map((r: any) =>
+        r && typeof r === 'object' ? r[this.entity.idMetadata.field.dbName] : r,
+      )
+      return this.loadRowsByIds(ids)
+    }
+    await insert
+    if (!wantRows) return batch.map(() => undefined!)
+    return this.loadRowsByIds(
+      batch.map((row) => this.entity.idMetadata.getId(row)),
+    )
+  }
+
+  private async loadRowsByIds(ids: any[]): Promise<any[]> {
+    const found = await this.find({
+      where: Filter.fromEntityFilter(
+        this.entity,
+        this.entity.idMetadata.getIdFilter(...ids),
+      ),
+    })
+    const byId = new Map(
+      found.map((row) => [this.entity.idMetadata.getId(row) + '', row]),
+    )
+    return ids.map((id) => {
+      const row = byId.get(id + '')
+      if (!row)
+        throw new Error(
+          `Failed to insert row - result contained ${found.length} rows`,
+        )
+      return row
+    })
+  }
+
+  //@internal
+  async insertOne(data: any, options?: InsertOrUpdateOptions): Promise<any> {
     const e = await this.init()
 
     let insertObject: any = {}
     for (const x of this.entity.fields) {
       if (isDbReadonly(x, e)) {
       } else {
-        let v = translateValueAndHandleArrayAndHandleArray(x, data[x.key])
+        let v = translateValueAndHandleArrayAndHandleArray(
+          x,
+          data[x.key],
+          this.dp.jsonColumnStorage,
+        )
         if (v != undefined) {
           let key = await e.$dbNameOf(x)
           insertObject[key] = v
@@ -403,6 +524,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
   constructor(
     private innerNameProvider: EntityDbNamesBase,
     private rawSqlWrapIdentifier: (name: string) => string,
+    private jsonColumnStorage: JsonColumnStorage,
   ) {}
 
   custom(key: string, customItem: any): void {
@@ -417,6 +539,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
           let f = new FilterConsumerBridgeToKnexRequest(
             this.innerNameProvider,
             this.rawSqlWrapIdentifier,
+            this.jsonColumnStorage,
           )
           f._addWhere = false
           element.__applyToConsumer(f)
@@ -441,6 +564,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
         let f = new FilterConsumerBridgeToKnexRequest(
           this.innerNameProvider,
           this.rawSqlWrapIdentifier,
+          this.jsonColumnStorage,
         )
         f._addWhere = false
         element.__applyToConsumer(f)
@@ -467,7 +591,13 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     this.result.push((knex) =>
       knex.whereIn(
         this.innerNameProvider.$dbNameOf(col),
-        val.map((x) => translateValueAndHandleArrayAndHandleArray(col, x)),
+        val.map((x) =>
+          translateValueAndHandleArrayAndHandleArray(
+            col,
+            x,
+            this.jsonColumnStorage,
+          ),
+        ),
       ),
     )
   }
@@ -490,49 +620,26 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     this.add(col, val, '<')
   }
   public containsCaseInsensitive(col: FieldMetadata, val: any): void {
-    this.result.push((b) =>
-      b.whereRaw(
-        'lower (' +
-          b.client.ref(this.innerNameProvider.$dbNameOf(col)) +
-          ") like lower ('%" +
-          val.replace(/'/g, "''") +
-          "%')",
-      ),
-    )
-    this.promises.push((async () => {})())
+    this.like(col, '%' + escapeLike(val) + '%')
   }
   public notContainsCaseInsensitive(col: FieldMetadata, val: any): void {
-    this.result.push((b) =>
-      b.whereRaw(
-        'not lower (' +
-          b.client.ref(this.innerNameProvider.$dbNameOf(col)) +
-          ") like lower ('%" +
-          val.replace(/'/g, "''") +
-          "%')",
-      ),
-    )
-    this.promises.push((async () => {})())
+    this.like(col, '%' + escapeLike(val) + '%', 'not ')
   }
   public startsWithCaseInsensitive(col: FieldMetadata, val: any): void {
-    this.result.push((b) =>
-      b.whereRaw(
-        'lower (' +
-          b.client.ref(this.innerNameProvider.$dbNameOf(col)) +
-          ") like lower ('" +
-          val.replace(/'/g, "''") +
-          "%')",
-      ),
-    )
-    this.promises.push((async () => {})())
+    this.like(col, escapeLike(val) + '%')
   }
   public endsWithCaseInsensitive(col: FieldMetadata, val: any): void {
+    this.like(col, '%' + escapeLike(val))
+  }
+  private like(col: FieldMetadata, pattern: string, not = '') {
     this.result.push((b) =>
       b.whereRaw(
-        'lower (' +
+        not +
+          'lower (' +
           b.client.ref(this.innerNameProvider.$dbNameOf(col)) +
-          ") like lower ('%" +
-          val.replace(/'/g, "''") +
-          "')",
+          ') like lower (?)' +
+          LIKE_ESCAPE_SQL,
+        [pattern],
       ),
     )
     this.promises.push((async () => {})())
@@ -543,7 +650,11 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
       b.where(
         this.innerNameProvider.$dbNameOf(col),
         operator,
-        translateValueAndHandleArrayAndHandleArray(col, val),
+        translateValueAndHandleArrayAndHandleArray(
+          col,
+          val,
+          this.jsonColumnStorage,
+        ),
       ),
     )
   }
@@ -560,7 +671,11 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
         }
         if (databaseCustom?.buildSql) {
           let r = new KnexCommandHelper()
-          const item = new CustomSqlFilterBuilder(r, this.rawSqlWrapIdentifier)
+          const item = new CustomSqlFilterBuilder(
+            r,
+            this.rawSqlWrapIdentifier,
+            this.jsonColumnStorage,
+          )
           let sql = await databaseCustom.buildSql(item)
           if (typeof sql !== 'string') sql = item.sql
 
@@ -577,7 +692,7 @@ export class KnexSchemaBuilder {
   //@internal
   static logToConsole = true
 
-  async ensureSchema(entities: EntityMetadata<any>[]) {
+  async ensureSchema(entities: EntityMetadata[]) {
     for (const entity of entities) {
       let e: EntityDbNamesBase = await dbNamesOf(entity, (x) => x)
       try {
@@ -742,11 +857,65 @@ export async function createKnexDataProvider(config: Knex.Config) {
   let result = new KnexDataProvider(k)
   return result
 }
+const defaultMaxParametersInOneSqlStatement = 2000
+
+function isMysqlKnex(knex: Knex) {
+  const client = knex.client.config.client
+  return client === 'mysql2' || client === 'mysql'
+}
+
+function knexMaxParametersInOneSqlStatement(knex: Knex) {
+  const client = String(knex.client.config.client ?? '')
+  if (client.includes('sqlite')) return 999
+  return defaultMaxParametersInOneSqlStatement
+}
+
+function splitByMaxParameters<T>(
+  items: T[],
+  parametersInItem: (item: T) => number,
+  maxParameters: number,
+): T[][] {
+  const batches: T[][] = []
+  let batch: T[] = []
+  let params = 0
+  for (const item of items) {
+    const n = parametersInItem(item)
+    if (batch.length > 0 && params + n > maxParameters) {
+      batches.push(batch)
+      batch = []
+      params = 0
+    }
+    batch.push(item)
+    params += n
+  }
+  if (batch.length) batches.push(batch)
+  return batches
+}
+
+function countKnexInsertBindParameters(
+  entity: EntityMetadata,
+  e: EntityDbNamesBase,
+  row: any,
+  storage: JsonColumnStorage,
+): number {
+  let n = 0
+  for (const x of entity.fields) {
+    if (isDbReadonly(x, e)) continue
+    if (
+      translateValueAndHandleArrayAndHandleArray(x, row[x.key], storage) !=
+      undefined
+    )
+      n++
+  }
+  return n
+}
+
 function translateValueAndHandleArrayAndHandleArray(
   field: FieldMetadata<any>,
   val: any,
+  storage: JsonColumnStorage,
 ) {
-  let result = field.valueConverter.toDb(val)
+  let result = toDbColumn(field, val, storage)
   if (Array.isArray(result)) return JSON.stringify(result)
   return result
 }

@@ -168,6 +168,8 @@ priority = Priority.Low;
 
 In this example, the `priority` field is defined as an enum type using the `@Fields.enum` decorator. The `Priority` enum is passed as an argument to the decorator, ensuring that only valid `Priority` enum values can be assigned to the `priority` field. The `Validators.enum` validation is used and ensures that any value assigned to this field must be a member of the `Priority` enum, providing type safety and preventing invalid values.
 
+That check runs when the row is new or the value changed. A value already stored, even one the enum doesn't list, stays as it is when another field is saved.
+
 ::: tip Need extra properties on each value (label, color, etc.)?
 Use [`ValueListFieldType`](#valuelistfieldtype) instead - it lets each value carry its own data and behavior.
 :::
@@ -183,7 +185,7 @@ status: 'open' | 'closed' | 'frozen' | 'in progress' = 'open';
 
 In this example, we use the `as const` assertion to ensure that the array `['open', 'closed', 'frozen', 'in progress']` is treated as a readonly array, which allows TypeScript to infer the literal types 'open', 'closed', 'frozen', and 'in progress' for the elements of the array. This is important for the type safety of the `status` field.
 
-The `status` field is typed as `'open' | 'closed' | 'frozen' | 'in progress'`, which means it can only hold one of these string literals. The `@Fields.literal` decorator is used to specify that the `status` field can hold values from this set of strings, and it uses the `Validators.in` validator to ensure that the value of `status` matches one of the allowed values.
+The `status` field is typed as `'open' | 'closed' | 'frozen' | 'in progress'`, which means it can only hold one of these string literals. The `@Fields.literal` decorator is used to specify that the `status` field can hold values from this set of strings, and it uses the `Validators.in` validator to ensure that the value of `status` matches one of the allowed values. That check runs when the row is new or the value changed. A value already stored, even one outside the list, stays as it is when another field is saved.
 
 For better reusability and maintainability, and to follow the DRY (Don't Repeat Yourself) principle, it is recommended to refactor the literal type and the array of allowed values into separate declarations:
 
@@ -245,6 +247,12 @@ call('+' + person.country.phonePrefix + person.phone)
 ```
 
 Note: Only the `id` property is saved in the database and used in the API. Other properties, such as `label`, `currency`, and `phonePrefix`, are only accessible in the code and are not persisted in the database.
+
+An id the list doesn't declare reads as `undefined`. Set `unknownIdValue` to use something else: a value, or `(id) => value`. Only `null` and `undefined` stay `undefined`; a blank `''` uses `unknownIdValue`, so a blank column can map to a default. A declared id of `''` is unaffected. `ValueListInfo.get(TheClass).byId(id, true)` applies that value; `byId(id)` returns only a declared id. Saving the row keeps the stored id unless the field is new or the value changed, in which case it has to be one of the declared values. A `valueConverter` you set on the class replaces this.
+
+```ts
+@ValueListFieldType({ unknownIdValue: (id) => new Status(id, id) })
+```
 
 ### Getting Optional Values
 

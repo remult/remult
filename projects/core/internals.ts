@@ -20,11 +20,19 @@ export {
 } from './src/remult3/RepositoryImplementation.js'
 export { getEntitySettings } from './src/remult3/getEntityRef.js'
 export { __updateEntityBasedOnWhere } from './src/filter/filter-interfaces.js'
+export { omitFilterField, walkFilter } from './src/filter/walk-filter.js'
 export const actionInfo = remultStatic.actionInfo
 export { isOfType } from './src/isOfType.js'
 
 export type { ClassType } from './classType.js'
 
+export type {
+  SubscriptionServerRouteApi,
+  SubscriptionServerRouteHandlerArgs,
+} from './server/remult-api-server.js'
+export type { DataApiResponse } from './src/data-api.js'
+
 export { flags } from './src/remult3/remult3.js'
+export { SseSubscriptionClient } from './src/live-query/SseSubscriptionClient.js'
 export { DataProviderPromiseWrapper } from './src/data-interfaces.js'
 export { pagedQueryResult } from './src/remult3/pagedQueryResult.js'

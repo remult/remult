@@ -139,14 +139,6 @@ export class Sort {
     entityMetadata: EntityMetadata<T>,
     orderBy?: Sort,
   ): Sort {
-    if (
-      (!orderBy || Object.keys(orderBy).length === 0) &&
-      entityMetadata.options.defaultOrderBy
-    )
-      orderBy = Sort.translateOrderByToSort(
-        entityMetadata,
-        entityMetadata.options.defaultOrderBy,
-      )
     if (!orderBy) orderBy = new Sort()
     for (const field of entityMetadata.idMetadata.fields) {
       if (!orderBy.Segments.find((x) => x.field == field)) {

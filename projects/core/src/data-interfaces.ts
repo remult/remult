@@ -6,6 +6,7 @@ import type {
   MembersOnly,
   InsertOrUpdateOptions,
 } from './remult3/remult3.js'
+import type { EntityMetadataOverloads } from './remult3/RepositoryImplementation.js'
 import { Sort } from './sort.js'
 
 export interface DataProvider {
@@ -15,6 +16,13 @@ export interface DataProvider {
   ): Promise<void>
   ensureSchema?(entities: EntityMetadata[]): Promise<void>
   isProxy?: boolean
+}
+
+/** `InMemoryDataProvider` + `IndexedDbDataProvider` — swap in tests. */
+export interface DroppableDataProvider extends DataProvider {
+  dropDatabase(): Promise<void>
+  /** Recreated with indexes on next use (`ensureSchema` / first write). */
+  dropTable(entity: EntityMetadataOverloads): Promise<void>
 }
 export interface Storage {
   ensureSchema(): Promise<void>
@@ -39,11 +47,10 @@ export interface EntityDataProvider {
   find(options?: EntityDataProviderFindOptions): Promise<Array<any>>
   groupBy(options?: EntityDataProviderGroupByOptions): Promise<any[]>
   update(id: any, data: any, options?: InsertOrUpdateOptions): Promise<any>
-  delete(id: any): Promise<void>
-  insert(data: any, options?: InsertOrUpdateOptions): Promise<any>
+  delete(ids: any[]): Promise<void>
+  insert(data: any[], options?: InsertOrUpdateOptions): Promise<any[]>
 }
 export interface ProxyEntityDataProvider {
-  insertMany(data: any[], options?: InsertOrUpdateOptions): Promise<any[]>
   deleteMany(where: Filter | 'all'): Promise<number>
   updateMany(where: Filter | 'all', data: any): Promise<number>
   query(
@@ -131,11 +138,14 @@ export class DataProviderPromiseWrapper implements DataProvider {
 
 class EntityDataProviderPromiseWrapper implements EntityDataProvider {
   constructor(private dataProvider: Promise<EntityDataProvider>) {}
-  delete(id: any): Promise<void> {
-    return this.dataProvider.then((dp) => dp.delete(id))
+  delete(ids: any[]): Promise<void> {
+    return this.dataProvider.then((dp) => dp.delete(ids))
   }
-  insert(data: any): Promise<any> {
-    return this.dataProvider.then((dp) => dp.insert(data))
+  insert(
+    data: any[],
+    options?: InsertOrUpdateOptions,
+  ): Promise<any[]> {
+    return this.dataProvider.then((dp) => dp.insert(data, options))
   }
   count(where: Filter): Promise<number> {
     return this.dataProvider.then((dp) => dp.count(where))

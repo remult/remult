@@ -1,11 +1,39 @@
 import type { GenericRequestInfo, GenericResponse } from './server/index.js'
+import type { SubscriptionServerRouteApi } from './server/remult-api-server.js'
 import type { Remult } from './src/context.js'
 import type { DataApiResponse } from './src/data-api.js'
 import { ConnectionNotFoundError } from './src/live-query/SseSubscriptionClient.js'
+import { streamUrl } from './src/live-query/SubscriptionChannel.js'
 import type { ServerEventChannelSubscribeDTO } from './src/live-query/SubscriptionChannel.js'
 import type { SubscriptionServer } from './src/live-query/SubscriptionServer.js'
 
+/** Keep below typical proxy idle (30s) and Heroku H15 (55s). */
+export const ssePingMs = 15_000
+
 export class SseSubscriptionServer implements SubscriptionServer {
+  initApiServer(api: SubscriptionServerRouteApi) {
+    const streamPath = '/' + streamUrl
+    api.addRoute(streamPath, 'get', async ({ req, origRes }) => {
+      this.openHttpServerStream(
+        req,
+        origRes as GenericResponse & ResponseRequiredForSSE,
+      )
+    })
+    api.addRoute(
+      streamPath + '/subscribe',
+      'post',
+      async ({ remult, res, getBody }) => {
+        this.subscribeToChannel(await getBody(), res, remult)
+      },
+    )
+    api.addRoute(
+      streamPath + '/unsubscribe',
+      'post',
+      async ({ remult, res, getBody }) => {
+        this.subscribeToChannel(await getBody(), res, remult, true)
+      },
+    )
+  }
   //@internal
   subscribeToChannel(
     { channel, clientId }: ServerEventChannelSubscribeDTO,
@@ -122,6 +150,6 @@ export class clientConnection {
     this.write('', 'keep-alive')
     this.timeOutRef = setTimeout(() => {
       this.sendLiveMessage()
-    }, 45000)
+    }, ssePingMs)
   }
 }

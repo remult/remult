@@ -1,10 +1,15 @@
 import type { FieldMetadata } from '../column-interfaces.js'
-import type { EntityDataProviderFindOptions } from '../data-interfaces.js'
+import type {
+  DataProvider,
+  EntityDataProviderFindOptions,
+  EntityDataProviderGroupByOptions,
+} from '../data-interfaces.js'
 import type { Filter } from '../filter/filter-interfaces.js'
 import type {
   EntityFilter,
   EntityOrderBy,
   FindOptions,
+  GroupByOptions,
   LoadOptions,
   Repository,
 } from './remult3.js'
@@ -21,7 +26,11 @@ export interface RepositoryInternal<entityType> {
   _buildEntityDataProviderFindOptions(
     options: FindOptions<entityType>,
   ): Promise<EntityDataProviderFindOptions>
+  __buildGroupByOptions(
+    options: GroupByOptions<entityType, any, any, any, any, any, any>,
+  ): Promise<EntityDataProviderGroupByOptions>
   _translateWhereToFilter(where: EntityFilter<entityType>): Promise<Filter>
+  _dataProvider: DataProvider
   _getCachedById(id: any, doNotLoadIfNotFound: boolean): entityType | undefined
   _getCachedByIdAsync(
     id: any,

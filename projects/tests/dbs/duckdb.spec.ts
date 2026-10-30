@@ -6,7 +6,9 @@ import type { DbTestProps } from './shared-tests/db-tests-props.js'
 import { DuckDBInstance } from '@duckdb/node-api'
 import { allDbTests } from './shared-tests/index.js'
 
-describe.skipIf(process.env['SKIP_DUCKDB_TESTS'])('duckdb', () => {
+const duckdb = describe.skipIf(process.env['SKIP_DUCKDB_TESTS'])
+// in-memory duckdb is flaky under parallel prepared statements
+duckdb('duckdb', { retry: 2 }, () => {
   let db: SqlDatabase
   let remult: Remult
   beforeEach(async () => {

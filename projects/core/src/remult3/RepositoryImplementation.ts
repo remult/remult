@@ -13,6 +13,7 @@ import type { EntityOptions } from '../entity.js'
 import { Filter } from '../filter/filter-interfaces.js'
 import { Sort } from '../sort.js'
 import {
+  GroupByCountMember,
   GroupByForApiKey,
   type GroupByOptions,
   type GroupByResult,
@@ -359,10 +360,15 @@ export class RepositoryImplementation<entityType>
           const element = (options.orderBy as any)[key]
           if (element)
             if (typeof element === 'string') {
+              // ordering by a raw column is only valid for grouped fields -
+              // skip others so behavior is consistent across data providers
+              if (key !== GroupByCountMember && !options?.group?.includes(key))
+                continue
               dpOptions.orderBy.push({
-                field: key === '$count' ? undefined : getField(key as any),
+                field:
+                  key === GroupByCountMember ? undefined : getField(key as any),
                 isDescending: element === 'desc',
-                operation: key === '$count' ? 'count' : undefined,
+                operation: key === GroupByCountMember ? 'count' : undefined,
               })
             } else {
               for (const operation in element) {
@@ -481,7 +487,7 @@ export class RepositoryImplementation<entityType>
     if (ref) return ref.delete()
 
     if (typeof item === 'string' || typeof item === 'number')
-      if (this._dataProvider.isProxy) return this._edp.delete(item)
+      if (this._dataProvider.isProxy) return this._edp.delete([item])
       else {
         let ref2 = await this.findId(item)
         if (!ref2) throw this._notFoundError(item)
@@ -536,44 +542,53 @@ export class RepositoryImplementation<entityType>
     options?: InsertOrUpdateOptions,
   ): Promise<entityType | entityType[]> {
     if (Array.isArray(entity)) {
-      if (this._dataProvider.isProxy) {
-        let refs: rowHelperImplementation<entityType>[] = []
-        let raw: any[] = []
-        for (const item of entity) {
-          this.__cleanupPartialObject(item)
-          let ref = getEntityRef(
-            entity,
-            false,
-          ) as unknown as rowHelperImplementation<entityType>
-          if (ref) {
-            if (!ref.isNew()) throw 'Item is not new'
-          } else {
-            ref = (await this.getEntityRef(
-              this.create(item),
-            )) as rowHelperImplementation<entityType>
-          }
-          refs.push(ref)
-          raw.push(
-            await (
-              ref as rowHelperImplementation<entityType>
-            ).buildDtoForInsert(),
-          )
-        }
-        const inserted = await (
-          this._edp as any as ProxyEntityDataProvider
-        ).insertMany(raw, options)
-        if (options?.select === 'none') return undefined!
-        return promiseAll(inserted, (item, i) =>
-          refs[i].processInsertResponseDto(item),
-        )
-      } else {
-        let r: entityType[] = []
-        for (const item of entity) {
-          r.push(await this.insert(item, options))
-        }
+      const useBulk =
+        this._dataProvider.isProxy || this.metadata.options.bulkInsert
+      if (!useBulk) {
+        const r = []
+        for (const item of entity) r.push(await this.insert(item, options))
         if (options?.select === 'none') return undefined!
         return r
       }
+      const slots: {
+        ref: rowHelperImplementation<entityType>
+        skip: boolean
+        row?: any
+      }[] = []
+      const raw: any[] = []
+      for (const item of entity) {
+        this.__cleanupPartialObject(item)
+        let ref = getEntityRef(
+          item,
+          false,
+        ) as unknown as rowHelperImplementation<entityType>
+        if (ref) {
+          if (!ref.isNew()) throw 'Item is not new'
+        } else {
+          ref = this.getEntityRef(
+            this.create(item),
+          ) as rowHelperImplementation<entityType>
+        }
+        const dto = await ref.buildDtoForInsert()
+        if (dto === null) {
+          slots.push({ ref, skip: true })
+        } else {
+          slots.push({ ref, skip: false })
+          raw.push(dto)
+        }
+      }
+      if (raw.length) {
+        const inserted = await this._edp.insert(raw, options)
+        let i = 0
+        for (const slot of slots) {
+          if (!slot.skip) slot.row = inserted[i++]
+        }
+      }
+      const result = await promiseAll(slots, (slot) =>
+        slot.ref.processInsertResponseDto(slot.row),
+      )
+      if (options?.select === 'none') return undefined!
+      return result
     } else {
       let ref = getEntityRef(entity, false) as unknown as EntityRef<entityType>
       let result = undefined
@@ -593,7 +608,7 @@ export class RepositoryImplementation<entityType>
   }
   async validate(
     entity: Partial<MembersOnly<entityType>>,
-    ...fields: Extract<keyof MembersOnly<entityType>, string>[]
+    ...fields: (keyof MembersOnly<entityType>)[]
   ): Promise<ErrorInfo<entityType> | undefined> {
     {
       let ref: rowHelperImplementation<any> = getEntityRef(entity, false) as any
@@ -675,6 +690,7 @@ export class RepositoryImplementation<entityType>
       if (ref)
         return returnResult((await ref.save(options)) as unknown as entityType)
     }
+    if (id === undefined || id === null) throw this._notFoundError(id)
     {
       let ref = getEntityRef(id, false)
       if (ref) {
@@ -866,7 +882,18 @@ export class RepositoryImplementation<entityType>
     if (this._defaultFindOptions) {
       options = { ...this._defaultFindOptions, ...options }
     }
-    let opt = await this._buildEntityDataProviderFindOptions(options)
+    let findOptions = options
+    if (
+      (!findOptions.orderBy || Object.keys(findOptions.orderBy).length === 0) &&
+      !this._dataProvider.isProxy &&
+      this._info.entityInfo.defaultOrderBy
+    ) {
+      findOptions = {
+        ...findOptions,
+        orderBy: this._info.entityInfo.defaultOrderBy,
+      }
+    }
+    let opt = await this._buildEntityDataProviderFindOptions(findOptions)
     if (skipOrderByAndLimit) {
       delete opt.orderBy
       delete opt.limit
@@ -922,10 +949,6 @@ export class RepositoryImplementation<entityType>
           return f.key
         })
     }
-    if (!options.orderBy || Object.keys(options.orderBy).length === 0) {
-      if (!this._dataProvider.isProxy)
-        options.orderBy = this._info.entityInfo.defaultOrderBy
-    }
     opt.where = await this._translateWhereToFilter(options.where)
     if (options.orderBy !== undefined)
       opt.orderBy = Sort.translateOrderByToSort(this.metadata, options.orderBy)
@@ -951,7 +974,8 @@ export class RepositoryImplementation<entityType>
   }
   private async _loadManyToOneForManyRows(
     rawRows: any[],
-    loadOptions: LoadOptions<entityType>,
+    loadOptions: LoadOptions<entityType> &
+      Pick<FindOptionsBase<entityType>, 'select'>,
     loader: RelationLoader,
   ): Promise<entityType[]> {
     let loadFields: FieldMetadata[] | undefined = undefined
@@ -1010,10 +1034,28 @@ export class RepositoryImplementation<entityType>
         })
         .filter((x) => x !== undefined),
     )
+    const select = loadOptions?.select
+    let fieldsExcludedBySelect: Set<string> | undefined = undefined
+    if (select) {
+      const selected = new Set(
+        Object.keys(select).filter((x) => (select as any)[x]),
+      )
+      fieldsExcludedBySelect = new Set(
+        this.fields
+          .toArray()
+          .map((f) => f.key)
+          .filter((key) => !selected.has(key)),
+      )
+    }
     let result = await promiseAll(
       rawRows,
       async (r) =>
-        await this._mapRawDataToResult(r, loadFields, excludeRelationMembers),
+        await this._mapRawDataToResult(
+          r,
+          loadFields,
+          excludeRelationMembers,
+          fieldsExcludedBySelect,
+        ),
     )
     const fields = this.metadata.fields.toArray()
     this._populateRelationsForFields(fields, loadOptions, result, loader)
@@ -1174,6 +1216,7 @@ export class RepositoryImplementation<entityType>
     r: any,
     loadFields?: FieldMetadata[],
     excludeRelationMembers?: Set<string>,
+    fieldsExcludedBySelect?: Set<string>,
   ) {
     let x = new this._entity(this._remult)
     let helper = new rowHelperImplementation(
@@ -1185,6 +1228,7 @@ export class RepositoryImplementation<entityType>
       false,
       excludeRelationMembers,
     )
+    helper._fieldsExcludedBySelect = fieldsExcludedBySelect
     Object.defineProperty(x, entityMember, {
       //I've used define property to hide this member from console.lo g
       get: () => helper,
@@ -1272,13 +1316,20 @@ export class RepositoryImplementation<entityType>
         where === 'all' ? 'all' : await this._translateWhereToFilter(where),
       )
     } else {
-      let deleted = 0
       if (where === 'all') where = undefined!
+      const prepared: {
+        ref: rowHelperImplementation<entityType>
+        event: LifecycleEvent<entityType>
+        doDelete: boolean
+      }[] = []
       for await (const item of this.query({ where, aggregate: undefined! })) {
-        await getEntityRef(item).delete()
-        deleted++
+        const ref = getEntityRef(item) as rowHelperImplementation<entityType>
+        prepared.push({ ref, ...(await ref.__prepareDelete()) })
       }
-      return deleted
+      const ids = prepared.filter((x) => x.doDelete).map((x) => x.ref.id)
+      if (ids.length) await this._edp.delete(ids)
+      for (const x of prepared) await x.ref.__finishDelete(x.event)
+      return prepared.length
     }
   }
 
@@ -1520,6 +1571,9 @@ abstract class rowHelperBase<T> {
     this._error = val
     this._subscribers?.reportChanged()
   }
+  /** Fields left out by a partial `select` - they were never loaded, so they
+   * must not be serialized by {@link toApiJson}. */
+  _fieldsExcludedBySelect?: Set<string>
   constructor(
     protected fieldsMetadata: FieldMetadata[],
     public instance: T,
@@ -1786,6 +1840,10 @@ abstract class rowHelperBase<T> {
   toApiJson(includeRelatedEntities = false, notJustApi = false) {
     let result: any = {}
     for (const col of this.fieldsMetadata) {
+      // A field excluded by `select` was never loaded. Running it through
+      // valueConverter.toJson would emit a value ('' for dates and most custom
+      // converters) that the caller can't tell apart from a real empty value.
+      if (this._fieldsExcludedBySelect?.has(col.key)) continue
       if (notJustApi || !this.remult || col.includedInApi(this.instance!)) {
         let val
         let lu = this.lookups.get(col.key)
@@ -1874,7 +1932,7 @@ export class rowHelperImplementation<T>
           if (typeof col.options.defaultValue === 'function') {
             instance[colKey] = col.options.defaultValue(instance) as any
           } else if (!instance[colKey])
-            instance[colKey] = col.options.defaultValue
+            instance[colKey] = col.options.defaultValue as T[keyof T]
         }
       }
     }
@@ -2036,7 +2094,7 @@ export class rowHelperImplementation<T>
             updatedRow = (updatedRow = await this.edp.find({
               where: await this.getIdFilter(),
             }))[0]
-          } else updatedRow = await this.edp.insert(d, options)
+          } else updatedRow = (await this.edp.insert([d], options))[0]
         } else {
           let changesOnly: any = {}
           let wasChanged = false
@@ -2093,13 +2151,44 @@ export class rowHelperImplementation<T>
     }
   }
   async processInsertResponseDto(updatedRow: any): Promise<T> {
-    await this.loadDataFrom(updatedRow)
-    this.saveOriginalData()
-    this._isNew = false
-    return this.instance
+    try {
+      if (updatedRow) await this.loadDataFrom(updatedRow)
+      const e = this.buildLifeCycleEvent()
+      e.id = this.getId()
+      if (!this.repo._dataProvider.isProxy) {
+        if (this.info.entityInfo.saved)
+          await this.info.entityInfo.saved(this.instance, e)
+        if (this.repo.listeners)
+          for (const listener of this.repo.listeners) {
+            await listener.saved?.(this.instance, true)
+          }
+      }
+      this.repo._remult.liveQueryPublisher.itemChanged(
+        this.repo.metadata.key,
+        [{ id: this.getId(), oldId: this.getOriginalId(), deleted: false }],
+      )
+      this.saveOriginalData()
+      this._isNew = false
+      return this.instance
+    } catch (err) {
+      throw await this.catchSaveErrors(err)
+    }
   }
-  async buildDtoForInsert(): Promise<any> {
+  async buildDtoForInsert(): Promise<any | null> {
     await this.__validateEntity()
+    let skip = false
+    const e = this.buildLifeCycleEvent(() => {
+      skip = true
+    })
+    if (!this.repo._dataProvider.isProxy) {
+      for (const col of this.fields) {
+        if (col.metadata.options.saving)
+          await col.metadata.options.saving(this.instance, col, e as any)
+      }
+      if (this.info.entityInfo.saving) {
+        await this.info.entityInfo.saving(this.instance, e)
+      }
+    }
     this.__assertValidity()
 
     let d = this.copyDataToObject(this.isNew())
@@ -2110,6 +2199,7 @@ export class rowHelperImplementation<T>
         f.value = f.originalValue
       }
     }
+    if (skip) return null
     return d
   }
 
@@ -2134,37 +2224,44 @@ export class rowHelperImplementation<T>
   }
 
   async delete() {
-    this.__clearErrorsAndReportChanged()
-    let doDelete = true
-    let e = this.buildLifeCycleEvent(() => (doDelete = false))
-    if (!this.repo._dataProvider.isProxy) {
-      if (this.info.entityInfo.deleting)
-        await this.info.entityInfo.deleting(this.instance, e)
-    }
-    this.__assertValidity()
     try {
-      if (doDelete) {
-        if (this.id === undefined)
-          throw new Error('Invalid operation, id is undefined')
-        await this.edp.delete(this.id)
-      }
-      if (!this.repo._dataProvider.isProxy) {
-        if (this.info.entityInfo.deleted)
-          await this.info.entityInfo.deleted(this.instance, e)
-      }
-
-      if (this.repo.listeners)
-        for (const listener of this.repo.listeners) {
-          await listener.deleted?.(this.instance)
-        }
-      this.repo._remult.liveQueryPublisher.itemChanged(this.repo.metadata.key, [
-        { id: this.getId(), oldId: this.getOriginalId(), deleted: true },
-      ])
-
-      this._wasDeleted = true
+      const { doDelete, event } = await this.__prepareDelete()
+      if (doDelete) await this.edp.delete([this.id])
+      await this.__finishDelete(event)
     } catch (err) {
       throw await this.catchSaveErrors(err)
     }
+  }
+  //@internal
+  async __prepareDelete() {
+    this.__clearErrorsAndReportChanged()
+    let doDelete = true
+    const event = this.buildLifeCycleEvent(() => (doDelete = false))
+    if (!this.repo._dataProvider.isProxy) {
+      if (this.info.entityInfo.deleting)
+        await this.info.entityInfo.deleting(this.instance, event)
+    }
+    this.__assertValidity()
+    if (doDelete && this.id === undefined)
+      throw new Error('Invalid operation, id is undefined')
+    return { doDelete, event }
+  }
+  //@internal
+  async __finishDelete(e: LifecycleEvent<T>) {
+    if (!this.repo._dataProvider.isProxy) {
+      if (this.info.entityInfo.deleted)
+        await this.info.entityInfo.deleted(this.instance, e)
+    }
+
+    if (this.repo.listeners)
+      for (const listener of this.repo.listeners) {
+        await listener.deleted?.(this.instance)
+      }
+    this.repo._remult.liveQueryPublisher.itemChanged(this.repo.metadata.key, [
+      { id: this.getId(), oldId: this.getOriginalId(), deleted: true },
+    ])
+
+    this._wasDeleted = true
   }
 
   async loadDataFrom(data: any, loadItems?: FieldMetadata[]) {
@@ -2179,9 +2276,10 @@ export class rowHelperImplementation<T>
           if (loadItems.includes(col)) await lu.waitLoad()
         }
       } else if (!getRelationFieldInfo(col))
-        if (data[col.key] === undefined)
-          delete this.instance[col.key as keyof T]
-        else this.instance[col.key as keyof T] = data[col.key]
+        if (data[col.key] === undefined) {
+          if (!Reflect.deleteProperty(this.instance as object, col.key))
+            this.instance[col.key as keyof T] = undefined!
+        } else this.instance[col.key as keyof T] = data[col.key]
     }
     await this.calcServerExpression()
     this.id = this.getId()
@@ -2934,6 +3032,8 @@ export function ValueListFieldType<
           if (ref.value && !values.find((v) => v === ref.value)) {
             ref.value = values.find((v) => v.id === ref.value.id) || ref.value
           }
+          // A value already stored is a fact. Only a new row or a new value has to be in the list.
+          if (!ref.isNew && !ref.valueChanged()) return
           return Validators.in(values)(entity, ref)
         }
       },
@@ -2944,6 +3044,8 @@ export function ValueListFieldType<
 export interface ValueListFieldOptions<entityType, valueType>
   extends FieldOptions<entityType, valueType> {
   getValues?: () => valueType[]
+  /** Value used when a stored id is not in the list. A value, or `(id) => value`. Only `null` and `undefined` stay `undefined`; a blank `''` uses this, which is the usual legacy column. A declared id of `''` is unaffected. @default undefined */
+  unknownIdValue?: valueType | ((id: any) => valueType | undefined)
 }
 export class ValueListInfo<T extends ValueListItem>
   implements ValueConverter<T>
@@ -2959,6 +3061,7 @@ export class ValueListInfo<T extends ValueListItem>
   private byIdMap = new Map<any, T>()
   private values: T[] = []
   isNumeric = false
+  private unknownIdValue?: T | ((id: any) => T | undefined)
   private constructor(private valueListType: any) {
     for (let member in this.valueListType) {
       let s = this.valueListType[member] as T
@@ -2980,7 +3083,8 @@ export class ValueListInfo<T extends ValueListItem>
 
     if (options) {
       for (const op of options) {
-        if (op?.getValues) {
+        if (!op || typeof op === 'function') continue
+        if (op.getValues) {
           this.values.splice(0, this.values.length, ...op.getValues())
           this.byIdMap.clear()
           this.values.forEach((s) => {
@@ -2988,6 +3092,7 @@ export class ValueListInfo<T extends ValueListItem>
             this.byIdMap.set(s.id, s)
           })
         }
+        if ('unknownIdValue' in op) this.unknownIdValue = op.unknownIdValue
       }
       if (this.values.find((s) => s.id === undefined))
         throw new Error(
@@ -3003,12 +3108,18 @@ export class ValueListInfo<T extends ValueListItem>
   getValues() {
     return this.values
   }
-  byId(key: any) {
-    if (this.isNumeric) key = +key
-    return this.byIdMap.get(key)
+  /** Declared id only. Pass `useUnknownIdValue` to also apply `unknownIdValue` (`null` and `undefined` still return `undefined`). */
+  byId(key: any, useUnknownIdValue = false): T | undefined {
+    const lookupKey = this.isNumeric ? +key : key
+    const known = this.byIdMap.get(lookupKey)
+    if (known !== undefined || !useUnknownIdValue) return known
+    if (key == null) return undefined
+    const fallback = this.unknownIdValue
+    if (typeof fallback !== 'function') return fallback
+    return fallback(lookupKey)
   }
   fromJson(val: any): T {
-    return this.byId(val)!
+    return this.byId(val, true)!
   }
   toJson(val: T) {
     if (!val) return undefined
@@ -3232,7 +3343,7 @@ class cacheEntityInfo<entityType> {
   value?: entityType = {} as entityType
   promise?: Promise<entityType | undefined>
 }
-export function getEntityMetadata<entityType>(
+export function getEntityMetadata<entityType = unknown>(
   entity: EntityMetadataOverloads<entityType>,
 ): EntityMetadata<entityType> {
   if ((entity as Repository<entityType>).metadata)
@@ -3252,7 +3363,7 @@ export function getRepository<entityType>(
   }
   return entity as Repository<entityType>
 }
-export type EntityMetadataOverloads<entityType> =
+export type EntityMetadataOverloads<entityType = unknown> =
   | Repository<entityType>
   | EntityMetadata<entityType>
   | ClassType<entityType>

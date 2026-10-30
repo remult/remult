@@ -22,7 +22,14 @@ export class LiveQuerySubscriber<entityType> {
   queryChannel: string
   subscribeCode?: () => void
   unsubscribe: VoidFunction = () => {}
+  unsubscribeChannel: VoidFunction = () => {}
+  unsubscribeQuery: VoidFunction = () => {}
+  snapshotReady = false
+  droppedWhilePending = false
   async setAllItems(result: any[]) {
+    // server re-registers the query at version 0; reset before the await so a
+    // version message landing mid-parse is judged against the new baseline
+    this.version = 0
     const items = await getRepositoryInternals(this.repo)._fromJsonArray(
       result,
       this.query.options,
@@ -32,6 +39,7 @@ export class LiveQuerySubscriber<entityType> {
         return items
       })
     }, this.allItemsMessage(items))
+    this.snapshotReady = true
   }
 
   private allItemsMessage(items: entityType[]): LiveQueryChange[] {
@@ -43,34 +51,16 @@ export class LiveQuerySubscriber<entityType> {
     ]
   }
 
-  // the order the query's results actually come back in: the explicit orderBy,
-  // falling back to the entity's defaultOrderBy
-  private effectiveOrderBy() {
-    return (
-      this.query.options.orderBy ?? this.repo.metadata.options.defaultOrderBy
-    )
-  }
-
   forListeners(
     what: (
       listener: (
-        reducer: (
-          prevState: entityType[],
-          options?: { pos?: 'auto' | 'first' | 'last' },
-        ) => entityType[],
+        reducer: LiveQueryChangeInfo<entityType>['applyChanges'],
       ) => void,
     ) => void,
     changes: LiveQueryChange[],
   ) {
     what((reducer) => {
       this.defaultQueryState = reducer(this.defaultQueryState)
-      if (changes.find((c) => c.type === 'add' || c.type === 'replace')) {
-        const orderBy = this.effectiveOrderBy()
-        if (orderBy) {
-          const o = Sort.translateOrderByToSort(this.repo.metadata, orderBy)
-          this.defaultQueryState.sort((a: any, b: any) => o.compare(a, b))
-        }
-      }
     })
 
     for (const l of this.listeners) {
@@ -81,10 +71,7 @@ export class LiveQuerySubscriber<entityType> {
   }
 
   private createReducerType(
-    applyChanges: (
-      prevState: entityType[],
-      options?: { pos?: 'auto' | 'first' | 'last' },
-    ) => entityType[],
+    applyChanges: LiveQueryChangeInfo<entityType>['applyChanges'],
     changes: LiveQueryChange[],
   ): LiveQueryChangeInfo<entityType> {
     return {
@@ -95,8 +82,29 @@ export class LiveQuerySubscriber<entityType> {
   }
 
   async handle(messages: LiveQueryChange[]) {
+    // the pending snapshot supersedes anything in flight; the keep-alive
+    // after it lands catches whatever was dropped here
+    if (!this.snapshotReady) {
+      this.droppedWhilePending = true
+      return
+    }
+    const ver = messages.find(
+      (m): m is Extract<LiveQueryChange, { type: 'version' }> =>
+        m.type === 'version',
+    )
+    // any gap, forward or backward, means a message was missed or two servers
+    // published the same version with different diffs: refetch instead of drop
+    if (ver && ver.from !== this.version) {
+      this.version = ver.to
+      this.subscribeCode?.()
+      return
+    }
+    // bump before the await below, so a second message delivered in the same
+    // tick is judged against this one and not mistaken for a gap
+    if (ver) this.version = ver.to
+    const data = messages.filter((m) => m.type !== 'version')
     {
-      let x = messages.filter(({ type }) => type == 'add' || type == 'replace')
+      let x = data.filter(({ type }) => type == 'add' || type == 'replace')
       let loadedItems = await getRepositoryInternals(this.repo)._fromJsonArray(
         x.map((m) => m.data.item),
         this.query.options,
@@ -108,17 +116,14 @@ export class LiveQuerySubscriber<entityType> {
     }
 
     this.forListeners((listener) => {
-      listener((items, options) => {
-        const pos = options?.pos ?? 'auto'
+      listener((items, { pos = 'auto' } = {}) => {
         if (!items) items = []
-        let addedOrReplaced = false
-        for (const message of messages) {
+        for (const message of data) {
           switch (message.type) {
             case 'all':
               this.setAllItems(message.data)
               break
             case 'replace': {
-              addedOrReplaced = true
               items = items.map((x) =>
                 this.repo.metadata.idMetadata.getId(x) === message.data.oldId
                   ? message.data.item
@@ -127,14 +132,13 @@ export class LiveQuerySubscriber<entityType> {
               break
             }
             case 'add':
-              addedOrReplaced = true
               items = items.filter(
                 (x) =>
                   this.repo.metadata.idMetadata.getId(x) !==
                   this.repo.metadata.idMetadata.getId(message.data.item),
               )
-              if (pos === 'first') items = [message.data.item, ...items]
-              else items = [...items, message.data.item]
+              if (pos === 'first') items.unshift(message.data.item)
+              else items.push(message.data.item)
               break
             case 'remove':
               items = items.filter(
@@ -144,22 +148,27 @@ export class LiveQuerySubscriber<entityType> {
               break
           }
         }
-        // 'auto' keeps the array ordered like `info.items` (the query's orderBy,
-        // or the entity's defaultOrderBy); explicit 'first'/'last' leave
-        // placement untouched
-        const orderBy = pos === 'auto' && this.effectiveOrderBy()
-        if (orderBy && addedOrReplaced) {
+        const orderBy =
+          this.query.options.orderBy ??
+          this.repo.metadata.options.defaultOrderBy
+        if (
+          pos === 'auto' &&
+          orderBy &&
+          data.some((m) => m.type === 'add' || m.type === 'replace')
+        ) {
           const o = Sort.translateOrderByToSort(this.repo.metadata, orderBy)
-          items = [...items].sort((a: any, b: any) => o.compare(a, b))
+          items.sort((a: any, b: any) => o.compare(a, b))
         }
         return items
       })
-    }, messages)
+    }, data)
+    if (!ver && data.length > 0) this.version++
   }
 
   defaultQueryState: entityType[] = []
   listeners: SubscriptionListener<LiveQueryChangeInfo<entityType>>[] = []
   id = String(crypto.randomUUID())
+  version = 0
   constructor(
     private repo: Repository<entityType>,
     private query: SubscribeToQueryArgs<entityType>,
@@ -174,9 +183,27 @@ export interface SubscriptionListener<type> {
   next(message: type): void
   error(err: any): void
   complete(): void
+  /** The connection was re-established; messages published meanwhile were lost, refetch state if needed. */
+  reconnect?(): void
 }
 
 export type Unsubscribe = VoidFunction
+//@internal
+export function onBrowserForeground(handler: VoidFunction): Unsubscribe {
+  if (typeof document === 'undefined') return () => {}
+  function onForeground() {
+    if (document.visibilityState === 'hidden') return
+    handler()
+  }
+  document.addEventListener('visibilitychange', onForeground)
+  window.addEventListener('online', onForeground)
+  window.addEventListener('pageshow', onForeground)
+  return () => {
+    document.removeEventListener('visibilitychange', onForeground)
+    window.removeEventListener('online', onForeground)
+    window.removeEventListener('pageshow', onForeground)
+  }
+}
 export interface SubscriptionClientConnection {
   subscribe(
     channel: string,
@@ -184,6 +211,10 @@ export interface SubscriptionClientConnection {
     onError: (err: any) => void,
   ): Promise<Unsubscribe>
   close(): void
+  /** SSE clients set this; missing means no heartbeat tracking (Ably, tests). */
+  lastServerEvent?: number
+  /** Foreground / online: reconnect now, skip backoff. `force` kills an OPEN zombie. */
+  resume?: (force?: boolean) => void
 }
 
 export interface SubscriptionClient {
@@ -217,6 +248,11 @@ export declare type LiveQueryChange =
   | {
       type: 'remove'
       data: { id: any }
+    }
+  | {
+      type: 'version'
+      from: number
+      to: number
     }
 //@internal
 export interface SubscribeResult {
@@ -292,6 +328,16 @@ export interface ServerEventChannelSubscribeDTO {
  *  // Frontend: in the chart component, we can subscribe to messages
  *  chart.subscribe((message) => {
  *    chartData = message.data;
+ *  });
+ *  ```
+ *
+ *  #### Recovering after a dropped connection
+ *  Messages published while the connection was down are not replayed.
+ *  Use the `reconnect` listener to refetch state:
+ *  ```ts
+ *  chart.subscribe({
+ *    next: (message) => (chartData = message.data),
+ *    reconnect: () => loadChartData(),
  *  });
  *  ```
  *

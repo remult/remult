@@ -107,7 +107,9 @@ Description = ""
  - [Access Control](https://remult.dev/docs/access-control)
 
 ## validate
-An arrow function that'll be used to perform validations on it
+An arrow function that'll be used to perform validations on it.
+
+`validate` from several option objects is additive: each one is appended. A function option is the only way to replace validators already set, including a built-in one: `(options) => { options.validate = ... }`.
 
 
 #### example:

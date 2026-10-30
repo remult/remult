@@ -130,6 +130,57 @@ WHERE "status" IN ($1, $2, $3, $4, $5) AND "createdAt" >= $6 AND "createdAt" < $
         ))
 ```
 
+### Building a select with remult
+
+`filterToRaw` gives you the `WHERE`. When you need the rest of the statement remult would run - the column list with its `sqlExpression` fields, the aggregates and `GROUP BY` of a `groupBy`, the conversion of each result column back to a field value - `selectToRaw` and `groupByToRaw` build it without running it:
+
+```typescript
+const { sql, toResult } = await SqlDatabase.groupByToRaw(repo(Order), {
+  group: ['status'],
+  sum: ['amount'],
+  where: Order.activeOrders({ year }),
+})
+// sql:
+//   select count(*) as "count", "status" as "status", sum( "amount" ) as "amount_sum"
+//    from "orders" where ... group by "status"
+const result = await SqlDatabase.getDb().execute(sql)
+const rows = result.rows.map(toResult)
+// rows: [{ $count: 12, status: 'created', amount: { sum: 340 } }, ...] - the shape repo.groupBy returns
+```
+
+Both return the statement and a `toResult` that maps one result row, read by column alias, to the shape the matching repository method returns (`groupBy` for `groupByToRaw`, the fields' values for `selectToRaw`). Every column is aliased through the data provider's `wrapIdentifier`, so the aliases survive databases that fold unquoted names to lower case.
+
+**When to use them.** Only for a statement remult cannot run on its own. The common case is one statement over several databases on the same server - a `UNION ALL` of the same aggregate per database instead of a connection and a query per database:
+
+```typescript
+const command = SqlDatabase.getDb().createCommand()
+const names = await dbNamesOf(Order)
+const branches = await Promise.all(
+  databases.map(async (database) => {
+    const { sql, toResult } = await SqlDatabase.groupByToRaw(
+      repo(Order),
+      { group: ['status'], where: { createdAt: { $gte: from } } },
+      {
+        sqlCommand: command, // one parameter list for the whole statement
+        dbNames: { ...names, $entityName: `"${database}".public."orders"` },
+      },
+    )
+    return { sql: `select '${database}' as database, * from (${sql}) t`, toResult }
+  }),
+)
+const result = await command.execute(branches.map((b) => b.sql).join('\nunion all\n'))
+const rows = result.rows.map((row) => ({ database: row.database, ...branches[0].toResult(row) }))
+```
+
+What the options give you:
+
+- `sqlCommand` - the command that collects the bound parameters. Pass the same command to every branch of a combined statement, then `execute` on it. Without one the values are inlined as literals, which is fine for a statement you only print.
+- `dbNames` - how the table and columns are addressed. Start from `dbNamesOf(entity)` and replace `$entityName` to point at another database or an alias; the column names are left as they are.
+- `wrapIdentifier` - the quoting to use when `dbNames` isn't given. Defaults to the repository's data provider's, so the statement matches what remult itself would run.
+- `limitSyntax` - required only with `limit`, because paging syntax differs per dialect: `(limit, offset) => \`limit ${limit} offset ${offset}\``.
+
+`selectToRaw` adds no `ORDER BY` of its own (a branch of a `UNION` may not have one) - pass `orderBy` only when you want it in the statement. Both respect `backendPrefilter` and custom filters, exactly like `filterToRaw`. For anything a single repository call can express, call the repository: these exist for the statement shape, not as a faster path.
+
 ## Accessing Other Databases
 
 ## Knex

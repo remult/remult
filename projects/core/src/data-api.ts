@@ -10,6 +10,7 @@ import {
   buildFilterFromRequestParameters,
   customUrlToken,
 } from './filter/filter-interfaces.js'
+import { omitFilterField, walkFilter } from './filter/walk-filter.js'
 import type { QueryData } from './live-query/SubscriptionServer.js'
 import { getRelationFieldInfo } from './remult3/relationInfoMember.js'
 import {
@@ -20,7 +21,6 @@ import {
   type EntityMetadata,
   type FindOptions,
   type Repository,
-  type InsertOrUpdateOptions,
 } from './remult3/remult3.js'
 import type { rowHelperImplementation } from './remult3/RepositoryImplementation.js'
 
@@ -31,7 +31,7 @@ export class DataApi<T = unknown> {
     private repository: Repository<T>,
     private remult: Remult,
   ) {}
-  httpGet(
+  async httpGet(
     res: DataApiResponse,
     req: DataApiRequest,
     serializeContext: () => Promise<any>,
@@ -51,12 +51,11 @@ export class DataApi<T = unknown> {
         case 'count':
           return this.count(res, req, undefined)
         case 'groupBy':
-          return res.success(this.groupBy(req, undefined))
+          return res.success(await this.groupBy(req, undefined))
       }
       return this.getArray(res, req, undefined)
     } catch (err: any) {
-      if (err.isForbiddenError) res.forbidden(err)
-      else res.error(err, this.repository.metadata)
+      this.handleError(res, err)
     }
   }
   async httpPost(
@@ -108,13 +107,12 @@ export class DataApi<T = unknown> {
           res.success('ok')
           return
         case 'query':
-          return res.success(await this.query(res, req, body))
+          return this.query(res, req, body)
         default:
           return res.created(await this.post(body, req))
       }
     } catch (err: any) {
-      if (err.isForbiddenError) res.forbidden(err.message)
-      else res.error(err, this.repository.metadata)
+      this.handleError(res, err)
     }
   }
   async upsertMany(
@@ -162,13 +160,12 @@ export class DataApi<T = unknown> {
         this.getArrayImpl(request, rest),
         this.groupBy(aggregateRequest, { ...aggregate, where: body.where }),
       ])
-      return {
+      return response.success({
         items: r,
         aggregates,
-      }
+      })
     } catch (err: any) {
-      if (err.isForbiddenError) response.forbidden()
-      else response.error(err, this.repository.metadata)
+      this.handleError(response, err)
     }
   }
   static defaultGetLimit = 0
@@ -193,7 +190,7 @@ export class DataApi<T = unknown> {
         )),
       })
     } catch (err: any) {
-      response.error(err, this.repository.metadata)
+      this.handleError(response, err)
     }
   }
   async deleteMany(
@@ -216,7 +213,7 @@ export class DataApi<T = unknown> {
         response.success({ deleted })
       })
     } catch (err: any) {
-      response.error(err, this.repository.metadata)
+      this.handleError(response, err)
     }
   }
   private async prepareWhereForManyOperation(
@@ -240,6 +237,11 @@ export class DataApi<T = unknown> {
     if (body?.orderBy) {
       for (const element of body?.orderBy) {
         const direction = element.isDescending ? 'desc' : 'asc'
+        if (
+          element.operation !== 'count' &&
+          !this.fieldIsInApi(element.field)
+        )
+          continue
         switch (element.operation) {
           case undefined:
             orderBy[element.field] = direction
@@ -257,15 +259,9 @@ export class DataApi<T = unknown> {
         }
       }
     }
-    const group = (body?.groupBy as any[])?.filter((x: string) =>
-      this.repository.fields.find(x).includedInApi(),
-    )
-    const min = (body?.min as any[])?.filter((x: string) =>
-      this.repository.fields.find(x).includedInApi(),
-    )
-    const max = (body?.max as any[])?.filter((x: string) =>
-      this.repository.fields.find(x).includedInApi(),
-    )
+    const group = this.fieldsInApi(body?.groupBy)
+    const min = this.fieldsInApi(body?.min)
+    const max = this.fieldsInApi(body?.max)
     let result = await this.repository.groupBy({
       where: findOptions.where,
       limit: findOptions.limit,
@@ -273,17 +269,11 @@ export class DataApi<T = unknown> {
       //@ts-expect-error internal key
       [GroupByForApiKey]: true,
       group,
-      sum: (body?.sum as any[])?.filter((x: string) =>
-        this.repository.fields.find(x).includedInApi(),
-      ),
-      avg: (body?.avg as any[])?.filter((x: string) =>
-        this.repository.fields.find(x).includedInApi(),
-      ),
+      sum: this.fieldsInApi(body?.sum),
+      avg: this.fieldsInApi(body?.avg),
       min,
       max,
-      distinctCount: (body?.distinctCount as any[])?.filter((x: string) =>
-        this.repository.fields.find(x).includedInApi(),
-      ),
+      distinctCount: this.fieldsInApi(body?.distinctCount),
       orderBy: orderBy,
     })
     if (group)
@@ -329,7 +319,9 @@ export class DataApi<T = unknown> {
       let sort = <string>request.get('_sort')
       if (sort != undefined) {
         let dir = request.get('_order')
-        findOptions.orderBy = determineSort(sort, dir)
+        findOptions.orderBy = this.omitFieldsHiddenFromApi(
+          determineSort(sort, dir),
+        )
       }
       let limit = +request.get('_limit')
       if (!limit && DataApi.defaultGetLimit) limit = DataApi.defaultGetLimit
@@ -408,8 +400,7 @@ export class DataApi<T = unknown> {
 
       response.success(r)
     } catch (err: any) {
-      if (err.isForbiddenError) response.forbidden(err.message)
-      else response.error(err, this.repository.metadata)
+      this.handleError(response, err)
     }
   }
   async liveQuery(
@@ -432,6 +423,7 @@ export class DataApi<T = unknown> {
           this.repository.metadata,
         ),
         lastIds: r.r.map((y) => this.repository.metadata.idMetadata.getId(y)),
+        version: 0,
       }
       await this.remult.liveQueryStorage!.add({
         entityKey: this.repository.metadata.key,
@@ -440,8 +432,7 @@ export class DataApi<T = unknown> {
       })
       response.success(r.r)
     } catch (err: any) {
-      if (err.isForbiddenError) response.forbidden()
-      else response.error(err, this.repository.metadata)
+      this.handleError(response, err)
     }
   }
   private async buildWhere(
@@ -470,6 +461,7 @@ export class DataApi<T = unknown> {
           return result
         },
       })
+      f = this.omitFieldsHiddenFromApi(f)
       if (this.repository.metadata.options.apiPreprocessFilter) {
         f = await this.repository.metadata.options.apiPreprocessFilter(f, {
           metadata: this.repository.metadata,
@@ -485,6 +477,34 @@ export class DataApi<T = unknown> {
     }
 
     return { $and: where }
+  }
+
+  // A hidden field is not on the api, same as a field that is not on the entity.
+  private fieldIsInApi(key: string) {
+    return this.repository.fields.find(key)?.includedInApi() === true
+  }
+  private fieldsInApi(keys: any): any[] | undefined {
+    return (keys as string[] | undefined)?.filter((key) =>
+      this.fieldIsInApi(key),
+    )
+  }
+
+  // Drop a field the api hides. Same as a field that is not on the entity:
+  // refusing it would confirm the name exists.
+  private omitFieldsHiddenFromApi(filterOrSort: any): any {
+    const fields = this.repository.metadata.fields
+    return walkFilter(filterOrSort, function (key, value) {
+      if (
+        !key.startsWith(customUrlToken) &&
+        fields.find(key)?.includedInApi() === false
+      )
+        return omitFilterField
+      return value
+    })
+  }
+  private handleError(response: DataApiResponse, err: any) {
+    if (err.isForbiddenError) response.forbidden(err.message)
+    else response.error(err, this.repository.metadata)
   }
 
   private async doOnId(
@@ -560,7 +580,7 @@ export class DataApi<T = unknown> {
         response.success({ updated })
       })
     } catch (err: any) {
-      response.error(err, this.repository.metadata)
+      this.handleError(response, err)
     }
   }
 
@@ -623,11 +643,25 @@ export class DataApi<T = unknown> {
       return this.repository.getEntityRef(newr).toApiJson()
     }
     if (Array.isArray(body)) {
-      const result: any[] = []
+      let result: any[] = []
       await doTransaction(this.remult, async () => {
+        const items: T[] = []
         for (const item of body) {
-          result.push(await insert(item))
+          let newr = this.repository.create()
+          await (
+            this.repository.getEntityRef(newr) as rowHelperImplementation<T>
+          )._updateEntityBasedOnApi(item)
+          if (!this.repository.getEntityRef(newr).apiInsertAllowed) {
+            throw new ForbiddenError()
+          }
+          items.push(newr)
         }
+        const inserted = await this.repository.insert(items, options)
+        if (options?.select === 'none') result = items.map(() => undefined)
+        else
+          result = (inserted as T[]).map((row) =>
+            this.repository.getEntityRef(row).toApiJson(),
+          )
       })
       return result
     } else return await insert(body)

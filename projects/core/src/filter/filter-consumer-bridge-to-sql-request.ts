@@ -13,11 +13,23 @@ import type {
 } from '../remult3/remult3.js'
 import type {
   HasWrapIdentifier,
+  JsonColumnStorage,
   SqlCommandWithParameters,
 } from '../sql-command.js'
+import { toDbColumn } from '../valueConverters.js'
 import { entityDbName } from './entityDbName.js'
 import { fieldDbName } from './fieldDbName.js'
 import type { Filter, FilterConsumer } from './filter-interfaces.js'
+
+// `[` starts a character class in sql server's like. `]` on its own is a literal
+// everywhere, so escaping the opening bracket is enough. The other engines treat
+// an escaped non-wildcard as that literal, so one escape set works for all of them.
+const REGEX_LIKE_SPECIAL = /[!%_\[]/g
+// `!` not `\`: a backslash in a string literal is an escape in mysql and in pg without standard_conforming_strings
+export const LIKE_ESCAPE_SQL = " escape '!'"
+export function escapeLike(val: string) {
+  return val.replace(REGEX_LIKE_SPECIAL, '!$&')
+}
 
 export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   private where = ''
@@ -37,6 +49,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   constructor(
     private r: SqlCommandWithParameters,
     private nameProvider: EntityDbNamesBase,
+    private jsonColumnStorage: JsonColumnStorage = 'native',
   ) {}
 
   custom(key: string, customItem: any): void {
@@ -51,6 +64,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
           let f = new FilterConsumerBridgeToSqlRequest(
             this.r,
             this.nameProvider,
+            this.jsonColumnStorage,
           )
           f._addWhere = false
           element.__applyToConsumer(f)
@@ -72,7 +86,11 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   not(element: Filter) {
     this.promises.push(
       (async () => {
-        let f = new FilterConsumerBridgeToSqlRequest(this.r, this.nameProvider)
+        let f = new FilterConsumerBridgeToSqlRequest(
+          this.r,
+          this.nameProvider,
+          this.jsonColumnStorage,
+        )
         f._addWhere = false
         element.__applyToConsumer(f)
         let where = await f.resolveWhere()
@@ -102,7 +120,13 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
             this.nameProvider.$dbNameOf(col) +
               ' in (' +
               val
-                .map((x) => toDbSql(this.r, col, col.valueConverter.toDb(x)))
+                .map((x) =>
+                  toDbSql(
+                    this.r,
+                    col,
+                    toDbColumn(col, x, this.jsonColumnStorage),
+                  ),
+                )
                 .join(',') +
               ')',
           )
@@ -129,53 +153,28 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
     this.add(col, val, '<')
   }
   public containsCaseInsensitive(col: FieldMetadata, val: any): void {
-    this.promises.push(
-      (async () => {
-        this.addToWhere(
-          'lower (' +
-            this.nameProvider.$dbNameOf(col) +
-            ") like lower ('%" +
-            val.replace(/'/g, "''") +
-            "%')",
-        )
-      })(),
-    )
+    this.like(col, '%' + escapeLike(val) + '%')
   }
   public notContainsCaseInsensitive(col: FieldMetadata, val: any): void {
-    this.promises.push(
-      (async () => {
-        this.addToWhere(
-          'not lower (' +
-            this.nameProvider.$dbNameOf(col) +
-            ") like lower ('%" +
-            val.replace(/'/g, "''") +
-            "%')",
-        )
-      })(),
-    )
+    this.like(col, '%' + escapeLike(val) + '%', 'not ')
   }
   public startsWithCaseInsensitive(col: FieldMetadata, val: any): void {
-    this.promises.push(
-      (async () => {
-        this.addToWhere(
-          'lower (' +
-            this.nameProvider.$dbNameOf(col) +
-            ") like lower ('" +
-            val.replace(/'/g, "''") +
-            "%')",
-        )
-      })(),
-    )
+    this.like(col, escapeLike(val) + '%')
   }
   public endsWithCaseInsensitive(col: FieldMetadata, val: any): void {
+    this.like(col, '%' + escapeLike(val))
+  }
+  private like(col: FieldMetadata, pattern: string, not = '') {
     this.promises.push(
       (async () => {
         this.addToWhere(
-          'lower (' +
+          not +
+            'lower (' +
             this.nameProvider.$dbNameOf(col) +
-            ") like lower ('%" +
-            val.replace(/'/g, "''") +
-            "')",
+            ') like lower (' +
+            this.r.param(pattern) +
+            ')' +
+            LIKE_ESCAPE_SQL,
         )
       })(),
     )
@@ -189,7 +188,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
           ' ' +
           operator +
           ' ' +
-          toDbSql(this.r, col, col.valueConverter.toDb(val))
+          toDbSql(this.r, col, toDbColumn(col, val, this.jsonColumnStorage))
         this.addToWhere(x)
       })(),
     )
@@ -208,6 +207,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
           let item = new CustomSqlFilterBuilder(
             this.r,
             this.nameProvider.wrapIdentifier,
+            this.jsonColumnStorage,
           )
           let sql = await databaseCustom.buildSql(item)
           if (typeof sql !== 'string') sql = item.sql
@@ -242,6 +242,7 @@ export class CustomSqlFilterBuilder
   constructor(
     private r: SqlCommandWithParameters,
     public wrapIdentifier: (name: string) => string,
+    private jsonColumnStorage: JsonColumnStorage = 'native',
   ) {
     this.param.bind(this)
     this.filterToRaw.bind(this)
@@ -259,8 +260,8 @@ export class CustomSqlFilterBuilder
    * @returns {string} - The SQL token.
    */
   param = <valueType>(val: valueType, field?: FieldMetadata<valueType>) => {
-    if (typeof field === 'object' && field.valueConverter.toDb) {
-      val = field.valueConverter.toDb(val)
+    if (field) {
+      val = toDbColumn(field, val, this.jsonColumnStorage)
     }
 
     return this.r.param(val)

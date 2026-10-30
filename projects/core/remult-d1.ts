@@ -13,6 +13,7 @@ export function createD1DataProvider(d1: D1Database) {
 }
 
 export class D1DataProvider extends SqliteCoreDataProvider {
+  maxParametersInOneSqlStatement = 100
   /**
    * For production or local d1 using binding
    *

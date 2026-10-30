@@ -22,5 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-db
+
+# Local data: the default JSON store and the tutorial SQLite file
+/db
 .database.sqlite

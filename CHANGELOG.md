@@ -1,8 +1,75 @@
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [3.4.0] - [Unreleased]
 
-- `LiveQueryChangeInfo.applyChanges` now keeps the array ordered by the query's `orderBy` (or the entity's `defaultOrderBy`) by default, and accepts a `{ pos: 'auto' | 'first' | 'last' }` option to control placement of added items.
+### Breaking
+
+- `EntityDataProvider.insert` is now `insert(data: any[], options?): Promise<any[]>` (not one object). `insertMany` removed from `ProxyEntityDataProvider`.
+- `EntityDataProvider.delete` is now `delete(ids: any[]): Promise<void>`. REST: 1 id → DELETE, N → existing deleteMany.
+- Custom `LiveQueryStorage`: `keepAliveAndReturnUnknownQueryIds` returns `{ unknownQueryIds, versions }` instead of `string[]`. The keep-alive route still accepts the old array body from older clients.
+- `Fields.literal`, `Fields.enum`, and `ValueListFieldType` validate only when the row is new or the value changed. A stored value outside the list no longer fails a save of another field.
+
+### Added
+
+- Native `IndexedDbDataProvider`: PK + declared indexes, filter prefetch, batch insert/delete in one IDB txn, optional `encrypt: true` (AES-GCM, non-extractable key in `__remult_keys`, PK+index fields plaintext, rest `_enc`+`_iv`). Docs: installation/database/indexeddb — see docs for threat model.
+- `DroppableDataProvider` (`dropDatabase` / `dropTable`) on `IndexedDbDataProvider` and `InMemoryDataProvider`. `dropTable(Task)` or metadata; store + indexes recreated on next use.
+- `@Entity({ bulkInsert: true })` — backend `insert([a, b])` uses one `EntityDataProvider.insert` after all `saving` hooks (SQL multi-row `INSERT` / one IDB txn). `Validators.unique` / `count()` only see the DB, not siblings in the same array. Frontend always POSTs the array; the entity option is what the backend honors. Do not enable if `saving` / `validation` depends on sibling rows already persisted.
+- `SqlDatabase.groupByToRaw(repo, options, { sqlCommand, dbNames, wrapIdentifier, limitSyntax })` and `SqlDatabase.selectToRaw(repo, findOptions, …)` build the select that `groupBy` / `find` would run without running it, and return a `toResult` that maps a result row (by column alias) to the same shape the repository method returns. For statements remult can't run on its own, such as one `UNION ALL` over several databases; replace `dbNames.$entityName` to address another database. Docs: [Building a select with remult](https://remult.dev/docs/running-sql-on-the-server#building-a-select-with-remult).
+- `SubscriptionServer.initApiServer?` — a custom subscription server registers its own HTTP routes (SSE does this itself). `SseSubscriptionClient`, `SubscriptionServerRouteApi`, and `DataApiResponse` are exported from `remult/internals` ([#1036](https://github.com/remult/remult/pull/1036)).
+- `SubscriptionListener.reconnect?()` lets `SubscriptionChannel` subscribers refetch state after a dropped connection.
+- `SubscriptionClientConnection` gained optional `lastServerEvent` and `resume(force?)`; custom clients (Ably, ...) can ignore them.
+- `flags.sseStaleMs` (40s), `flags.liveQueryKeepAliveMs` (30s), `flags.liveQueryPollWhenStaleMs` (1s). Server SSE ping every 15s (was 45s), exported as `ssePingMs`.
+- `ValueListFieldType({ unknownIdValue })` — value used when a stored id is not in the list (a value, or `(id) => value`). Default `undefined`. Only `null` and `undefined` stay `undefined`; a blank `''` uses this value. A declared id of `''` is unaffected. A custom `valueConverter` still replaces the default. `ValueListInfo.byId(id, true)` applies it; `byId(id)` stays a declared-id lookup.
+
+### Changed
+
+- `repo.insert([a, b, c])` is sequential by default (`this.insert(item)` per row). `saving` and `Validators.unique` see prior rows in the same call.
+- From the frontend, `insert([...])` always sends the array in one request. The backend wraps it in a transaction and uses bulk only when the entity has `bulkInsert: true`.
+- SQL/knex multi-row `INSERT ... VALUES (...),(...)` batched under bind-variable limits (default 2000, sqlite 999, D1 100). Used when the entity has `bulkInsert: true`.
+- The SQL that `groupBy` runs now aliases every column through `wrapIdentifier` (`count(*) as "count"`, `"status" as "status"`, `sum("amount") as "amount_sum"`). Results are unchanged; only the statement text differs.
+- `InsertOrUpdateOptions.select` is optional.
+- `SseSubscriptionClient` reconnects forever with backoff (was 4 tries), reconnects on `visibilitychange` / `online` / `pageshow`, and recreates a socket that stops delivering events for `flags.sseStaleMs`.
+- `liveQuery` first `next()` no longer waits for the SSE connection.
+- `applyChanges` keeps the array in `orderBy` (or `defaultOrderBy`) order by default (added items used to go last). `applyChanges(prev, { pos: 'first' | 'last' })` picks the placement instead.
+- Each server-side live query carries a version, sent with every change and returned by the keep-alive. The client refetches the snapshot on any version gap, so a dead socket, a half-open socket, or a missed message is recovered within one keep-alive. `LiveQueryChange` has an internal `{ type: 'version', from, to }` member, filtered out before reaching `liveQuery` listeners.
+
+### Fixed
+
+- Live query no longer drops updates when the SSE stream dies while HTTP still works.
+- REST `_select` / `find({ select })` serialized omitted fields through `toApiJson`, so dates and custom converters leaked as `''` instead of being absent.
+- `repo.update(undefined | null, data)` threw `entity is undefined` instead of the same not-found error as any other missing id ([#1001](https://github.com/remult/remult/issues/1001), [#1047](https://github.com/remult/remult/pull/1047)).
+- Thanks to @drakeo338 for their first contribution
+- Mongo updates wrote the field key instead of the database field name ([#1049](https://github.com/remult/remult/pull/1049)).
+- Mongo inserts wrote `dbReadOnly` / `serverExpression` fields, which cleared an explicit foreign key when the relation was declared before the id field ([#1048](https://github.com/remult/remult/pull/1048)).
+- Mongo `contains` / `startsWith` / `endsWith` treated the search string as a regex. Metacharacters are escaped, so the filter is a literal ([#1050](https://github.com/remult/remult/pull/1050)).
+- GET `__action=groupBy` responded before the query finished. Forbidden GET errors now send `err.message` ([#1051](https://github.com/remult/remult/pull/1051)).
+- POST `__action=query` sent the body twice ([#1052](https://github.com/remult/remult/pull/1052)).
+- Thanks to @raashish1601 for their first contribution
+- Docs: REST split into read and mutations, `describeEntity` argument order ([#1046](https://github.com/remult/remult/pull/1046)).
+- Thanks to @pluxain for their first contribution to the docs
+
+## [3.3.18] - 2026-08-30
+
+- Fixed `ArrayEntityDataProvider` storing omitted/`undefined` nullable fields as `undefined` instead of `null`, so filters like `{ date: null }` missed rows inserted without a value
+
+## [3.3.17] - 2026-08-24
+
+- Fixed `TypeError: Cannot delete property` on client save when a field has `includeInApi: false` and the entity was subscribed (e.g. grid dirty tracking)
+
+## [3.3.16] - 2026-07-14
+
+- Added support for default values without an arrow function
+- Added type info in the field's function response - used for typing stuff :)
+
+## [3.3.15] - 2026-07-10
+
+- Added a Node built-in SQLite data provider (`remult/remult-node-sqlite`), using the native `node:sqlite` module ([#1034](https://github.com/remult/remult/pull/1034)).
+- Thanks to @linoch512 for their first contribution
+- `groupBy` now ignores `orderBy` fields that are not part of the group by (previously they were passed through to the database, producing an invalid grouped query on SQL Server / Postgres). The rest api additionally ignores `orderBy` fields that are not included in the api.
+
+## [3.3.14] - 2026-07-08
+
+- Fixed a memory leak related to usage of repo(x,y) with infinite different y
 
 ## [3.3.13] - 2026-06-09
 

@@ -29,7 +29,7 @@ interface RemultEntitySchema<entityType, fields extends string[] = []>
  */
 export function standardSchema<
   entityType,
-  fieldsType extends Extract<keyof MembersOnly<entityType>, string>[] = [],
+  fieldsType extends (keyof MembersOnly<entityType>)[] = [],
 >(
   repo: Repository<entityType>,
   ...fields: fieldsType

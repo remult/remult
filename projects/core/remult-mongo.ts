@@ -155,6 +155,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
   translateToDb(row: any, nameProvider: EntityDbNamesBase) {
     let result: any = {}
     for (const col of this.entity.fields) {
+      if (col.dbReadOnly || col.isServerExpression) continue
       let val = toDb(col, row[col.key])
       if (val === null) val = NULL
       result[nameProvider.$dbNameOf(col)] = val
@@ -305,7 +306,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
     for (const f of this.entity.fields) {
       if (!f.dbReadOnly && !f.isServerExpression) {
         if (keys.includes(f.key)) {
-          newR[f.key] = toDb(f, data[f.key])
+          newR[e.$dbNameOf(f)] = toDb(f, data[f.key])
         }
       }
     }
@@ -319,30 +320,38 @@ class MongoEntityDataProvider implements EntityDataProvider {
     if (options?.select === 'none') return undefined!
     return getRowAfterUpdate(this.entity, this, data, id, 'update')
   }
-  async delete(id: any): Promise<void> {
+  async delete(ids: any[]): Promise<void> {
+    if (ids.length === 0) return
     const { e, collection } = await this.collection()
     let f = new FilterConsumerBridgeToMongo(e)
     Filter.fromEntityFilter(
       this.entity,
-      this.entity.idMetadata.getIdFilter(id),
+      this.entity.idMetadata.getIdFilter(...ids),
     ).__applyToConsumer(f)
-    await collection.deleteOne(await f.resolveWhere(), {
+    await collection.deleteMany(await f.resolveWhere(), {
       session: this.session,
     })
   }
-  async insert(data: any, options?: InsertOrUpdateOptions): Promise<any> {
+  async insert(data: any[], options?: InsertOrUpdateOptions): Promise<any[]> {
+    if (data.length === 0) return []
     let { collection, e } = await this.collection()
-    let r = await collection.insertOne(await this.translateToDb(data, e), {
-      session: this.session,
-    })
-    if (options?.select === 'none') return undefined!
-    return await this.translateFromDb(
-      await collection.findOne(
-        { _id: r.insertedId },
-        { session: this.session },
-      ),
-      e,
-    )
+    const docs = []
+    for (const row of data) docs.push(await this.translateToDb(row, e))
+    const r = await collection.insertMany(docs, { session: this.session })
+    if (options?.select === 'none') return data.map(() => undefined!)
+    const result: any[] = []
+    for (let i = 0; i < data.length; i++) {
+      result.push(
+        await this.translateFromDb(
+          await collection.findOne(
+            { _id: r.insertedIds[i] },
+            { session: this.session },
+          ),
+          e,
+        ),
+      )
+    }
+    return result
   }
 
   private async collection() {
@@ -440,23 +449,35 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
     this.add(col, val, '$lt')
   }
   public containsCaseInsensitive(col: FieldMetadata, val: any): void {
-    this.add(col, val, '$regex', { $options: 'i' })
+    this.addRegex(col, val)
   }
   public notContainsCaseInsensitive(col: FieldMetadata, val: any): void {
-    this.result.push(() => ({
-      [this.nameProvider.$dbNameOf(col)]: {
-        $not: {
-          $regex: isNull(val) ? val : toDb(col, val),
-          $options: 'i',
-        },
-      },
-    }))
+    this.addRegex(col, val, '', '', true)
   }
   public startsWithCaseInsensitive(col: FieldMetadata, val: any): void {
-    this.add(col, `^${val}`, '$regex', { $options: 'i' })
+    this.addRegex(col, val, '^')
   }
   public endsWithCaseInsensitive(col: FieldMetadata, val: any): void {
-    this.add(col, `${val}$`, '$regex', { $options: 'i' })
+    this.addRegex(col, val, '', '$')
+  }
+
+  private addRegex(
+    col: FieldMetadata,
+    val: string,
+    start = '',
+    end = '',
+    negate = false,
+  ) {
+    this.result.push(() => {
+      const regex = {
+        $regex:
+          start + toDb(col, val).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + end,
+        $options: 'i',
+      }
+      return {
+        [this.nameProvider.$dbNameOf(col)]: negate ? { $not: regex } : regex,
+      }
+    })
   }
 
   private add(

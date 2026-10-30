@@ -311,7 +311,9 @@ export interface EntityMetadata<entityType = unknown> {
 export declare type MembersOnly<T> = {
   [K in keyof Omit<T, keyof EntityBase> as T[K] extends Function
     ? never
-    : K]: T[K]
+    : K extends string
+      ? K
+      : never]: T[K]
 }
 //Pick<
 //   T,
@@ -740,7 +742,7 @@ export interface Repository<entityType> {
    */
   validate(
     item: Partial<entityType>,
-    ...fields: Extract<keyof MembersOnly<entityType>, string>[]
+    ...fields: (keyof MembersOnly<entityType>)[]
   ): Promise<ErrorInfo<entityType> | undefined>
   /** saves an item or item[] to the data source. It assumes that if an `id` value exists, it's an existing row - otherwise it's a new row
    * @example
@@ -756,7 +758,9 @@ export interface Repository<entityType> {
     options?: InsertOrUpdateOptions,
   ): Promise<entityType>
 
-  /**Insert an item or item[] to the data source
+  /**Insert an item or item[] to the data source.
+   * Arrays insert one-by-one by default. Set `{ bulkInsert: true }` on `@Entity` for one provider statement/txn.
+   * From the frontend, an array is always sent in one request; the backend decides whether to bulk insert.
    * @example
    * await taskRepo.insert({title:"task a"})
    * @example
@@ -1519,7 +1523,9 @@ export declare type EntityIdFields<entityType> = {
 export declare type EntitySelectFields<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?: boolean
 }
-export declare type InsertOrUpdateOptions = { select: 'none' }
+export declare type InsertOrUpdateOptions = {
+  select?: 'none'
+}
 
 export interface ClassFieldDecoratorContextStub<entityType, valueType> {
   readonly access: {
@@ -1535,16 +1541,28 @@ export interface ClassDecoratorContextStub<
   addInitializer(initializer: (this: Class) => void): void
 }
 
-export type ClassFieldDecorator<entityType, valueType> = (
+export type ClassFieldDecorator<entityType, valueType> = ((
   target: any,
   context:
     | string
     | ClassFieldDecoratorContextStub<entityType, valueType | undefined>,
   c?: any,
-) => void
+) => void) & {
+  /** Phantom type brand (never set at runtime). Without it the decorator is a
+   * bare function type, which TypeScript skips as an inference candidate when
+   * a `Fields.xxx()` call appears in a generically-inferred object alongside a
+   * context-sensitive function — e.g. UI schemas built from field decorators. */
+  readonly __fieldValueType?: valueType
+}
 
 export const flags = {
   error500RetryCount: 4,
+  /** Client treats SSE as dead if no event for this long. Server pings every 15s; two missed pings plus slack, so a stalled event loop does not trigger a reconnect storm */
+  sseStaleMs: 40_000,
+  /** HTTP keep-alive while SSE is healthy (touches lastUsed) */
+  liveQueryKeepAliveMs: 30_000,
+  /** Version poll while SSE is stale */
+  liveQueryPollWhenStaleMs: 1_000,
 }
 
 /*p1 - issues in https://stackblitz.com/edit/demo-allow-delete-based-on-other-entity:

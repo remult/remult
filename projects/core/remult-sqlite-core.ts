@@ -31,6 +31,7 @@ export class SqliteCoreDataProvider
   ) {}
 
   orderByNullsFirst?: boolean
+  maxParametersInOneSqlStatement = 999
 
   getLimitSqlSyntax(limit: number, offset: number) {
     return ' limit ' + limit + ' offset ' + offset

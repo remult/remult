@@ -1053,6 +1053,130 @@ describe('validation tests', () => {
       },
     })
   })
+  describe('list fields keep a stored value the list does not declare', () => {
+    it('Fields.literal rejects an insert outside the list', async () => {
+      @Entity('literalOutside')
+      class Row {
+        @Fields.integer()
+        id = 0
+        @Fields.literal(() => ['A', 'B'] as const)
+        status: 'A' | 'B' = 'A'
+        @Fields.string()
+        name = ''
+      }
+      await expect(
+        remult.repo(Row).insert({ id: 1, status: 'D' as any, name: 'n' }),
+      ).rejects.toMatchObject({
+        modelState: { status: 'Value must be one of: A, B' },
+      })
+    })
+    it('Fields.literal rejects changing the field to a value outside the list', async () => {
+      @Entity('literalChange')
+      class Row {
+        @Fields.integer()
+        id = 0
+        @Fields.literal(() => ['A', 'B'] as const)
+        status: 'A' | 'B' = 'A'
+        @Fields.string()
+        name = ''
+      }
+      const repo = remult.repo(Row)
+      const row = await repo.insert({ id: 1, status: 'A', name: 'n' })
+      row.status = 'D' as any
+      await expect(repo.save(row)).rejects.toMatchObject({
+        modelState: { status: 'Value must be one of: A, B' },
+      })
+    })
+    it('Fields.literal saves another field when the stored value is outside the list', async () => {
+      @Entity('literalStored')
+      class Row {
+        @Fields.integer()
+        id = 0
+        @Fields.literal(() => ['A', 'B'] as const)
+        status: 'A' | 'B' = 'A'
+        @Fields.string()
+        name = ''
+      }
+      const repo = remult.repo(Row)
+      const mem = remult.dataProvider as InMemoryDataProvider
+      mem.rows[repo.metadata.dbName] = [{ id: 1, status: 'D', name: 'n' }]
+      const row = (await repo.findFirst())!
+      expect(row.status).toBe('D')
+      row.name = 'm'
+      await repo.save(row)
+      expect(mem.rows[repo.metadata.dbName][0]).toMatchObject({
+        status: 'D',
+        name: 'm',
+      })
+    })
+    it('Fields.enum rejects an insert outside the enum', async () => {
+      enum Code {
+        a = 'A',
+        b = 'B',
+      }
+      @Entity('enumOutside')
+      class Row {
+        @Fields.integer()
+        id = 0
+        @Fields.enum(() => Code)
+        status!: Code
+        @Fields.string()
+        name = ''
+      }
+      await expect(
+        remult.repo(Row).insert({ id: 1, status: 'D' as any, name: 'n' }),
+      ).rejects.toMatchObject({
+        modelState: { status: 'Value must be one of A, B' },
+      })
+    })
+    it('Fields.enum rejects changing the field to a value outside the enum', async () => {
+      enum Code {
+        a = 'A',
+        b = 'B',
+      }
+      @Entity('enumChange')
+      class Row {
+        @Fields.integer()
+        id = 0
+        @Fields.enum(() => Code)
+        status!: Code
+        @Fields.string()
+        name = ''
+      }
+      const repo = remult.repo(Row)
+      const row = await repo.insert({ id: 1, status: Code.a, name: 'n' })
+      row.status = 'D' as any
+      await expect(repo.save(row)).rejects.toMatchObject({
+        modelState: { status: 'Value must be one of A, B' },
+      })
+    })
+    it('Fields.enum saves another field when the stored value is outside the enum', async () => {
+      enum Code {
+        a = 'A',
+        b = 'B',
+      }
+      @Entity('enumStored')
+      class Row {
+        @Fields.integer()
+        id = 0
+        @Fields.enum(() => Code)
+        status!: Code
+        @Fields.string()
+        name = ''
+      }
+      const repo = remult.repo(Row)
+      const mem = remult.dataProvider as InMemoryDataProvider
+      mem.rows[repo.metadata.dbName] = [{ id: 1, status: 'D', name: 'n' }]
+      const row = (await repo.findFirst())!
+      expect(row.status).toBe('D')
+      row.name = 'm'
+      await repo.save(row)
+      expect(mem.rows[repo.metadata.dbName][0]).toMatchObject({
+        status: 'D',
+        name: 'm',
+      })
+    })
+  })
   it('test integer with nan', async () => {
     const repo = remult.repo(
       entity('x', {

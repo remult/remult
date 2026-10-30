@@ -37,7 +37,7 @@ llm: false # nav stub - children are listed directly in llms.txt
 	<Icon tech="postgres" sizeIco=100 link="/docs/installation/database/postgresql" />
 	<Icon tech="mysql" sizeIco=100 link="/docs/installation/database/mysql" />
 	<Icon tech="mongodb" sizeIco=100 link="/docs/installation/database/mongodb" />
-	<Icon tech="sqlite" sizeIco=100 link="/docs/installation/database/better-sqlite3" />
+	<Icon tech="sqlite" sizeIco=100 link="/docs/installation/database/node-sqlite" />
 	<Icon tech="sqljs" sizeIco=100 link="/docs/installation/database/sqljs" />
 	<Icon tech="mssql" sizeIco=100 link="/docs/installation/database/mssql" />
 	<Icon tech="bun-sqlite" sizeIco=100 link="/docs/installation/database/bun-sqlite" />

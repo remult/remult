@@ -359,6 +359,33 @@ export function commonDbTests(
 
     expect(r.$.d.originalValue!.getFullYear()).toBe(1976)
   })
+  it('test date with null with undefined', async () => {
+    @Entity('otherTestDateWithNull', { allowApiCrud: true })
+    class otherTestDateWithNull {
+      @Fields.integer()
+      id: number = 0
+      @Fields.date({ allowNull: true })
+      d!: Date | null
+    }
+    let r = await await createEntity(otherTestDateWithNull)
+    const d = new Date(2025, 0, 1)
+    await r.insert([
+      { id: 1 },
+      { id: 2, d: undefined! },
+      { id: 3, d: null },
+      { id: 4, d },
+    ])
+    expect(
+      (await r.find()).map((x) => ({ id: x.id, d: x.d })),
+    ).toEqual([
+      { id: 1, d: null },
+      { id: 2, d: null },
+      { id: 3, d: null },
+      { id: 4, d },
+    ])
+    expect(await r.count({ d: null! })).toBe(3)
+    expect(await r.count({ d: { $ne: null! } })).toBe(1)
+  })
 
   @Entity('testDateWithNull', { allowApiCrud: true })
   class testDateWithNull extends EntityBase {
@@ -1092,7 +1119,9 @@ export function commonDbTests(
     await x.forEach('x', async (args) => {
       expect(args.query.data).toBe('noam')
     })
-    expect(await x.keepAliveAndReturnUnknownQueryIds([id])).toEqual([])
+    expect(
+      (await x.keepAliveAndReturnUnknownQueryIds([id])).unknownQueryIds,
+    ).toEqual([])
   })
 
   it('test ensure schema adds missing columns', async () => {
@@ -1224,6 +1253,74 @@ export function commonDbTests(
     await r.insert({ a: 3, firstName: 'xyz' })
     let item = await r.find({ where: { firstName: { $endsWith: 'b' } } })
     expect(item.length).toBe(0)
+  })
+  async function createSpecialNames() {
+    const e = class {
+      a = 0
+      firstName = ''
+    }
+    describeClass(e, Entity('testNameContains', { allowApiCrud: true }), {
+      a: Fields.number(),
+      firstName: Fields.string(),
+    })
+    const r = await createEntity(e)
+    await r.insert([
+      { a: 1, firstName: 'a%b' },
+      { a: 2, firstName: 'axb' },
+      { a: 3, firstName: 'a_b' },
+      { a: 4, firstName: "o'hara" },
+      { a: 5, firstName: 'back\\slash' },
+      { a: 6, firstName: 'a[b]c' },
+    ])
+    return async (
+      firstName: EntityFilter<InstanceType<typeof e>>['firstName'],
+    ) =>
+      (await r.find({ where: { firstName }, orderBy: { a: 'asc' } })).map(
+        (x) => x.firstName,
+      )
+  }
+  it('$contains matches a literal % and _', async () => {
+    const names = await createSpecialNames()
+    expect(await names({ $contains: '%' })).toEqual(['a%b'])
+    expect(await names({ $contains: '_' })).toEqual(['a_b'])
+    expect(await names({ $contains: 'a%b' })).toEqual(['a%b'])
+  })
+  it('$startsWith, $endsWith and $notContains match a literal % and _', async () => {
+    const names = await createSpecialNames()
+    expect(await names({ $startsWith: 'a_' })).toEqual(['a_b'])
+    expect(await names({ $endsWith: '%b' })).toEqual(['a%b'])
+    expect(await names({ $notContains: '%' })).toEqual([
+      'axb',
+      'a_b',
+      "o'hara",
+      'back\\slash',
+      'a[b]c',
+    ])
+  })
+  it('text operators match a literal [ rather than a character class', async () => {
+    const names = await createSpecialNames()
+    expect(await names({ $contains: 'a[b]c' })).toEqual(['a[b]c'])
+    expect(await names({ $startsWith: 'a[' })).toEqual(['a[b]c'])
+    expect(await names({ $endsWith: ']c' })).toEqual(['a[b]c'])
+    // a character class would match 'axb' here
+    expect(await names({ $contains: 'a[xb]b' })).toEqual([])
+    expect(await names({ $notContains: '[' })).toEqual([
+      'a%b',
+      'axb',
+      'a_b',
+      "o'hara",
+      'back\\slash',
+    ])
+  })
+  it('text operators with a quote or backslash value do not alter the query', async () => {
+    const names = await createSpecialNames()
+    expect(await names({ $contains: "o'h" })).toEqual(["o'hara"])
+    expect(await names({ $startsWith: "o'" })).toEqual(["o'hara"])
+    expect(await names({ $contains: 'k\\s' })).toEqual(['back\\slash'])
+    expect(await names({ $endsWith: '\\slash' })).toEqual(['back\\slash'])
+    expect(await names({ $contains: '\\' })).toEqual(['back\\slash'])
+    expect(await names({ $contains: "\\') or 1=1 -- " })).toEqual([])
+    expect(await names({ $startsWith: "' or 'a'='a" })).toEqual([])
   })
   it.skipIf(options?.excludeLiveQuery)('test live query storage', async () => {
     await createEntity(LiveQueryStorageEntity)

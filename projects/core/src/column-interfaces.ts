@@ -65,7 +65,11 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
    * @type {AllowedForInstance<entityType>}
    */
   allowApiUpdate?: AllowedForInstance<entityType>
-  /** An arrow function that'll be used to perform validations on it
+  /** An arrow function that'll be used to perform validations on it.
+   *
+   * `validate` from several option objects is additive: each one is appended.
+   * A function option is the only way to replace validators already set, including a built-in one:
+   * `(options) => { options.validate = ... }`.
    * @example
    * @Fields.string({
    *   validate: Validators.required
@@ -132,8 +136,8 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
 
   /** an arrow function that translates the value to a display value */
   displayValue?: (entity: entityType, value: valueType) => string
-  /** an arrow function that determines the default value of the field, when the entity is created using the `repo.create` method */
-  defaultValue?: (entity: entityType) => valueType
+  /** The default value of the field, when the entity is created using the `repo.create` method — a value or an arrow function that computes it */
+  defaultValue?: valueType | ((entity: entityType) => valueType)
 
   /** The html input type for this field */
   inputType?: string
@@ -301,6 +305,7 @@ export interface ValueConverter<valueType> {
 
   /**
    * Converts a value from the database format to the valueType.
+   * Defaults to `fromJson` when not provided.
    *
    * @param val The value to convert.
    * @returns The converted value.
@@ -312,6 +317,7 @@ export interface ValueConverter<valueType> {
 
   /**
    * Converts a value of valueType to the database format.
+   * Defaults to `toJson` when not provided.
    *
    * @param val The value to convert.
    * @returns The converted value.
@@ -325,6 +331,7 @@ export interface ValueConverter<valueType> {
 
   /**
    * Converts a value of valueType to a string suitable for an HTML input element.
+   * Defaults to `toJson` when not provided.
    *
    * @param val The value to convert.
    * @param inputType The type of the input element (optional).
@@ -337,6 +344,7 @@ export interface ValueConverter<valueType> {
 
   /**
    * Converts a string from an HTML input element to the valueType.
+   * Defaults to `fromJson` when not provided.
    *
    * @param val The value to convert.
    * @param inputType The type of the input element (optional).

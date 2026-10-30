@@ -127,6 +127,18 @@ export interface EntityOptions<entityType = unknown> {
    * defaultOrderBy: { price: "desc", name: "asc" }
    */
   defaultOrderBy?: EntityOrderBy<entityType>
+  /**
+   * When true, `insert([...])` on the backend uses one provider statement/txn
+   * (SQL multi-row `INSERT`, one IndexedDB txn) after all `saving` hooks.
+   *
+   * Default (`false`): arrays insert one-by-one so `saving` and `Validators.unique`
+   * see prior rows in the same call.
+   *
+   * The frontend always POSTs the array in one request; this option is only
+   * honored on the backend. Do not enable if `saving` / `validation` logic
+   * depends on seeing sibling rows already persisted.
+   */
+  bulkInsert?: boolean
   /** An event that will be fired before the Entity will be saved to the database.
    * If the `error` property of the entity's ref or any of its fields will be set, the save will be aborted and an exception will be thrown.
    * this is the place to run logic that we want to run in any case before an entity is saved.

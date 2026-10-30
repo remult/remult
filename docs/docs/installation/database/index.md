@@ -1,5 +1,5 @@
 ---
-llm: "Database picker - defaults to a JSON file store in ./db when no dataProvider is configured."
+llm: 'Database picker - defaults to a JSON file store in ./db when no dataProvider is configured.'
 ---
 
 <script setup>
@@ -14,7 +14,7 @@ By default, if no database provider is specified, Remult will use a simple JSON 
 	<Icon tech="postgres" sizeIco=100 link="/docs/installation/database/postgresql" />
 	<Icon tech="mysql" sizeIco=100 link="/docs/installation/database/mysql" />
 	<Icon tech="mongodb" sizeIco=100 link="/docs/installation/database/mongodb" />
-	<Icon tech="sqlite" sizeIco=100 link="/docs/installation/database/better-sqlite3" />
+	<Icon tech="sqlite" sizeIco=100 link="/docs/installation/database/node-sqlite" />
 	<Icon tech="sqljs" sizeIco=100 link="/docs/installation/database/sqljs" />
 	<Icon tech="mssql" sizeIco=100 link="/docs/installation/database/mssql" />
 	<Icon tech="bun-sqlite" sizeIco=100 link="/docs/installation/database/bun-sqlite" />
