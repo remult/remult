@@ -5,7 +5,10 @@ import { Entity, Fields, Remult, SqlDatabase } from '../../core'
 import { remultApi } from '../../core/remult-hono.js'
 import { SqlJsDataProvider } from '../../core/remult-sql-js.js'
 import { RemultAsyncLocalStorage } from '../../core/src/context.js'
+import { initAsyncHooks } from '../../core/server/initAsyncHooks.js'
 import { dbNamesOf } from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
+
+initAsyncHooks()
 
 const tick = () => new Promise((res) => setTimeout(res, 5))
 const newDb = () =>
