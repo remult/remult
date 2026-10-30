@@ -1,4 +1,8 @@
 import type { EntityMetadata } from '../remult3/remult3.js'
+import {
+	isSqlExpressionInProgress,
+	runSqlExpression,
+} from './sqlExpressionInProgress.js'
 
 export async function entityDbName(
 	metadata: EntityMetadata,
@@ -8,14 +12,10 @@ export async function entityDbName(
 		if (typeof metadata.options.sqlExpression === 'string')
 			return metadata.options.sqlExpression
 		else if (typeof metadata.options.sqlExpression === 'function') {
+			if (isSqlExpressionInProgress(metadata))
+				return "recursive sqlExpression call for entity '" + metadata.key + "'. "
 			const prev = metadata.options.sqlExpression
-			try {
-				metadata.options.sqlExpression =
-					"recursive sqlExpression call for entity '" + metadata.key + "'. "
-				return await prev(metadata as any)
-			} finally {
-				metadata.options.sqlExpression = prev
-			}
+			return await runSqlExpression(metadata, () => prev(metadata as any))
 		}
 	}
 	return wrapIdentifier(metadata.dbName)
