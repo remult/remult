@@ -308,12 +308,49 @@ export interface EntityMetadata<entityType = unknown> {
   readonly idMetadata: IdMetadata<entityType>
 }
 
+/**
+ * Marks a type that is never stored as a field. A getter that returns it stays out of `where`,
+ * `orderBy`, `insert` and the other field types.
+ *
+ * @example
+ * class Money implements NotAField {
+ *   declare readonly [NotAField.symbol]: true
+ *   constructor(readonly cents: number, readonly currency: string) {}
+ * }
+ *
+ * @Entity('orders')
+ * class Order {
+ *   @Fields.integer() priceCents = 0
+ *   @Fields.string() priceCurrency = 'USD'
+ *   get price(): Money { return new Money(this.priceCents, this.priceCurrency) }
+ * }
+ *
+ * // Type error. Without NotAField this typechecks and throws "field not found".
+ * repo(Order).find({ where: { price: new Money(100, 'USD') } })
+ */
+export interface NotAField {
+  // Makes this a tagged type, so `MembersOnly` can leave out getters that return it. A tagged type
+  // needs a property only it has, and a symbol key can't collide with a real one.
+  readonly [NotAField.symbol]: true
+}
+
+// This is a class so `NotAField.symbol` comes from the same import as the interface. A namespace
+// would break `erasableSyntaxOnly`, and a plain object widens the key so any symbol passes.
+export abstract class NotAField {
+  static readonly symbol: unique symbol = Symbol('NotAField')
+}
+
 export declare type MembersOnly<T> = {
   [K in keyof Omit<T, keyof EntityBase> as T[K] extends Function
     ? never
-    : K extends string
-      ? K
-      : never]: T[K]
+    : // `null` or `undefined` alone reduces to `never`, which extends everything
+      (
+          T[K] extends null | undefined ? unknown : NonNullable<T[K]>
+        ) extends NotAField
+      ? never
+      : K extends string
+        ? K
+        : never]: T[K]
 }
 //Pick<
 //   T,
