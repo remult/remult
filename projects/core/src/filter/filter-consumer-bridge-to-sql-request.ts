@@ -338,13 +338,20 @@ export async function dbNamesOf<entityType>(
 export async function dbNamesOfWithForceSqlExpression<entityType>(
   repo: EntityMetadataOverloads<entityType>,
   wrapIdentifierOrOptions?: ((name: string) => string) | dbNamesOfOptions,
+  forceEntitySqlExpression = false,
 ) {
-  return internalDbNamesOf(repo, wrapIdentifierOrOptions, true)
+  return internalDbNamesOf(
+    repo,
+    wrapIdentifierOrOptions,
+    true,
+    forceEntitySqlExpression,
+  )
 }
 async function internalDbNamesOf<entityType>(
   repo: EntityMetadataOverloads<entityType>,
   wrapIdentifierOrOptions?: ((name: string) => string) | dbNamesOfOptions,
   forceSqlExpression = false,
+  forceEntitySqlExpression = false,
 ): Promise<EntityDbNames<entityType>> {
   let options =
     typeof wrapIdentifierOrOptions === 'function'
@@ -358,7 +365,11 @@ async function internalDbNamesOf<entityType>(
   }
   if (!options.wrapIdentifier) options.wrapIdentifier = (x) => x
   const result: EntityDbNamesBase = {
-    $entityName: await entityDbName(meta, options.wrapIdentifier),
+    $entityName: await entityDbName(
+      meta,
+      options.wrapIdentifier,
+      forceEntitySqlExpression,
+    ),
     toString: () => result.$entityName,
     $dbNameOf: (field: FieldMetadata | string) => {
       var key: string

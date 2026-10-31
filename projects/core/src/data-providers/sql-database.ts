@@ -491,8 +491,10 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
 
   async init() {
     let dbNameProvider: EntityDbNamesBase =
-      await dbNamesOfWithForceSqlExpression(this.entity, (x) =>
-        this.sql.wrapIdentifier(x),
+      await dbNamesOfWithForceSqlExpression(
+        this.entity,
+        (x) => this.sql.wrapIdentifier(x),
+        true,
       )
     await this.iAmUsed(dbNameProvider)
     return dbNameProvider

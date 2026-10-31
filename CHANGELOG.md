@@ -56,6 +56,7 @@ All notable changes to this project will be documented in this file.
 - Mongo `contains` / `startsWith` / `endsWith` treated the search string as a regex. Metacharacters are escaped, so the filter is a literal ([#1050](https://github.com/remult/remult/pull/1050)).
 - GET `__action=groupBy` responded before the query finished. Forbidden GET errors now send `err.message` ([#1051](https://github.com/remult/remult/pull/1051)).
 - POST `__action=query` sent the body twice ([#1052](https://github.com/remult/remult/pull/1052)).
+- Concurrent queries on one `Remult`, such as POST `__action=query` on an entity with an async `sqlExpression`, no longer read the recursion placeholder as SQL (`syntax error at or near "call"`). Data providers now force the entity expression, as they already did for fields.
 - Thanks to @raashish1601 for their first contribution
 - Docs: REST split into read and mutations, `describeEntity` argument order ([#1046](https://github.com/remult/remult/pull/1046)).
 - Thanks to @pluxain for their first contribution to the docs

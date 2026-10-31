@@ -355,7 +355,11 @@ class MongoEntityDataProvider implements EntityDataProvider {
   }
 
   private async collection() {
-    const e = await dbNamesOf(this.entity)
+    const e = await dbNamesOfWithForceSqlExpression(
+      this.entity,
+      undefined,
+      true,
+    )
     const collection = this.db.collection(e.$entityName)
     return { e, collection }
   }
