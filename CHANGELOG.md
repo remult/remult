@@ -41,6 +41,7 @@ All notable changes to this project will be documented in this file.
 - `SqlDatabase.selectToRaw` and `groupByToRaw` map JSON columns using the provider's JSON storage mode; `jsonAsString` can override it when querying a different database.
 - `SseSubscriptionClient` reconnects forever with backoff (was 4 tries), reconnects on `visibilitychange` / `online` / `pageshow`, and recreates a socket that stops delivering events for `flags.sseStaleMs`.
 - `liveQuery` first `next()` no longer waits for the SSE connection.
+- `applyChanges` keeps the array in `orderBy` (or `defaultOrderBy`) order by default (added items used to go last). `applyChanges(prev, { pos: 'first' | 'last' })` picks the placement instead.
 - Each server-side live query carries a version, sent with every change and returned by the keep-alive. The client refetches the snapshot on any version gap, so a dead socket, a half-open socket, or a missed message is recovered within one keep-alive. `LiveQueryChange` has an internal `{ type: 'version', from, to }` member, filtered out before reaching `liveQuery` listeners.
 
 ### Fixed

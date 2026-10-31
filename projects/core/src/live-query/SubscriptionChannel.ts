@@ -53,21 +53,14 @@ export class LiveQuerySubscriber<entityType> {
 
   forListeners(
     what: (
-      listener: (reducer: (prevState: entityType[]) => entityType[]) => void,
+      listener: (
+        reducer: LiveQueryChangeInfo<entityType>['applyChanges'],
+      ) => void,
     ) => void,
     changes: LiveQueryChange[],
   ) {
     what((reducer) => {
       this.defaultQueryState = reducer(this.defaultQueryState)
-      if (changes.find((c) => c.type === 'add' || c.type === 'replace')) {
-        if (this.query.options.orderBy) {
-          const o = Sort.translateOrderByToSort(
-            this.repo.metadata,
-            this.query.options.orderBy,
-          )
-          this.defaultQueryState.sort((a: any, b: any) => o.compare(a, b))
-        }
-      }
     })
 
     for (const l of this.listeners) {
@@ -78,7 +71,7 @@ export class LiveQuerySubscriber<entityType> {
   }
 
   private createReducerType(
-    applyChanges: (prevState: entityType[]) => entityType[],
+    applyChanges: LiveQueryChangeInfo<entityType>['applyChanges'],
     changes: LiveQueryChange[],
   ): LiveQueryChangeInfo<entityType> {
     return {
@@ -123,7 +116,7 @@ export class LiveQuerySubscriber<entityType> {
     }
 
     this.forListeners((listener) => {
-      listener((items) => {
+      listener((items, { pos = 'auto' } = {}) => {
         if (!items) items = []
         for (const message of data) {
           switch (message.type) {
@@ -144,7 +137,8 @@ export class LiveQuerySubscriber<entityType> {
                   this.repo.metadata.idMetadata.getId(x) !==
                   this.repo.metadata.idMetadata.getId(message.data.item),
               )
-              items.push(message.data.item)
+              if (pos === 'first') items.unshift(message.data.item)
+              else items.push(message.data.item)
               break
             case 'remove':
               items = items.filter(
@@ -153,6 +147,17 @@ export class LiveQuerySubscriber<entityType> {
               )
               break
           }
+        }
+        const orderBy =
+          this.query.options.orderBy ??
+          this.repo.metadata.options.defaultOrderBy
+        if (
+          pos === 'auto' &&
+          orderBy &&
+          data.some((m) => m.type === 'add' || m.type === 'replace')
+        ) {
+          const o = Sort.translateOrderByToSort(this.repo.metadata, orderBy)
+          items.sort((a: any, b: any) => o.compare(a, b))
         }
         return items
       })
