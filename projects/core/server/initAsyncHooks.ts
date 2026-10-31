@@ -13,8 +13,6 @@ export function initAsyncHooks() {
   remultStatic.asyncContext = new RemultAsyncLocalStorage(
     new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
   )
-  remultStatic.sqlExpressionChain =
-    new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore()
   let test = new AsyncLocalStorage()
   test.run(1, async () => {
     await Promise.resolve()
@@ -25,7 +23,6 @@ export function initAsyncHooks() {
       remultStatic.asyncContext = new RemultAsyncLocalStorage(
         new StubRemultAsyncLocalStorageCore(),
       )
-      remultStatic.sqlExpressionChain = undefined
     }
   })
 }

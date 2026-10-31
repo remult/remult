@@ -1,21 +1,24 @@
 import type { EntityMetadata } from '../remult3/remult3.js'
-import {
-	isSqlExpressionInProgress,
-	runSqlExpression,
-} from './sqlExpressionInProgress.js'
+
+const sqlExpressionInProgressKey = Symbol.for(`entitySqlExpressionInProgressKey`)
 
 export async function entityDbName(
 	metadata: EntityMetadata,
 	wrapIdentifier: (name: string) => string = (x) => x,
+	forceSqlExpression = false,
 ) {
 	if (metadata.options.sqlExpression) {
 		if (typeof metadata.options.sqlExpression === 'string')
 			return metadata.options.sqlExpression
 		else if (typeof metadata.options.sqlExpression === 'function') {
-			if (isSqlExpressionInProgress(metadata))
+			if ((metadata as any)[sqlExpressionInProgressKey] && !forceSqlExpression)
 				return "recursive sqlExpression call for entity '" + metadata.key + "'. "
-			const prev = metadata.options.sqlExpression
-			return await runSqlExpression(metadata, () => prev(metadata as any))
+			try {
+				;(metadata as any)[sqlExpressionInProgressKey] = true
+				return await metadata.options.sqlExpression(metadata as any)
+			} finally {
+				delete (metadata as any)[sqlExpressionInProgressKey]
+			}
 		}
 	}
 	return wrapIdentifier(metadata.dbName)

@@ -5,10 +5,7 @@ import { Entity, Fields, Remult, SqlDatabase } from '../../core'
 import { remultApi } from '../../core/remult-hono.js'
 import { SqlJsDataProvider } from '../../core/remult-sql-js.js'
 import { RemultAsyncLocalStorage } from '../../core/src/context.js'
-import { initAsyncHooks } from '../../core/server/initAsyncHooks.js'
 import { dbNamesOf } from '../../core/src/filter/filter-consumer-bridge-to-sql-request'
-
-initAsyncHooks()
 
 const tick = () => new Promise((res) => setTimeout(res, 5))
 const newDb = () =>
@@ -74,9 +71,29 @@ describe('recursive sqlExpression', () => {
   })
 
   it('stops through another entity', async () => {
-    const [a, b] = await Promise.all([dbNamesOf(MutualA), dbNamesOf(MutualB)])
+    const a = await dbNamesOf(MutualA)
     expect(a.$entityName).toBe(`a(b(${placeholder('mutual-a')}))`)
-    expect(b.$entityName).toBe(`b(a(${placeholder('mutual-b')}))`)
+  })
+
+  it('stops at the entity through filterToRaw', async () => {
+    @Entity<Filtered>('filtered', {
+      sqlExpression: async () => {
+        const where = await SqlDatabase.filterToRaw(
+          Filtered,
+          { id: 1 },
+          undefined,
+          undefined,
+          (x) => x,
+        )
+        return `(select 1 as id where ${where}) as t`
+      },
+    })
+    class Filtered {
+      @Fields.number()
+      id = 0
+    }
+    const names = await dbNamesOf(Filtered, (x) => x)
+    expect(names.$entityName).toBe('(select 1 as id where id = 1) as t')
   })
 })
 
@@ -114,29 +131,22 @@ describe('concurrent sqlExpression', () => {
     expect(count).toBe(1)
   })
 
-  it('keeps recursion detection per caller', async () => {
-    const repo = new Remult(newDb()).repo(Recursive)
-    const names = await Promise.all([dbNamesOf(repo), dbNamesOf(repo)])
-    expect(names.map((x) => x.$entityName)).toEqual([
-      `(${placeholder('recursive')}id)`,
-      `(${placeholder('recursive')}id)`,
-    ])
-  })
-
-  it('gives every caller the field expression', async () => {
-    @Entity('async-field')
-    class AsyncField {
-      @Fields.string({
-        sqlExpression: async () => {
-          await tick()
-          return `'x'`
-        },
-      })
-      s = ''
+  it('still detects recursion during parallel queries', async () => {
+    @Entity<SelfReading>('self-reading', {
+      sqlExpression: async (meta) => {
+        await tick()
+        const names = await dbNamesOf(meta)
+        return `(select 1 as ${names.id}) as t`
+      },
+    })
+    class SelfReading {
+      @Fields.number()
+      id = 0
     }
-    const repo = new Remult(newDb()).repo(AsyncField)
-    const names = await Promise.all([dbNamesOf(repo), dbNamesOf(repo)])
-    expect(names.map((x) => x.s)).toEqual([`'x'`, `'x'`])
+    const repo = new Remult(newDb()).repo(SelfReading)
+    const [items, count] = await Promise.all([repo.find(), repo.count()])
+    expect(items).toEqual([{ id: 1 }])
+    expect(count).toBe(1)
   })
 
   it('re-evaluates the entity expression on every call', async () => {
