@@ -70,6 +70,21 @@ describe('recursive sqlExpression', () => {
     expect(names.$entityName).toBe(`(${placeholder('recursive')}id)`)
   })
 
+  it('stops at the field', async () => {
+    @Entity<RecursiveField>('recursive-field')
+    class RecursiveField {
+      @Fields.string<RecursiveField>({
+        sqlExpression: async (meta) => {
+          await tick()
+          return `(${(await dbNamesOf(meta)).s})`
+        },
+      })
+      s = ''
+    }
+    const names = await dbNamesOf(new Remult(newDb()).repo(RecursiveField))
+    expect(names.s).toBe(`(recursive sqlExpression call for field 's'. \0)`)
+  })
+
   it('stops through another entity', async () => {
     const a = await dbNamesOf(MutualA)
     expect(a.$entityName).toBe(`a(b(${placeholder('mutual-a')}))`)
