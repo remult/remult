@@ -6,6 +6,8 @@ import type {
   RelationOptions,
   ClassFieldDecorator,
   ClassFieldDecoratorContextStub,
+  SchemaFieldDecorator,
+  AcceptsOwnOutput,
 } from './remult3.js'
 import { ValueConverters } from '../valueConverters.js'
 import {
@@ -23,6 +25,8 @@ import { remultStatic } from '../remult-static.js'
 import { addValidator } from './addValidator.js'
 import { isOfType } from '../isOfType.js'
 import { InputTypes } from '../../inputTypes.js'
+import type { StandardSchemaV1 } from '../standard-schema/StandardSchemaV1.js'
+import { schemaFieldOptions } from '../standard-schema/schemaField.js'
 
 const validateNumber = createValueValidator((x: number) => {
   return !isNaN(x) && isFinite(x)
@@ -377,6 +381,39 @@ export class Fields {
     )[]
   ): ClassFieldDecorator<entityType, boolean | undefined> {
     return Field(() => Boolean as any, ...options)
+  }
+  /**
+   * A field declared and validated by a [Standard Schema](https://standardschema.dev/). The column
+   * comes from the schema's [Standard JSON Schema](https://standardschema.dev/json-schema), and the
+   * property's type has to match the schema's output type. The schema's output is written back to the
+   * property, so the schema has to accept its own output.
+   * @example
+   * @Fields.schema(z.string().email())
+   * email = ''
+   * @example
+   * // z.date() has no JSON Schema form, so it needs a valueType
+   * @Fields.schema(z.date(), { valueType: Date })
+   * createdAt = new Date()
+   */
+  static schema<schemaType extends StandardSchemaV1, entityType = unknown>(
+    schema: schemaType & AcceptsOwnOutput<schemaType>,
+    ...options: (
+      | FieldOptions<entityType, StandardSchemaV1.InferOutput<schemaType>>
+      | ((
+          options: FieldOptions<
+            entityType,
+            StandardSchemaV1.InferOutput<schemaType>
+          >,
+          remult: Remult,
+        ) => void)
+    )[]
+  ): SchemaFieldDecorator<StandardSchemaV1.InferOutput<schemaType>> {
+    const derived = schemaFieldOptions(schema, options)
+    return Field<any, any>(
+      derived.valueType,
+      derived.options,
+      ...(options as any),
+    ) as SchemaFieldDecorator<StandardSchemaV1.InferOutput<schemaType>>
   }
 }
 
