@@ -34,6 +34,7 @@ export class QueryResultImpl<entityType> implements QueryResult<entityType> {
       page: page,
       load: this.options.load,
       include: this.options.include,
+      args: this.options.args,
     })
   }
 
@@ -67,6 +68,7 @@ export class QueryResultImpl<entityType> implements QueryResult<entityType> {
       limit: this.options.pageSize,
       load: this.options.load,
       include: this.options.include,
+      args: this.options.args,
     }
     let getItems = () => this.repo.find(options)
 
