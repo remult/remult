@@ -141,7 +141,13 @@ As shown in the result, each `Order` object contains a nested `customer` object,
 
 #### Typing the Result
 
-By default, `find` returns the entity type, so included relations keep their `?`. To type them as loaded, turn on `typedInclude` in a declaration file:
+A relation is optional on the entity, because it's only there when you include it:
+
+```typescript
+customer?: Customer // maybe loaded
+```
+
+By default, `find` returns the entity type, so `orders[0].customer` is `Customer | undefined`. To have a literal `include` drop the `?` from the relations it loads, turn on `typedInclude` in a declaration file:
 
 ```typescript
 // remult-types.d.ts
@@ -154,9 +160,29 @@ declare module 'remult' {
 }
 ```
 
-With it on, a literal `include` types each included relation as loaded, so `orders[0].customer.name` compiles without a `?.`. The same goes for `findFirst`, `findOne` and `findId`.
+```typescript
+const orders = await repo(Order).find({ include: { customer: true } })
+orders[0].customer.name // no `?.` needed
+```
 
-A loaded result is narrower than the entity, so a variable inferred from it can't be reassigned a plain entity, e.g. the result of `insert`. Annotate the variable with the entity type when you need that:
+The same goes for `findFirst`, `findOne` and `findId`.
+
+**A loaded result is narrower than the entity.**
+
+```typescript
+Order                             // customer?: Customer   maybe loaded
+Loaded<Order, { customer: true }> // customer:  Customer   loaded
+```
+
+A loaded row fits into an `Order` variable. A plain `Order`, such as the result of `insert`, doesn't fit into a loaded one:
+
+```typescript
+let order = await repo(Order).findFirst({ id }, { include: { customer: true } })
+if (!order) order = await repo(Order).insert({ id })
+//          ^ error: insert's result doesn't have customer loaded
+```
+
+If you don't need `customer` afterwards, type the variable as the plain entity. This gives up the narrowing:
 
 ```typescript
 let order: Order | undefined = await repo(Order).findFirst(
@@ -164,15 +190,28 @@ let order: Order | undefined = await repo(Order).findFirst(
   { include: { customer: true } },
 )
 if (!order) order = await repo(Order).insert({ id })
+order.customer // Customer | undefined
 ```
 
-An included `toOne` whose target row is missing loads as `undefined`. If that can happen, e.g. an optional FK or a target a `backendPrefilter` can hide, declare the relation `| null`. It then stays `Customer | null | undefined` instead of being typed as loaded.
+If you do need it, load it again after the insert:
+
+```typescript
+let order = await repo(Order).findFirst({ id }, { include: { customer: true } })
+if (!order) {
+  await repo(Order).insert({ id })
+  order = (await repo(Order).findFirst({ id }, { include: { customer: true } }))!
+}
+order.customer // Customer
+```
+
+**A missing target is `undefined`.** An included `toOne` whose target row doesn't exist loads as `undefined`. If that can happen, e.g. with an optional FK or a target a `backendPrefilter` can hide, declare the relation `| null` so it isn't typed as loaded:
 
 ```typescript
 @Fields.string()
 customerId = ''
 @Relations.toOne<Order, Customer>(() => Customer, { field: 'customerId' })
 customer?: Customer | null // [!code ++]
+// loaded: Customer | null | undefined
 ```
 
 ### Querying a Single Item
