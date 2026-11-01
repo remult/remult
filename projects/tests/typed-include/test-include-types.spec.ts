@@ -99,23 +99,21 @@ describe('test include types', () => {
     const categories = await remult
       .repo(Category)
       .find({ include: { company: true }, orderBy: { id: 'asc' } })
-    expectTypeOf(categories[0].company).toEqualTypeOf<
-      Company | null | undefined
-    >()
+    expectTypeOf(categories[0].company).toEqualTypeOf<Company | null>()
     expect(categories.map((c) => c.company?.name ?? null)).toEqual([
       'comp1',
       null,
     ])
   })
-  it('included relation with a missing target is undefined', async () => {
+  it('included relation with a missing target is null', async () => {
     await remult.repo(Category).insert({ id: 3, name: 'cat3', companyId: 99 })
     const category = await remult
       .repo(Category)
       .findId(3, { include: { company: true } })
-    expect(category!.company).toBeUndefined()
+    expect(category!.company).toBeNull()
     expect(category!.companyId).toBe(99)
   })
-  it('included fields relation with a missing target is undefined', async () => {
+  it('included fields relation with a missing target is null', async () => {
     await remult.repo(BranchCustomer).insert({ id: 7, branchId: 1, name: 'c7' })
     await remult.repo(BranchOrder).insert([
       { id: 1, branchId: 1, customerId: 7 },
@@ -124,11 +122,9 @@ describe('test include types', () => {
     const orders = await remult
       .repo(BranchOrder)
       .find({ include: { customer: true }, orderBy: { id: 'asc' } })
-    expectTypeOf(orders[0].customer).toEqualTypeOf<
-      BranchCustomer | null | undefined
-    >()
+    expectTypeOf(orders[0].customer).toEqualTypeOf<BranchCustomer | null>()
     expect(orders[0].customer?.name).toBe('c7')
-    expect(orders[1].customer).toBeUndefined()
+    expect(orders[1].customer).toBeNull()
     expect(orders[1].branchId).toBe(2)
     expect(orders[1].customerId).toBe(7)
   })
@@ -136,9 +132,7 @@ describe('test include types', () => {
     const task = await remult
       .repo(Task)
       .findOne({ include: { category: { include: { company: true } } } })
-    expectTypeOf(task!.category.company).toEqualTypeOf<
-      Company | null | undefined
-    >()
+    expectTypeOf(task!.category.company).toEqualTypeOf<Company | null>()
     expect(task!.category.company?.name).toBe('comp1')
   })
   it('shallow include leaves nested relations optional', async () => {

@@ -204,14 +204,14 @@ if (!order) {
 order.customer // Customer
 ```
 
-**A missing target is `undefined`.** An included `toOne` whose target row doesn't exist loads as `undefined`. If that can happen, e.g. with an optional FK or a target a `backendPrefilter` can hide, declare the relation `| null` so it isn't typed as loaded:
+**A missing target is `null`.** An included `toOne` whose target row doesn't exist loads as `null`, and its FK keeps its value. If that can happen, e.g. with an optional FK or a target a `backendPrefilter` can hide, declare the relation `| null` so it isn't typed as loaded:
 
 ```typescript
 @Fields.string()
 customerId = ''
 @Relations.toOne<Order, Customer>(() => Customer, { field: 'customerId' })
 customer?: Customer | null // [!code ++]
-// loaded: Customer | null | undefined
+// loaded: Customer | null
 ```
 
 ### Querying a Single Item
@@ -243,6 +243,16 @@ const ordersWithoutCustomer = await repo(Order).find({})
 ```
 
 In the above query, the `customer` relation will not be loaded and have the value of `undefined` because it is not specified in the `include` statement.
+
+A `toOne` relation's value tells you whether it was loaded:
+
+```typescript
+order.customer // undefined: not included
+order.customer // null:      included, but no Customer matches the FK
+order.customer // Customer:  included and found
+```
+
+The FK (e.g. `customerId`) keeps its value either way. To check for a missing customer, use `order.customer == null` or `order.customer?.name`.
 
 #### Overriding Default Behavior with `defaultIncluded`
 

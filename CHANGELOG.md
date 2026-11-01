@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - `orderByNullsFirst` is removed, use `NullSort` ([#1079](https://github.com/remult/remult/pull/1079) by @jycouet).
 - A custom `SqlImplementation` must declare `nativeNullSort` ([#1079](https://github.com/remult/remult/pull/1079) by @jycouet).
 - In memory, `$gt`, `$gte`, `$lt` and `$lte` no longer match NULL ([#1079](https://github.com/remult/remult/pull/1079) by @jycouet).
+- An included `toOne` whose target row is missing loads as `null` instead of `undefined` (`field`/`fields` relations; an own-column `toOne` already returned `null`). `undefined` now always means "not included". Code that checks `=== undefined` for a missing target should use `== null` or `?.`, and `JSON.stringify` now writes `"customer": null`. The FK keeps its value, including when the row is copied into `update(id, { ...row })`. With `typedInclude` on, a relation declared `| null` loads as `X | null`.
 
 ### Added
 
