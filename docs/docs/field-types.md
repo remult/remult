@@ -518,19 +518,9 @@ export class Contact {
 
 ## Getters that are not fields
 
-The types treat any getter on an entity as a field, so `where: { price }` compiles and then throws at runtime. Implement `NotAField` on the getter's return type to leave it out of `where`, `orderBy`, `insert`, `fields` and the other field types:
+The types treat every property on an entity as a field, getters included. So a getter computed from other fields compiles where a field is expected, and then fails at runtime:
 
 ```ts
-import { NotAField } from 'remult'
-
-class Money implements NotAField {
-  declare readonly [NotAField.symbol]: true
-  constructor(
-    readonly cents: number,
-    readonly currency: string,
-  ) {}
-}
-
 @Entity('orders')
 export class Order {
   @Fields.integer()
@@ -541,10 +531,44 @@ export class Order {
     return new Money(this.priceCents, this.priceCurrency)
   }
 }
+
+repo(Order).find({ where: { price } }) // compiles, throws "Field price not found"
+repo(Order).find({ orderBy: { price: 'asc' } }) // compiles, ignored
+repo(Order).insert({ price }) // compiles, drops the value
 ```
 
-For a getter that returns a primitive, use `string & NotAField`.
+Type the getter as `NotAField<...>` to leave it out of `where`, `orderBy`, `insert`, `fields` and the other field types:
 
-::: warning
-The marker goes on the type, not the getter. A property of that type that is stored as a real field (`Fields.json<Money>()`, a `valueConverter`) also disappears from `where`, `orderBy` and `fields`.
-:::
+```ts
+import type { NotAField } from 'remult'
+
+@Entity('orders')
+export class Order {
+  @Fields.integer()
+  priceCents = 0
+  @Fields.string()
+  priceCurrency = 'USD'
+  get price(): NotAField<Money> { // [!code highlight]
+    return new Money(this.priceCents, this.priceCurrency)
+  }
+  set price(value: Money) {
+    this.priceCents = value.cents
+    this.priceCurrency = value.currency
+  }
+
+  get label(): NotAField<string> { // [!code highlight]
+    return `${this.priceCents / 100} ${this.priceCurrency}`
+  }
+
+  @Fields.json()
+  total = new Money(0, 'USD') // [!code highlight]
+}
+
+repo(Order).find({ where: { price } }) // type error
+repo(Order).find({ where: { total } }) // fine, `total` is a real field
+```
+
+- The marker goes on the property, not on `Money`. `total` holds a `Money` too, but it's stored, so it stays a field.
+- A plain `Money` still assigns to `NotAField<Money>`, so neither the getter nor `order.price = money` needs a cast, and `order.price` reads as a `Money`.
+- It works on a plain property too, e.g. one a decorator turns into an accessor: `tax: NotAField<Money> | null = null`.
+- It's types only. Nothing changes at runtime.
