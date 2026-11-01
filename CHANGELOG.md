@@ -1,5 +1,11 @@
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- Opt-in typed `include` results ([#1053](https://github.com/remult/remult/pull/1053) re-landed). Turn on with `declare module 'remult' { interface RemultTypeConfig { typedInclude: true } }`; then a literal `include` types its relations as loaded in `find`, `findFirst`, `findOne` and `findId` results, so `task.category.name` needs no `?.`. Off by default, so existing code is unchanged. Exports `Loaded<T, include>` and `RemultTypeConfig`. Planned to become the default in the next major.
+
 ## [3.4.1] - [2026-10-30]
 
 ### Reverted

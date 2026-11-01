@@ -139,6 +139,42 @@ Here's an example result of running `JSON.stringify` on the `orders` array:
 
 As shown in the result, each `Order` object contains a nested `customer` object, which holds the details of the associated customer, including their `id`, `name`, and `city`. This structured data allows you to work seamlessly with the many-to-one relationship between `Order` and `Customer` entities .
 
+#### Typing the Result
+
+By default, `find` returns the entity type, so included relations keep their `?`. To type them as loaded, turn on `typedInclude` in a declaration file:
+
+```typescript
+// remult-types.d.ts
+import 'remult'
+
+declare module 'remult' {
+  interface RemultTypeConfig {
+    typedInclude: true
+  }
+}
+```
+
+With it on, a literal `include` types each included relation as loaded, so `orders[0].customer.name` compiles without a `?.`. The same goes for `findFirst`, `findOne` and `findId`.
+
+A loaded result is narrower than the entity, so a variable inferred from it can't be reassigned a plain entity, e.g. the result of `insert`. Annotate the variable with the entity type when you need that:
+
+```typescript
+let order: Order | undefined = await repo(Order).findFirst(
+  { id },
+  { include: { customer: true } },
+)
+if (!order) order = await repo(Order).insert({ id })
+```
+
+An included `toOne` whose target row is missing loads as `undefined`. If that can happen, e.g. an optional FK or a target a `backendPrefilter` can hide, declare the relation `| null`. It then stays `Customer | null | undefined` instead of being typed as loaded.
+
+```typescript
+@Fields.string()
+customerId = ''
+@Relations.toOne<Order, Customer>(() => Customer, { field: 'customerId' })
+customer?: Customer | null // [!code ++]
+```
+
 ### Querying a Single Item
 
 To retrieve a single `Order` item along with its associated `Customer`, you can use the `findFirst` method provided by your repository (`orderRepo` in this case). Here's an example of how to perform this query:
