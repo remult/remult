@@ -2,6 +2,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Breaking
+
+- An included `toOne` whose target row is missing loads as `null` instead of `undefined` (`field`/`fields` relations; an own-column `toOne` already returned `null`). `undefined` now always means "not included". Code that checks `=== undefined` for a missing target should use `== null` or `?.`, and `JSON.stringify` now writes `"customer": null`. The FK keeps its value, including when the row is copied into `update(id, { ...row })`. With `typedInclude` on, a relation declared `| null` loads as `X | null`.
+
 ### Added
 
 - Opt-in typed `include` results ([#1053](https://github.com/remult/remult/pull/1053) re-landed). Turn on with `declare module 'remult' { interface RemultTypeConfig { typedInclude: true } }`; then a literal `include` types its relations as loaded in `find`, `findFirst`, `findOne` and `findId` results, so `task.category.name` needs no `?.`. Off by default, so existing code is unchanged. Exports `Loaded<T, include>` and `RemultTypeConfig`. Planned to become the default in the next major.

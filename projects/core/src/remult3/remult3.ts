@@ -1516,7 +1516,7 @@ type LoadedRelation<value, include> =
   NonNullable<value> extends (infer target)[]
     ? LoadedTarget<target, include>[]
     : null extends value
-      ? LoadedTarget<NonNullable<value>, include> | null | undefined
+      ? LoadedTarget<NonNullable<value>, include> | null
       : LoadedTarget<NonNullable<value>, include>
 
 type LoadedKeys<entityType, include> = {
@@ -1553,9 +1553,8 @@ type IncludeResult<entityType, include> = RemultTypeConfig extends {
 /**
  * The entity type `find` returns for a given `include` when `typedInclude` is on, see {@link RemultTypeConfig}.
  * Included relations drop their `?`, and nested `include`s work the same way.
- * A `toOne` whose target row is missing loads as `undefined`, so a relation declared `| null`
- * keeps `null | undefined`. Declare it that way when that can happen, e.g. an optional FK or a target
- * a `backendPrefilter` can hide.
+ * A `toOne` whose target row is missing loads as `null`. Declare the relation `| null` when that can
+ * happen, e.g. an optional FK or a target a `backendPrefilter` can hide.
  * A relation included with `false` or a widened `boolean` keeps its declared type.
  * @example
  * const tasks = await repo(Task).find({ include: { category: true } })

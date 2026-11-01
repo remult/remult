@@ -131,6 +131,18 @@ let classValidatorValidate:
 //     .catch(() => {
 //     });
 
+// Assigning a `toOne` also writes its `field`/`fields`, which would wipe the FK of a row whose
+// target is missing.
+function setMissingRelationToNull<T>(row: T, key: keyof T) {
+  const ref = getEntityRef(row) as unknown as rowHelperBase<T>
+  ref._skipRelationFieldSync = true
+  try {
+    row[key] = null!
+  } finally {
+    ref._skipRelationFieldSync = false
+  }
+}
+
 export class RepositoryImplementation<entityType>
   implements Repository<entityType>, RepositoryInternal<entityType>
 {
@@ -505,6 +517,17 @@ export class RepositoryImplementation<entityType>
       const field = this.fields[key]
       if (field) {
         const rel = getRelationFieldInfo(field)
+        if (rel && rel.type === 'toOne') {
+          // A missing include target loads as `null`. When a row is copied into a partial, e.g.
+          // `update(id, { ...row })`, that `null` would clear the FK it sits next to, so the FK wins.
+          const fkKeys: string[] = rel.options.field
+            ? [rel.options.field as string]
+            : Object.values(rel.options.fields ?? {})
+          if (item[key] === null && fkKeys.some((fk) => keys.includes(fk))) {
+            delete item[key as keyof Partial<MembersOnly<entityType>>]
+            continue
+          }
+        }
         if (rel && rel.type === 'toOne' && rel.options.field) {
           let fieldIndex = keys.indexOf(rel.options.field)
           if (fieldIndex > index) {
@@ -1077,9 +1100,11 @@ export class RepositoryImplementation<entityType>
             let { findOptions, returnNull, returnUndefined } =
               this._findOptionsBasedOnRelation(rel, col, incl, row, otherRepo)
             const colKey = col.key as keyof entityType
-            if (returnNull) row[colKey] = null!
-            else if (returnUndefined) row[colKey] = undefined!
-            else {
+            if (returnNull || returnUndefined) {
+              if (rel.type === 'toMany')
+                row[colKey] = (returnNull ? null : undefined)!
+              else setMissingRelationToNull(row, colKey)
+            } else {
               const entityType = rel.toEntity
               const toRepo = otherRepo as RepositoryImplementation<any>
               loader
@@ -1095,13 +1120,10 @@ export class RepositoryImplementation<entityType>
                   findOptions,
                 )
                 .then((result) => {
-                  if (result.length == 0 && rel!.type == 'toOne') return
-                  row[colKey] =
-                    rel!.type !== 'toMany'
-                      ? result.length == 0
-                        ? null
-                        : result[0]
-                      : result
+                  if (rel!.type === 'toMany') row[colKey] = result as any
+                  else if (result.length == 0)
+                    setMissingRelationToNull(row, colKey)
+                  else row[colKey] = result[0]
                 })
             }
           }
@@ -1645,7 +1667,7 @@ abstract class rowHelperBase<T> {
             },
             set: (newVal) => {
               val = newVal
-              if (newVal === undefined) return
+              if (newVal === undefined || this._skipRelationFieldSync) return
 
               const op = col.options as RelationOptions<any, any, any>
 
@@ -1671,6 +1693,7 @@ abstract class rowHelperBase<T> {
     }
   }
 
+  _skipRelationFieldSync = false
   _subscribers?: SubscribableImp
   subscribe(listener: RefSubscriber): Unsubscribe {
     this.initSubscribers()
