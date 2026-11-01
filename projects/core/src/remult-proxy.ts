@@ -175,11 +175,11 @@ export class RemultProxy implements Remult {
           .remultFactory()
           .repo(...args)
           .updateMany(...args2),
-      find: (...args2) =>
+      find: (options?: any) =>
         self
           .remultFactory()
           .repo(...args)
-          .find(...args2),
+          .find(options),
       groupBy: (...args2) =>
         self
           .remultFactory()
@@ -193,17 +193,17 @@ export class RemultProxy implements Remult {
           //@ts-ignore
           .aggregate(...args2) as any,
 
-      findFirst: (...args2) =>
+      findFirst: (where?: any, options?: any) =>
         self
           .remultFactory()
           .repo(...args)
-          .findFirst(...args2),
-      findOne: (...args2) =>
+          .findFirst(where, options),
+      findOne: (options?: any) =>
         self
           .remultFactory()
           .repo(...args)
-          .findOne(...args2),
-      findId: (a, b) =>
+          .findOne(options),
+      findId: (a: any, b?: any) =>
         self
           .remultFactory()
           .repo(...args)
