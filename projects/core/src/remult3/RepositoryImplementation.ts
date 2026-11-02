@@ -143,41 +143,95 @@ export class RepositoryImplementation<entityType>
   [getInternalKey]() {
     return this
   }
+  /** Sort keys of a row, copied as consumers may edit the items they get. */
+  _sortValues(orderBy: EntityOrderBy<entityType>, row: entityType) {
+    const values: Record<string, any> = {}
+    for (const { field } of Sort.translateOrderByToSort(this.metadata, orderBy)
+      .Segments)
+      // An unloaded relation reads undefined, which is not a NULL key.
+      values[field.key] =
+        (
+          this.getEntityRef(row).fields.find(field.key) as IdFieldRef<
+            entityType,
+            any
+          >
+        ).getId() ?? null
+    return values
+  }
+
+  /** Which sort keys are NULL. Rows sharing it sort as a plain list, wherever the provider puts NULLs. */
+  _nullPattern(orderBy: EntityOrderBy<entityType>, row: Record<string, any>) {
+    return Sort.translateOrderByToSort(this.metadata, orderBy)
+      .Segments.filter((s) => this._canSortNull(s.field))
+      .map((s) => (row[s.field.key] == null ? 'n' : 'v'))
+      .join('')
+  }
+
   async _createAfterFilter(
     orderBy: EntityOrderBy<entityType>,
     lastRow: entityType,
+    cursors?: Record<string, any>,
   ): Promise<EntityFilter<entityType>> {
-    let values = new Map<string, any>()
-
-    for (const s of Sort.translateOrderByToSort(this.metadata, orderBy)
-      .Segments) {
-      let existingVal = lastRow[s.field.key as keyof entityType]
-      // if (typeof existingVal !== "string" && typeof existingVal !== "number") {
-      // }
-      // else {
-      //     let ei = getEntitySettings(s.field.valueType, false);
-      //     if (ei) {
-      //         existingVal = await this.remult.repo(s.field.valueType).findId(existingVal);
-      //     }
-      // }
-      values.set(s.field.key, existingVal)
+    const segments = Sort.translateOrderByToSort(
+      this.metadata,
+      orderBy,
+    ).Segments
+    const nullable = segments.filter((s) => this._canSortNull(s.field))
+    const sameSide = (row: any, s: (typeof segments)[number]) => {
+      const isNull = { [s.field.key]: null }
+      return (row[s.field.key] == null ? isNull : { $not: isNull }) as any
     }
-
-    let r: EntityFilter<entityType> = { $or: [] }
-    let equalToColumn: FieldMetadata[] = []
-    for (const s of Sort.translateOrderByToSort(this.metadata, orderBy)
-      .Segments) {
-      let f: EntityFilter<any> = {}
-      for (const c of equalToColumn) {
-        f[c.key] = values.get(c.key)
-      }
-      equalToColumn.push(s.field)
-      if (s.isDescending) {
-        f[s.field.key] = { $lt: values.get(s.field.key) }
-      } else f[s.field.key] = { $gt: values.get(s.field.key) }
-      r.$or!.push(f)
+    const rows = cursors
+      ? Object.values(cursors)
+      : [this._sortValues(orderBy, lastRow)]
+    const $or: EntityFilter<any>[] = []
+    for (const row of rows) {
+      let equal: EntityFilter<any> = {}
+      segments.forEach((s, i) => {
+        const key = s.field.key
+        if (row[key] != null || !nullable.includes(s)) {
+          const after = {
+            ...equal,
+            [key]: s.isDescending ? { $lt: row[key] } : { $gt: row[key] },
+          }
+          const later = nullable.filter((x) => segments.indexOf(x) > i)
+          $or.push(
+            cursors && later.length
+              ? { $and: [after, ...later.map((x) => sameSide(row, x))] }
+              : after,
+          )
+        }
+        equal = { ...equal, [key]: row[key] }
+      })
     }
-    return r
+    // Patterns not met yet: nothing of them was read.
+    if (cursors && nullable.length)
+      $or.push({
+        $not: {
+          $or: rows.map((row) => ({
+            $and: nullable.map((x) => sameSide(row, x)),
+          })),
+        },
+      } as EntityFilter<any>)
+    return { $or } as EntityFilter<any>
+  }
+
+  /** If NULL rows don't read NULL, or `{ key: null }` can't find them, the key pages as if it had none. */
+  private _canSortNull(field: FieldMetadata) {
+    try {
+      return (
+        field.valueConverter.fromDb(null) == null &&
+        field.valueConverter.toDb(null) == null &&
+        field.valueConverter.fromJson(field.valueConverter.toJson(null)) ==
+          null &&
+        (field.allowNull ||
+          (!this.metadata.idMetadata.fields.includes(field) &&
+            getRelationFieldInfo(field)?.type !== 'reference'))
+      )
+    } catch {
+      // A converter can reject null.
+      return false
+    }
   }
 
   relations(item: entityType) {

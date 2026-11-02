@@ -18,6 +18,7 @@ export interface RepositoryInternal<entityType> {
   _createAfterFilter(
     orderBy: EntityOrderBy<entityType>,
     lastRow: entityType,
+    cursors?: Record<string, any>,
   ): Promise<EntityFilter<entityType>>
   _fromJsonArray(
     jsonItems: any[],

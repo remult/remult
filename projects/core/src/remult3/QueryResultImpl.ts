@@ -54,6 +54,7 @@ export class QueryResultImpl<entityType> implements QueryResult<entityType> {
 
   async paginator(
     pNextPageFilter?: EntityFilter<entityType>,
+    pCursors?: Record<string, any>,
   ): Promise<Paginator<entityType>> {
     this.options.orderBy = Sort.createUniqueEntityOrderBy(
       this.repo.metadata,
@@ -113,11 +114,17 @@ export class QueryResultImpl<entityType> implements QueryResult<entityType> {
     }
     let hasNextPage = items.length == this.options.pageSize
     if (hasNextPage) {
+      const cursors = { ...pCursors }
+      for (const item of items) {
+        const row = this.repo._sortValues(this.options.orderBy, item)
+        cursors[this.repo._nullPattern(this.options.orderBy, row)] = row
+      }
       let nextPageFilter = await this.repo._createAfterFilter(
         this.options.orderBy,
         items[items.length - 1],
+        cursors,
       )
-      nextPage = () => this.paginator(nextPageFilter)
+      nextPage = () => this.paginator(nextPageFilter, cursors)
     }
     return {
       count: () => this.count(),
@@ -141,6 +148,7 @@ export class QueryResultImpl<entityType> implements QueryResult<entityType> {
 
     let itemIndex = -1
     let currentPage: Paginator<entityType> | undefined = undefined
+    let firstRow: string | undefined
 
     let itStrategy: () => Promise<IteratorResult<entityType>>
 
@@ -153,7 +161,6 @@ export class QueryResultImpl<entityType> implements QueryResult<entityType> {
       if (currentPage === undefined || itemIndex == currentPage.items.length) {
         if (currentPage && !currentPage.hasNextPage)
           return { value: undefined, done: true }
-        let prev = currentPage
         if (currentPage) currentPage = await currentPage.nextPage!()
         else currentPage = await this.paginator()
 
@@ -161,13 +168,15 @@ export class QueryResultImpl<entityType> implements QueryResult<entityType> {
         if (currentPage.items.length == 0) {
           return { value: undefined, done: true }
         } else {
-          if (prev?.items.length ?? 0 > 0) {
-            if (
-              this.repo.getEntityRef(prev!.items[0]).getId() ==
-              this.repo.getEntityRef(currentPage.items[0]).getId()
-            )
-              throw new Error('pagination failure, returned same first row')
-          }
+          // Read now, as the loop may edit it. A row whose sort key changed moved.
+          const first = Object.values(
+            this.repo._sortValues(this.options.orderBy!, currentPage.items[0]!),
+          )
+            .map((x) => x?.valueOf())
+            .join()
+          if (first === firstRow)
+            throw new Error('pagination failure, returned same first row')
+          firstRow = first
         }
       }
       if (itemIndex < currentPage.items.length)

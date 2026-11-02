@@ -462,22 +462,27 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
       this.ok = false
   }
 
+  // As in SQL, a NULL row never matches an ordering comparison.
   public isGreaterOrEqualTo(col: FieldMetadata, val: any): void {
+    this.isNotNull(col)
     if (this.row[this.dbNames.$dbNameOf(col)] < col.valueConverter.toJson(val))
       this.ok = false
   }
 
   public isGreaterThan(col: FieldMetadata, val: any): void {
+    this.isNotNull(col)
     if (this.row[this.dbNames.$dbNameOf(col)] <= col.valueConverter.toJson(val))
       this.ok = false
   }
 
   public isLessOrEqualTo(col: FieldMetadata, val: any): void {
+    this.isNotNull(col)
     if (this.row[this.dbNames.$dbNameOf(col)] > col.valueConverter.toJson(val))
       this.ok = false
   }
 
   public isLessThan(col: FieldMetadata, val: any): void {
+    this.isNotNull(col)
     if (this.row[this.dbNames.$dbNameOf(col)] >= col.valueConverter.toJson(val))
       this.ok = false
   }

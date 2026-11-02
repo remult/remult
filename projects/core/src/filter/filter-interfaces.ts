@@ -539,7 +539,11 @@ class filterHelper {
   }
   isEqualTo(val: any): Filter {
     val = this.processVal(val)
-    if ((val === null || val === undefined) && this.metadata.allowNull)
+    // `= NULL` matches nothing, and a column can hold NULL without `allowNull`.
+    if (
+      ((val === null || val === undefined) && this.metadata.allowNull) ||
+      (val === null && this.metadata.valueConverter.toDb(null) == null)
+    )
       return new Filter((add) => add.isNull(this.metadata))
     return new Filter((add) => add.isEqualTo(this.metadata, val))
   }
