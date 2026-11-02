@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 - `NullSort` (`remult/internals`): where NULL sorts, for the whole app ([docs](https://remult.dev/docs/field-types#where-null-sorts), [#1079](https://github.com/remult/remult/pull/1079) by @jycouet).
 - `NotAField<T>`: type a getter as `NotAField<Money>` to keep it out of `where`, `orderBy`, `insert`, `fields` and the other field types ([docs](https://remult.dev/docs/field-types#getters-that-are-not-fields), [#1056](https://github.com/remult/remult/pull/1056) by @AndrewSouthpaw).
 - Opt-in typed `include` results ([#1053](https://github.com/remult/remult/pull/1053) re-landed). Turn on with `declare module 'remult' { interface RemultTypeConfig { typedInclude: true } }`; then a literal `include` types its relations as loaded in `find`, `findFirst`, `findOne`, `findId`, `*OrThrow`, `query` and `liveQuery` results, so `task.category.name` needs no `?.`. Off by default, so existing code is unchanged. Exports `Loaded<T, include>` and `RemultTypeConfig`. Planned to become the default in the next major.
+- Opt-in typed `select` results. Turn on with `typedSelect: true` in `RemultTypeConfig`, the same way as `typedInclude`. Then `find`, `findFirst` and `findOne` drop the members a literal `select` leaves out, so `task.completed` is an error after `select: { title: true }`. A `select` inside an `include` narrows that relation too. Off by default, because a selected row isn't assignable to the entity type. Exports `Selected<T, select, include>`.
 
 ### Changed
 
