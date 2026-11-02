@@ -1,4 +1,7 @@
-import type { RestDataProviderHttpProvider } from './data-interfaces.js'
+import {
+  EntityError,
+  type RestDataProviderHttpProvider,
+} from './data-interfaces.js'
 import { RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider-using-fetch.js'
 import { retry } from './data-providers/retry.js'
 
@@ -93,10 +96,7 @@ export async function processHttpException(ex: any) {
   if (httpStatusCode !== undefined && httpStatusCode !== null) {
     error.httpStatusCode = httpStatusCode
   }
-  var result = Object.assign(error ?? {}, {
-    //     exception: ex disabled for now because JSON.stringify crashed with this
-  })
-  return result
+  return new EntityError(error ?? {})
 }
 
 export interface ExternalHttpProvider {

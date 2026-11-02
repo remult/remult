@@ -13,6 +13,7 @@ import { Status } from './testModel/models'
 import { UrlBuilder } from '../../core/src/../urlBuilder'
 import type { Allowed } from '../../core/src/context'
 import { Remult } from '../../core/src/context'
+import { EntityError } from '../../core/src/data-interfaces'
 
 import {
   addFilterToUrlAndReturnTrueIfSuccessful,
@@ -1269,19 +1270,13 @@ describe('data api', () => {
     const r = new Remult(
       TestApiDataProvider({ dataProvider: remult.dataProvider }),
     ).repo(type)
-    await expect(() => r.delete(2)).rejects.toThrowErrorMatchingInlineSnapshot(`
-      {
-        "httpStatusCode": 403,
-        "message": "Forbidden",
-      }
-    `)
-    await expect(() => r.deleteMany({ where: { id: { '!=': -1 } } })).rejects
-      .toThrowErrorMatchingInlineSnapshot(`
-      {
-        "httpStatusCode": 403,
-        "message": "Forbidden",
-      }
-    `)
+    await expect(() => r.delete(2)).rejects.toMatchObject({
+      httpStatusCode: 403,
+      message: 'Forbidden',
+    })
+    await expect(() =>
+      r.deleteMany({ where: { id: { '!=': -1 } } }),
+    ).rejects.toMatchObject({ httpStatusCode: 403, message: 'Forbidden' })
   })
 
   it('apiRequireId', async () => {
@@ -1372,26 +1367,16 @@ describe('data api', () => {
     const r = new Remult(
       TestApiDataProvider({ dataProvider: remult.dataProvider }),
     ).repo(type)
-    await expect(() => r.delete(2)).rejects.toThrowErrorMatchingInlineSnapshot(`
-      {
-        "httpStatusCode": 403,
-        "message": "Forbidden",
-      }
-    `)
-    await expect(() => r.deleteMany({ where: { id: 2 } })).rejects
-      .toThrowErrorMatchingInlineSnapshot(`
-      {
-        "httpStatusCode": 403,
-        "message": "Forbidden",
-      }
-    `)
-    await expect(() => r.deleteMany({ where: { id: { '!=': -1 } } })).rejects
-      .toThrowErrorMatchingInlineSnapshot(`
-      {
-        "httpStatusCode": 403,
-        "message": "Forbidden",
-      }
-    `)
+    await expect(() => r.delete(2)).rejects.toMatchObject({
+      httpStatusCode: 403,
+      message: 'Forbidden',
+    })
+    await expect(() =>
+      r.deleteMany({ where: { id: 2 } }),
+    ).rejects.toMatchObject({ httpStatusCode: 403, message: 'Forbidden' })
+    await expect(() =>
+      r.deleteMany({ where: { id: { '!=': -1 } } }),
+    ).rejects.toMatchObject({ httpStatusCode: 403, message: 'Forbidden' })
     expect(await r.count()).toBe(3)
 
     await r.delete(1)
@@ -1414,24 +1399,15 @@ describe('data api', () => {
     ).repo(type)
     expect(r.metadata.apiUpdateAllowed({ id: 2 } as any)).toBe(false)
     expect(r.metadata.apiUpdateAllowed({ id: 1 } as any)).toBe(true)
-    await expect(() => r.update(2, { categoryName: 'noam 1' })).rejects
-      .toThrowErrorMatchingInlineSnapshot(`
-      {
-        "httpStatusCode": 403,
-        "message": "Forbidden",
-      }
-    `)
+    await expect(() =>
+      r.update(2, { categoryName: 'noam 1' }),
+    ).rejects.toMatchObject({ httpStatusCode: 403, message: 'Forbidden' })
     await expect(() =>
       r.updateMany({
         where: { id: { '!=': -1 } },
         set: { categoryName: 'noam 1' },
       }),
-    ).rejects.toThrowErrorMatchingInlineSnapshot(`
-      {
-        "httpStatusCode": 403,
-        "message": "Forbidden",
-      }
-    `)
+    ).rejects.toMatchObject({ httpStatusCode: 403, message: 'Forbidden' })
     expect(
       (await r.find()).map(({ id, categoryName }) => ({ id, categoryName })),
     ).toMatchInlineSnapshot(`
@@ -2014,6 +1990,23 @@ describe('test http retry', () => {
     expect(ok).toBe(false)
   })
 })
+describe('fetch client errors', () => {
+  it('rejects with an EntityError', async () => {
+    const err = await new RestDataProviderHttpProviderUsingFetch(
+      async () =>
+        new mockResponse({
+          status: 403,
+          statusText: 'Forbidden',
+          url: 'url',
+          json: async () => ({ message: 'Forbidden' }),
+        }),
+    )
+      .put('abc', {})
+      .catch((e) => e)
+    expect(err).toBeInstanceOf(EntityError)
+    expect(err).toMatchObject({ status: 403, message: 'Forbidden', url: 'url' })
+  })
+})
 describe('test toPromise', () => {
   it('handles rxjs style', async () => {
     const r = await toPromise({
@@ -2415,7 +2408,8 @@ describe('test fetch', () => {
         })
       }).get('abc')
     } catch (err) {
-      expect(err).toEqual({
+      expect(err).toBeInstanceOf(EntityError)
+      expect(err).toMatchObject({
         status: 401,
         message: 'text',
         url: 'url',
@@ -2435,7 +2429,8 @@ describe('test fetch', () => {
         })
       }).get('abc')
     } catch (err) {
-      expect(err).toEqual({
+      expect(err).toBeInstanceOf(EntityError)
+      expect(err).toMatchObject({
         status: 401,
         message: 'text',
         url: 'url',
@@ -2453,7 +2448,8 @@ describe('test fetch', () => {
         })
       }).get('abc')
     } catch (err) {
-      expect(err).toEqual({
+      expect(err).toBeInstanceOf(EntityError)
+      expect(err).toMatchObject({
         status: 401,
         url: 'url',
         message: 'message',
