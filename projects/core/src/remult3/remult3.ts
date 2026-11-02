@@ -474,13 +474,13 @@ export type GroupByResult<
 
 /** used to perform CRUD operations on an `entityType` */
 export interface Repository<entityType> {
-  /** returns an array based on the provided options. Members left out of `select` are dropped, see {@link Selected} */
+  /** returns an array based on the provided options. With `typedSelect` on, members left out of `select` are dropped, see {@link RemultTypeConfig} */
   find<
     const select extends EntitySelectFields<entityType>,
     const include extends MembersToInclude<entityType> = {},
   >(
     options: FindOptions<entityType> & { select: select; include?: include },
-  ): Promise<Selected<entityType, select, include>[]>
+  ): Promise<SelectResult<entityType, select, include>[]>
   /** returns an array based on the provided options. With `typedInclude` on, included relations drop their `?`, see {@link RemultTypeConfig} */
   find<const include extends MembersToInclude<entityType>>(
     options: FindOptions<entityType> & { include: include },
@@ -509,7 +509,7 @@ export interface Repository<entityType> {
       select: select
       include?: include
     },
-  ): Promise<Selected<entityType, select, include> | undefined>
+  ): Promise<SelectResult<entityType, select, include> | undefined>
   findFirst<const include extends MembersToInclude<entityType>>(
     where: EntityFilter<entityType> | undefined,
     options: FindFirstOptions<entityType> & { include: include },
@@ -532,7 +532,7 @@ export interface Repository<entityType> {
       select: select
       include?: include
     },
-  ): Promise<Selected<entityType, select, include> | undefined>
+  ): Promise<SelectResult<entityType, select, include> | undefined>
   findOne<const include extends MembersToInclude<entityType>>(
     options: FindFirstOptions<entityType> & { include: include },
   ): Promise<IncludeResult<entityType, include> | undefined>
@@ -1534,15 +1534,30 @@ export type MembersToInclude<T> = {
         : FindFirstOptions<NonNullable<T[K]>>)
 }
 
-type LoadedTarget<target, options> = options extends { select: infer select }
-  ? Selected<
-      target,
-      select,
-      options extends { include: infer nested } ? nested : {}
-    >
-  : options extends { include: infer nested }
-    ? Loaded<target, nested>
-    : target
+// An intersection can't drop members, so a relation narrowed by a nested `select` is omitted first.
+// Keys come from `include` alone, so a generic entity with a literal `include` still resolves.
+type SelectNarrowedKeys<include> = RemultTypeConfig extends {
+  typedSelect: true
+}
+  ? 0 extends 1 & include
+    ? never
+    : {
+        [K in keyof include]-?: include[K] extends { select: object }
+          ? K
+          : never
+      }[keyof include]
+  : never
+
+type NestedInclude<options> = options extends { include: infer nested }
+  ? nested
+  : {}
+
+type LoadedTarget<target, options> = Loaded<
+  options extends { select: infer select }
+    ? SelectedIfOn<target, select, NestedInclude<options>>
+    : target,
+  NestedInclude<options>
+>
 
 type LoadedRelation<value, include> =
   NonNullable<value> extends (infer target)[]
@@ -1565,12 +1580,17 @@ type LoadedKeys<entityType, include> = {
  * `typedInclude: true` makes `find`, `findFirst`, `findOne` and `findId` return {@link Loaded}
  * when called with a literal `include`. It's off by default because a narrowed result is no
  * longer assignable from a plain entity, e.g. reassigning the variable from `insert`.
+ *
+ * `typedSelect: true` makes `find`, `findFirst` and `findOne` return {@link Selected} when called
+ * with a literal `select`, and narrows a `select` inside an `include` too. It's off by default
+ * because a selected row is no longer assignable to the entity type.
  * @example
  * // remult-types.d.ts
  * import 'remult'
  * declare module 'remult' {
  *   interface RemultTypeConfig {
  *     typedInclude: true
+ *     typedSelect: true
  *   }
  * }
  */
@@ -1589,11 +1609,16 @@ type IncludeResult<entityType, include> = RemultTypeConfig extends {
  * keeps `null | undefined`. Declare it that way when that can happen, e.g. an optional FK or a target
  * a `backendPrefilter` can hide.
  * A relation included with `false` or a widened `boolean` keeps its declared type.
+ * A `select` inside an `include` narrows that relation only when `typedSelect` is on.
  * @example
  * const tasks = await repo(Task).find({ include: { category: true } })
  * tasks[0].category.name // `category` is loaded, no `?.` needed
  */
-export type Loaded<entityType, include> = entityType &
+export type Loaded<entityType, include> = ([
+  SelectNarrowedKeys<include>,
+] extends [never]
+  ? entityType
+  : Omit<entityType, SelectNarrowedKeys<include>>) &
   (0 extends 1 & (entityType | include)
     ? unknown
     : [LoadedKeys<entityType, include>] extends [never]
@@ -1616,8 +1641,28 @@ type UnselectedKeys<entityType, select, include> = Exclude<
   LoadedKeys<entityType, include>
 >
 
+// An `any` select keeps every member, because every key would otherwise count as unselected
+type SelectedMembers<entityType, select, include> = 0 extends 1 &
+  (entityType | select)
+  ? entityType
+  : [UnselectedKeys<entityType, select, include>] extends [never]
+    ? entityType
+    : Omit<entityType, UnselectedKeys<entityType, select, include>>
+
+type SelectedIfOn<entityType, select, include> = RemultTypeConfig extends {
+  typedSelect: true
+}
+  ? SelectedMembers<entityType, select, include>
+  : entityType
+
+type SelectResult<entityType, select, include> = IncludeResult<
+  SelectedIfOn<entityType, select, include>,
+  include
+>
+
 /**
- * The entity type `find` returns for a given `select` and `include`.
+ * The entity type `find` returns for a given `select` and `include` when `typedSelect` and
+ * `typedInclude` are on, see {@link RemultTypeConfig}.
  * Members missing from `select`, or selected with `false`, are dropped. Included relations are kept and loaded, see {@link Loaded}.
  * A member selected with a widened `boolean` keeps its declared type.
  * A `toOne` relation still needs its `field` selected, or it loads as `null`.
@@ -1630,15 +1675,10 @@ type UnselectedKeys<entityType, select, include> = Exclude<
  * tasks[0].category.name // ok
  * tasks[0].completed // error, `completed` wasn't selected
  */
-export type Selected<entityType, select, include = {}> = 0 extends 1 &
-  (entityType | select)
-  ? entityType
-  : Loaded<
-      [UnselectedKeys<entityType, select, include>] extends [never]
-        ? entityType
-        : Omit<entityType, UnselectedKeys<entityType, select, include>>,
-      include
-    >
+export type Selected<entityType, select, include = {}> = Loaded<
+  SelectedMembers<entityType, select, include>,
+  include
+>
 
 export type RepositoryRelations<entityType> = {
   [K in keyof ObjectMembersOnly<entityType>]-?: NonNullable<

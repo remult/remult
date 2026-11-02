@@ -5,9 +5,10 @@ import {
   InMemoryDataProvider,
   Relations,
   Remult,
+  type ClassType,
   type EntitySelectFields,
   type Selected,
-} from '../../../core'
+} from '../../core'
 
 @Entity('company')
 class Company {
@@ -102,7 +103,9 @@ describe('test select types', () => {
         },
       },
     })
-    expectTypeOf(task!.category.company).toEqualTypeOf<Company | null>()
+    expectTypeOf(task!.category.company).toEqualTypeOf<
+      Company | null | undefined
+    >()
     expectTypeOf(task!.category).not.toHaveProperty('id')
     expect(task!.category.company?.name).toBe('comp1')
   })
@@ -129,6 +132,13 @@ describe('test select types', () => {
       id: 101,
       title: 'task1',
     })
+  })
+  it('generic helper indexes an include result by keyof T', async () => {
+    async function firstValue<T>(type: ClassType<T>, key: keyof T) {
+      const rows = await remult.repo(type).find({ include: {} })
+      return rows[0][key]
+    }
+    expect(await firstValue(Task, 'id')).toBe(101)
   })
   it('selected type matches the find result', () => {
     expectTypeOf<Selected<Task, { title: true }>>().toEqualTypeOf<
