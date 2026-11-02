@@ -1,6 +1,6 @@
 import { createRequire } from 'node:module'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { Remult, SqlDatabase } from '../../core'
+import { Entity, Fields, Remult, SqlDatabase } from '../../core'
 import {
   NodeSqliteDataProvider,
   type NodeSqliteDatabase,
@@ -78,6 +78,42 @@ describe.skipIf(!supportsNodeSqlite)('node:sqlite', () => {
 
     const rows = (await db.execute('select value from binary_values')).rows
     expect(rows[0].value).toEqual(new Uint8Array([1, 2, 3]))
+  })
+
+  it('paginator ends when a case insensitive key precedes a nullable one', async () => {
+    @Entity('nocase_null_sort')
+    class Row {
+      @Fields.integer()
+      id = 0
+      @Fields.string()
+      name = ''
+      @Fields.integer({ allowNull: true })
+      num: number | null = null
+    }
+    await db.execute(
+      'create table nocase_null_sort (id integer primary key, name text collate nocase, num integer)',
+    )
+    const r = remult.repo(Row)
+    await r.insert([
+      { id: 1, name: 'smith', num: null },
+      { id: 2, name: 'Smith', num: null },
+      { id: 3, name: 'Smith', num: 1 },
+      { id: 4, name: 'smith', num: 2 },
+      { id: 5, name: 'zed', num: 1 },
+    ])
+    const orderBy = { name: 'asc', num: 'asc', id: 'asc' } as const
+    for (let pageSize = 1; pageSize <= 6; pageSize++) {
+      const ids: number[] = []
+      let page = await r.query({ orderBy, pageSize }).paginator()
+      while (true) {
+        ids.push(...page.items.map((x) => x.id))
+        if (!page.hasNextPage || ids.length > 5) break
+        page = await page.nextPage()
+      }
+      expect(ids, `pageSize ${pageSize}`).toEqual(
+        (await r.find({ orderBy })).map((x) => x.id),
+      )
+    }
   })
 
   it('closes the underlying database', async () => {

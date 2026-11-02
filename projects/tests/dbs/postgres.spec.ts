@@ -19,6 +19,7 @@ import * as Knex from 'knex'
 import type { ClassType } from '../../core/classType'
 import { Categories } from '../tests/remult-3-entities'
 import { allDbTests } from './shared-tests'
+import { paginatorNullSortTests } from './shared-tests/test-paginator-null-sort.js'
 import { entityWithValidations } from './shared-tests/entityWithValidations'
 import { knexTests } from './shared-tests/test-knex'
 import { SqlDbTests } from './shared-tests/sql-db-tests'
@@ -344,6 +345,15 @@ describe.skipIf(!postgresConnection)('Postgres null first', () => {
     await db.ensureSchema([repo.metadata])
     return repo
   }
+  paginatorNullSortTests({
+    getDb() {
+      return db
+    },
+    getRemult() {
+      return remult
+    },
+    createEntity,
+  })
   it('null last', async () => {
     @Entity('myEntity')
     class MyEntity {
