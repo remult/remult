@@ -113,7 +113,6 @@ export class EntityError<entityType = unknown>
   modelState?: {
     [Properties in keyof Partial<MembersOnly<entityType>>]?: string
   }
-  stack?: string
   exception?: any
   httpStatusCode?: number
 }
