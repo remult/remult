@@ -2,6 +2,7 @@ import type { ClassType } from '../classType.js'
 import type { ClassHelper, Remult, RemultAsyncLocalStorage } from './context.js'
 import type { DataProvider } from './data-interfaces.js'
 import type { columnInfo } from './remult3/columnInfo.js'
+import type { BackendMethodSerializer } from './server-action.js'
 
 const remultStaticKey = Symbol.for('remult-static1')
 
@@ -29,6 +30,7 @@ let x = {
   defaultIdFactory: undefined as unknown as () => string,
   defaultDataProvider: () =>
     undefined as unknown as Promise<DataProvider | undefined>,
+  backendMethodSerializer: undefined as BackendMethodSerializer | undefined,
 }
 
 if (

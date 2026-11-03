@@ -12,9 +12,10 @@ import {
   Controller,
   prepareArgsToSend,
 } from '../../core/src/server-action'
+import type { BackendMethodSerializer } from '../../core/src/server-action'
 import { ActionTestConfig, testAsIfOnBackend } from './testHelper'
 
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
 import {
   describeBackendMethods,
@@ -585,5 +586,149 @@ describe("test proxy implementation doesn't meet something", () => {
     expect(missing.filter((x) => !x.startsWith('_'))).toMatchInlineSnapshot(`
       []
     `)
+  })
+})
+
+const dateTagging: BackendMethodSerializer = {
+  serialize: (value) => ({
+    encoded:
+      value === undefined
+        ? undefined
+        : JSON.stringify(value, function (this: any, key, json) {
+            const raw = this[key]
+            return raw instanceof Date ? { $date: raw.toISOString() } : json
+          }),
+  }),
+  deserialize: (value: any) =>
+    value.encoded === undefined
+      ? undefined
+      : JSON.parse(value.encoded, (_, json) =>
+          json && typeof json === 'object' && '$date' in json
+            ? new Date(json.$date)
+            : json,
+        ),
+}
+
+@Controller('serializerProbe')
+class SerializerProbe {
+  @Fields.date()
+  since = new Date('2025-01-01')
+
+  @BackendMethod({ allowed: true })
+  static async nextDay(at: Date) {
+    return {
+      argWasDate: at instanceof Date,
+      next: new Date(at.getTime() + 86_400_000),
+    }
+  }
+
+  @BackendMethod({ allowed: true, paramTypes: [String, Remult] })
+  static async greet(name: string, remult?: Remult) {
+    return { name, injected: remult instanceof Remult }
+  }
+
+  @BackendMethod({ allowed: true })
+  async isAfterSince(at: Date) {
+    return { argWasDate: at instanceof Date, after: at > this.since, at }
+  }
+}
+
+@Entity('serializerProbeEntity')
+class SerializerProbeEntity {
+  @Fields.integer()
+  id = 0
+
+  @BackendMethod({ allowed: true })
+  async stamp(at: Date) {
+    return { argWasDate: at instanceof Date, id: this.id, at }
+  }
+}
+
+describe('BackendMethod.serializer', () => {
+  beforeEach(() => {
+    // An earlier test leaves a factory whose remult counts as the backend, which would skip the wire.
+    resetFactory()
+    BackendMethod.serializer = dateTagging
+  })
+  afterEach(() => {
+    BackendMethod.serializer = undefined
+  })
+
+  it('serializes static method arguments and results', async () => {
+    expect(await SerializerProbe.nextDay(new Date('2026-01-01'))).toEqual({
+      argWasDate: true,
+      next: new Date('2026-01-02'),
+    })
+  })
+
+  it('still injects paramTypes', async () => {
+    expect(await SerializerProbe.greet('noam')).toEqual({
+      name: 'noam',
+      injected: true,
+    })
+  })
+
+  it('serializes controller method arguments and results', async () => {
+    expect(
+      await new SerializerProbe().isAfterSince(new Date('2026-01-01')),
+    ).toEqual({ argWasDate: true, after: true, at: new Date('2026-01-01') })
+  })
+
+  it('serializes entity method arguments and results', async () => {
+    const row = remult.repo(SerializerProbeEntity).create({ id: 7 })
+    expect(await row.stamp(new Date('2026-01-01'))).toEqual({
+      argWasDate: true,
+      id: 7,
+      at: new Date('2026-01-01'),
+    })
+  })
+
+  it('posts the serialized arguments', async () => {
+    const c = new Remult({
+      url: 'xx',
+      httpClient: {
+        delete: () => undefined!,
+        get: () => undefined!,
+        put: () => undefined!,
+        post: async (url, data) => {
+          expect(url).toBe('xx/nextDay')
+          expect(data.args).toEqual({
+            encoded: '[{"$date":"2026-01-01T00:00:00.000Z"}]',
+          })
+          return {
+            data: dateTagging.serialize({ next: new Date('2026-01-02') }),
+          }
+        },
+      },
+    })
+    const r = await c.call(
+      SerializerProbe.nextDay,
+      undefined,
+      new Date('2026-01-01'),
+    )
+    expect(r.next).toEqual(new Date('2026-01-02'))
+  })
+})
+
+describe('without BackendMethod.serializer', () => {
+  it('posts the arguments as plain JSON', async () => {
+    const c = new Remult({
+      url: 'xx',
+      httpClient: {
+        delete: () => undefined!,
+        get: () => undefined!,
+        put: () => undefined!,
+        post: async (url, data) => {
+          expect(data.args).toEqual([new Date('2026-01-01')])
+          return { data: { next: '2026-01-02T00:00:00.000Z' } }
+        },
+      },
+    })
+    const r = await c.call(
+      SerializerProbe.nextDay,
+      undefined,
+      new Date('2026-01-01'),
+    )
+    expect(r.next).toBe('2026-01-02T00:00:00.000Z')
   })
 })

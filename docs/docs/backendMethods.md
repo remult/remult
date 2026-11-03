@@ -61,3 +61,16 @@ await TasksController.setAll(true)
 ```
 
 This example demonstrates how to define and use a static backend method, `setAll`, within the `TasksController` class. When called from the frontend, this method sets the completion status of all tasks to the specified value (`true` in this case). The method leverages Remult's `BackendMethod` decorator to handle the communication between the frontend and backend seamlessly.
+
+## Serializing arguments and return values
+
+Backend methods send arguments and return values as plain JSON. A `Date` argument arrives as a string unless `paramTypes` lists it, and nested values and return values never convert. Set `BackendMethod.serializer` to send them through a serializer such as superjson. Put it in a file that both the frontend and the backend import.
+
+```ts
+import { BackendMethod } from 'remult'
+import superjson from 'superjson'
+
+BackendMethod.serializer = superjson
+```
+
+`paramTypes` still runs first, so an entity listed there is still sent as its id and fetched on the backend.
