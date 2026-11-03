@@ -307,12 +307,7 @@ export class Remult {
     if (!z.doWork)
       throw Error('The method received is not a valid backend method')
     //@ts-ignore
-    return z.doWork(
-      args,
-      classInstance,
-      this.apiClient.url,
-      buildRestDataProvider(this.apiClient.httpClient),
-    )
+    return z.doWork(args, classInstance, this)
   }
 
   /* @internal*/

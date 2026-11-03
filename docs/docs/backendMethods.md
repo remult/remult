@@ -73,4 +73,4 @@ import superjson from 'superjson'
 BackendMethod.serializer = superjson
 ```
 
-`paramTypes` still runs first, so an entity listed there is still sent as its id and fetched on the backend.
+The serializer also gets the `Remult` making the call as a second argument, so it can rebuild entities with `remult.repo(...)`. `paramTypes` still runs first, so an entity listed there is still sent as its id and fetched on the backend.
