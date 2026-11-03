@@ -13,6 +13,8 @@ All notable changes to this project will be documented in this file.
   - An unset value is written as NULL, not `DEFAULT`.
   - GraphQL and the admin show them nullable.
   - New SQLite columns for json and `dateOnly`, and Knex json stored as text, are created nullable (were `not null`).
+  - With an explicit `allowNull: false`, migrations create the column `not null` (was nullable), with no default value: on a table that has rows, fill the column first.
+- Knex creates a number with a custom `fieldTypeInDb` `not null default 0`, as Postgres does (was nullable).
 
 ### Fixed
 

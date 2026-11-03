@@ -27,13 +27,17 @@ export function postgresColumnSyntax(x: FieldMetadata, dbName: string) {
       if (x.valueConverter == ValueConverters.DateOnly) result += ' date'
       else result += ' timestamptz'
     else result += ' ' + x.valueConverter.fieldTypeInDb
+    // No default value fits: on a table with rows, fill the column first.
+    if (!x.allowNull) result += ' not null'
   } else if (x.valueType == Boolean)
     result += ' boolean' + (x.allowNull ? '' : ' default false not null')
   else if (x.valueConverter.fieldTypeInDb) {
     result += ' ' + x.valueConverter.fieldTypeInDb
-    if (!x.allowNull && x.valueConverter.fieldTypeInDb == 'integer') {
-      result += ' default 0 not null'
-    }
+    if (!x.allowNull)
+      result +=
+        x.valueConverter.fieldTypeInDb == 'integer'
+          ? ' default 0 not null'
+          : ' not null'
   } else result += ' varchar' + (x.allowNull ? '' : " default '' not null")
   return result
 }

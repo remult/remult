@@ -116,7 +116,7 @@ export class SqliteCoreDataProvider
     const nullNumber = x.allowNull ? '' : ' default 0 not null'
     if (x.valueConverter.fieldTypeInDb)
       result += ' ' + x.valueConverter.fieldTypeInDb + ' ' + nullNumber
-    else if (x.valueType == Date) result += ' integer'
+    else if (x.valueType == Date) result += ' integer' + nullNumber
     else if (x.valueType == Boolean) result += ' integer ' + nullNumber
     else if (x.valueType == Number) {
       if (!x.valueConverter.fieldTypeInDb) result += ' numeric ' + nullNumber

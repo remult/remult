@@ -829,13 +829,20 @@ export function buildColumn(
       if (!x.allowNull) {
         c.defaultTo(0).notNullable()
       }
-    } else b.specificType(dbName, x.valueConverter.fieldTypeInDb)
+    } else {
+      let c = b.specificType(dbName, x.valueConverter.fieldTypeInDb)
+      if (!x.allowNull) c.defaultTo(0).notNullable()
+    }
   } else if (x.valueType == Date) {
-    if (!x.valueConverter.fieldTypeInDb)
-      if (x.valueConverter == ValueConverters.DateOnly) b.date(dbName)
-      else b.dateTime(dbName)
-    else if (x.valueConverter.fieldTypeInDb == 'date') b.date(dbName)
-    else b.specificType(dbName, x.valueConverter.fieldTypeInDb)
+    let c = !x.valueConverter.fieldTypeInDb
+      ? x.valueConverter == ValueConverters.DateOnly
+        ? b.date(dbName)
+        : b.dateTime(dbName)
+      : x.valueConverter.fieldTypeInDb == 'date'
+        ? b.date(dbName)
+        : b.specificType(dbName, x.valueConverter.fieldTypeInDb)
+    // No default value fits: on a table with rows, fill the column first.
+    if (!x.allowNull) c.notNullable()
   } else if (x.valueType == Boolean) {
     let c = b.boolean(dbName)
     if (!x.allowNull) c.defaultTo(false).notNullable()
@@ -845,13 +852,15 @@ export function buildColumn(
       if (!x.allowNull) {
         c.defaultTo(0).notNullable()
       }
-    } else if (x.valueConverter.fieldTypeInDb == 'json')
-      if (supportsJson) b.json(dbName)
-      else {
-        let c = b.text(dbName)
-        if (!x.allowNull) c.defaultTo('').notNullable()
-      }
-    else b.specificType(dbName, x.valueConverter.fieldTypeInDb)
+    } else {
+      let c =
+        x.valueConverter.fieldTypeInDb != 'json'
+          ? b.specificType(dbName, x.valueConverter.fieldTypeInDb)
+          : supportsJson
+            ? b.json(dbName)
+            : b.text(dbName)
+      if (!x.allowNull) c.notNullable()
+    }
   } else if (x.valueType === String) {
     let c = b.string(dbName, (<StringFieldOptions>x.options).maxLength)
     if (!x.allowNull) c.defaultTo('').notNullable()

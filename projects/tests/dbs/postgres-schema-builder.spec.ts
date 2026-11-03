@@ -14,6 +14,8 @@ import {
   createPostgresDataProvider,
   postgresColumnSyntax,
 } from '../../core/postgres'
+import * as Knex from 'knex'
+import { buildColumn } from '../../core/remult-knex'
 
 //connection string is in a .env file placed in the `tests` folder with key `DATABASE_URL`
 // if we don't have this, tests will be skipped
@@ -872,14 +874,24 @@ describe('allowNull defaults to the Postgres column', () => {
     note: string | null = null
     @Relations.toOne(() => Cat)
     cat?: Cat
+    @Fields.date({ allowNull: false })
+    strictAt = new Date()
+    @Fields.json({ allowNull: false })
+    strictData = {}
   }
   const meta = new Remult().repo(Kinds).metadata
+  const knex = Knex.default({ client: 'pg' })
 
   it('is true exactly when the column is created without not null', () => {
-    for (const f of meta.fields.toArray().filter((f) => f.key !== 'code'))
+    for (const f of meta.fields.toArray()) {
       expect(f.allowNull, f.key).toBe(
         !postgresColumnSyntax(f, f.key).includes('not null'),
       )
+      const knexSql = knex.schema
+        .createTable('t', (b) => buildColumn(f, f.key, b))
+        .toString()
+      expect(f.allowNull, 'knex ' + f.key).toBe(!knexSql.includes('not null'))
+    }
   })
   it('is false on an id, a primary key is not null', () => {
     expect(meta.fields.code.allowNull).toBe(false)
