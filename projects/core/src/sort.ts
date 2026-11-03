@@ -185,7 +185,10 @@ export function compareForSort(
   left = fixValueForSort(left)
   right = fixValueForSort(right)
   let r = 0
-  if (left > right) r = 1
+  // `null > 'a'` and `null < 'a'` are both false, which is not an order.
+  if (left == null) r = right == null ? 0 : -1
+  else if (right == null) r = 1
+  else if (left > right) r = 1
   else if (left < right) r = -1
   if (descending) r *= -1
   return r

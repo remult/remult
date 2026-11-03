@@ -147,37 +147,32 @@ export class RepositoryImplementation<entityType>
     orderBy: EntityOrderBy<entityType>,
     lastRow: entityType,
   ): Promise<EntityFilter<entityType>> {
-    let values = new Map<string, any>()
-
-    for (const s of Sort.translateOrderByToSort(this.metadata, orderBy)
-      .Segments) {
-      let existingVal = lastRow[s.field.key as keyof entityType]
-      // if (typeof existingVal !== "string" && typeof existingVal !== "number") {
-      // }
-      // else {
-      //     let ei = getEntitySettings(s.field.valueType, false);
-      //     if (ei) {
-      //         existingVal = await this.remult.repo(s.field.valueType).findId(existingVal);
-      //     }
-      // }
-      values.set(s.field.key, existingVal)
-    }
-
-    let r: EntityFilter<entityType> = { $or: [] }
-    let equalToColumn: FieldMetadata[] = []
-    for (const s of Sort.translateOrderByToSort(this.metadata, orderBy)
-      .Segments) {
-      let f: EntityFilter<any> = {}
-      for (const c of equalToColumn) {
-        f[c.key] = values.get(c.key)
+    const nullsFirst = this._dataProvider.orderByNullsFirst ?? true
+    const ref = this.getEntityRef(lastRow)
+    const $or: EntityFilter<any>[] = []
+    let equal: EntityFilter<any> = {}
+    for (const { field, isDescending } of Sort.translateOrderByToSort(
+      this.metadata,
+      orderBy,
+    ).Segments) {
+      const key = field.key
+      // An unloaded relation reads undefined, its id is there.
+      const value =
+        (ref.fields.find(key) as IdFieldRef<entityType, any>).getId() ?? null
+      const nullBeforeValues = nullsFirst !== !!isDescending
+      if (value === null && field.allowNull) {
+        if (nullBeforeValues) $or.push({ ...equal, $not: { [key]: null } })
+      } else {
+        $or.push({
+          ...equal,
+          [key]: isDescending ? { $lt: value } : { $gt: value },
+        })
+        if (field.allowNull && !nullBeforeValues)
+          $or.push({ ...equal, [key]: null })
       }
-      equalToColumn.push(s.field)
-      if (s.isDescending) {
-        f[s.field.key] = { $lt: values.get(s.field.key) }
-      } else f[s.field.key] = { $gt: values.get(s.field.key) }
-      r.$or!.push(f)
+      equal = { ...equal, [key]: value }
     }
-    return r
+    return { $or } as EntityFilter<entityType>
   }
 
   relations(item: entityType) {
