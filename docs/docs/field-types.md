@@ -384,6 +384,19 @@ price=0;
 
 In this example, the `price` field will be stored as a `decimal` with 16 digits in total and 8 digits after the decimal point in the database. This allows you to control the storage format and precision of numeric fields in your database schema.
 
+## allowNull by field type
+
+Migrations give a column a default value when its type has one (`''`, `0`, `false`), and create it `not null`. Without one, the column is nullable, so `allowNull` defaults to `true`:
+
+| Field                                                                                                                                          | `allowNull` by default |
+| ---------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| `Fields.string`, `Fields.number`, `Fields.integer`, `Fields.boolean`, `Fields.enum`, `Fields.literal`, `ValueListFieldType`, `Relations.toOne` | `false`                |
+| `Fields.date`, `Fields.dateOnly`, `Fields.createdAt`, `Fields.updatedAt`                                                                       | `true`                 |
+| `Fields.json`, a custom `fieldTypeInDb` (not on a number or boolean)                                                                           | `true`                 |
+| An id                                                                                                                                          | `false`                |
+
+Set `allowNull` to change it. NULL sorts first on asc and last on desc on every database; only `allowNull` columns get `nulls first` in `ORDER BY`, so a `not null` column like `id` keeps its index.
+
 ## Creating Custom Field Types
 
 Sometimes, you may need to create custom field types to handle specific requirements or use cases in your application. By creating custom field types, you can encapsulate the logic for generating, validating, and converting field values.

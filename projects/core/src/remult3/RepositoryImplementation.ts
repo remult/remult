@@ -2724,6 +2724,23 @@ export function buildLabel(
   return ''
 }
 
+/** Migrations give these columns no default value, so they are created nullable. */
+function createdNullable({
+  valueType,
+  valueConverter,
+}: FieldOptions<unknown, unknown>) {
+  if (valueType === Date) return true
+  if (
+    valueType === Number ||
+    valueType === Boolean ||
+    getEntitySettings(valueType, false)
+  )
+    return false
+  const dbType = valueConverter?.fieldTypeInDb
+  // `dbid` marks a Mongo ObjectId, not a column type.
+  return !!dbType && dbType !== 'integer' && dbType !== 'dbid'
+}
+
 export class columnDefsImpl implements FieldMetadata {
   constructor(
     private settings: FieldOptions<unknown, unknown>,
@@ -2757,8 +2774,7 @@ export class columnDefsImpl implements FieldMetadata {
         return result
       },
     }) as Required<ValueConverter<any>>
-    // A Date column has no default value, so migrations leave it nullable.
-    this.allowNull = this.settings.allowNull ?? this.settings.valueType === Date
+    this.allowNull = this.settings.allowNull ?? createdNullable(this.settings)
     this.valueType = this.settings.valueType
     this.key = this.settings.key!
     this.inputType = this.settings.inputType!
@@ -2893,6 +2909,10 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
       if (idField) this.idMetadata.field = idField
       else this.idMetadata.field = [...this.fields][0]
     }
+    // A primary key is not null.
+    for (const f of this.idMetadata.fields)
+      if (f && f.options.allowNull === undefined)
+        (f as columnDefsImpl).allowNull = false
   }
   apiUpdateAllowed(item: T) {
     if (this.options.allowApiUpdate === undefined) return false

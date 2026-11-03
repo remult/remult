@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import {
   Entity,
   Fields,
+  Relations,
+  Remult,
   SqlDatabase,
   dbNamesOf,
   describeClass,
@@ -10,6 +12,7 @@ import {
 import {
   PostgresSchemaBuilder,
   createPostgresDataProvider,
+  postgresColumnSyntax,
 } from '../../core/postgres'
 
 //connection string is in a .env file placed in the `tests` folder with key `DATABASE_URL`
@@ -834,3 +837,51 @@ describe.skipIf(!connectionString)(
     })
   },
 )
+
+describe('allowNull defaults to the Postgres column', () => {
+  @Entity('allowNullCat')
+  class Cat {
+    @Fields.integer()
+    id = 0
+  }
+  @Entity('allowNullKinds', { id: 'code' })
+  class Kinds {
+    @Fields.string({ valueConverter: { fieldTypeInDb: 'uuid' } })
+    code = ''
+    @Fields.string()
+    name = ''
+    @Fields.number()
+    n = 0
+    @Fields.integer()
+    i = 0
+    @Fields.number({ valueConverter: { fieldTypeInDb: 'decimal(16,8)' } })
+    d = 0
+    @Fields.boolean()
+    b = false
+    @Fields.date()
+    at?: Date
+    @Fields.dateOnly()
+    day?: Date
+    @Fields.createdAt()
+    createdAt?: Date
+    @Fields.json()
+    data?: any
+    @Fields.string({ valueConverter: { fieldTypeInDb: 'citext' } })
+    email = ''
+    @Fields.string({ allowNull: true })
+    note: string | null = null
+    @Relations.toOne(() => Cat)
+    cat?: Cat
+  }
+  const meta = new Remult().repo(Kinds).metadata
+
+  it('is true exactly when the column is created without not null', () => {
+    for (const f of meta.fields.toArray().filter((f) => f.key !== 'code'))
+      expect(f.allowNull, f.key).toBe(
+        !postgresColumnSyntax(f, f.key).includes('not null'),
+      )
+  })
+  it('is false on an id, a primary key is not null', () => {
+    expect(meta.fields.code.allowNull).toBe(false)
+  })
+})

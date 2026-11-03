@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 - NULL sorts first on asc and last on desc on every provider, as Postgres did with `orderByNullsFirst: true` and SQLite, MySQL, SQL Server and MongoDB always did. `ORDER BY` writes `nulls first` / `nulls last` on `allowNull` columns only, so a NOT NULL column like `id` keeps its index. On Postgres, an index on a nullable sort column needs `NULLS FIRST` to serve it.
 - `orderByNullsFirst` is removed from `createPostgresDataProvider`, `PostgresDataProvider` and `SqlImplementation`.
-- A `Date` field allows NULL unless `allowNull: false`, as migrations always left its column nullable (no default value). `{ at: null }` now finds those rows (was `= NULL`), an unset date is written as NULL instead of `DEFAULT`, and GraphQL types it nullable.
+- `allowNull` defaults to how migrations create the column: `true` when it has no default value (a Date, `Fields.json`, a custom `fieldTypeInDb` other than on a number or boolean), never on an id ([table](https://remult.dev/docs/field-types#allownull-by-field-type)). `{ at: null }` now finds those rows (was `= NULL`), an unset value is written as NULL instead of `DEFAULT`, and GraphQL types it nullable. New SQLite and Knex columns follow: json and `dateOnly` were `not null` on SQLite, json stored as text was on Knex.
 
 ### Fixed
 

@@ -124,7 +124,7 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
-              "allowNull": false,
+              "allowNull": true,
               "caption": "Metadata",
               "inputType": "json",
               "key": "metadata",
@@ -135,7 +135,7 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
-              "allowNull": false,
+              "allowNull": true,
               "caption": "Metadata2",
               "inputType": "json",
               "key": "metadata2",
@@ -300,7 +300,7 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
-              "allowNull": false,
+              "allowNull": true,
               "caption": "Metadata",
               "inputType": "json",
               "key": "metadata",
@@ -311,7 +311,7 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
-              "allowNull": false,
+              "allowNull": true,
               "caption": "Metadata2",
               "inputType": "json",
               "key": "metadata2",
