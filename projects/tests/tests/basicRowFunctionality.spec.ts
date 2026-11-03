@@ -2004,7 +2004,12 @@ describe('fetch client errors', () => {
       .put('abc', {})
       .catch((e) => e)
     expect(err).toBeInstanceOf(EntityError)
-    expect(err).toMatchObject({ status: 403, message: 'Forbidden', url: 'url' })
+    expect(err).toMatchObject({
+      status: 403,
+      httpStatusCode: 403,
+      message: 'Forbidden',
+      url: 'url',
+    })
   })
 })
 describe('test toPromise', () => {

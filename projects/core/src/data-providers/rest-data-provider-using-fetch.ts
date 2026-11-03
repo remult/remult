@@ -84,6 +84,7 @@ function onSuccess(response: Response) {
           message: x.message || response.statusText,
           url: response.url,
           status: response.status,
+          httpStatusCode: response.status,
         }
         return new EntityError(info)
       })
@@ -92,6 +93,7 @@ function onSuccess(response: Response) {
           message: response.statusText,
           url: response.url,
           status: response.status,
+          httpStatusCode: response.status,
         }
         throw new EntityError(info)
       })
