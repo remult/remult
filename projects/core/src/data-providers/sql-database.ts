@@ -180,7 +180,6 @@ export class SqlDatabase
               this.sql.doesNotSupportReturningSyntax,
             doesNotSupportReturningSyntaxOnlyForUpdate:
               this.sql.doesNotSupportReturningSyntaxOnlyForUpdate,
-            nullsSortLast: this.sql.nullsSortLast,
             afterMutation: this.sql.afterMutation,
             maxParametersInOneSqlStatement:
               this.sql.maxParametersInOneSqlStatement,
@@ -290,7 +289,7 @@ export class SqlDatabase
           sql?.wrapIdentifier ?? wrapIdentifierOf(r),
         )),
       sql?.sqlCommand ?? new myDummySQLCommand(),
-      nullsSortLastOf(r),
+      isSqlDatabase(r),
       sql?.limitSyntax ?? limitSyntaxRequired,
       jsonColumnStorageForRaw(r, sql?.jsonAsString),
     )
@@ -324,7 +323,7 @@ export class SqlDatabase
           sql?.wrapIdentifier ?? wrapIdentifierOf(r),
         )),
       sql?.sqlCommand ?? new myDummySQLCommand(),
-      nullsSortLastOf(r),
+      isSqlDatabase(r),
       sql?.limitSyntax ?? limitSyntaxRequired,
       {
         aliasColumns: true,
@@ -524,7 +523,7 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
       options,
       await this.init(),
       this.sql.createCommand(),
-      this.sql._getSourceSql().nullsSortLast,
+      true,
       this.sql._getSourceSql().getLimitSqlSyntax,
       this.sql.jsonColumnStorage,
     )
@@ -540,7 +539,7 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
       options,
       e,
       r,
-      this.sql._getSourceSql().nullsSortLast,
+      true,
       (limit, offset) => this.strategy.getLimitSqlSyntax(limit, offset),
       { jsonColumnStorage: this.sql.jsonColumnStorage },
     )
@@ -795,9 +794,9 @@ export function jsonColumnStorageOf(r: Repository<any>): JsonColumnStorage {
   return 'native'
 }
 
-function nullsSortLastOf(r: Repository<any>) {
-  const dp = getRepositoryInternals(r)._dataProvider
-  return dp instanceof SqlDatabase && !!dp._getSourceSql().nullsSortLast
+// Its dialects all write `nulls first`; Knex builds its own order.
+function isSqlDatabase(r: Repository<any>) {
+  return getRepositoryInternals(r)._dataProvider instanceof SqlDatabase
 }
 
 function jsonColumnStorageForRaw(
@@ -863,7 +862,7 @@ export async function buildFindSql(
   options: EntityDataProviderFindOptions | undefined,
   e: EntityDbNamesBase,
   r: SqlCommandWithParameters,
-  nullsSortLast: boolean | undefined,
+  orderByNullsFirst: boolean | undefined,
   limitSyntax: (limit: number, offset: number) => string,
   {
     aliasColumns = false,
@@ -903,7 +902,7 @@ export async function buildFindSql(
           ? c.field.options.key
           : await e.$dbNameOf(c.field)
         if (c.isDescending) select += ' desc'
-        if (nullsSortLast && mayBeNull(c.field)) {
+        if (orderByNullsFirst && c.field.allowNull) {
           if (c.isDescending) select += ' nulls last'
           else select += ' nulls first'
         }
@@ -925,11 +924,6 @@ export async function buildFindSql(
       return resultRow(colKeys, valueAt, jsonColumnStorage)
     },
   }
-}
-
-// `nulls first/last` on a NOT NULL column stops Postgres from using its index; a sqlExpression can yield NULL anyway.
-export function mayBeNull(field: FieldMetadata) {
-  return field.allowNull || !!field.options.sqlExpression
 }
 
 async function selectColumns(
@@ -980,7 +974,7 @@ export async function groupByImpl(
   options: EntityDataProviderGroupByOptions | undefined,
   e: EntityDbNamesBase,
   r: SqlCommand,
-  nullsSortLast: boolean | undefined,
+  orderByNullFirst: boolean | undefined,
   limitSyntax: (limit: number, offset: number) => string,
   jsonColumnStorage: JsonColumnStorage = 'native',
 ) {
@@ -988,7 +982,7 @@ export async function groupByImpl(
     options,
     e,
     r,
-    nullsSortLast,
+    orderByNullFirst,
     limitSyntax,
     jsonColumnStorage,
   )
@@ -1003,7 +997,7 @@ export async function buildGroupBySql(
   options: EntityDataProviderGroupByOptions | undefined,
   e: EntityDbNamesBase,
   r: SqlCommandWithParameters,
-  nullsSortLast: boolean | undefined,
+  orderByNullFirst: boolean | undefined,
   limitSyntax: (limit: number, offset: number) => string,
   jsonColumnStorage: JsonColumnStorage = 'native',
 ) {
@@ -1081,7 +1075,12 @@ export async function buildGroupBySql(
       }
       orderBy += field
       if (x.isDescending) orderBy += ' desc'
-      if (nullsSortLast && (x.operation || mayBeNull(x.field!))) {
+      // A count is never NULL, other aggregates only over NULL values.
+      if (
+        orderByNullFirst &&
+        x.field?.allowNull &&
+        x.operation !== 'distinctCount'
+      ) {
         if (x.isDescending) orderBy += ' nulls last'
         else orderBy += ' nulls first'
       }

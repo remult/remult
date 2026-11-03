@@ -26,8 +26,6 @@ export class DuckDBDataProvider extends SqliteCoreDataProvider {
       true,
     )
   }
-  // DuckDB sorts NULL last both ways.
-  override nullsSortLast = true
   wrapIdentifier(name: string): string {
     return `"${name}"`
   }

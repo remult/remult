@@ -10,8 +10,6 @@ export interface SqlImplementation extends HasWrapIdentifier {
   /** true by default */
   doesNotSupportReturningSyntax?: boolean
   doesNotSupportReturningSyntaxOnlyForUpdate?: boolean
-  /** The DB sorts NULL last on asc, so `ORDER BY` adds `nulls first` (asc) / `nulls last` (desc) to sort NULL lowest, as on every provider. */
-  nullsSortLast?: boolean
   /** Bound-variable cap per statement. Default 2000 (SQL Server is 2100). */
   maxParametersInOneSqlStatement?: number
   end(): Promise<void>

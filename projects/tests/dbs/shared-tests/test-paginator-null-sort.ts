@@ -108,7 +108,7 @@ export function paginatorNullSortTests({ createEntity }: DbTestProps) {
     expect((await r.find({ orderBy: { at: 'asc' } })).map((x) => x.id)).toEqual(
       [2, 3, 1],
     )
-    expect((await r.find({ where: { at: null } })).map((x) => x.id)).toEqual([
+    expect((await r.find({ where: { at: null! } })).map((x) => x.id)).toEqual([
       2,
     ])
     expect(

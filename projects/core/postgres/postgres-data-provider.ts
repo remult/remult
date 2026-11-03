@@ -91,7 +91,6 @@ export class PostgresDataProvider
     var sb = new PostgresSchemaBuilder(db, this.options?.schema)
     await sb.ensureSchema(entities)
   }
-  nullsSortLast = true
   async transaction(
     action: (dataProvider: SqlImplementation) => Promise<void>,
   ) {
@@ -110,7 +109,6 @@ export class PostgresDataProvider
         //@ts-ignore
         pool: client,
         wrapIdentifier: this.wrapIdentifier,
-        nullsSortLast: this.nullsSortLast,
       })
       await client.query('COMMIT')
     } catch (err) {

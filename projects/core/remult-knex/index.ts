@@ -60,9 +60,14 @@ import {
   groupByImpl,
   getRowAfterUpdate,
   jsonColumnStorageOf,
-  mayBeNull,
 } from '../src/data-providers/sql-database.js'
 import type { InsertOrUpdateOptions } from '../src/remult3/remult3.js'
+
+// The others already sort NULL first on asc.
+const NULL_LAST_DIALECTS = ['postgresql', 'redshift', 'oracledb']
+function sortsNullLast(knex: Knex) {
+  return NULL_LAST_DIALECTS.includes(knex.client.dialect)
+}
 
 export class KnexDataProvider
   implements
@@ -73,11 +78,6 @@ export class KnexDataProvider
     CanBuildMigrations
 {
   constructor(public knex: Knex) {}
-  get nullsSortLast() {
-    return ['postgresql', 'redshift', 'oracledb'].includes(
-      this.knex.client.dialect,
-    )
-  }
   end() {
     return this.knex.destroy()
   }
@@ -195,7 +195,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
         true,
       ),
       this.dp.createCommand(),
-      this.dp.nullsSortLast,
+      sortsNullLast(this.knex),
       (limit, offset) =>
         this.knex.client.config.client?.includes('mssql')
           ? ' offset ' + offset + ' rows fetch next ' + limit + ' rows only'
@@ -265,7 +265,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
           column: e.$dbNameOf(s.field),
           order: s.isDescending ? 'desc' : 'asc',
           nulls:
-            this.dp.nullsSortLast && mayBeNull(s.field)
+            s.field.allowNull && sortsNullLast(this.knex)
               ? s.isDescending
                 ? ('last' as const)
                 : ('first' as const)
