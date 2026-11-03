@@ -72,6 +72,15 @@ export class KnexDataProvider
     CanBuildMigrations
 {
   constructor(public knex: Knex) {}
+  /** Postgres-like and Oracle sort NULL last on asc. */
+  get orderByNullsFirst() {
+    return ![
+      'postgresql',
+      'cockroachdb',
+      'redshift',
+      'oracledb',
+    ].includes(this.knex.client.dialect)
+  }
   end() {
     return this.knex.destroy()
   }

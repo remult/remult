@@ -94,7 +94,8 @@ export class PostgresDataProvider
     var sb = new PostgresSchemaBuilder(db, this.options?.schema)
     await sb.ensureSchema(entities)
   }
-  orderByNullsFirst?: boolean
+  /** Postgres sorts NULL last on asc, unless set. */
+  orderByNullsFirst = false
   async transaction(
     action: (dataProvider: SqlImplementation) => Promise<void>,
   ) {

@@ -116,6 +116,9 @@ export class SqlDatabase
   get jsonColumnStorage(): JsonColumnStorage {
     return this.sql.supportsJsonColumnType ? 'native' : 'text'
   }
+  get orderByNullsFirst() {
+    return this.sql.orderByNullsFirst ?? true
+  }
   /* @internal*/
   _getSourceSql() {
     return this.sql
