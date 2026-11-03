@@ -622,6 +622,14 @@ class SerializerProbe {
     }
   }
 
+  @BackendMethod({ allowed: true, blockUser: false })
+  static async nextDayWithoutBlocking(at: Date) {
+    return {
+      argWasDate: at instanceof Date,
+      next: new Date(at.getTime() + 86_400_000),
+    }
+  }
+
   @BackendMethod({ allowed: true, paramTypes: [String, Remult] })
   static async greet(name: string, remult?: Remult) {
     return { name, injected: remult instanceof Remult }
@@ -659,6 +667,12 @@ describe('BackendMethod.serializer', () => {
       argWasDate: true,
       next: new Date('2026-01-02'),
     })
+  })
+
+  it('serializes static methods that skip blocking the UI', async () => {
+    expect(
+      await SerializerProbe.nextDayWithoutBlocking(new Date('2026-01-01')),
+    ).toEqual({ argWasDate: true, next: new Date('2026-01-02') })
   })
 
   it('still injects paramTypes', async () => {
