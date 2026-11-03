@@ -60,6 +60,7 @@ import {
   groupByImpl,
   getRowAfterUpdate,
   jsonColumnStorageOf,
+  mayBeNull,
 } from '../src/data-providers/sql-database.js'
 import type { InsertOrUpdateOptions } from '../src/remult3/remult3.js'
 
@@ -263,11 +264,12 @@ class KnexEntityDataProvider implements EntityDataProvider {
         options.orderBy.Segments.map((s) => ({
           column: e.$dbNameOf(s.field),
           order: s.isDescending ? 'desc' : 'asc',
-          nulls: this.dp.nullsSortLast
-            ? s.isDescending
-              ? ('last' as const)
-              : ('first' as const)
-            : undefined,
+          nulls:
+            this.dp.nullsSortLast && mayBeNull(s.field)
+              ? s.isDescending
+                ? ('last' as const)
+                : ('first' as const)
+              : undefined,
         })),
       )
     }

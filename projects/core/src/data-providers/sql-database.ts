@@ -903,7 +903,7 @@ export async function buildFindSql(
           ? c.field.options.key
           : await e.$dbNameOf(c.field)
         if (c.isDescending) select += ' desc'
-        if (nullsSortLast) {
+        if (nullsSortLast && mayBeNull(c.field)) {
           if (c.isDescending) select += ' nulls last'
           else select += ' nulls first'
         }
@@ -925,6 +925,11 @@ export async function buildFindSql(
       return resultRow(colKeys, valueAt, jsonColumnStorage)
     },
   }
+}
+
+// `nulls first/last` on a NOT NULL column stops Postgres from using its index; a sqlExpression can yield NULL anyway.
+export function mayBeNull(field: FieldMetadata) {
+  return field.allowNull || !!field.options.sqlExpression
 }
 
 async function selectColumns(
@@ -1076,7 +1081,7 @@ export async function buildGroupBySql(
       }
       orderBy += field
       if (x.isDescending) orderBy += ' desc'
-      if (nullsSortLast) {
+      if (nullsSortLast && (x.operation || mayBeNull(x.field!))) {
         if (x.isDescending) orderBy += ' nulls last'
         else orderBy += ' nulls first'
       }

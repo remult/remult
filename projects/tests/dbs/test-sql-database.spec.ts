@@ -262,6 +262,66 @@ describe('test sql implementation', () => {
   })
 })
 
+describe('nullsSortLast', () => {
+  @Entity('tasks')
+  class task {
+    @Fields.integer()
+    id = 0
+    @Fields.string()
+    title = ''
+    @Fields.date({ allowNull: true })
+    due: Date | null = null
+    @Fields.date()
+    at: Date | null = null
+    @Fields.string({ sqlExpression: () => 'a+b' })
+    exp = ''
+  }
+  let commands: string[] = []
+  const db = new SqlDatabase({
+    wrapIdentifier: (name) => '[' + name + ']',
+    createCommand: () =>
+      ({
+        addParameterAndReturnSqlToken: (val: any) => val,
+        param: (val: any) => val,
+        execute: async (sql) => {
+          commands.push(sql)
+          return { getColumnKeyInResultForIndexInSelect: undefined!, rows: [] }
+        },
+      }) satisfies SqlCommand,
+    async entityIsUsedForTheFirstTime() {},
+    getLimitSqlSyntax: (limit) => 'limit ' + limit,
+    transaction: undefined!,
+    end: async () => {},
+    nullsSortLast: true,
+  } satisfies SqlImplementation)
+  const repo = new Remult(db).repo(task)
+  beforeEach(() => (commands = []))
+
+  it('find sorts nulls only on nullable columns', async () => {
+    await repo.find({ orderBy: { due: 'asc', title: 'desc' }, limit: 5 })
+    await repo.find({ orderBy: { due: 'desc' }, limit: 5 })
+    await repo.find({ orderBy: { at: 'asc' }, limit: 5 })
+    expect(commands.map((x) => x.split(' Order By ')[1])).toEqual([
+      '[due] nulls first, [title] desc, [id] limit 5',
+      '[due] desc nulls last, [id] limit 5',
+      '[at] nulls first, [id] limit 5',
+    ])
+  })
+  it('find keeps nulls on a sqlExpression, it can yield null', async () => {
+    await repo.find({ orderBy: { exp: 'asc' } })
+    expect(commands[0].split(' Order By ')[1]).toBe('exp nulls first')
+  })
+  it('groupBy sorts nulls only on nullable columns', async () => {
+    await repo.groupBy({
+      group: ['due', 'title'],
+      orderBy: { due: 'desc', title: 'asc' },
+    })
+    expect(commands[0].split(' order by ')[1]).toBe(
+      '[due] desc nulls last, [title]',
+    )
+  })
+})
+
 describe('json columns stored as text', () => {
   function dbReturning(parts: any, supportsJsonColumnType?: boolean) {
     return new SqlDatabase({
