@@ -23,7 +23,7 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
    * ```
    */
   label?: string
-  /** If it can store `null` in the database. @default false */
+  /** If it can store `null` in the database. @default false, `true` for a Date */
   allowNull?: boolean
   /** If a value is required. Short-cut to say `validate: Validators.required`.
    * @default false

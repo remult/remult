@@ -2757,7 +2757,8 @@ export class columnDefsImpl implements FieldMetadata {
         return result
       },
     }) as Required<ValueConverter<any>>
-    this.allowNull = !!this.settings.allowNull
+    // A Date column has no default value, so migrations leave it nullable.
+    this.allowNull = this.settings.allowNull ?? this.settings.valueType === Date
     this.valueType = this.settings.valueType
     this.key = this.settings.key!
     this.inputType = this.settings.inputType!

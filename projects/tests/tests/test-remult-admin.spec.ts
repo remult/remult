@@ -91,7 +91,7 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
-              "allowNull": false,
+              "allowNull": true,
               "caption": "Bday",
               "inputType": undefined,
               "key": "bday",
@@ -267,7 +267,7 @@ describe('remult-admin', () => {
               "values": undefined,
             },
             {
-              "allowNull": false,
+              "allowNull": true,
               "caption": "Bday",
               "inputType": undefined,
               "key": "bday",

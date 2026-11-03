@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 - NULL sorts first on asc and last on desc on every provider, as SQLite, MySQL, SQL Server and MongoDB already did. Postgres, DuckDB and Knex on Postgres, Redshift and Oracle now write `nulls first` / `nulls last`; on Postgres, an index on a nullable sort column needs `NULLS FIRST` to serve it.
 - `orderByNullsFirst` is removed from `createPostgresDataProvider` and `PostgresDataProvider`. `SqlImplementation.orderByNullsFirst` is now `nullsSortLast`: the DB's own order, not a choice.
+- A `Date` field allows NULL unless `allowNull: false`, as migrations always left its column nullable (no default value). `{ at: null }` now finds those rows (was `= NULL`), an unset date is written as NULL instead of `DEFAULT`, and GraphQL types it nullable.
 
 ### Fixed
 

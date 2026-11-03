@@ -39,6 +39,16 @@ class Item {
   ref?: Cat | null
 }
 
+@Entity('paginatorNullSortDated', { allowApiCrud: true })
+class Dated {
+  @Fields.integer()
+  id = 0
+  @Fields.date()
+  at: Date | null = null
+  @Fields.date({ allowNull: false })
+  strict = new Date(2026, 10, 7)
+}
+
 const nov = (d: number) => new Date(2026, 10, d)
 
 export function paginatorNullSortTests({ createEntity }: DbTestProps) {
@@ -88,6 +98,22 @@ export function paginatorNullSortTests({ createEntity }: DbTestProps) {
         (x) => x.num,
       ),
     ).toEqual([null, 2, 3])
+  })
+
+  it('treats a Date as nullable, as its column is', async () => {
+    const r = await createEntity(Dated)
+    await r.insert([{ id: 1, at: nov(8) }, { id: 2 }, { id: 3, at: nov(7) }])
+    expect(r.metadata.fields.at.allowNull).toBe(true)
+    expect(r.metadata.fields.strict.allowNull).toBe(false)
+    expect((await r.find({ orderBy: { at: 'asc' } })).map((x) => x.id)).toEqual(
+      [2, 3, 1],
+    )
+    expect((await r.find({ where: { at: null } })).map((x) => x.id)).toEqual([
+      2,
+    ])
+    expect(
+      (await r.find({ where: { at: { $ne: null } } })).map((x) => x.id),
+    ).toEqual([1, 3])
   })
 
   describe.each(['asc', 'desc'] as const)(
