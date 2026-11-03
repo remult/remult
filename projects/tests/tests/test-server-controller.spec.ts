@@ -697,6 +697,76 @@ describe('BackendMethod.serializer', () => {
     })
   })
 
+  it('accepts serializers whose methods take one parameter', () => {
+    // superjson's methods take one parameter, and must keep assigning.
+    const oneParameter: BackendMethodSerializer = {
+      serialize(value: unknown) {
+        return value
+      },
+      deserialize(value: unknown) {
+        return value
+      },
+    }
+    expect(oneParameter.serialize(1, remult)).toBe(1)
+  })
+
+  it('gives the serializer the Remult making a client call', async () => {
+    const seen: { op: string; remult: Remult }[] = []
+    BackendMethod.serializer = {
+      serialize: (value, r) => {
+        seen.push({ op: 'serialize', remult: r })
+        return dateTagging.serialize(value, r)
+      },
+      deserialize: (value, r) => {
+        seen.push({ op: 'deserialize', remult: r })
+        return dateTagging.deserialize(value, r)
+      },
+    }
+    const c = new Remult({
+      url: 'xx',
+      httpClient: {
+        delete: () => undefined!,
+        get: () => undefined!,
+        put: () => undefined!,
+        post: async () => ({
+          data: dateTagging.serialize({ next: new Date('2026-01-02') }, c),
+        }),
+      },
+    })
+    seen.length = 0
+    await c.call(SerializerProbe.nextDay, undefined, new Date('2026-01-01'))
+    expect(seen.map((x) => x.op)).toEqual(['serialize', 'deserialize'])
+    expect(seen[0]!.remult).toBe(c)
+    expect(seen[1]!.remult).toBe(c)
+  })
+
+  it('gives the serializer the global remult on a direct call and the request Remult on the server', async () => {
+    const seen: { op: string; remult: Remult }[] = []
+    BackendMethod.serializer = {
+      serialize: (value, r) => {
+        seen.push({ op: 'serialize', remult: r })
+        return dateTagging.serialize(value, r)
+      },
+      deserialize: (value, r) => {
+        seen.push({ op: 'deserialize', remult: r })
+        return dateTagging.deserialize(value, r)
+      },
+    }
+    await SerializerProbe.nextDay(new Date('2026-01-01'))
+    // client serialize, server deserialize, server serialize, client deserialize
+    expect(seen.map((x) => x.op)).toEqual([
+      'serialize',
+      'deserialize',
+      'serialize',
+      'deserialize',
+    ])
+    expect(seen[0]!.remult).toBe(remult)
+    expect(seen[3]!.remult).toBe(remult)
+    expect(seen[1]!.remult).toBeInstanceOf(Remult)
+    expect(seen[1]!.remult).not.toBe(remult)
+    expect(seen[2]!.remult).toBe(seen[1]!.remult)
+  })
+
   it('posts the serialized arguments', async () => {
     const c = new Remult({
       url: 'xx',
