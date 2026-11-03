@@ -19,7 +19,6 @@ import * as Knex from 'knex'
 import type { ClassType } from '../../core/classType'
 import { Categories } from '../tests/remult-3-entities'
 import { allDbTests } from './shared-tests'
-import { paginatorNullSortTests } from './shared-tests/test-paginator-null-sort.js'
 import { entityWithValidations } from './shared-tests/entityWithValidations'
 import { knexTests } from './shared-tests/test-knex'
 import { SqlDbTests } from './shared-tests/sql-db-tests'
@@ -202,25 +201,6 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
       new Date().getFullYear(),
     )
   })
-  it('null last', async () => {
-    @Entity('myEntity')
-    class MyEntity {
-      @Fields.number()
-      id = 0
-      @Fields.number({ allowNull: true })
-      value: number | null = 0
-    }
-    const r = await createEntity(MyEntity)
-    await r.insert([
-      { id: 1, value: null },
-      { id: 2, value: 2 },
-      { id: 3, value: 3 },
-    ])
-    expect(
-      (await r.find({ orderBy: { value: 'asc' } })).map((x) => x.value),
-    ).toEqual([2, 3, null])
-  })
-
   it('ensure on not_public schema', async () => {
     const db = SqlDatabase.getDb(remult.dataProvider)
     const entityName = 'auth.test_not_public'
@@ -323,86 +303,6 @@ describe.skipIf(!postgresConnection)('Postgres Tests', () => {
     }
   })
 })
-describe.skipIf(!postgresConnection)('Postgres null first', () => {
-  var db: SqlDatabase
-  let remult: Remult
-  beforeAll(async () => {
-    db = await createPostgresConnection({
-      //wrapName: (x) => x,
-      orderByNullsFirst: true,
-    })
-  })
-  beforeEach(() => {
-    remult = new Remult(db)
-  })
-
-  async function createEntity(entity: ClassType<any>) {
-    let repo = remult.repo(entity)
-    await db.execute(
-      'drop table if exists ' +
-        (await dbNamesOf(repo.metadata, db.wrapIdentifier)).$entityName,
-    )
-    await db.ensureSchema([repo.metadata])
-    return repo
-  }
-  paginatorNullSortTests({
-    getDb() {
-      return db
-    },
-    getRemult() {
-      return remult
-    },
-    createEntity,
-  })
-  it('null last', async () => {
-    @Entity('myEntity')
-    class MyEntity {
-      @Fields.number()
-      id = 0
-      @Fields.number({ allowNull: true })
-      value: number | null = 0
-    }
-    const r = await createEntity(MyEntity)
-    await r.insert([
-      { id: 1, value: null },
-      { id: 2, value: 2 },
-      { id: 3, value: 3 },
-    ])
-    expect(
-      (await r.find({ orderBy: { value: 'desc' } })).map((x) => x.value),
-    ).toEqual([3, 2, null])
-  })
-  it('null first', async () => {
-    @Entity('myEntity')
-    class MyEntity {
-      @Fields.number()
-      id = 0
-      @Fields.number({ allowNull: true })
-      value: number | null = 0
-    }
-    const r = await createEntity(MyEntity)
-    await r.insert([
-      { id: 1, value: null },
-      { id: 2, value: 2 },
-      { id: 3, value: 3 },
-    ])
-    expect(
-      (await r.find({ orderBy: { value: 'asc' } })).map((x) => x.value),
-    ).toEqual([null, 2, 3])
-    expect(
-      (
-        await r.groupBy({
-          group: ['value'],
-          orderBy: {
-            $count: 'asc',
-            value: 'asc',
-          },
-        })
-      ).map((x) => x.value),
-    ).toEqual([null, 2, 3])
-  })
-})
-
 describe.skipIf(!postgresConnection)('Postgres Knex', () => {
   knexTests(
     Knex.default({

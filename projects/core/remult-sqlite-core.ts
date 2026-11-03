@@ -30,7 +30,7 @@ export class SqliteCoreDataProvider
     public doesNotSupportReturningSyntaxOnlyForUpdate = false,
   ) {}
 
-  orderByNullsFirst?: boolean
+  nullsSortLast?: boolean
   maxParametersInOneSqlStatement = 999
 
   getLimitSqlSyntax(limit: number, offset: number) {

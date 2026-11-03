@@ -16,8 +16,6 @@ export interface DataProvider {
   ): Promise<void>
   ensureSchema?(entities: EntityMetadata[]): Promise<void>
   isProxy?: boolean
-  /** NULL sorts first on asc and last on desc, `true` if not set. The paginator pages by it. */
-  orderByNullsFirst?: boolean
 }
 
 /** `InMemoryDataProvider` + `IndexedDbDataProvider` — swap in tests. */

@@ -1,5 +1,16 @@
 All notable changes to this project will be documented in this file.
 
+## [3.5.0] - [unreleased]
+
+### Breaking
+
+- NULL sorts first on asc and last on desc on every provider, as SQLite, MySQL, SQL Server and MongoDB already did. Postgres, DuckDB and Knex on Postgres, Redshift and Oracle now write `nulls first` / `nulls last`; on Postgres, an index on a nullable sort column needs `NULLS FIRST` to serve it.
+- `orderByNullsFirst` is removed from `createPostgresDataProvider` and `PostgresDataProvider`. `SqlImplementation.orderByNullsFirst` is now `nullsSortLast`: the DB's own order, not a choice.
+
+### Fixed
+
+- `paginator()` and `for await` skipped rows whose sort key is NULL.
+
 ## [3.4.1] - [2026-10-30]
 
 ### Reverted

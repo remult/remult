@@ -60,7 +60,7 @@ export function paginatorNullSortTests({ createEntity }: DbTestProps) {
     return ids
   }
 
-  /** `find` is the oracle: NULL position is the provider's, so the expected order must come from it. */
+  /** `find` is the oracle. */
   async function expectEveryPageSizeMatchesFind(
     r: Repository<any>,
     orderBy: EntityOrderBy<any>,
@@ -76,6 +76,19 @@ export function paginatorNullSortTests({ createEntity }: DbTestProps) {
       ).toEqual(expected)
     }
   }
+
+  it('sorts NULL first on asc, last on desc', async () => {
+    const r = await seed([{ num: 2 }, { num: null }, { num: 3 }])
+    const nums = async (num: 'asc' | 'desc') =>
+      (await r.find({ orderBy: { num } })).map((x) => x.num)
+    expect(await nums('asc')).toEqual([null, 2, 3])
+    expect(await nums('desc')).toEqual([3, 2, null])
+    expect(
+      (await r.groupBy({ group: ['num'], orderBy: { num: 'asc' } })).map(
+        (x) => x.num,
+      ),
+    ).toEqual([null, 2, 3])
+  })
 
   describe.each(['asc', 'desc'] as const)(
     'paginator with NULL in a sort key %s',

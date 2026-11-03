@@ -116,9 +116,6 @@ export class SqlDatabase
   get jsonColumnStorage(): JsonColumnStorage {
     return this.sql.supportsJsonColumnType ? 'native' : 'text'
   }
-  get orderByNullsFirst() {
-    return this.sql.orderByNullsFirst ?? true
-  }
   /* @internal*/
   _getSourceSql() {
     return this.sql
@@ -183,7 +180,7 @@ export class SqlDatabase
               this.sql.doesNotSupportReturningSyntax,
             doesNotSupportReturningSyntaxOnlyForUpdate:
               this.sql.doesNotSupportReturningSyntaxOnlyForUpdate,
-            orderByNullsFirst: this.sql.orderByNullsFirst,
+            nullsSortLast: this.sql.nullsSortLast,
             afterMutation: this.sql.afterMutation,
             maxParametersInOneSqlStatement:
               this.sql.maxParametersInOneSqlStatement,
@@ -293,7 +290,7 @@ export class SqlDatabase
           sql?.wrapIdentifier ?? wrapIdentifierOf(r),
         )),
       sql?.sqlCommand ?? new myDummySQLCommand(),
-      false,
+      nullsSortLastOf(r),
       sql?.limitSyntax ?? limitSyntaxRequired,
       jsonColumnStorageForRaw(r, sql?.jsonAsString),
     )
@@ -327,7 +324,7 @@ export class SqlDatabase
           sql?.wrapIdentifier ?? wrapIdentifierOf(r),
         )),
       sql?.sqlCommand ?? new myDummySQLCommand(),
-      false,
+      nullsSortLastOf(r),
       sql?.limitSyntax ?? limitSyntaxRequired,
       {
         aliasColumns: true,
@@ -527,7 +524,7 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
       options,
       await this.init(),
       this.sql.createCommand(),
-      this.sql._getSourceSql().orderByNullsFirst,
+      this.sql._getSourceSql().nullsSortLast,
       this.sql._getSourceSql().getLimitSqlSyntax,
       this.sql.jsonColumnStorage,
     )
@@ -543,7 +540,7 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
       options,
       e,
       r,
-      this.sql._getSourceSql().orderByNullsFirst,
+      this.sql._getSourceSql().nullsSortLast,
       (limit, offset) => this.strategy.getLimitSqlSyntax(limit, offset),
       { jsonColumnStorage: this.sql.jsonColumnStorage },
     )
@@ -798,6 +795,11 @@ export function jsonColumnStorageOf(r: Repository<any>): JsonColumnStorage {
   return 'native'
 }
 
+function nullsSortLastOf(r: Repository<any>) {
+  const dp = getRepositoryInternals(r)._dataProvider
+  return dp instanceof SqlDatabase && !!dp._getSourceSql().nullsSortLast
+}
+
 function jsonColumnStorageForRaw(
   r: Repository<any>,
   jsonAsString: boolean | undefined,
@@ -861,7 +863,7 @@ export async function buildFindSql(
   options: EntityDataProviderFindOptions | undefined,
   e: EntityDbNamesBase,
   r: SqlCommandWithParameters,
-  orderByNullsFirst: boolean | undefined,
+  nullsSortLast: boolean | undefined,
   limitSyntax: (limit: number, offset: number) => string,
   {
     aliasColumns = false,
@@ -901,7 +903,7 @@ export async function buildFindSql(
           ? c.field.options.key
           : await e.$dbNameOf(c.field)
         if (c.isDescending) select += ' desc'
-        if (orderByNullsFirst) {
+        if (nullsSortLast) {
           if (c.isDescending) select += ' nulls last'
           else select += ' nulls first'
         }
@@ -973,7 +975,7 @@ export async function groupByImpl(
   options: EntityDataProviderGroupByOptions | undefined,
   e: EntityDbNamesBase,
   r: SqlCommand,
-  orderByNullFirst: boolean | undefined,
+  nullsSortLast: boolean | undefined,
   limitSyntax: (limit: number, offset: number) => string,
   jsonColumnStorage: JsonColumnStorage = 'native',
 ) {
@@ -981,7 +983,7 @@ export async function groupByImpl(
     options,
     e,
     r,
-    orderByNullFirst,
+    nullsSortLast,
     limitSyntax,
     jsonColumnStorage,
   )
@@ -996,7 +998,7 @@ export async function buildGroupBySql(
   options: EntityDataProviderGroupByOptions | undefined,
   e: EntityDbNamesBase,
   r: SqlCommandWithParameters,
-  orderByNullFirst: boolean | undefined,
+  nullsSortLast: boolean | undefined,
   limitSyntax: (limit: number, offset: number) => string,
   jsonColumnStorage: JsonColumnStorage = 'native',
 ) {
@@ -1074,7 +1076,7 @@ export async function buildGroupBySql(
       }
       orderBy += field
       if (x.isDescending) orderBy += ' desc'
-      if (orderByNullFirst) {
+      if (nullsSortLast) {
         if (x.isDescending) orderBy += ' nulls last'
         else orderBy += ' nulls first'
       }

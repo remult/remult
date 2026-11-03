@@ -72,14 +72,10 @@ export class KnexDataProvider
     CanBuildMigrations
 {
   constructor(public knex: Knex) {}
-  /** Postgres-like and Oracle sort NULL last on asc. */
-  get orderByNullsFirst() {
-    return ![
-      'postgresql',
-      'cockroachdb',
-      'redshift',
-      'oracledb',
-    ].includes(this.knex.client.dialect)
+  get nullsSortLast() {
+    return ['postgresql', 'redshift', 'oracledb'].includes(
+      this.knex.client.dialect,
+    )
   }
   end() {
     return this.knex.destroy()
@@ -198,7 +194,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
         true,
       ),
       this.dp.createCommand(),
-      false,
+      this.dp.nullsSortLast,
       (limit, offset) =>
         this.knex.client.config.client?.includes('mssql')
           ? ' offset ' + offset + ' rows fetch next ' + limit + ' rows only'
@@ -267,6 +263,11 @@ class KnexEntityDataProvider implements EntityDataProvider {
         options.orderBy.Segments.map((s) => ({
           column: e.$dbNameOf(s.field),
           order: s.isDescending ? 'desc' : 'asc',
+          nulls: this.dp.nullsSortLast
+            ? s.isDescending
+              ? ('last' as const)
+              : ('first' as const)
+            : undefined,
         })),
       )
     }

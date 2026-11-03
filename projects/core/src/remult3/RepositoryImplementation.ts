@@ -147,7 +147,6 @@ export class RepositoryImplementation<entityType>
     orderBy: EntityOrderBy<entityType>,
     lastRow: entityType,
   ): Promise<EntityFilter<entityType>> {
-    const nullsFirst = this._dataProvider.orderByNullsFirst ?? true
     const ref = this.getEntityRef(lastRow)
     const $or: EntityFilter<any>[] = []
     let equal: EntityFilter<any> = {}
@@ -159,17 +158,13 @@ export class RepositoryImplementation<entityType>
       // An unloaded relation reads undefined, its id is there.
       const value =
         (ref.fields.find(key) as IdFieldRef<entityType, any>).getId() ?? null
-      const nullBeforeValues = nullsFirst !== !!isDescending
+      // NULL sorts lowest: before the values on asc, after them on desc.
       if (value === null && field.allowNull) {
-        if (nullBeforeValues) $or.push({ ...equal, $not: { [key]: null } })
-      } else {
-        $or.push({
-          ...equal,
-          [key]: isDescending ? { $lt: value } : { $gt: value },
-        })
-        if (field.allowNull && !nullBeforeValues)
-          $or.push({ ...equal, [key]: null })
-      }
+        if (!isDescending) $or.push({ ...equal, $not: { [key]: null } })
+      } else if (isDescending) {
+        $or.push({ ...equal, [key]: { $lt: value } })
+        if (field.allowNull) $or.push({ ...equal, [key]: null })
+      } else $or.push({ ...equal, [key]: { $gt: value } })
       equal = { ...equal, [key]: value }
     }
     return { $or } as EntityFilter<entityType>
