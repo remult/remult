@@ -4,13 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ### Breaking
 
-- NULL sorts first on asc and last on desc on every provider, as Postgres did with `orderByNullsFirst: true` and SQLite, MySQL, SQL Server and MongoDB always did. `ORDER BY` writes `nulls first` / `nulls last` on `allowNull` columns only, so a NOT NULL column like `id` keeps its index. On Postgres, an index on a nullable sort column needs `NULLS FIRST` to serve it.
-- `orderByNullsFirst` is removed from `createPostgresDataProvider`, `PostgresDataProvider` and `SqlImplementation`.
-- `allowNull` defaults to how migrations create the column: `true` when it has no default value (a Date, `Fields.json`, a custom `fieldTypeInDb` other than on a number or boolean), never on an id ([table](https://remult.dev/docs/field-types#allownull-by-field-type)). `{ at: null }` now finds those rows (was `= NULL`), an unset value is written as NULL instead of `DEFAULT`, and GraphQL types it nullable. New SQLite and Knex columns follow: json and `dateOnly` were `not null` on SQLite, json stored as text was on Knex.
+- NULL sorts first on asc and last on desc, on every database. SQLite, MySQL, SQL Server and MongoDB already did; Postgres, DuckDB, Redshift and Oracle put NULL last on asc, unless Postgres had `orderByNullsFirst: true`.
+  - `orderByNullsFirst` is removed (`createPostgresDataProvider`, `PostgresDataProvider`, `SqlImplementation`): it is now always on.
+  - `ORDER BY` writes `nulls first` / `nulls last` only on `allowNull` columns, so `id` and other `not null` columns keep their index.
+  - Postgres: an index on a nullable sort column serves this order once created `NULLS FIRST`, e.g. `create index on task (due nulls first)`.
+- `allowNull` defaults to what migrations create: a column with no default value is nullable, so `Fields.date`, `dateOnly`, `createdAt`, `updatedAt`, `Fields.json` and a custom `fieldTypeInDb` (not on a number or boolean) now default to `allowNull: true`. Ids stay `false`. See [allowNull by field type](https://remult.dev/docs/field-types#allownull-by-field-type). For these fields:
+  - `{ due: null }` finds the NULL rows (it ran `= NULL` and matched nothing).
+  - An unset value is written as NULL, not `DEFAULT`.
+  - GraphQL and the admin show them nullable.
+  - New SQLite columns for json and `dateOnly`, and Knex json stored as text, are created nullable (were `not null`).
 
 ### Fixed
 
-- `paginator()` and `for await` skipped rows whose sort key is NULL.
+- `paginator()` and `for await` skipped rows whose sort key is NULL: the next page filter `due > x` never matches NULL.
 
 ## [3.4.1] - [2026-10-30]
 
