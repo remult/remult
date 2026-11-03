@@ -52,15 +52,23 @@ export class QueryResultImpl<entityType> implements QueryResult<entityType> {
     return i
   }
 
-  async paginator(
-    pNextPageFilter?: EntityFilter<entityType>,
-    pCursors?: Record<string, any>,
-  ): Promise<Paginator<entityType>> {
+  async paginator(cursor?: string): Promise<Paginator<entityType>> {
     this.options.orderBy = Sort.createUniqueEntityOrderBy(
       this.repo.metadata,
       this.options.orderBy,
     )
+    if (cursor === undefined) return this._paginate()
+    const cursors = this.repo._cursorsFromString(this.options.orderBy, cursor)
+    return this._paginate(
+      await this.repo._createAfterFilter(this.options.orderBy, cursors),
+      cursors,
+    )
+  }
 
+  private async _paginate(
+    pNextPageFilter?: EntityFilter<entityType>,
+    pCursors?: Record<string, any>,
+  ): Promise<Paginator<entityType>> {
     let options = {
       where: {
         $and: [this.options.where, pNextPageFilter],
@@ -113,23 +121,26 @@ export class QueryResultImpl<entityType> implements QueryResult<entityType> {
       throw new Error('no more pages')
     }
     let hasNextPage = items.length == this.options.pageSize
+    let cursor: () => string | undefined = () => undefined
     if (hasNextPage) {
-      const cursors = this.repo._toCursors(
-        this.options.orderBy,
-        items,
-        pCursors,
-      )
+      const orderBy = this.options.orderBy!
+      const cursors = this.repo._toCursors(orderBy, items, pCursors)
       const nextPageFilter = await this.repo._createAfterFilter(
-        this.options.orderBy,
+        orderBy,
         cursors,
       )
-      nextPage = () => this.paginator(nextPageFilter, cursors)
+      nextPage = () => this._paginate(nextPageFilter, cursors)
+      cursor = () => this.repo._cursorsToString(orderBy, cursors)
     }
     return {
       count: () => this.count(),
       hasNextPage,
       items,
       nextPage,
+      // Lazy, so a converter that can't serialize only fails who asks.
+      get cursor() {
+        return cursor()
+      },
       //@ts-ignore
       aggregates: this._aggregates,
     }

@@ -105,6 +105,24 @@ import { QueryResultImpl } from './QueryResultImpl.js'
 import { SubscribableImp } from './SubscribableImp.js'
 //import  { remult } from "../remult-proxy";
 
+const REGEX_BASE64_URL_UNSAFE = /[+/=]/g
+const REGEX_BASE64_URL_SAFE = /[-_]/g
+// base64url, so a cursor fits a url as is. `btoa` alone throws on non latin1 text.
+const toBase64Url = (text: string) =>
+  btoa(String.fromCharCode(...new TextEncoder().encode(text))).replace(
+    REGEX_BASE64_URL_UNSAFE,
+    (c) => (c === '+' ? '-' : c === '/' ? '_' : ''),
+  )
+const fromBase64Url = (base64: string) =>
+  new TextDecoder().decode(
+    Uint8Array.from(
+      atob(
+        base64.replace(REGEX_BASE64_URL_SAFE, (c) => (c === '-' ? '+' : '/')),
+      ),
+      (c) => c.charCodeAt(0),
+    ),
+  )
+
 let classValidatorValidate:
   | ((
       item: any,
@@ -179,6 +197,49 @@ export class RepositoryImplementation<entityType>
       result[this._nullPattern(orderBy, row)] = row
     }
     return result
+  }
+
+  /** Opaque, so a caller can hand it back later, e.g. as a GraphQL `after`. */
+  _cursorsToString(
+    orderBy: EntityOrderBy<entityType>,
+    cursors: Record<string, any>,
+  ) {
+    const { Segments } = Sort.translateOrderByToSort(this.metadata, orderBy)
+    return toBase64Url(
+      JSON.stringify({
+        sort: this._sortSignature(orderBy),
+        rows: Object.values(cursors).map((row) =>
+          Segments.map(({ field }) =>
+            row[field.key] == null
+              ? null
+              : field.valueConverter.toJson(row[field.key]),
+          ),
+        ),
+      }),
+    )
+  }
+  _cursorsFromString(orderBy: EntityOrderBy<entityType>, cursor: string) {
+    const { Segments } = Sort.translateOrderByToSort(this.metadata, orderBy)
+    const { sort, rows } = JSON.parse(fromBase64Url(cursor))
+    // Values of another order would page from a wrong place, silently.
+    if (sort !== this._sortSignature(orderBy))
+      throw new Error('cursor was made for another orderBy')
+    const result: Record<string, any> = {}
+    for (const values of rows as any[][]) {
+      const row = Object.fromEntries(
+        Segments.map(({ field }, i) => [
+          field.key,
+          values[i] == null ? null : field.valueConverter.fromJson(values[i]),
+        ]),
+      )
+      result[this._nullPattern(orderBy, row)] = row
+    }
+    return result
+  }
+  private _sortSignature(orderBy: EntityOrderBy<entityType>) {
+    return Sort.translateOrderByToSort(this.metadata, orderBy)
+      .Segments.map((s) => (s.isDescending ? '-' : '') + s.field.key)
+      .join()
   }
 
   async _createAfterFilter(

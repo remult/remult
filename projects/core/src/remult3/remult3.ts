@@ -1392,8 +1392,10 @@ export interface QueryResult<
   /** Performs an operation on all the items matching the query criteria */
   forEach(what: (item: entityType) => Promise<any>): Promise<number>
 
-  /** Returns a `Paginator` object that is used for efficient paging */
-  paginator(): Promise<Paginator<entityType, AggregateResult>>
+  /** Returns a `Paginator` object that is used for efficient paging
+   * @param cursor a `Paginator.cursor` of this same query, to resume where it left off.
+   */
+  paginator(cursor?: string): Promise<Paginator<entityType, AggregateResult>>
 }
 /** An interface used to paginating using the `query` method in the `Repository` object
  *  @example
@@ -1422,6 +1424,8 @@ export type Paginator<entityType, AggregateResult = EmptyAggregateResult> = {
 
   /** Gets the next page in the `query`'s result set */
   nextPage(): Promise<Paginator<entityType, AggregateResult>>
+  /** Where the next page starts, as an opaque string for `query.paginator(cursor)`, `undefined` on the last page */
+  readonly cursor?: string
 } & (AggregateResult extends EmptyAggregateResult
   ? {}
   : { aggregates: AggregateResult })

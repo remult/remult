@@ -145,6 +145,7 @@ class RequiredRef {
 }
 
 const day = (d: number) => new Date(2024, 0, d)
+const REGEX_URL_SAFE = /^[\w-]+$/
 const directions = ['asc', 'desc'] as const
 
 export function paginatorNullSortTests({
@@ -166,6 +167,24 @@ export function paginatorNullSortTests({
       page = await page.nextPage()
       ids.push(...page.items.map((x) => x.id))
     }
+    return ids
+  }
+
+  /** Each page from a new query, as a client handing the cursor back would. */
+  async function walkByCursor(
+    r: Repository<any>,
+    orderBy: EntityOrderBy<any>,
+    rowCount: number,
+  ) {
+    const ids: number[] = []
+    let page = await r.query({ orderBy, pageSize: 2 }).paginator()
+    ids.push(...page.items.map((x) => x.id))
+    while (page.hasNextPage && ids.length <= rowCount) {
+      expect(page.cursor).toMatch(REGEX_URL_SAFE)
+      page = await r.query({ orderBy, pageSize: 2 }).paginator(page.cursor)
+      ids.push(...page.items.map((x) => x.id))
+    }
+    expect(page.cursor).toBeUndefined()
     return ids
   }
 
@@ -314,6 +333,48 @@ export function paginatorNullSortTests({
           expect(page.hasNextPage).toBe(false)
         },
       )
+
+      it('resumes from a cursor in a new query', async () => {
+        const r = await seed([
+          { due: day(2), label: 'é' },
+          { due: null },
+          { due: day(1), label: '日本' },
+          { due: null, label: 'b' },
+          { due: day(3) },
+          { due: day(1) },
+        ])
+        const orderBy: EntityOrderBy<Row> = { due: dir, label: dir, id: 'asc' }
+        expect(await walkByCursor(r, orderBy, 6)).toEqual(
+          (await r.find({ orderBy })).map((x) => x.id),
+        )
+      })
+
+      it('resumes from a cursor on a relation key', async () => {
+        const cats = await createEntity(Cat)
+        const [one, two] = await cats.insert([{ id: 1 }, { id: 2 }])
+        const r = await createEntity(Item)
+        await r.insert(
+          [two, null, one, null, two].map((cat, i) => ({
+            id: i + 1,
+            catId: cat?.id ?? null,
+            ref: cat,
+          })),
+        )
+        const orderBy: EntityOrderBy<Item> = { ref: dir, id: 'asc' }
+        expect(await walkByCursor(r, orderBy, 5)).toEqual(
+          (await r.find({ orderBy })).map((x) => x.id),
+        )
+      })
+
+      it('rejects a cursor of another orderBy', async () => {
+        const r = await seed([{}, {}, {}])
+        const { cursor } = await r
+          .query({ orderBy: { due: dir }, pageSize: 1 })
+          .paginator()
+        await expect(
+          r.query({ orderBy: { num: dir }, pageSize: 1 }).paginator(cursor),
+        ).rejects.toThrow('another orderBy')
+      })
 
       it('reaches every row with an aggregate', async () => {
         const r = await seed([
