@@ -114,14 +114,13 @@ export class QueryResultImpl<entityType> implements QueryResult<entityType> {
     }
     let hasNextPage = items.length == this.options.pageSize
     if (hasNextPage) {
-      const cursors = { ...pCursors }
-      for (const item of items) {
-        const row = this.repo._sortValues(this.options.orderBy, item)
-        cursors[this.repo._nullPattern(this.options.orderBy, row)] = row
-      }
-      let nextPageFilter = await this.repo._createAfterFilter(
+      const cursors = this.repo._toCursors(
         this.options.orderBy,
-        items[items.length - 1],
+        items,
+        pCursors,
+      )
+      const nextPageFilter = await this.repo._createAfterFilter(
+        this.options.orderBy,
         cursors,
       )
       nextPage = () => this.paginator(nextPageFilter, cursors)

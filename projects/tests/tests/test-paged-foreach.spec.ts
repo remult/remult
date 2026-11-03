@@ -370,7 +370,7 @@ function testPaging(
               eDefs.metadata,
               await getRepositoryInternals(eDefs)._createAfterFilter(
                 orderBy,
-                e,
+                getRepositoryInternals(eDefs)._toCursors(orderBy, [e]),
               ),
             ),
           ),
@@ -398,12 +398,14 @@ function testPaging(
       e.b = 'b'
       e.c = 'c'
 
-      const f = await getRepositoryInternals(eDefs)._createAfterFilter(
-        { a: 'asc', b: 'asc' },
-        e,
-      )
+      const internals = getRepositoryInternals(eDefs)
+      const cursors = internals._toCursors({ a: 'asc', b: 'asc' }, [e])
       e.a = '1'
       e.b = '2'
+      const f = await internals._createAfterFilter(
+        { a: 'asc', b: 'asc' },
+        cursors,
+      )
       expect(
         JSON.stringify(await entityFilterToJson(eDefs.metadata, f)),
       ).toEqual(

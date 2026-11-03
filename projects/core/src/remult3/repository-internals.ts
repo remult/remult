@@ -15,10 +15,14 @@ import type {
 } from './remult3.js'
 
 export interface RepositoryInternal<entityType> {
+  _toCursors(
+    orderBy: EntityOrderBy<entityType>,
+    rows: entityType[],
+    cursors?: Record<string, any>,
+  ): Record<string, any>
   _createAfterFilter(
     orderBy: EntityOrderBy<entityType>,
-    lastRow: entityType,
-    cursors?: Record<string, any>,
+    cursors: Record<string, any>,
   ): Promise<EntityFilter<entityType>>
   _fromJsonArray(
     jsonItems: any[],

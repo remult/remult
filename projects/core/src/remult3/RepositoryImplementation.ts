@@ -146,9 +146,9 @@ export class RepositoryImplementation<entityType>
   /** Sort keys of a row, copied as consumers may edit the items they get. */
   _sortValues(orderBy: EntityOrderBy<entityType>, row: entityType) {
     const values: Record<string, any> = {}
+    // An unloaded relation reads undefined, which is not a NULL key.
     for (const { field } of Sort.translateOrderByToSort(this.metadata, orderBy)
       .Segments)
-      // An unloaded relation reads undefined, which is not a NULL key.
       values[field.key] =
         (
           this.getEntityRef(row).fields.find(field.key) as IdFieldRef<
@@ -167,10 +167,23 @@ export class RepositoryImplementation<entityType>
       .join('')
   }
 
+  /** Last row read per NULL pattern. */
+  _toCursors(
+    orderBy: EntityOrderBy<entityType>,
+    rows: entityType[],
+    cursors: Record<string, any> = {},
+  ) {
+    const result = { ...cursors }
+    for (const item of rows) {
+      const row = this._sortValues(orderBy, item)
+      result[this._nullPattern(orderBy, row)] = row
+    }
+    return result
+  }
+
   async _createAfterFilter(
     orderBy: EntityOrderBy<entityType>,
-    lastRow: entityType,
-    cursors?: Record<string, any>,
+    cursors: Record<string, any>,
   ): Promise<EntityFilter<entityType>> {
     const segments = Sort.translateOrderByToSort(
       this.metadata,
@@ -181,9 +194,7 @@ export class RepositoryImplementation<entityType>
       const isNull = { [s.field.key]: null }
       return (row[s.field.key] == null ? isNull : { $not: isNull }) as any
     }
-    const rows = cursors
-      ? Object.values(cursors)
-      : [this._sortValues(orderBy, lastRow)]
+    const rows = Object.values(cursors)
     const $or: EntityFilter<any>[] = []
     for (const row of rows) {
       let equal: EntityFilter<any> = {}
@@ -196,7 +207,7 @@ export class RepositoryImplementation<entityType>
           }
           const later = nullable.filter((x) => segments.indexOf(x) > i)
           $or.push(
-            cursors && later.length
+            later.length
               ? { $and: [after, ...later.map((x) => sameSide(row, x))] }
               : after,
           )
@@ -205,7 +216,7 @@ export class RepositoryImplementation<entityType>
       })
     }
     // Patterns not met yet: nothing of them was read.
-    if (cursors && nullable.length)
+    if (nullable.length)
       $or.push({
         $not: {
           $or: rows.map((row) => ({
@@ -2217,10 +2228,9 @@ export class rowHelperImplementation<T>
             await listener.saved?.(this.instance, true)
           }
       }
-      this.repo._remult.liveQueryPublisher.itemChanged(
-        this.repo.metadata.key,
-        [{ id: this.getId(), oldId: this.getOriginalId(), deleted: false }],
-      )
+      this.repo._remult.liveQueryPublisher.itemChanged(this.repo.metadata.key, [
+        { id: this.getId(), oldId: this.getOriginalId(), deleted: false },
+      ])
       this.saveOriginalData()
       this._isNew = false
       return this.instance
