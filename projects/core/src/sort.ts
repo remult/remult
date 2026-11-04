@@ -181,38 +181,23 @@ export interface SortSegment {
 export type NullsOrder = 'native' | 'NULL FIRST' | 'NULL LAST'
 
 /**
- * Where NULL sorts, for the whole app. Set it in code that both the server and the client load.
- *
- * `native` (the default) lets the database decide: Postgres and DuckDB sort NULL last on `asc`,
- * SQLite, MySQL, SQL Server and Mongo sort it as the lowest value. Without a database (in memory,
- * JSON, the paginator on a Rest client), `native` is the lowest value: first on `asc`, last on
- * `desc`. So on Postgres and DuckDB the paginator can skip rows whose sort key is NULL.
- *
- * Only `allowNull` columns get the NULL order. Mongo sorts NULL as the lowest value only.
- * @example
- * NullSort.asc = 'NULL FIRST'
- * NullSort.desc = 'NULL LAST'
+ * Where NULL sorts, for the whole app: set it where both the server and the client load it.
+ * `native` (default) lets the database decide, and the paginator assumes NULL is the lowest value.
+ * @see https://remult.dev/docs/field-types#where-null-sorts
  */
 export const NullSort: { asc: NullsOrder; desc: NullsOrder } =
   remultStatic.nullSort ||
   (remultStatic.nullSort = { asc: 'native', desc: 'native' })
 
-/** `NullSort.asc` or `NullSort.desc`. */
 export function nullSortFor(isDescending?: boolean) {
   return NullSort[isDescending ? 'desc' : 'asc']
 }
 
-/** NULL as the lowest value: SQLite, MySQL, SQL Server, Mongo, and no database. */
-export function nullLowest(
-  isDescending?: boolean,
-): Exclude<NullsOrder, 'native'> {
-  return isDescending ? 'NULL LAST' : 'NULL FIRST'
-}
-
-/** Where NULL lands, `native` resolved without a database. */
+/** `native` is NULL lowest, as without a database. */
 export function nullOrder(isDescending?: boolean) {
   const order = nullSortFor(isDescending)
-  return order === 'native' ? nullLowest(isDescending) : order
+  if (order !== 'native') return order
+  return isDescending ? 'NULL LAST' : 'NULL FIRST'
 }
 
 export function compareForSort(
