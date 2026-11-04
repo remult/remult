@@ -81,6 +81,31 @@ describe.skipIf(!mongoConnectionStringWithoutTransaction)(
       }
       expect(await repo.count()).toBe(2)
     })
+    it('writes NULL as null and still reads the older marker', async () => {
+      const entity = class {
+        id = 0
+        num: number | null = null
+      }
+      describeClass(entity, Entity('nullMarker'), {
+        id: Fields.number(),
+        num: Fields.number({ allowNull: true }),
+      })
+      const repo = await createEntity(entity)
+      await repo.insert([
+        { id: 1, num: null },
+        { id: 2, num: 5 },
+      ])
+      const collection = mongoDb.collection('nullMarker')
+      await collection.insertOne({ id: 3, num: { $null: '$null' } })
+      expect((await collection.findOne({ id: 1 }))!.num).toBe(null)
+      expect((await repo.findId(3))!.num).toBe(null)
+      expect(
+        (await repo.find({ where: { num: null! } })).map((x) => x.id),
+      ).toEqual([1, 3])
+      expect(
+        (await repo.find({ where: { num: { $ne: null! } } })).map((x) => x.id),
+      ).toEqual([2])
+    })
 
     it('transactions mongo no trans', async () => {
       let x = await createEntity(Categories)
