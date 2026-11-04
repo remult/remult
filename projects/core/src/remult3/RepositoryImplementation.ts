@@ -1101,7 +1101,9 @@ export class RepositoryImplementation<entityType>
           }
         } else {
           for (const row of result) {
-            Reflect.deleteProperty(row as any, col.key)
+            // Deleting the relation's accessor would drop its change tracking, so only a plain value goes.
+            if (!Object.getOwnPropertyDescriptor(row, col.key)?.get)
+              Reflect.deleteProperty(row as any, col.key)
           }
         }
     }
