@@ -32,11 +32,12 @@ import {
   GroupByOperators,
   type InsertOrUpdateOptions,
 } from './src/remult3/remult3.js'
-import { NullSort, isNullHighestSort } from './src/sort.js'
+import { NullSort, isNullFirstSort, isNullLastSort } from './src/sort.js'
 
 // A missing field sorts with NULL, so no `$sort` puts them after the values.
 function assertNullsLowest(allowNull: boolean, isDescending?: boolean) {
-  if (!allowNull || !isNullHighestSort(isDescending)) return
+  const lowest = isDescending ? isNullLastSort(true) : isNullFirstSort(false)
+  if (!allowNull || lowest) return
   const dir = isDescending ? 'desc' : 'asc'
   throw new Error(
     `NullSort.${dir} = '${NullSort[dir]}' is not supported on Mongo, which sorts NULL as the lowest value`,

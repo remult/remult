@@ -197,23 +197,18 @@ export const NullSort: { asc: NullsOrder; desc: NullsOrder } =
   remultStatic.nullSort ||
   (remultStatic.nullSort = { asc: 'native', desc: 'native' })
 
-/** Writes no NULL order. */
-export function isNativeNullSort(isDescending?: boolean) {
-  return NullSort[isDescending ? 'desc' : 'asc'] === 'native'
+export function nullSortOf(isDescending?: boolean) {
+  return NullSort[isDescending ? 'desc' : 'asc']
 }
 
+/** Without a database, `native` sorts NULL as the lowest value. */
 export function isNullFirstSort(isDescending?: boolean) {
-  const order = NullSort[isDescending ? 'desc' : 'asc']
+  const order = nullSortOf(isDescending)
   return order === 'native' ? !isDescending : order === 'NULL FIRST'
 }
 
 export function isNullLastSort(isDescending?: boolean) {
   return !isNullFirstSort(isDescending)
-}
-
-/** NULL above the values, which databases sorting it lowest only reach with a `case`. */
-export function isNullHighestSort(isDescending?: boolean) {
-  return isDescending ? isNullFirstSort(true) : isNullLastSort(false)
 }
 
 export function compareForSort(

@@ -53,12 +53,7 @@ import {
   isAutoIncrement,
 } from '../remult3/RepositoryImplementation.js'
 import type { SortSegment } from '../sort.js'
-import {
-  Sort,
-  isNativeNullSort,
-  isNullFirstSort,
-  isNullHighestSort,
-} from '../sort.js'
+import { Sort, nullSortOf, type NullsOrder } from '../sort.js'
 import { fromDbColumn, toDbColumn } from '../valueConverters.js'
 import { getRepositoryInternals } from '../remult3/repository-internals.js'
 import type {
@@ -871,17 +866,15 @@ function orderByTerm(
   syntax: NullsSyntax | undefined,
 ) {
   const term = isDescending ? expr + ' desc' : expr
-  if (!allowNull || !syntax || isNativeNullSort(isDescending)) return term
+  const order = nullSortOf(isDescending)
+  if (!allowNull || !syntax || order === 'native') return term
   if (syntax === 'nulls')
-    return (
-      term + (isNullFirstSort(isDescending) ? ' nulls first' : ' nulls last')
-    )
-  if (!isNullHighestSort(isDescending)) return term
-  return nullsCase(expr, isDescending) + ', ' + term
+    return term + (order === 'NULL FIRST' ? ' nulls first' : ' nulls last')
+  return nullsCase(expr, order) + ', ' + term
 }
 
-export function nullsCase(expr: string, isDescending: boolean | undefined) {
-  return `case when ${expr} is null then ${isDescending ? '0 else 1' : '1 else 0'} end`
+export function nullsCase(expr: string, order: Exclude<NullsOrder, 'native'>) {
+  return `case when ${expr} is null then ${order === 'NULL FIRST' ? '0 else 1' : '1 else 0'} end`
 }
 
 /** The select that `find` runs, and the mapping of one result row to field values. With `aliasColumns`, every column is aliased through `wrapIdentifier`, so a row can be read by alias as well as by position. */

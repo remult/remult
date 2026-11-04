@@ -359,23 +359,20 @@ describe('NullSort', () => {
   it.each([
     ['mysql2', 'case when `due` is null then 1 else 0 end, `due` asc'],
     ['mssql', 'case when [due] is null then 1 else 0 end, [due] asc'],
-  ])(
-    'knex %s sorts on `is null` first, only where NULL is not the lowest',
-    async (client, nullLastOnAsc) => {
-      Object.assign(NullSort, { asc: 'NULL LAST', desc: 'NULL LAST' })
-      const orderBy = knexOrderBy(client)
-      expect(await orderBy({ due: 'asc' })).toBe(nullLastOnAsc)
-      expect(await orderBy({ due: 'desc' })).toBe(
-        nullLastOnAsc.split(', ')[1].replace('asc', 'desc'),
-      )
-      NullSort.desc = 'NULL FIRST'
-      expect(await orderBy({ due: 'desc' })).toBe(
-        nullLastOnAsc
-          .replace('then 1 else 0', 'then 0 else 1')
-          .replace('asc', 'desc'),
-      )
-    },
-  )
+  ])('knex %s sorts on `is null` first', async (client, nullLastOnAsc) => {
+    Object.assign(NullSort, { asc: 'NULL LAST', desc: 'NULL LAST' })
+    const orderBy = knexOrderBy(client)
+    expect(await orderBy({ due: 'asc' })).toBe(nullLastOnAsc)
+    expect(await orderBy({ due: 'desc' })).toBe(
+      nullLastOnAsc.replace('asc', 'desc'),
+    )
+    NullSort.desc = 'NULL FIRST'
+    expect(await orderBy({ due: 'desc' })).toBe(
+      nullLastOnAsc
+        .replace('then 1 else 0', 'then 0 else 1')
+        .replace('asc', 'desc'),
+    )
+  })
 })
 
 describe('json columns stored as text', () => {
