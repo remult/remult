@@ -90,6 +90,22 @@ describe('validation tests', () => {
     })
     expect(ok.id).toBe(3)
   })
+  it('test notNull validator rejects null', async () => {
+    @Entity('x', {})
+    class x {
+      @Fields.number()
+      id = 0
+      @Fields.string({ allowNull: true, validate: Validators.notNull })
+      notes: string | null = ''
+    }
+    await expect(
+      async () => await remult.repo(x).insert({ id: 1, notes: null }),
+    ).rejects.toMatchObject({
+      modelState: { notes: 'Should not be null' },
+    })
+    const ok = await remult.repo(x).insert({ id: 2, notes: '' })
+    expect(ok.notes).toBe('')
+  })
   it('test global defaultMessage on validators with args', async () => {
     const prevMin = Validators.min.defaultMessage
     const prevRange = Validators.range.defaultMessage

@@ -95,8 +95,9 @@ export class Validators {
   /**
    * Validator to check if a value is not null.
    */
-  static notNull = createValueValidator(
-    (val) => val != null,
+  // createValueValidator skips null/undefined values, so it can't be used here
+  static notNull = createValidator<unknown>(
+    (_, e) => e.value !== null && e.value !== undefined,
     'Should not be null',
   )
   /**
