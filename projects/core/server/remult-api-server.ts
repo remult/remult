@@ -15,6 +15,7 @@ import type {
   ErrorInfo,
   Storage,
 } from '../src/data-interfaces.js'
+import { EntityError } from '../src/data-interfaces.js'
 import { liveQueryKeepAliveRoute } from '../src/live-query/SubscriptionChannel.js'
 import type {
   LiveQueryStorage,
@@ -1301,16 +1302,23 @@ class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
     let data = serializeError(exception)
 
     if (!httpStatusCode) {
-      if (data.httpStatusCode) {
-        httpStatusCode = data.httpStatusCode
+      // serializeError drops httpStatusCode from an Error, so read it off the
+      // exception itself.
+      const explicitStatus = exception.httpStatusCode ?? data.httpStatusCode
+      if (explicitStatus) {
+        httpStatusCode = explicitStatus
       } else if (
         isOfType<ForbiddenError>(exception, 'isForbiddenError') &&
         exception.isForbiddenError
       ) {
         httpStatusCode = 403
-      } else if (data.modelState) {
+      } else if (data.modelState || exception instanceof EntityError) {
         httpStatusCode = 400
+      } else if (exception instanceof Error) {
+        // Any other Error is a bug or an infrastructure failure, not bad input.
+        httpStatusCode = 500
       } else {
+        // Thrown strings and plain objects are how apps message the user.
         httpStatusCode = 400
       }
     }

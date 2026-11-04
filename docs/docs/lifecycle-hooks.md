@@ -21,11 +21,15 @@ In Remult, you can take advantage of Entity Lifecycle Hooks to add custom logic 
 
       // checking few fields for joint validity
       if (task.completed && task.assignedToId === null){
-        throw new Error(`Task ${task.title} must be assigned to someone before beeing completed.`)
+        throw new EntityError({ message: `Task ${task.title} must be assigned to someone before beeing completed.` })
       }
     },
   })
   ```
+
+  ::: tip
+  A thrown `EntityError` or string returns a 400, and an error with an `httpStatusCode` returns that status. Any other `Error` returns a 500.
+  :::
 
   ::: tip
   You can run custom validation like in this example to check separate fields one by one as we do with `title.length`, but probably better place to do it with [field validation](./validation.md).
@@ -40,7 +44,7 @@ In Remult, you can take advantage of Entity Lifecycle Hooks to add custom logic 
       // option 1 - load relation when you need it
       await e.fields.items.load()
       if (length(order.items) > 3 && order.destinationCountry == 'US') {
-        throw new Error("We can't ship such large orders to USA! :-(");
+        throw new EntityError({ message: "We can't ship such large orders to USA! :-(" });
       }
     },
   })
