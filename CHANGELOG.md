@@ -6,7 +6,9 @@ All notable changes to this project will be documented in this file.
 
 - `allowNull` matches what migrations create ([by field type](https://remult.dev/docs/field-types#allownull-by-field-type)):
   - `true` by default on a Date, `Fields.json` or custom `fieldTypeInDb`: `{ due: null }` finds NULL rows, an unset value is written as NULL, GraphQL types it nullable.
-  - `false` creates the column `not null`, with no default: on a table with rows, fill it first.
+  - `false` creates the column `not null`, with no default. Added to an existing table, it stays nullable.
+  - SQLite created json, `Fields.dateOnly` and custom type columns `not null` (Knex on SQLite and SQL Server: json): set `allowNull: false` on those fields.
+- In memory and JSON, `$gt`, `$gte`, `$lt` and `$lte` no longer match NULL, as in SQL.
 - Postgres `orderByNullsFirst` is removed: set `NullSort` instead.
 
 ### Added
@@ -15,7 +17,8 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- `paginator()` and `for await` skipped rows whose sort key is NULL. With `'native'`, they still can on Postgres and DuckDB.
+- `paginator()` and `for await` skipped rows whose sort key is NULL. With `'native'` on Postgres and DuckDB, they can still skip or repeat rows.
+- Mongo inserts NULL as `null`, so it sorts lowest and `{ x: null }` finds every NULL. Rows inserted before keep `{ $null: '$null' }`, which sorts above numbers and strings.
 
 ## [3.4.1] - [2026-10-30]
 

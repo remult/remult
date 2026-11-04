@@ -395,25 +395,21 @@ Migrations give a column a default value when its type has one (`''`, `0`, `fals
 | `Fields.json`, a custom `fieldTypeInDb` (not on a number or boolean)                                                                           | `true`                 |
 | An id                                                                                                                                          | `false`                |
 
-Set `allowNull` to change it. With `allowNull: false` on a Date, json or custom type, migrations create the column `not null` with no default value: on a table that has rows, fill the column first.
+Set `allowNull` to change it. With `allowNull: false` on a Date, json or custom type, a new table gets the column `not null`, with no default value. Added to an existing table, the column stays nullable, since no default value fills its rows.
 
 ### Where NULL sorts
 
-By default each database decides: Postgres and DuckDB sort NULL last on asc, SQLite, MySQL, SQL Server and Mongo sort it as the lowest value. Without a database (in memory, JSON, the paginator on the client), it is the lowest: first on asc, last on desc. So on Postgres and DuckDB the paginator can skip rows whose sort key is NULL. Set the order for the whole app, the same on the server and the client:
+By default each database decides: Postgres and DuckDB sort NULL last on asc, SQLite, MySQL, SQL Server and Mongo sort it as the lowest value. Without a database (in memory, JSON, the paginator on the client), it is the lowest: first on asc, last on desc. So on Postgres and DuckDB, when a page ends next to a NULL sort key, the paginator can skip or repeat rows, and `for await` can throw `pagination failure`. Set the order for the whole app, in a module that both the server and the client load:
 
 ```ts
-// src/lib/shared-remult.ts
+// shared/null-sort.ts
 import { NullSort } from 'remult/internals'
 
 NullSort.asc = 'NULL FIRST'
 NullSort.desc = 'NULL LAST'
 ```
 
-Import it where the server creates the api (before `remultApi`) and where the client starts (a root layout), since api requests can run before any page loads:
-
-```ts
-import '$lib/shared-remult'
-```
+Import it before the server creates the api, and where the client starts, since api requests can run before any page loads.
 
 Only `allowNull` columns get it in `ORDER BY`, so a `not null` column like `id` keeps its index. Mongo sorts NULL as the lowest value only.
 
