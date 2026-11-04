@@ -1910,6 +1910,56 @@ export function commonDbTests(
       ).toBe(2)
     })
   })
+  describe('test relations with an initial value', () => {
+    async function setupRelationsTest() {
+      @Entity('categories_r_iv', { allowApiCrud: true })
+      class Category {
+        @Fields.number()
+        id = 0
+        @Fields.string()
+        name = ''
+      }
+      @Entity('tasks_r_iv', { allowApiCrud: true })
+      class Task {
+        @Fields.number()
+        id = 0
+        @Relations.toOne(() => Category)
+        category: Category | undefined = undefined
+      }
+      let cr = await createEntity(Category)
+      let cat = await cr.insert([
+        { id: 1, name: 'a' },
+        { id: 2, name: 'b' },
+      ])
+      let r = await createEntity(Task)
+      await r.insert([{ id: 1, category: cat[1] }])
+      return { r, cat }
+    }
+
+    test('save after find', async () => {
+      const { r, cat } = await setupRelationsTest()
+      const task = (await r.findId(1))!
+      task.category = cat[0]
+      await r.save(task)
+      expect(
+        (await r.findId(1, { include: { category: true } }))!.category!.name,
+      ).toBe('a')
+    })
+    test('update many', async () => {
+      const { r, cat } = await setupRelationsTest()
+      await r.updateMany({ where: { id: 1 }, set: { category: cat[0] } })
+      expect(
+        (await r.findId(1, { include: { category: true } }))!.category!.name,
+      ).toBe('a')
+    })
+    test('upsert', async () => {
+      const { r, cat } = await setupRelationsTest()
+      await r.upsert({ where: { id: 1 }, set: { category: cat[0] } })
+      expect(
+        (await r.findId(1, { include: { category: true } }))!.category!.name,
+      ).toBe('a')
+    })
+  })
   describe('test value list field type with updates', () => {
     @ValueListFieldType()
     class Status {
