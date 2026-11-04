@@ -788,7 +788,7 @@ export class KnexSchemaBuilder {
     colName: string,
   ): Knex.SchemaBuilder {
     return this.knex.schema.alterTable(e.$entityName, (b) => {
-      buildColumn(col, colName, b, supportsJsonDataStorage(this.knex))
+      buildColumn(col, colName, b, supportsJsonDataStorage(this.knex), true)
     })
   }
 
@@ -828,7 +828,10 @@ export function buildColumn(
   dbName: string,
   b: Knex.CreateTableBuilder,
   supportsJson = true,
+  isAlterTable = false,
 ) {
+  // No default value fills existing rows, so an added column stays nullable.
+  const notNull = !x.allowNull && !isAlterTable
   if (x.valueType == Number) {
     if (!x.valueConverter.fieldTypeInDb) {
       let c = b.decimal(dbName, 18, 2)
@@ -852,8 +855,7 @@ export function buildColumn(
       : x.valueConverter.fieldTypeInDb == 'date'
         ? b.date(dbName)
         : b.specificType(dbName, x.valueConverter.fieldTypeInDb)
-    // No default value fits: on a table with rows, fill the column first.
-    if (!x.allowNull) c.notNullable()
+    if (notNull) c.notNullable()
   } else if (x.valueType == Boolean) {
     let c = b.boolean(dbName)
     if (!x.allowNull) c.defaultTo(false).notNullable()
@@ -870,7 +872,7 @@ export function buildColumn(
           : supportsJson
             ? b.json(dbName)
             : b.text(dbName)
-      if (!x.allowNull) c.notNullable()
+      if (notNull) c.notNullable()
     }
   } else if (x.valueType === String) {
     let c = b.string(dbName, (<StringFieldOptions>x.options).maxLength)

@@ -16,6 +16,7 @@ import {
 } from '../../core/postgres'
 import * as Knex from 'knex'
 import { buildColumn } from '../../core/remult-knex'
+import { SqliteCoreDataProvider } from '../../core/remult-sqlite-core'
 
 //connection string is in a .env file placed in the `tests` folder with key `DATABASE_URL`
 // if we don't have this, tests will be skipped
@@ -881,6 +882,7 @@ describe('allowNull defaults to the Postgres column', () => {
   }
   const meta = new Remult().repo(Kinds).metadata
   const knex = Knex.default({ client: 'pg' })
+  const sqlite = new SqliteCoreDataProvider(undefined!, undefined!)
 
   it('is true exactly when the column is created without not null', () => {
     for (const f of meta.fields.toArray()) {
@@ -891,9 +893,30 @@ describe('allowNull defaults to the Postgres column', () => {
         .createTable('t', (b) => buildColumn(f, f.key, b))
         .toString()
       expect(f.allowNull, 'knex ' + f.key).toBe(!knexSql.includes('not null'))
+      expect(f.allowNull, 'sqlite ' + f.key).toBe(
+        !sqlite.addColumnSqlSyntax(f, f.key, false).includes('not null'),
+      )
     }
   })
   it('is false on an id, a primary key is not null', () => {
     expect(meta.fields.code.allowNull).toBe(false)
+  })
+  it('adds a column with no default value as nullable', () => {
+    for (const f of [meta.fields.strictAt, meta.fields.strictData]) {
+      expect(postgresColumnSyntax(f, f.key, true), f.key).not.toContain(
+        'not null',
+      )
+      const knexSql = knex.schema
+        .alterTable('t', (b) => buildColumn(f, f.key, b, true, true))
+        .toString()
+      expect(knexSql, 'knex ' + f.key).not.toContain('not null')
+      expect(
+        sqlite.addColumnSqlSyntax(f, f.key, true),
+        'sqlite ' + f.key,
+      ).not.toContain('not null')
+    }
+    expect(postgresColumnSyntax(meta.fields.n, 'n', true)).toBe(
+      'n numeric default 0 not null',
+    )
   })
 })

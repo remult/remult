@@ -11,8 +11,14 @@ import { isAutoIncrement } from '../src/remult3/RepositoryImplementation.js'
 import type { SqlCommand } from '../src/sql-command.js'
 import { ValueConverters } from '../src/valueConverters.js'
 
-export function postgresColumnSyntax(x: FieldMetadata, dbName: string) {
+export function postgresColumnSyntax(
+  x: FieldMetadata,
+  dbName: string,
+  isAlterTable = false,
+) {
   if (isAutoIncrement(x)) return dbName + ' serial'
+  // No default value fills existing rows, so an added column stays nullable.
+  const notNull = x.allowNull || isAlterTable ? '' : ' not null'
   let result = dbName
   if (x.valueType == Number) {
     if (!x.valueConverter.fieldTypeInDb)
@@ -27,8 +33,7 @@ export function postgresColumnSyntax(x: FieldMetadata, dbName: string) {
       if (x.valueConverter == ValueConverters.DateOnly) result += ' date'
       else result += ' timestamptz'
     else result += ' ' + x.valueConverter.fieldTypeInDb
-    // No default value fits: on a table with rows, fill the column first.
-    if (!x.allowNull) result += ' not null'
+    result += notNull
   } else if (x.valueType == Boolean)
     result += ' boolean' + (x.allowNull ? '' : ' default false not null')
   else if (x.valueConverter.fieldTypeInDb) {
@@ -37,7 +42,7 @@ export function postgresColumnSyntax(x: FieldMetadata, dbName: string) {
       result +=
         x.valueConverter.fieldTypeInDb == 'integer'
           ? ' default 0 not null'
-          : ' not null'
+          : notNull
   } else result += ' varchar' + (x.allowNull ? '' : " default '' not null")
   return result
 }
@@ -145,7 +150,7 @@ export class PostgresSchemaBuilder {
     )
     return (
       `ALTER table ${this.schemaAndName(e)} ` +
-      `ADD column ${postgresColumnSyntax(field, e.$dbNameOf(field))}`
+      `ADD column ${postgresColumnSyntax(field, e.$dbNameOf(field), true)}`
     )
   }
   /* @internal*/
@@ -190,7 +195,7 @@ CREATE table ${this.schemaAndName(e)} (${result}\r\n)`
           if (!cols.includes(colName)) {
             let sql =
               `ALTER table ${this.schemaAndName(e)} ` +
-              `add column ${postgresColumnSyntax(col, e.$dbNameOf(col))}`
+              `add column ${postgresColumnSyntax(col, e.$dbNameOf(col), true)}`
             if (PostgresSchemaBuilder.logToConsole) console.info(sql)
             await this.pool.execute(sql)
           }
