@@ -53,7 +53,13 @@ import {
   isAutoIncrement,
 } from '../remult3/RepositoryImplementation.js'
 import type { SortSegment } from '../sort.js'
-import { Sort, canBeNull, nullSortFor, type NullSortOrder } from '../sort.js'
+import {
+  Sort,
+  canBeNull,
+  isNullFirst,
+  nullSortFor,
+  type NullSortOrder,
+} from '../sort.js'
 import { fromDbColumn, toDbColumn } from '../valueConverters.js'
 import { getRepositoryInternals } from '../remult3/repository-internals.js'
 import type {
@@ -867,6 +873,9 @@ export function nullSortToWrite(
 ) {
   const order = nullSortFor(isDescending)
   if (!canBeNull || !syntax || order === 'native') return undefined
+  // The `case` dialects already sort NULL lowest, and a `case` loses the index.
+  if (syntax === 'case' && isNullFirst(isDescending) === !isDescending)
+    return undefined
   return order
 }
 
