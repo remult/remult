@@ -1108,7 +1108,11 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
    * ```
    */
   label?: string
-  /** If it can store `null` in the database. @default false */
+  /** If it can store `null` in the database.
+   *
+   * Defaults to `true` on a Date, `Fields.json` or a custom `fieldTypeInDb` (not on a number or boolean), since migrations create those columns without a default value. `false` otherwise, and always on an id. Only `allowNull` columns get the `NullSort` order in `ORDER BY`.
+   * @see [allowNull by field type](https://remult.dev/docs/field-types#allownull-by-field-type)
+   */
   allowNull?: boolean
   /** If a value is required. Short-cut to say `validate: Validators.required`.
    * @default false
@@ -3340,7 +3344,6 @@ export interface SqlImplementation extends HasWrapIdentifier {
   /** true by default */
   doesNotSupportReturningSyntax?: boolean
   doesNotSupportReturningSyntaxOnlyForUpdate?: boolean
-  orderByNullsFirst?: boolean
   /** Bound-variable cap per statement. Default 2000 (SQL Server is 2100). */
   maxParametersInOneSqlStatement?: number
   end(): Promise<void>
@@ -4532,7 +4535,6 @@ export declare function createPostgresDataProvider(options?: {
   wrapIdentifier?: (name: string) => string
   caseInsensitiveIdentifiers?: boolean
   schema?: string
-  orderByNullsFirst?: boolean
 }): Promise<SqlDatabase>
 //[ ] PoolConfig from TBD is not exported
 export interface PostgresClient extends PostgresCommandSource {
@@ -4541,6 +4543,7 @@ export interface PostgresClient extends PostgresCommandSource {
 export declare function postgresColumnSyntax(
   x: FieldMetadata,
   dbName: string,
+  isAlterTable?: boolean,
 ): string
 //[ ] FieldMetadata from TBD is not exported
 export interface PostgresCommandSource {
@@ -4564,7 +4567,6 @@ export declare class PostgresDataProvider
           wrapIdentifier?: (name: string) => string
           caseInsensitiveIdentifiers?: boolean
           schema?: string
-          orderByNullsFirst?: boolean
         }
       | undefined,
   )
@@ -4572,7 +4574,6 @@ export declare class PostgresDataProvider
   provideMigrationBuilder(builder: MigrationCode): MigrationBuilder
   wrapIdentifier: (name: string) => string
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
-  orderByNullsFirst?: boolean
   transaction(
     action: (dataProvider: SqlImplementation) => Promise<void>,
   ): Promise<void>
@@ -4611,6 +4612,7 @@ export declare function preparePostgresQueueStorage(
 export declare function postgresColumnSyntax(
   x: FieldMetadata,
   dbName: string,
+  isAlterTable?: boolean,
 ): string
 //[ ] FieldMetadata from ../src/column-interfaces.js is not exported
 export declare class PostgresSchemaBuilder {
@@ -4637,6 +4639,7 @@ export declare function buildColumn(
   dbName: string,
   b: Knex.CreateTableBuilder,
   supportsJson?: boolean,
+  isAlterTable?: boolean,
 ): void
 //[ ] FieldMetadata from ../src/column-interfaces.js is not exported
 //[ ] Knex.CreateTableBuilder from TBD is not exported
@@ -4781,7 +4784,6 @@ export declare class SqliteCoreDataProvider
     doesNotSupportReturningSyntax?: boolean,
     doesNotSupportReturningSyntaxOnlyForUpdate?: boolean,
   )
-  orderByNullsFirst?: boolean
   maxParametersInOneSqlStatement: number
   getLimitSqlSyntax(limit: number, offset: number): string
   afterMutation?: VoidFunction
@@ -5119,6 +5121,11 @@ export declare function getRelationFieldInfo(
 export declare function getRelationInfo(options: FieldOptions): RelationInfo
 export declare function isOfType<T>(obj: any, checkMethod: keyof T): obj is T
 //[ ] FirstTypeNode from TBD is not exported
+export const NullSort: {
+  asc: NullSortOrder
+  desc: NullSortOrder
+}
+export type NullSortOrder = "native" | "NULL FIRST" | "NULL LAST"
 export const omitFilterField: unique symbol
 export declare function pagedQueryResult<T>(
   pageSize: number,
