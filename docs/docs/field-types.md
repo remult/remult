@@ -399,7 +399,7 @@ Set `allowNull` to change it. With `allowNull: false` on a Date, json or custom 
 
 ### Where NULL sorts
 
-By default each database decides: Postgres and DuckDB sort NULL last on asc, SQLite, MySQL, SQL Server and Mongo sort it as the lowest value. The paginator assumes the lowest, so on Postgres and DuckDB it can skip rows whose sort key is NULL. Set the order for the whole app, the same on the server and the client:
+By default each database decides: Postgres and DuckDB sort NULL last on asc, SQLite, MySQL, SQL Server and Mongo sort it as the lowest value. Without a database (in memory, JSON, the paginator on the client), it is the lowest: first on asc, last on desc. So on Postgres and DuckDB the paginator can skip rows whose sort key is NULL. Set the order for the whole app, the same on the server and the client:
 
 ```ts
 // src/lib/shared-remult.ts

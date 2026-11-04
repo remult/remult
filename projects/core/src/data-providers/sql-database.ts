@@ -53,7 +53,12 @@ import {
   isAutoIncrement,
 } from '../remult3/RepositoryImplementation.js'
 import type { SortSegment } from '../sort.js'
-import { Sort, nullsOrder, nullsSortHighest } from '../sort.js'
+import {
+  Sort,
+  isNativeNullSort,
+  isNullFirstSort,
+  isNullHighestSort,
+} from '../sort.js'
 import { fromDbColumn, toDbColumn } from '../valueConverters.js'
 import { getRepositoryInternals } from '../remult3/repository-internals.js'
 import type {
@@ -866,10 +871,12 @@ function orderByTerm(
   syntax: NullsSyntax | undefined,
 ) {
   const term = isDescending ? expr + ' desc' : expr
-  const order = allowNull && syntax ? nullsOrder(isDescending) : undefined
-  if (!order) return term
-  if (syntax === 'nulls') return term + ' nulls ' + order
-  if (!nullsSortHighest(isDescending)) return term
+  if (!allowNull || !syntax || isNativeNullSort(isDescending)) return term
+  if (syntax === 'nulls')
+    return (
+      term + (isNullFirstSort(isDescending) ? ' nulls first' : ' nulls last')
+    )
+  if (!isNullHighestSort(isDescending)) return term
   return nullsCase(expr, isDescending) + ', ' + term
 }
 

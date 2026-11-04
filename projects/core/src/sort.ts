@@ -184,8 +184,9 @@ export type NullsOrder = 'native' | 'NULL FIRST' | 'NULL LAST'
  * Where NULL sorts, for the whole app. Set it in code that both the server and the client load.
  *
  * `native` (the default) lets the database decide: Postgres and DuckDB sort NULL last on `asc`,
- * SQLite, MySQL, SQL Server, Mongo and in memory sort it as the lowest value. The paginator
- * assumes the lowest, so on Postgres and DuckDB it can skip rows whose sort key is NULL.
+ * SQLite, MySQL, SQL Server and Mongo sort it as the lowest value. Without a database (in memory,
+ * JSON, the paginator on a Rest client), `native` is the lowest value: first on `asc`, last on
+ * `desc`. So on Postgres and DuckDB the paginator can skip rows whose sort key is NULL.
  *
  * Only `allowNull` columns get the NULL order. Mongo sorts NULL as the lowest value only.
  * @example
@@ -196,26 +197,23 @@ export const NullSort: { asc: NullsOrder; desc: NullsOrder } =
   remultStatic.nullSort ||
   (remultStatic.nullSort = { asc: 'native', desc: 'native' })
 
-const NULLS_ORDER = {
-  native: undefined,
-  'NULL FIRST': 'first',
-  'NULL LAST': 'last',
-} as const
-
-/** `undefined` when native. */
-export function nullsOrder(isDescending?: boolean) {
-  return NULLS_ORDER[NullSort[isDescending ? 'desc' : 'asc']]
+/** Writes no NULL order. */
+export function isNativeNullSort(isDescending?: boolean) {
+  return NullSort[isDescending ? 'desc' : 'asc'] === 'native'
 }
 
-/** Native, NULL is the lowest value: first on `asc`. */
-export function nullsFirst(isDescending?: boolean) {
-  const order = nullsOrder(isDescending)
-  return order ? order === 'first' : !isDescending
+export function isNullFirstSort(isDescending?: boolean) {
+  const order = NullSort[isDescending ? 'desc' : 'asc']
+  return order === 'native' ? !isDescending : order === 'NULL FIRST'
 }
 
-/** NULL after the values on `asc`, or before them on `desc`. */
-export function nullsSortHighest(isDescending?: boolean) {
-  return nullsFirst(isDescending) === !!isDescending
+export function isNullLastSort(isDescending?: boolean) {
+  return !isNullFirstSort(isDescending)
+}
+
+/** NULL above the values, which databases sorting it lowest only reach with a `case`. */
+export function isNullHighestSort(isDescending?: boolean) {
+  return isDescending ? isNullFirstSort(true) : isNullLastSort(false)
 }
 
 export function compareForSort(
@@ -228,7 +226,7 @@ export function compareForSort(
   // `null > 'a'` and `null < 'a'` are both false, which is not an order.
   if (left == null || right == null) {
     if (left == right) return 0
-    return (left == null) === nullsFirst(descending) ? -1 : 1
+    return (left == null) === isNullFirstSort(descending) ? -1 : 1
   }
   let r = 0
   if (left > right) r = 1
