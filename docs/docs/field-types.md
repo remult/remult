@@ -399,7 +399,7 @@ Set `allowNull` to change it. With `allowNull: false` on a Date, json or custom 
 
 ### Where NULL sorts
 
-By default each database decides: Postgres and DuckDB sort NULL last on asc, SQLite, MySQL, SQL Server and Mongo sort it as the lowest value. Without a database (in memory, JSON, the paginator on the client), it is the lowest: first on asc, last on desc. So on Postgres and DuckDB, when a page ends next to a NULL sort key, the paginator can skip or repeat rows, and `for await` can throw `pagination failure`. Set the order for the whole app, in a module that both the server and the client load:
+By default each database decides: Postgres and DuckDB sort NULL last on asc, SQLite, MySQL, SQL Server and Mongo sort it as the lowest value. Without a database (in memory, JSON, the paginator on the client), it is the lowest: first on asc, last on desc. So on Postgres and DuckDB, when a page ends next to a NULL sort key, the paginator can skip or repeat rows, and `for await` can throw `pagination failure`. Set the order for the whole app, in a shared module:
 
 ```ts
 // shared/null-sort.ts
@@ -409,7 +409,9 @@ NullSort.asc = 'NULL FIRST'
 NullSort.desc = 'NULL LAST'
 ```
 
-Import it before the server creates the api, and where the client starts, since api requests can run before any page loads.
+::: warning Import it on both the server and the client
+The server writes the `ORDER BY`, the client builds the next page filter from the last row. If they disagree, the paginator skips or repeats rows. On the server, import it before creating the api. On the client, import it where the app starts, since api requests can run before any page loads.
+:::
 
 Only `allowNull` columns get it in `ORDER BY`, so a `not null` column like `id` keeps its index. Mongo sorts NULL as the lowest value only.
 
