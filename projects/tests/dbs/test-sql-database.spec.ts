@@ -1,8 +1,11 @@
-import { expect, it, describe, beforeEach } from 'vitest'
+import { expect, it, describe, beforeEach, afterEach } from 'vitest'
+import * as Knex from 'knex'
 import {
   Entity,
   type EntityMetadata,
+  type EntityOrderBy,
   Fields,
+  NullSort,
   Remult,
   type SqlCommand,
   type SqlCommandWithParameters,
@@ -262,7 +265,7 @@ describe('test sql implementation', () => {
   })
 })
 
-describe('nulls first', () => {
+describe('NullSort', () => {
   @Entity('tasks')
   class task {
     @Fields.integer()
@@ -293,26 +296,86 @@ describe('nulls first', () => {
   } satisfies SqlImplementation)
   const repo = new Remult(db).repo(task)
   beforeEach(() => (commands = []))
+  afterEach(() => {
+    Object.assign(NullSort, { asc: 'native', desc: 'native' })
+  })
 
-  it('find sorts nulls only on allowNull columns', async () => {
+  async function findOrderBys() {
     await repo.find({ orderBy: { due: 'asc', title: 'desc' }, limit: 5 })
     await repo.find({ orderBy: { due: 'desc' }, limit: 5 })
     await repo.find({ orderBy: { at: 'asc' }, limit: 5 })
-    expect(commands.map((x) => x.split(' Order By ')[1])).toEqual([
-      '[due] nulls first, [title] desc, [id] limit 5',
-      '[due] desc nulls last, [id] limit 5',
-      '[at] nulls first, [id] limit 5',
+    return commands.map((x) => x.split(' Order By ')[1])
+  }
+
+  it('native writes no NULL order', async () => {
+    expect(await findOrderBys()).toEqual([
+      '[due], [title] desc, [id] limit 5',
+      '[due] desc, [id] limit 5',
+      '[at], [id] limit 5',
     ])
   })
-  it('groupBy sorts nulls only on allowNull columns', async () => {
+  it('find writes the NULL order only on allowNull columns', async () => {
+    Object.assign(NullSort, { asc: 'NULL LAST', desc: 'NULL FIRST' })
+    expect(await findOrderBys()).toEqual([
+      '[due] nulls last, [title] desc, [id] limit 5',
+      '[due] desc nulls first, [id] limit 5',
+      '[at] nulls last, [id] limit 5',
+    ])
+  })
+  it('groupBy writes the NULL order only on allowNull columns', async () => {
+    NullSort.desc = 'NULL LAST'
     await repo.groupBy({
       group: ['due', 'title'],
-      orderBy: { due: 'desc', title: 'asc' },
+      orderBy: { due: 'desc', title: 'desc' },
     })
     expect(commands[0].split(' order by ')[1]).toBe(
-      '[due] desc nulls last, [title]',
+      '[due] desc nulls last, [title] desc',
     )
   })
+
+  function knexOrderBy(client: string) {
+    const knex = Knex.default({ client, useNullAsDefault: true })
+    const sqls: string[] = []
+    knex.client.runner = (builder: Knex.Knex.QueryBuilder) => ({
+      run: async () => {
+        sqls.push(builder.toString())
+        return []
+      },
+    })
+    const repo = new Remult(new KnexDataProvider(knex)).repo(task)
+    return async (orderBy: EntityOrderBy<task>) => {
+      await repo.find({ orderBy })
+      return sqls.pop()!.split(' order by ')[1]
+    }
+  }
+  it('knex writes `nulls first` where the dialect has it', async () => {
+    Object.assign(NullSort, { asc: 'NULL LAST', desc: 'NULL LAST' })
+    const orderBy = knexOrderBy('pg')
+    expect(await orderBy({ due: 'asc', title: 'desc' })).toBe(
+      '"due" asc nulls last, "title" desc',
+    )
+    expect(await orderBy({ due: 'desc' })).toBe('"due" desc nulls last')
+  })
+  it.each([
+    ['mysql2', 'case when `due` is null then 1 else 0 end, `due` asc'],
+    ['mssql', 'case when [due] is null then 1 else 0 end, [due] asc'],
+  ])(
+    'knex %s sorts on `is null` first, only where NULL is not the lowest',
+    async (client, nullLastOnAsc) => {
+      Object.assign(NullSort, { asc: 'NULL LAST', desc: 'NULL LAST' })
+      const orderBy = knexOrderBy(client)
+      expect(await orderBy({ due: 'asc' })).toBe(nullLastOnAsc)
+      expect(await orderBy({ due: 'desc' })).toBe(
+        nullLastOnAsc.split(', ')[1].replace('asc', 'desc'),
+      )
+      NullSort.desc = 'NULL FIRST'
+      expect(await orderBy({ due: 'desc' })).toBe(
+        nullLastOnAsc
+          .replace('then 1 else 0', 'then 0 else 1')
+          .replace('asc', 'desc'),
+      )
+    },
+  )
 })
 
 describe('json columns stored as text', () => {

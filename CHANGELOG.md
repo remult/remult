@@ -4,15 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ### Breaking
 
-- NULL sorts first on asc, last on desc, on every database (was last on asc on Postgres, DuckDB, Redshift, Oracle). `orderByNullsFirst` is removed.
-  - Only `allowNull` columns get `nulls first`, so `id` keeps its index. On Postgres, index a nullable sort column `NULLS FIRST`.
 - `allowNull` matches what migrations create ([by field type](https://remult.dev/docs/field-types#allownull-by-field-type)):
   - `true` by default on a Date, `Fields.json` or custom `fieldTypeInDb`: `{ due: null }` finds NULL rows, an unset value is written as NULL, GraphQL types it nullable.
   - `false` creates the column `not null`, with no default: on a table with rows, fill it first.
+- Postgres `orderByNullsFirst` is removed: set `NullSort` instead.
+
+### Added
+
+- `NullSort.asc` / `NullSort.desc`: where NULL sorts for the whole app, `'native'` (default), `'NULL FIRST'` or `'NULL LAST'` ([docs](https://remult.dev/docs/field-types#where-null-sorts)). Only `allowNull` columns get it, so `id` keeps its index.
 
 ### Fixed
 
-- `paginator()` and `for await` skipped rows whose sort key is NULL.
+- `paginator()` and `for await` skipped rows whose sort key is NULL. With `'native'`, they still can on Postgres and DuckDB.
 
 ## [3.4.1] - [2026-10-30]
 

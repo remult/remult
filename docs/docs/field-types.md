@@ -395,7 +395,20 @@ Migrations give a column a default value when its type has one (`''`, `0`, `fals
 | `Fields.json`, a custom `fieldTypeInDb` (not on a number or boolean)                                                                           | `true`                 |
 | An id                                                                                                                                          | `false`                |
 
-Set `allowNull` to change it. With `allowNull: false` on a Date, json or custom type, migrations create the column `not null` with no default value: on a table that has rows, fill the column first. NULL sorts first on asc and last on desc on every database; only `allowNull` columns get `nulls first` in `ORDER BY`, so a `not null` column like `id` keeps its index.
+Set `allowNull` to change it. With `allowNull: false` on a Date, json or custom type, migrations create the column `not null` with no default value: on a table that has rows, fill the column first.
+
+### Where NULL sorts
+
+By default each database decides: Postgres and DuckDB sort NULL last on asc, SQLite, MySQL, SQL Server and Mongo sort it as the lowest value. The paginator assumes the lowest, so on Postgres and DuckDB it can skip rows whose sort key is NULL. Set the order for the whole app, in code that both the server and the client load:
+
+```ts
+import { NullSort } from 'remult'
+
+NullSort.asc = 'NULL FIRST'
+NullSort.desc = 'NULL LAST'
+```
+
+Only `allowNull` columns get it in `ORDER BY`, so a `not null` column like `id` keeps its index. Mongo sorts NULL as the lowest value only.
 
 ## Creating Custom Field Types
 

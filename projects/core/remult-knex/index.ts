@@ -34,7 +34,7 @@ import {
   getRepository,
   isAutoIncrement,
 } from '../src/remult3/RepositoryImplementation.js'
-import { Sort } from '../src/sort.js'
+import { Sort, nullsOrder, nullsSortHighest } from '../src/sort.js'
 import {
   fromDbColumn,
   toDbColumn,
@@ -60,13 +60,15 @@ import {
   groupByImpl,
   getRowAfterUpdate,
   jsonColumnStorageOf,
+  nullsCase,
+  type NullsSyntax,
 } from '../src/data-providers/sql-database.js'
 import type { InsertOrUpdateOptions } from '../src/remult3/remult3.js'
 
-// The others already sort NULL first on asc.
-const NULL_LAST_DIALECTS = ['postgresql', 'redshift', 'oracledb']
-function sortsNullLast(knex: Knex) {
-  return NULL_LAST_DIALECTS.includes(knex.client.dialect)
+// Knex rewrites `nulls first` on the others as `(x is null)`, dropping `x`.
+const NULLS_SYNTAX_DIALECTS = ['postgresql', 'redshift', 'oracledb']
+function nullsSyntaxOf(knex: Knex): NullsSyntax {
+  return NULLS_SYNTAX_DIALECTS.includes(knex.client.dialect) ? 'nulls' : 'case'
 }
 
 export class KnexDataProvider
@@ -195,7 +197,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
         true,
       ),
       this.dp.createCommand(),
-      sortsNullLast(this.knex),
+      nullsSyntaxOf(this.knex),
       (limit, offset) =>
         this.knex.client.config.client?.includes('mssql')
           ? ' offset ' + offset + ' rows fetch next ' + limit + ' rows only'
@@ -260,18 +262,18 @@ class KnexEntityDataProvider implements EntityDataProvider {
       options.orderBy = Sort.createUniqueSort(this.entity, new Sort())
     }
     if (options.orderBy) {
-      query = query.orderBy(
-        options.orderBy.Segments.map((s) => ({
-          column: e.$dbNameOf(s.field),
-          order: s.isDescending ? 'desc' : 'asc',
-          nulls:
-            s.field.allowNull && sortsNullLast(this.knex)
-              ? s.isDescending
-                ? ('last' as const)
-                : ('first' as const)
-              : undefined,
-        })),
-      )
+      const syntax = nullsSyntaxOf(this.knex)
+      for (const s of options.orderBy.Segments) {
+        const column = e.$dbNameOf(s.field)
+        const nulls = s.field.allowNull ? nullsOrder(s.isDescending) : undefined
+        if (nulls && syntax === 'case' && nullsSortHighest(s.isDescending))
+          query = query.orderByRaw(nullsCase('??', s.isDescending), [column])
+        query = query.orderBy(
+          column,
+          s.isDescending ? 'desc' : 'asc',
+          syntax === 'nulls' ? nulls : undefined,
+        )
+      }
     }
     if (options.limit) {
       query = query.limit(options.limit)

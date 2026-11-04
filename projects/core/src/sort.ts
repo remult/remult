@@ -1,4 +1,5 @@
 import type { FieldMetadata } from './column-interfaces.js'
+import { remultStatic } from './remult-static.js'
 import { getRelationFieldInfo } from './remult3/relationInfoMember.js'
 import type {
   EntityMetadata,
@@ -177,6 +178,46 @@ export interface SortSegment {
   field: FieldMetadata
   isDescending?: boolean
 }
+export type NullsOrder = 'native' | 'NULL FIRST' | 'NULL LAST'
+
+/**
+ * Where NULL sorts, for the whole app. Set it in code that both the server and the client load.
+ *
+ * `native` (the default) lets the database decide: Postgres and DuckDB sort NULL last on `asc`,
+ * SQLite, MySQL, SQL Server, Mongo and in memory sort it as the lowest value. The paginator
+ * assumes the lowest, so on Postgres and DuckDB it can skip rows whose sort key is NULL.
+ *
+ * Only `allowNull` columns get the NULL order. Mongo sorts NULL as the lowest value only.
+ * @example
+ * NullSort.asc = 'NULL FIRST'
+ * NullSort.desc = 'NULL LAST'
+ */
+export const NullSort: { asc: NullsOrder; desc: NullsOrder } =
+  remultStatic.nullSort ||
+  (remultStatic.nullSort = { asc: 'native', desc: 'native' })
+
+const NULLS_ORDER = {
+  native: undefined,
+  'NULL FIRST': 'first',
+  'NULL LAST': 'last',
+} as const
+
+/** `undefined` when native. */
+export function nullsOrder(isDescending?: boolean) {
+  return NULLS_ORDER[NullSort[isDescending ? 'desc' : 'asc']]
+}
+
+/** Native, NULL is the lowest value: first on `asc`. */
+export function nullsFirst(isDescending?: boolean) {
+  const order = nullsOrder(isDescending)
+  return order ? order === 'first' : !isDescending
+}
+
+/** NULL after the values on `asc`, or before them on `desc`. */
+export function nullsSortHighest(isDescending?: boolean) {
+  return nullsFirst(isDescending) === !!isDescending
+}
+
 export function compareForSort(
   left: any,
   right: any,
@@ -184,11 +225,13 @@ export function compareForSort(
 ) {
   left = fixValueForSort(left)
   right = fixValueForSort(right)
-  let r = 0
   // `null > 'a'` and `null < 'a'` are both false, which is not an order.
-  if (left == null) r = right == null ? 0 : -1
-  else if (right == null) r = 1
-  else if (left > right) r = 1
+  if (left == null || right == null) {
+    if (left == right) return 0
+    return (left == null) === nullsFirst(descending) ? -1 : 1
+  }
+  let r = 0
+  if (left > right) r = 1
   else if (left < right) r = -1
   if (descending) r *= -1
   return r

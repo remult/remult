@@ -53,7 +53,7 @@ import {
   isAutoIncrement,
 } from '../remult3/RepositoryImplementation.js'
 import type { SortSegment } from '../sort.js'
-import { Sort } from '../sort.js'
+import { Sort, nullsOrder, nullsSortHighest } from '../sort.js'
 import { fromDbColumn, toDbColumn } from '../valueConverters.js'
 import { getRepositoryInternals } from '../remult3/repository-internals.js'
 import type {
@@ -289,7 +289,7 @@ export class SqlDatabase
           sql?.wrapIdentifier ?? wrapIdentifierOf(r),
         )),
       sql?.sqlCommand ?? new myDummySQLCommand(),
-      isSqlDatabase(r),
+      isSqlDatabase(r) ? 'nulls' : undefined,
       sql?.limitSyntax ?? limitSyntaxRequired,
       jsonColumnStorageForRaw(r, sql?.jsonAsString),
     )
@@ -323,7 +323,7 @@ export class SqlDatabase
           sql?.wrapIdentifier ?? wrapIdentifierOf(r),
         )),
       sql?.sqlCommand ?? new myDummySQLCommand(),
-      isSqlDatabase(r),
+      isSqlDatabase(r) ? 'nulls' : undefined,
       sql?.limitSyntax ?? limitSyntaxRequired,
       {
         aliasColumns: true,
@@ -523,7 +523,7 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
       options,
       await this.init(),
       this.sql.createCommand(),
-      true,
+      'nulls',
       this.sql._getSourceSql().getLimitSqlSyntax,
       this.sql.jsonColumnStorage,
     )
@@ -539,7 +539,7 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
       options,
       e,
       r,
-      true,
+      'nulls',
       (limit, offset) => this.strategy.getLimitSqlSyntax(limit, offset),
       { jsonColumnStorage: this.sql.jsonColumnStorage },
     )
@@ -856,13 +856,34 @@ export function getRowAfterUpdate<entityType>(
     })
 }
 
+/** `nulls` writes `nulls first`. `case` sorts on `is null` first, for dialects without it, where NULL is not the lowest value. */
+export type NullsSyntax = 'nulls' | 'case'
+
+function orderByTerm(
+  expr: string,
+  isDescending: boolean | undefined,
+  allowNull: boolean,
+  syntax: NullsSyntax | undefined,
+) {
+  const term = isDescending ? expr + ' desc' : expr
+  const order = allowNull && syntax ? nullsOrder(isDescending) : undefined
+  if (!order) return term
+  if (syntax === 'nulls') return term + ' nulls ' + order
+  if (!nullsSortHighest(isDescending)) return term
+  return nullsCase(expr, isDescending) + ', ' + term
+}
+
+export function nullsCase(expr: string, isDescending: boolean | undefined) {
+  return `case when ${expr} is null then ${isDescending ? '0 else 1' : '1 else 0'} end`
+}
+
 /** The select that `find` runs, and the mapping of one result row to field values. With `aliasColumns`, every column is aliased through `wrapIdentifier`, so a row can be read by alias as well as by position. */
 export async function buildFindSql(
   entity: EntityMetadata,
   options: EntityDataProviderFindOptions | undefined,
   e: EntityDbNamesBase,
   r: SqlCommandWithParameters,
-  orderByNullsFirst: boolean | undefined,
+  nullsSyntax: NullsSyntax | undefined,
   limitSyntax: (limit: number, offset: number) => string,
   {
     aliasColumns = false,
@@ -898,14 +919,14 @@ export async function buildFindSql(
           first = false
         } else select += ', '
 
-        select += c.field.options.sqlExpression
-          ? c.field.options.key
-          : await e.$dbNameOf(c.field)
-        if (c.isDescending) select += ' desc'
-        if (orderByNullsFirst && c.field.allowNull) {
-          if (c.isDescending) select += ' nulls last'
-          else select += ' nulls first'
-        }
+        select += orderByTerm(
+          c.field.options.sqlExpression
+            ? c.field.options.key!
+            : await e.$dbNameOf(c.field),
+          c.isDescending,
+          c.field.allowNull,
+          nullsSyntax,
+        )
       }
     }
 
@@ -974,7 +995,7 @@ export async function groupByImpl(
   options: EntityDataProviderGroupByOptions | undefined,
   e: EntityDbNamesBase,
   r: SqlCommand,
-  orderByNullFirst: boolean | undefined,
+  nullsSyntax: NullsSyntax | undefined,
   limitSyntax: (limit: number, offset: number) => string,
   jsonColumnStorage: JsonColumnStorage = 'native',
 ) {
@@ -982,7 +1003,7 @@ export async function groupByImpl(
     options,
     e,
     r,
-    orderByNullFirst,
+    nullsSyntax,
     limitSyntax,
     jsonColumnStorage,
   )
@@ -997,7 +1018,7 @@ export async function buildGroupBySql(
   options: EntityDataProviderGroupByOptions | undefined,
   e: EntityDbNamesBase,
   r: SqlCommandWithParameters,
-  orderByNullFirst: boolean | undefined,
+  nullsSyntax: NullsSyntax | undefined,
   limitSyntax: (limit: number, offset: number) => string,
   jsonColumnStorage: JsonColumnStorage = 'native',
 ) {
@@ -1073,17 +1094,13 @@ export async function buildGroupBySql(
         default:
           field = aggregateSqlSyntax(x.operation, field!)
       }
-      orderBy += field
-      if (x.isDescending) orderBy += ' desc'
-      // A count is never NULL, other aggregates only over NULL values.
-      if (
-        orderByNullFirst &&
-        x.field?.allowNull &&
-        x.operation !== 'distinctCount'
-      ) {
-        if (x.isDescending) orderBy += ' nulls last'
-        else orderBy += ' nulls first'
-      }
+      orderBy += orderByTerm(
+        field!,
+        x.isDescending,
+        // A count is never NULL, other aggregates only over NULL values.
+        !!x.field?.allowNull && x.operation !== 'distinctCount',
+        nullsSyntax,
+      )
     }
     if (orderBy) select += orderBy
   }
