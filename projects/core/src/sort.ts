@@ -197,13 +197,22 @@ export const NullSort: { asc: NullsOrder; desc: NullsOrder } =
   remultStatic.nullSort ||
   (remultStatic.nullSort = { asc: 'native', desc: 'native' })
 
-export const NULL_LOWEST = { asc: 'NULL FIRST', desc: 'NULL LAST' } as const
+/** `NullSort.asc` or `NullSort.desc`. */
+export function nullSortFor(isDescending?: boolean) {
+  return NullSort[isDescending ? 'desc' : 'asc']
+}
 
-/** Where NULL lands. Native without a database: the lowest value. */
+/** NULL as the lowest value: SQLite, MySQL, SQL Server, Mongo, and no database. */
+export function nullLowest(
+  isDescending?: boolean,
+): Exclude<NullsOrder, 'native'> {
+  return isDescending ? 'NULL LAST' : 'NULL FIRST'
+}
+
+/** Where NULL lands, `native` resolved without a database. */
 export function nullOrder(isDescending?: boolean) {
-  const dir = isDescending ? 'desc' : 'asc'
-  const order = NullSort[dir]
-  return order === 'native' ? NULL_LOWEST[dir] : order
+  const order = nullSortFor(isDescending)
+  return order === 'native' ? nullLowest(isDescending) : order
 }
 
 export function compareForSort(
