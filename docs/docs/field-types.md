@@ -399,13 +399,20 @@ Set `allowNull` to change it. With `allowNull: false` on a Date, json or custom 
 
 ### Where NULL sorts
 
-By default each database decides: Postgres and DuckDB sort NULL last on asc, SQLite, MySQL, SQL Server and Mongo sort it as the lowest value. The paginator assumes the lowest, so on Postgres and DuckDB it can skip rows whose sort key is NULL. Set the order for the whole app, in code that both the server and the client load:
+By default each database decides: Postgres and DuckDB sort NULL last on asc, SQLite, MySQL, SQL Server and Mongo sort it as the lowest value. The paginator assumes the lowest, so on Postgres and DuckDB it can skip rows whose sort key is NULL. Set the order for the whole app, the same on the server and the client:
 
 ```ts
-import { NullSort } from 'remult'
+// src/lib/shared-remult.ts
+import { NullSort } from 'remult/internals'
 
 NullSort.asc = 'NULL FIRST'
 NullSort.desc = 'NULL LAST'
+```
+
+Import it where the server creates the api (before `remultApi`) and where the client starts (a root layout), since api requests can run before any page loads:
+
+```ts
+import '$lib/shared-remult'
 ```
 
 Only `allowNull` columns get it in `ORDER BY`, so a `not null` column like `id` keeps its index. Mongo sorts NULL as the lowest value only.

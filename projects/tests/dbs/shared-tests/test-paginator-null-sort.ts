@@ -2,12 +2,12 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
   Entity,
   Fields,
-  NullSort,
   Relations,
   type EntityOrderBy,
   type QueryResult,
   type Repository,
 } from '../../../core'
+import { NullSort } from '../../../core/internals'
 import type { DbTestProps } from './db-tests-props'
 import type { DbTestOptions } from './db-tests'
 

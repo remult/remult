@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- `NullSort.asc` / `NullSort.desc`: where NULL sorts for the whole app, `'native'` (default), `'NULL FIRST'` or `'NULL LAST'` ([docs](https://remult.dev/docs/field-types#where-null-sorts)). Only `allowNull` columns get it, so `id` keeps its index.
+- `NullSort.asc` / `NullSort.desc` (`remult/internals`): where NULL sorts for the whole app, `'native'` (default), `'NULL FIRST'` or `'NULL LAST'` ([docs](https://remult.dev/docs/field-types#where-null-sorts)). Only `allowNull` columns get it, so `id` keeps its index.
 
 ### Fixed
 

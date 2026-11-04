@@ -5,7 +5,6 @@ import {
   type EntityMetadata,
   type EntityOrderBy,
   Fields,
-  NullSort,
   Remult,
   type SqlCommand,
   type SqlCommandWithParameters,
@@ -13,6 +12,7 @@ import {
   type SqlImplementation,
   dbNamesOf,
 } from '../../core'
+import { NullSort } from '../../core/internals'
 import { KnexDataProvider } from '../../core/remult-knex'
 
 describe('test sql implementation', () => {
