@@ -32,12 +32,11 @@ import {
   GroupByOperators,
   type InsertOrUpdateOptions,
 } from './src/remult3/remult3.js'
-import { NullSort, nullOrder } from './src/sort.js'
+import { NullSort, canBeNull, isNullFirst } from './src/sort.js'
 
-// A missing field sorts with NULL, so no `$sort` puts them after the values.
-function assertNullsLowest(allowNull: boolean, isDescending?: boolean) {
-  const lowest = isDescending ? 'NULL LAST' : 'NULL FIRST'
-  if (!allowNull || nullOrder(isDescending) === lowest) return
+// `$sort` has no NULL option: NULL, like a missing field, sorts lowest.
+function assertNullLowest(nullable: boolean, isDescending?: boolean) {
+  if (!nullable || isNullFirst(isDescending) === !isDescending) return
   const dir = isDescending ? 'desc' : 'asc'
   throw new Error(
     `NullSort.${dir} = '${NullSort[dir]}' is not supported on Mongo, which sorts NULL as the lowest value`,
@@ -237,10 +236,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
     if (options?.orderBy) {
       let sort: any = {}
       for (const x of options.orderBy) {
-        assertNullsLowest(
-          !!x.field?.allowNull && x.operation !== 'distinctCount',
-          x.isDescending,
-        )
+        assertNullLowest(canBeNull(x.field, x.operation), x.isDescending)
         const direction = x.isDescending ? -1 : 1
         switch (x.operation) {
           case 'count':
@@ -294,7 +290,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
     if (options.orderBy) {
       op.sort = {}
       for (const s of options.orderBy.Segments) {
-        assertNullsLowest(s.field.allowNull, s.isDescending)
+        assertNullLowest(canBeNull(s.field), s.isDescending)
         op.sort[e.$dbNameOf(s.field)] = s.isDescending ? -1 : 1
       }
     }

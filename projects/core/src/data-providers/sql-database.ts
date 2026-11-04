@@ -53,7 +53,7 @@ import {
   isAutoIncrement,
 } from '../remult3/RepositoryImplementation.js'
 import type { SortSegment } from '../sort.js'
-import { Sort, nullSortFor, type NullsOrder } from '../sort.js'
+import { Sort, canBeNull, nullSortFor, type NullSortOrder } from '../sort.js'
 import { fromDbColumn, toDbColumn } from '../valueConverters.js'
 import { getRepositoryInternals } from '../remult3/repository-internals.js'
 import type {
@@ -856,24 +856,38 @@ export function getRowAfterUpdate<entityType>(
     })
 }
 
-/** `nulls` writes `nulls first`. `case` sorts on `is null` first, for dialects without it, where NULL is not the lowest value. */
-export type NullsSyntax = 'nulls' | 'case'
+/** How `ORDER BY` writes the NULL order: `nulls first`, or a `case when x is null` on dialects without it. `undefined` writes none. */
+export type NullSortSyntax = 'nulls' | 'case'
+
+/** The NULL order `ORDER BY` writes, `undefined` for none. */
+export function nullSortToWrite(
+  isDescending: boolean | undefined,
+  canBeNull: boolean,
+  syntax: NullSortSyntax | undefined,
+) {
+  const order = nullSortFor(isDescending)
+  if (!canBeNull || !syntax || order === 'native') return undefined
+  return order
+}
 
 function orderByTerm(
   expr: string,
   isDescending: boolean | undefined,
-  allowNull: boolean,
-  syntax: NullsSyntax | undefined,
+  canBeNull: boolean,
+  syntax: NullSortSyntax | undefined,
 ) {
   const term = isDescending ? expr + ' desc' : expr
-  const order = nullSortFor(isDescending)
-  if (!allowNull || !syntax || order === 'native') return term
+  const order = nullSortToWrite(isDescending, canBeNull, syntax)
+  if (!order) return term
   if (syntax === 'nulls')
     return term + (order === 'NULL FIRST' ? ' nulls first' : ' nulls last')
-  return nullsCase(expr, order) + ', ' + term
+  return nullSortCase(expr, order) + ', ' + term
 }
 
-export function nullsCase(expr: string, order: Exclude<NullsOrder, 'native'>) {
+export function nullSortCase(
+  expr: string,
+  order: Exclude<NullSortOrder, 'native'>,
+) {
   return `case when ${expr} is null then ${order === 'NULL FIRST' ? '0 else 1' : '1 else 0'} end`
 }
 
@@ -883,7 +897,7 @@ export async function buildFindSql(
   options: EntityDataProviderFindOptions | undefined,
   e: EntityDbNamesBase,
   r: SqlCommandWithParameters,
-  nullsSyntax: NullsSyntax | undefined,
+  nullSortSyntax: NullSortSyntax | undefined,
   limitSyntax: (limit: number, offset: number) => string,
   {
     aliasColumns = false,
@@ -924,8 +938,8 @@ export async function buildFindSql(
             ? c.field.options.key!
             : await e.$dbNameOf(c.field),
           c.isDescending,
-          c.field.allowNull,
-          nullsSyntax,
+          canBeNull(c.field),
+          nullSortSyntax,
         )
       }
     }
@@ -995,7 +1009,7 @@ export async function groupByImpl(
   options: EntityDataProviderGroupByOptions | undefined,
   e: EntityDbNamesBase,
   r: SqlCommand,
-  nullsSyntax: NullsSyntax | undefined,
+  nullSortSyntax: NullSortSyntax | undefined,
   limitSyntax: (limit: number, offset: number) => string,
   jsonColumnStorage: JsonColumnStorage = 'native',
 ) {
@@ -1003,7 +1017,7 @@ export async function groupByImpl(
     options,
     e,
     r,
-    nullsSyntax,
+    nullSortSyntax,
     limitSyntax,
     jsonColumnStorage,
   )
@@ -1018,7 +1032,7 @@ export async function buildGroupBySql(
   options: EntityDataProviderGroupByOptions | undefined,
   e: EntityDbNamesBase,
   r: SqlCommandWithParameters,
-  nullsSyntax: NullsSyntax | undefined,
+  nullSortSyntax: NullSortSyntax | undefined,
   limitSyntax: (limit: number, offset: number) => string,
   jsonColumnStorage: JsonColumnStorage = 'native',
 ) {
@@ -1097,9 +1111,8 @@ export async function buildGroupBySql(
       orderBy += orderByTerm(
         field!,
         x.isDescending,
-        // A count is never NULL, other aggregates only over NULL values.
-        !!x.field?.allowNull && x.operation !== 'distinctCount',
-        nullsSyntax,
+        canBeNull(x.field, x.operation),
+        nullSortSyntax,
       )
     }
     if (orderBy) select += orderBy

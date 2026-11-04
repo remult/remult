@@ -62,7 +62,7 @@ export interface DbTestOptions {
   excludeLiveQuery?: boolean
   excludeJsonStorage?: boolean
   /** Mongo sorts NULL as the lowest value only. */
-  nullsOnlyLowest?: boolean
+  nullLowestOnly?: boolean
 }
 
 export function commonDbTests(

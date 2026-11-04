@@ -52,7 +52,7 @@ describe.skipIf(!mongoConnectionStringWithoutTransaction)(
       {
         excludeTransactions: true,
         skipAutoIncrement: true,
-        nullsOnlyLowest: true,
+        nullLowestOnly: true,
       },
     )
     it('test mongo without transaction', async () => {

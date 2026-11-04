@@ -34,7 +34,7 @@ import {
   getRepository,
   isAutoIncrement,
 } from '../src/remult3/RepositoryImplementation.js'
-import { Sort, nullSortFor } from '../src/sort.js'
+import { Sort, canBeNull } from '../src/sort.js'
 import {
   fromDbColumn,
   toDbColumn,
@@ -60,15 +60,16 @@ import {
   groupByImpl,
   getRowAfterUpdate,
   jsonColumnStorageOf,
-  nullsCase,
-  type NullsSyntax,
+  nullSortCase,
+  nullSortToWrite,
+  type NullSortSyntax,
 } from '../src/data-providers/sql-database.js'
 import type { InsertOrUpdateOptions } from '../src/remult3/remult3.js'
 
 // Knex rewrites `nulls first` on the others as `(x is null)`, dropping `x`.
-const NULLS_SYNTAX_DIALECTS = ['postgresql', 'redshift', 'oracledb']
-function nullsSyntaxOf(knex: Knex): NullsSyntax {
-  return NULLS_SYNTAX_DIALECTS.includes(knex.client.dialect) ? 'nulls' : 'case'
+const NULLS_FIRST_DIALECTS = ['postgresql', 'redshift', 'oracledb']
+function nullSortSyntaxOf(knex: Knex): NullSortSyntax {
+  return NULLS_FIRST_DIALECTS.includes(knex.client.dialect) ? 'nulls' : 'case'
 }
 
 export class KnexDataProvider
@@ -197,7 +198,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
         true,
       ),
       this.dp.createCommand(),
-      nullsSyntaxOf(this.knex),
+      nullSortSyntaxOf(this.knex),
       (limit, offset) =>
         this.knex.client.config.client?.includes('mssql')
           ? ' offset ' + offset + ' rows fetch next ' + limit + ' rows only'
@@ -262,17 +263,20 @@ class KnexEntityDataProvider implements EntityDataProvider {
       options.orderBy = Sort.createUniqueSort(this.entity, new Sort())
     }
     if (options.orderBy) {
-      const syntax = nullsSyntaxOf(this.knex)
+      const syntax = nullSortSyntaxOf(this.knex)
       for (const s of options.orderBy.Segments) {
         const column = e.$dbNameOf(s.field)
-        const order = nullSortFor(s.isDescending)
-        const nulls = s.field.allowNull && order !== 'native'
-        if (nulls && syntax === 'case')
-          query = query.orderByRaw(nullsCase('??', order), [column])
+        const order = nullSortToWrite(
+          s.isDescending,
+          canBeNull(s.field),
+          syntax,
+        )
+        if (order && syntax === 'case')
+          query = query.orderByRaw(nullSortCase('??', order), [column])
         query = query.orderBy(
           column,
           s.isDescending ? 'desc' : 'asc',
-          nulls && syntax === 'nulls'
+          order && syntax === 'nulls'
             ? order === 'NULL FIRST'
               ? 'first'
               : 'last'

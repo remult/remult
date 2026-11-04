@@ -178,14 +178,14 @@ export interface SortSegment {
   field: FieldMetadata
   isDescending?: boolean
 }
-export type NullsOrder = 'native' | 'NULL FIRST' | 'NULL LAST'
+export type NullSortOrder = 'native' | 'NULL FIRST' | 'NULL LAST'
 
 /**
  * Where NULL sorts, for the whole app: set it where both the server and the client load it.
  * `native` (default) lets the database decide, and the paginator assumes NULL is the lowest value.
  * @see https://remult.dev/docs/field-types#where-null-sorts
  */
-export const NullSort: { asc: NullsOrder; desc: NullsOrder } =
+export const NullSort: { asc: NullSortOrder; desc: NullSortOrder } =
   remultStatic.nullSort ||
   (remultStatic.nullSort = { asc: 'native', desc: 'native' })
 
@@ -194,10 +194,17 @@ export function nullSortFor(isDescending?: boolean) {
 }
 
 /** `native` is NULL lowest, as without a database. */
-export function nullOrder(isDescending?: boolean) {
+export function isNullFirst(isDescending?: boolean) {
   const order = nullSortFor(isDescending)
-  if (order !== 'native') return order
-  return isDescending ? 'NULL LAST' : 'NULL FIRST'
+  return order === 'native' ? !isDescending : order === 'NULL FIRST'
+}
+
+/** A distinct count is never NULL, other aggregates only over NULL values. */
+export function canBeNull(
+  field: FieldMetadata | undefined,
+  operation?: string,
+) {
+  return !!field?.allowNull && operation !== 'distinctCount'
 }
 
 export function compareForSort(
@@ -210,7 +217,7 @@ export function compareForSort(
   // `null > 'a'` and `null < 'a'` are both false, which is not an order.
   if (left == null || right == null) {
     if (left == right) return 0
-    return (left == null) === (nullOrder(descending) === 'NULL FIRST') ? -1 : 1
+    return (left == null) === isNullFirst(descending) ? -1 : 1
   }
   let r = 0
   if (left > right) r = 1

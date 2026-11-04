@@ -115,7 +115,7 @@ export function paginatorNullSortTests(
     expect(await nums(r, 'desc')).toEqual([3, 2, null])
     expect(await groups()).toEqual([null, 2, 3])
     Object.assign(NullSort, HIGHEST)
-    if (options?.nullsOnlyLowest) {
+    if (options?.nullLowestOnly) {
       await expect(nums(r, 'asc')).rejects.toThrow('NullSort.asc')
       await expect(nums(r, 'desc')).rejects.toThrow('NullSort.desc')
       return
@@ -151,7 +151,7 @@ export function paginatorNullSortTests(
       'paginator with NULL in a sort key %s',
       (dir) => {
         beforeEach(async (ctx) => {
-          if (order === HIGHEST && options?.nullsOnlyLowest) ctx.skip()
+          if (order === HIGHEST && options?.nullLowestOnly) ctx.skip()
           // Native, the paginator holds only where the database sorts NULL lowest.
           if (order === NATIVE) {
             const probe = await seed([{ num: 1 }, {}])
