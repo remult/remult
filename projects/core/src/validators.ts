@@ -63,10 +63,13 @@ export class Validators {
   /**
    * Validator to check if a value is a valid URL.
    */
-  static url = createValueValidator<string>(
-    (val) => !!new URL(val),
-    'Invalid Url',
-  )
+  static url = createValueValidator<string>((val) => {
+    try {
+      return !!new URL(val)
+    } catch {
+      return false
+    }
+  }, 'Invalid Url')
   /**
    * Validator to check if a value is one of the specified values.
    */

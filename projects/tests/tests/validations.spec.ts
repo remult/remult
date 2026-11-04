@@ -57,6 +57,39 @@ describe('validation tests', () => {
       '"Should not be empty"',
     )
   })
+  it('test url validator uses its own message for invalid urls', async () => {
+    @Entity('x', {})
+    class x {
+      @Fields.number()
+      id = 0
+      @Fields.string({ validate: Validators.url })
+      site = ''
+      @Fields.string({ validate: Validators.url('Bad link') })
+      site2 = ''
+    }
+    await expect(
+      async () =>
+        await remult
+          .repo(x)
+          .insert({ id: 1, site: 'not a url', site2: 'https://remult.dev' }),
+    ).rejects.toMatchObject({
+      modelState: { site: 'Invalid Url' },
+    })
+    await expect(
+      async () =>
+        await remult
+          .repo(x)
+          .insert({ id: 2, site: 'https://remult.dev', site2: 'nope' }),
+    ).rejects.toMatchObject({
+      modelState: { site2: 'Bad link' },
+    })
+    const ok = await remult.repo(x).insert({
+      id: 3,
+      site: 'https://remult.dev',
+      site2: 'https://remult.dev',
+    })
+    expect(ok.id).toBe(3)
+  })
   it('test required validator 2', async () => {
     Validators.required.defaultMessage = 'a custom message'
     @Entity('x', {})
