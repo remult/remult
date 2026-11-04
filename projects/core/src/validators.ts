@@ -277,14 +277,21 @@ export function createValueValidatorWithArgs<valueType, argsType>(
       (defaultMessage as string),
     true,
   )
-  return Object.assign((entity: any, e: any) => result(entity, e), {
-    get defaultMessage() {
-      return defaultMessage!
+  // Object.assign would copy only the getter's current value (not the setter),
+  // so a global `Validators.min.defaultMessage = ...` would be ignored.
+  return Object.defineProperty(
+    (entity: any, e: any) => result(entity, e),
+    'defaultMessage',
+    {
+      get: () => defaultMessage!,
+      set: (val) => {
+        defaultMessage = val
+      },
+      enumerable: true,
     },
-    set defaultMessage(val) {
-      defaultMessage = val
-    },
-  })
+  ) as ValidatorWithArgs<valueType, argsType> & {
+    defaultMessage: ValueValidationMessage<argsType>
+  }
 }
 
 /**
@@ -359,13 +366,12 @@ function createValidatorWithArgsInternal<valueType, argsType>(
               : Validators.defaultMessage
       }
 
-  return Object.assign(result, {
-    get defaultMessage() {
-      return defaultMessage
-    },
-    set defaultMessage(val) {
+  return Object.defineProperty(result, 'defaultMessage', {
+    get: () => defaultMessage,
+    set: (val) => {
       defaultMessage = val
     },
+    enumerable: true,
   }) as ValidatorWithArgs<valueType, argsType> & {
     defaultMessage: ValidationMessage<valueType, argsType>
   }

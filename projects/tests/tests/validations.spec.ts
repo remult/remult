@@ -90,6 +90,37 @@ describe('validation tests', () => {
     })
     expect(ok.id).toBe(3)
   })
+  it('test global defaultMessage on validators with args', async () => {
+    const prevMin = Validators.min.defaultMessage
+    const prevRange = Validators.range.defaultMessage
+    try {
+      Validators.min.defaultMessage = (min) => `Must be at least ${min}`
+      Validators.range.defaultMessage = ([min, max]) =>
+        `Pick a number from ${min} to ${max}`
+      @Entity('x', {})
+      class x {
+        @Fields.number()
+        id = 0
+        @Fields.number({ validate: Validators.min(0) })
+        price = 0
+        @Fields.number({ validate: Validators.range([1, 5]) })
+        rating = 1
+      }
+      await expect(
+        async () => await remult.repo(x).insert({ id: 1, price: -1 }),
+      ).rejects.toMatchObject({
+        modelState: { price: 'Must be at least 0' },
+      })
+      await expect(
+        async () => await remult.repo(x).insert({ id: 2, rating: 9 }),
+      ).rejects.toMatchObject({
+        modelState: { rating: 'Pick a number from 1 to 5' },
+      })
+    } finally {
+      Validators.min.defaultMessage = prevMin
+      Validators.range.defaultMessage = prevRange
+    }
+  })
   it('test required validator 2', async () => {
     Validators.required.defaultMessage = 'a custom message'
     @Entity('x', {})
