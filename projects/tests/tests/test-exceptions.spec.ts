@@ -4,7 +4,8 @@ import { Done } from './Done'
 import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
 
 import { describe, expect, it } from 'vitest'
-import { Entity, EntityBase, Fields } from '../../core'
+import { Entity, EntityBase, EntityError, Fields } from '../../core'
+import { serializeError } from '../../core/src/data-api'
 import {
   processHttpException,
   toPromise,
@@ -378,6 +379,26 @@ describe('fetch client exception ', () => {
       },
       message: 'Name: name error',
       httpStatusCode: 400,
+    })
+  })
+})
+
+describe('serializeError', () => {
+  it('leaves the stack out of an Error', () => {
+    const error = new Error('boom')
+    expect(error.stack).toContain('boom')
+    expect(serializeError(error)).toEqual({ message: 'boom' })
+  })
+  it('leaves the stack out of an EntityError', () => {
+    expect(
+      serializeError(
+        new EntityError({ message: 'bad', modelState: { name: 'bad' } }),
+      ),
+    ).toEqual({ message: 'bad', modelState: { name: 'bad' } })
+  })
+  it('leaves the stack out of an object without a message', () => {
+    expect(serializeError({ stack: 'at somewhere' })).toEqual({
+      message: undefined,
     })
   })
 })

@@ -1323,7 +1323,7 @@ class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
       console.error({
         message: body.message,
         httpStatusCode,
-        stack: data.stack?.split('\n'),
+        stack: exception?.stack?.split('\n'),
         url: this.genReq?.url,
         method: this.genReq?.method,
       })

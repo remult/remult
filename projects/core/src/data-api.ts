@@ -702,12 +702,11 @@ export function serializeError(data: ErrorInfo) {
   if (data instanceof EntityError) {
     data = { message: data.message, modelState: data.modelState }
   } else if (data instanceof Error) {
-    data = { message: data.message, stack: data.stack }
+    data = { message: data.message }
   }
 
   let x = JSON.parse(JSON.stringify(data))
-  if (!x.message && !x.modelState)
-    data = { message: data.message, stack: data.stack }
+  if (!x.message && !x.modelState) data = { message: data.message }
   if (typeof x === 'string') data = { message: x }
 
   return data
