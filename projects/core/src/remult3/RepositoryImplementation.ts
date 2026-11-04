@@ -159,7 +159,8 @@ export class RepositoryImplementation<entityType>
       const value =
         (ref.fields.find(key) as IdFieldRef<entityType, any>).getId() ?? null
       const nullFirst = isNullFirst(isDescending)
-      if (value === null && field.allowNull) {
+      // Even without allowNull, as a column created nullable can hold NULL.
+      if (value === null) {
         if (nullFirst) $or.push({ ...equal, $not: { [key]: null } })
       } else {
         $or.push({

@@ -389,6 +389,30 @@ function testPaging(
         },
       )
     })
+    it('create rows after filter on a NULL in a column that is not allowNull', async () => {
+      const eDefs = new Remult().repo(theTable)
+      const e = eDefs.create()
+      e.a = 'a'
+      e.b = 'b'
+      e.c = null!
+      const f = await getRepositoryInternals(eDefs)._createAfterFilter(
+        { c: 'asc', a: 'asc', b: 'asc' },
+        e,
+      )
+      expect(
+        JSON.stringify(await entityFilterToJson(eDefs.metadata, f)),
+      ).toEqual(
+        JSON.stringify(
+          await entityFilterToJson<theTable>(eDefs.metadata, {
+            $or: [
+              { $not: { c: null! } },
+              { c: null!, a: { $gt: 'a' } },
+              { c: null!, a: 'a', b: { $gt: 'b' } },
+            ],
+          }),
+        ),
+      )
+    })
     it('create rows after filter, values are frozen when filter is created', async () => {
       const remult = new Remult()
 
