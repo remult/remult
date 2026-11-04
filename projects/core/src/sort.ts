@@ -197,18 +197,13 @@ export const NullSort: { asc: NullsOrder; desc: NullsOrder } =
   remultStatic.nullSort ||
   (remultStatic.nullSort = { asc: 'native', desc: 'native' })
 
-export function nullSortOf(isDescending?: boolean) {
-  return NullSort[isDescending ? 'desc' : 'asc']
-}
+export const NULL_LOWEST = { asc: 'NULL FIRST', desc: 'NULL LAST' } as const
 
-/** Without a database, `native` sorts NULL as the lowest value. */
-export function isNullFirstSort(isDescending?: boolean) {
-  const order = nullSortOf(isDescending)
-  return order === 'native' ? !isDescending : order === 'NULL FIRST'
-}
-
-export function isNullLastSort(isDescending?: boolean) {
-  return !isNullFirstSort(isDescending)
+/** Where NULL lands. Native without a database: the lowest value. */
+export function nullOrder(isDescending?: boolean) {
+  const dir = isDescending ? 'desc' : 'asc'
+  const order = NullSort[dir]
+  return order === 'native' ? NULL_LOWEST[dir] : order
 }
 
 export function compareForSort(
@@ -221,7 +216,7 @@ export function compareForSort(
   // `null > 'a'` and `null < 'a'` are both false, which is not an order.
   if (left == null || right == null) {
     if (left == right) return 0
-    return (left == null) === isNullFirstSort(descending) ? -1 : 1
+    return (left == null) === (nullOrder(descending) === 'NULL FIRST') ? -1 : 1
   }
   let r = 0
   if (left > right) r = 1

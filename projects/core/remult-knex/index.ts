@@ -34,7 +34,7 @@ import {
   getRepository,
   isAutoIncrement,
 } from '../src/remult3/RepositoryImplementation.js'
-import { Sort, nullSortOf } from '../src/sort.js'
+import { NullSort, Sort } from '../src/sort.js'
 import {
   fromDbColumn,
   toDbColumn,
@@ -265,7 +265,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
       const syntax = nullsSyntaxOf(this.knex)
       for (const s of options.orderBy.Segments) {
         const column = e.$dbNameOf(s.field)
-        const order = nullSortOf(s.isDescending)
+        const order = NullSort[s.isDescending ? 'desc' : 'asc']
         const nulls = s.field.allowNull && order !== 'native'
         if (nulls && syntax === 'case')
           query = query.orderByRaw(nullsCase('??', order), [column])

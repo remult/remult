@@ -11,7 +11,7 @@ import type { AllowedForInstance } from '../context.js'
 import { Remult } from '../context.js'
 import type { EntityOptions } from '../entity.js'
 import { Filter } from '../filter/filter-interfaces.js'
-import { Sort, isNullFirstSort, isNullLastSort } from '../sort.js'
+import { Sort, nullOrder } from '../sort.js'
 import {
   GroupByCountMember,
   GroupByForApiKey,
@@ -158,16 +158,15 @@ export class RepositoryImplementation<entityType>
       // An unloaded relation reads undefined, its id is there.
       const value =
         (ref.fields.find(key) as IdFieldRef<entityType, any>).getId() ?? null
+      const nullFirst = nullOrder(isDescending) === 'NULL FIRST'
       if (value === null && field.allowNull) {
-        if (isNullFirstSort(isDescending))
-          $or.push({ ...equal, $not: { [key]: null } })
+        if (nullFirst) $or.push({ ...equal, $not: { [key]: null } })
       } else {
         $or.push({
           ...equal,
           [key]: isDescending ? { $lt: value } : { $gt: value },
         })
-        if (field.allowNull && isNullLastSort(isDescending))
-          $or.push({ ...equal, [key]: null })
+        if (field.allowNull && !nullFirst) $or.push({ ...equal, [key]: null })
       }
       equal = { ...equal, [key]: value }
     }
