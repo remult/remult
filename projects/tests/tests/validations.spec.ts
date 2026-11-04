@@ -12,6 +12,7 @@ import {
   valueValidator,
 } from '../../core'
 import {
+  createValidatorWithArgs,
   createValueValidator,
   createValueValidatorWithArgs,
 } from '../../core/src/validators'
@@ -105,6 +106,26 @@ describe('validation tests', () => {
     })
     const ok = await remult.repo(x).insert({ id: 2, notes: '' })
     expect(ok.notes).toBe('')
+  })
+  it('test createValidatorWithArgs defaultMessage setter', async () => {
+    const notEqual = createValidatorWithArgs<number, number>(
+      (_, e, arg) => e.value !== arg,
+      'should differ',
+    )
+    expect(notEqual.defaultMessage).toBe('should differ')
+    notEqual.defaultMessage = (_, e, arg) => `should not be ${arg}`
+    @Entity('x', {})
+    class x {
+      @Fields.number()
+      id = 0
+      @Fields.number({ validate: notEqual(3) })
+      a = 0
+    }
+    await expect(
+      async () => await remult.repo(x).insert({ id: 1, a: 3 }),
+    ).rejects.toMatchObject({
+      modelState: { a: 'should not be 3' },
+    })
   })
   it('test global defaultMessage on validators with args', async () => {
     const prevMin = Validators.min.defaultMessage
