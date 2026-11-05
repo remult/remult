@@ -12,6 +12,7 @@ import {
 import type { DataApiResponse } from './data-api.js'
 import type {
   DataProvider,
+  ErrorInfo,
   RestDataProviderHttpProvider,
 } from './data-interfaces.js'
 import { SqlDatabase } from './data-providers/sql-database.js'
@@ -361,7 +362,10 @@ export function BackendMethod<type = unknown>(
                         },
                       })
                       if (rows.length != 1)
-                        throw new Error('not found or too many matches')
+                        throw {
+                          message: 'not found or too many matches',
+                          httpStatusCode: 400,
+                        } satisfies ErrorInfo
                       y = rows[0]
                       await (
                         repo.getEntityRef(y) as rowHelperImplementation<any>

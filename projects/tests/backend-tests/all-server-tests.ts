@@ -218,9 +218,30 @@ export function allServerTests(
         ok = false
       } catch (err: any) {
         expect(err.message).toBe('Test Error')
-        expect(err.httpStatusCode).toBe(400)
+        expect(err.httpStatusCode).toBe(500)
         expect(err.stack.length > 10).toBe(true)
       }
+    }),
+  )
+  it(
+    'a TypeError in an entity hook is a 500',
+    withRemultForTest(async () => {
+      await expect(
+        repo(Task).insert({ title: 'throw TypeError' }),
+      ).rejects.toMatchObject({
+        httpStatusCode: 500,
+      })
+    }),
+  )
+  it(
+    'an Error with an httpStatusCode keeps that status',
+    withRemultForTest(async () => {
+      await expect(
+        repo(Task).insert({ title: 'throw teapot' }),
+      ).rejects.toMatchObject({
+        message: 'Test Teapot',
+        httpStatusCode: 418,
+      })
     }),
   )
   it(
@@ -589,7 +610,7 @@ export function allServerTests(
           } catch (error) {
             if (error instanceof Error) {
               expect(error.message).toMatchInlineSnapshot(
-                `"Request failed with status code 400"`,
+                `"Request failed with status code 500"`,
               )
             }
           }
