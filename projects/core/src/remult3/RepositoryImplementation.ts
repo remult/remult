@@ -2736,6 +2736,21 @@ export function buildLabel(
   return ''
 }
 
+/** Migrations create a column `not null` only when its type has a default value in the db. */
+function hasDefaultValueInDb({
+  valueType,
+  valueConverter,
+}: FieldOptions<unknown, unknown>) {
+  if (valueType === Number || valueType === Boolean) return true
+  if (valueType === Date) return false
+  // A relation id is an integer or a string, and its fieldTypeInDb would load the related entity.
+  if (getEntitySettings(valueType, false)) return true
+  const fieldTypeInDb = valueConverter?.fieldTypeInDb
+  // Without one, a string column, default ''. `dbid` is a Mongo ObjectId marker, not a column type.
+  if (!fieldTypeInDb || fieldTypeInDb === 'dbid') return true
+  return fieldTypeInDb === 'integer'
+}
+
 export class columnDefsImpl implements FieldMetadata {
   constructor(
     private settings: FieldOptions<unknown, unknown>,
@@ -2769,7 +2784,7 @@ export class columnDefsImpl implements FieldMetadata {
         return result
       },
     }) as Required<ValueConverter<any>>
-    this.allowNull = !!this.settings.allowNull
+    this.allowNull = this.settings.allowNull ?? !hasDefaultValueInDb(settings)
     this.valueType = this.settings.valueType
     this.key = this.settings.key!
     this.inputType = this.settings.inputType!
@@ -2904,6 +2919,10 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
       if (idField) this.idMetadata.field = idField
       else this.idMetadata.field = [...this.fields][0]
     }
+    // The database rejects NULL in a primary key.
+    for (const f of this.idMetadata.fields)
+      if (f && f.options.allowNull === undefined)
+        (f as columnDefsImpl).allowNull = false
   }
   apiUpdateAllowed(item: T) {
     if (this.options.allowApiUpdate === undefined) return false

@@ -1,16 +1,26 @@
 import { beforeEach, describe, expect, it } from 'vitest'
+import * as Knex from 'knex'
 import {
   Entity,
+  Field,
   Fields,
+  Relations,
+  Remult,
   SqlDatabase,
+  ValueListFieldType,
   dbNamesOf,
   describeClass,
   remult,
+  type FieldMetadata,
 } from '../../core'
 import {
   PostgresSchemaBuilder,
   createPostgresDataProvider,
+  postgresColumnSyntax,
 } from '../../core/postgres'
+import { buildColumn } from '../../core/remult-knex'
+import { SqliteCoreDataProvider } from '../../core/remult-sqlite-core'
+import { DuckDBDataProvider } from '../../core/remult-duckdb'
 
 //connection string is in a .env file placed in the `tests` folder with key `DATABASE_URL`
 // if we don't have this, tests will be skipped
@@ -834,3 +844,123 @@ describe.skipIf(!connectionString)(
     })
   },
 )
+
+describe('allowNull by field type', () => {
+  @ValueListFieldType()
+  class Level {
+    static low = new Level('low')
+    constructor(public id: string) {}
+  }
+  @ValueListFieldType()
+  class Rank {
+    static first = new Rank(1)
+    constructor(public id: number) {}
+  }
+  @Entity('allowNullCat')
+  class Cat {
+    @Fields.integer()
+    id = 0
+  }
+  @Entity('allowNullKinds', { id: 'code' })
+  class Kinds {
+    @Fields.string({ valueConverter: { fieldTypeInDb: 'uuid' } })
+    code = ''
+    @Fields.string()
+    s = ''
+    @Fields.number()
+    n = 0
+    @Fields.integer()
+    i = 0
+    @Fields.number({ valueConverter: { fieldTypeInDb: 'decimal(16,8)' } })
+    d = 0
+    @Fields.boolean()
+    b = false
+    @Field(() => Level)
+    level = Level.low
+    @Field(() => Rank)
+    rank = Rank.first
+    @Relations.toOne(() => Cat)
+    cat?: Cat
+    @Fields.object()
+    obj = {}
+    @Fields.date()
+    at?: Date
+    @Fields.dateOnly()
+    day?: Date
+    @Fields.json()
+    data?: unknown
+    @Fields.string({ valueConverter: { fieldTypeInDb: 'citext' } })
+    email = ''
+    @Fields.string({ allowNull: true })
+    note: string | null = null
+  }
+  @Entity('allowNullOthers')
+  class Others {
+    @Fields.id()
+    id = ''
+    @Fields.autoIncrement()
+    seq = 0
+    @Fields.string({ valueConverter: { fieldTypeInDb: 'dbid' } })
+    ref = ''
+  }
+  const r = new Remult()
+  const meta = r.repo(Kinds).metadata
+  const fields = meta.fields.toArray().filter((f) => f !== meta.fields.code)
+  const knex = Knex.default({ client: 'pg' })
+  const sqlite = new SqliteCoreDataProvider(undefined!, undefined!)
+  const duckdb = new DuckDBDataProvider(undefined!)
+  const createColumnSql: [string, (f: FieldMetadata) => string][] = [
+    ['postgres', (f) => postgresColumnSyntax(f, f.key)],
+    [
+      'knex',
+      (f) =>
+        knex.schema
+          .createTable('t', (b) => buildColumn(f, f.key, b))
+          .toString(),
+    ],
+    [
+      'knex, json as text',
+      (f) =>
+        knex.schema
+          .createTable('t', (b) => buildColumn(f, f.key, b, false))
+          .toString(),
+    ],
+    ['sqlite', (f) => sqlite.addColumnSqlSyntax(f, f.key, false)],
+    ['duckdb', (f) => duckdb.addColumnSqlSyntax(f, f.key, false)],
+  ]
+
+  it('defaults to true when the type has no default value in the db', () => {
+    expect(Object.fromEntries(fields.map((f) => [f.key, f.allowNull]))).toEqual(
+      {
+        s: false,
+        n: false,
+        i: false,
+        d: false,
+        b: false,
+        level: false,
+        rank: false,
+        cat: false,
+        obj: false,
+        at: true,
+        day: true,
+        data: true,
+        email: true,
+        note: true,
+      },
+    )
+  })
+  it.each(createColumnSql)(
+    'is true exactly when %s creates the column nullable',
+    (_, sql) => {
+      for (const f of fields)
+        expect(sql(f).includes('not null'), f.key).toBe(!f.allowNull)
+    },
+  )
+  it('is false on an id, as a primary key rejects NULL', () => {
+    expect(meta.fields.code.allowNull).toBe(false)
+  })
+  it('is false on an autoincrement and on a Mongo dbid', () => {
+    const others = r.repo(Others).metadata.fields
+    expect([others.seq.allowNull, others.ref.allowNull]).toEqual([false, false])
+  })
+})
