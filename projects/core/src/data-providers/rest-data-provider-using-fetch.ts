@@ -2,7 +2,7 @@ import {
   EntityError,
   type RestDataProviderHttpProvider,
 } from '../data-interfaces.js'
-import { retry } from './retry.js'
+import { isReadPost, retry } from './retry.js'
 
 export class RestDataProviderHttpProviderUsingFetch
   implements RestDataProviderHttpProvider {
@@ -29,11 +29,13 @@ export class RestDataProviderHttpProviderUsingFetch
     return this.myFetch(url, { method: 'delete' })
   }
   async post(url: string, data: any) {
-    return await retry(() =>
-      this.myFetch(url, {
-        method: 'post',
-        body: JSON.stringify(data),
-      }),
+    return await retry(
+      () =>
+        this.myFetch(url, {
+          method: 'post',
+          body: JSON.stringify(data),
+        }),
+      { read: isReadPost(url) },
     )
   }
 

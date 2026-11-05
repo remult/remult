@@ -43,7 +43,7 @@ import {
   HttpProviderBridgeToRestDataProviderHttpProvider,
   toPromise,
 } from '../../core/src/buildRestDataProvider'
-import { retry } from '../../core/src/data-providers/retry'
+import { isReadPost, retry } from '../../core/src/data-providers/retry'
 import { CompoundIdField } from '../../core'
 import {
   dbNamesOf,
@@ -2010,6 +2010,72 @@ describe('fetch client errors', () => {
       message: 'Forbidden',
       url: 'url',
     })
+  })
+})
+describe('test http retry for writes', () => {
+  const failOnceWith500 = (calls: string[]) =>
+    new RestDataProviderHttpProviderUsingFetch(async (url) => {
+      calls.push(url as string)
+      if (calls.length == 1)
+        return new mockResponse({
+          status: 500,
+          statusText: 'Internal Server Error',
+          url: url as string,
+          json: async () => ({ message: 'boom' }),
+        })
+      return new mockResponse({ status: 200, json: async () => 7 })
+    })
+
+  it('does not resend an insert after a 500', async () => {
+    const calls: string[] = []
+    await expect(
+      failOnceWith500(calls).post('/api/tasks', {}),
+    ).rejects.toMatchObject({
+      status: 500,
+    })
+    expect(calls).toEqual(['/api/tasks'])
+  })
+  it('does not resend a backend method after a 500', async () => {
+    const calls: string[] = []
+    await expect(
+      failOnceWith500(calls).post('/api/doSomething', { args: [] }),
+    ).rejects.toMatchObject({ status: 500 })
+    expect(calls.length).toBe(1)
+  })
+  it('still resends a find sent as a POST', async () => {
+    const calls: string[] = []
+    expect(
+      await failOnceWith500(calls).post('/api/tasks?__action=get', {}),
+    ).toBe(7)
+    expect(calls.length).toBe(2)
+  })
+  it('still resends a GET', async () => {
+    const calls: string[] = []
+    expect(await failOnceWith500(calls).get('/api/tasks')).toBe(7)
+    expect(calls.length).toBe(2)
+  })
+  it('still resends a write after a proxy error, which never reached the server', async () => {
+    let i = 0
+    const r = await retry(
+      async () => {
+        if (i++ == 0) throw Error('Error occurred while trying to proxy')
+        return 7
+      },
+      { read: false },
+    )
+    expect(r).toBe(7)
+  })
+  it('tells read POSTs from writes', () => {
+    expect(isReadPost('/api/tasks?__action=get')).toBe(true)
+    expect(isReadPost('/api/tasks?_limit=5&__action=count')).toBe(true)
+    expect(isReadPost('/api/tasks?__action=groupBy')).toBe(true)
+    expect(isReadPost('/api/tasks?__action=query')).toBe(true)
+    expect(isReadPost('/api/tasks?__action=liveQuery-abc')).toBe(true)
+    expect(isReadPost('/api/tasks')).toBe(false)
+    expect(isReadPost('/api/tasks?__action=deleteMany')).toBe(false)
+    expect(isReadPost('/api/tasks?__action=updateMany')).toBe(false)
+    expect(isReadPost('/api/tasks?__action=upsertMany')).toBe(false)
+    expect(isReadPost('/api/tasks?__action=getSomethingElse')).toBe(false)
   })
 })
 describe('test toPromise', () => {
