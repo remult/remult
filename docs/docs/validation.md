@@ -62,7 +62,7 @@ title = ''
 Here is the full list of validators available on `Validators`, grouped by the kind of value they check.
 
 ::: tip
-Apart from `required` and `notNull`, the built-in validators skip `null` and `undefined` values. Combine them with `Validators.required` (or `allowNull: false`) when the value must also be present.
+Most validators ignore empty values (`null` / `undefined`), so an empty optional field passes. To make a field mandatory, add `Validators.required`.
 :::
 
 ### General
@@ -70,7 +70,7 @@ Apart from `required` and `notNull`, the built-in validators skip `null` and `un
 | Validator                     | Checks that the value...                               | Default message                  |
 | ----------------------------- | ------------------------------------------------------ | -------------------------------- |
 | `Validators.required`         | is not `null`, `undefined` or an empty string          | `Should not be empty`            |
-| `Validators.notNull`          | is not `null` or `undefined` (empty string is allowed) | `Should not be null`             |
+| `Validators.notNull`          | is not `null` (empty string and `undefined` pass)      | `Should not be null`             |
 | `Validators.in(values)`       | is one of the given values                             | `Value must be one of: ...`      |
 | `Validators.enum(enumObj)`    | is one of the values of a TypeScript `enum`            | `Value must be one of ...`       |
 | `Validators.unique`           | does not already exist in the database (backend only)  | `already exists`                 |

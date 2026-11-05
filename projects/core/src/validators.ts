@@ -95,9 +95,11 @@ export class Validators {
   /**
    * Validator to check if a value is not null.
    */
-  // createValueValidator skips null/undefined values, so it can't be used here
+  // createValueValidator skips null values, so it can't be used here.
+  // `undefined` is allowed on purpose: it means "not loaded / unchanged"
+  // (for example a relation that wasn't loaded), not an empty value.
   static notNull = createValidator<unknown>(
-    (_, e) => e.value !== null && e.value !== undefined,
+    (_, e) => e.value !== null,
     'Should not be null',
   )
   /**

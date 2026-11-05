@@ -91,13 +91,15 @@ describe('validation tests', () => {
     })
     expect(ok.id).toBe(3)
   })
-  it('test notNull validator rejects null', async () => {
+  it('test notNull validator rejects null but allows undefined', async () => {
     @Entity('x', {})
     class x {
       @Fields.number()
       id = 0
       @Fields.string({ allowNull: true, validate: Validators.notNull })
       notes: string | null = ''
+      @Fields.string({ allowNull: true, validate: Validators.notNull })
+      notLoaded?: string | null
     }
     await expect(
       async () => await remult.repo(x).insert({ id: 1, notes: null }),
@@ -106,6 +108,9 @@ describe('validation tests', () => {
     })
     const ok = await remult.repo(x).insert({ id: 2, notes: '' })
     expect(ok.notes).toBe('')
+    // undefined means "not loaded / unchanged" and must not block a save
+    const saved = await remult.repo(x).insert({ id: 3, notes: 'a' })
+    expect(saved.id).toBe(3)
   })
   it('test createValidatorWithArgs defaultMessage setter', async () => {
     const notEqual = createValidatorWithArgs<number, number>(
