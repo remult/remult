@@ -2281,6 +2281,12 @@ export type MembersToInclude<T> = {
         ? FindOptions<NonNullable<T[K]>[number]>
         : FindFirstOptions<NonNullable<T[K]>>)
 }
+export interface NativeNullSort {
+  asc: "NULL FIRST" | "NULL LAST"
+  desc: "NULL FIRST" | "NULL LAST"
+  /** No `nulls first` / `nulls last`, as on MySQL and SQL Server. */
+  doesNotSupportNullsSyntax?: boolean
+}
 export type NumericKeys<T> = {
   [K in keyof T]: T[K] extends number | undefined | null ? K : never
 }[keyof T]
@@ -3349,7 +3355,8 @@ export interface SqlImplementation extends HasWrapIdentifier {
   /** true by default */
   doesNotSupportReturningSyntax?: boolean
   doesNotSupportReturningSyntaxOnlyForUpdate?: boolean
-  orderByNullsFirst?: boolean
+  /** `undefined` when unknown: `ORDER BY` then writes no NULL order. */
+  nativeNullSort?: NativeNullSort
   /** Bound-variable cap per statement. Default 2000 (SQL Server is 2100). */
   maxParametersInOneSqlStatement?: number
   end(): Promise<void>
@@ -4541,7 +4548,6 @@ export declare function createPostgresDataProvider(options?: {
   wrapIdentifier?: (name: string) => string
   caseInsensitiveIdentifiers?: boolean
   schema?: string
-  orderByNullsFirst?: boolean
 }): Promise<SqlDatabase>
 //[ ] PoolConfig from TBD is not exported
 export interface PostgresClient extends PostgresCommandSource {
@@ -4573,7 +4579,6 @@ export declare class PostgresDataProvider
           wrapIdentifier?: (name: string) => string
           caseInsensitiveIdentifiers?: boolean
           schema?: string
-          orderByNullsFirst?: boolean
         }
       | undefined,
   )
@@ -4581,7 +4586,7 @@ export declare class PostgresDataProvider
   provideMigrationBuilder(builder: MigrationCode): MigrationBuilder
   wrapIdentifier: (name: string) => string
   ensureSchema(entities: EntityMetadata<any>[]): Promise<void>
-  orderByNullsFirst?: boolean
+  nativeNullSort: NativeNullSort
   transaction(
     action: (dataProvider: SqlImplementation) => Promise<void>,
   ): Promise<void>
@@ -4592,6 +4597,7 @@ export declare class PostgresDataProvider
 //[ ] SqlCommand from TBD is not exported
 //[ ] MigrationCode from TBD is not exported
 //[ ] MigrationBuilder from TBD is not exported
+//[ ] NativeNullSort from TBD is not exported
 //[ ] SqlImplementation from TBD is not exported
 export interface PostgresPool extends PostgresCommandSource {
   connect(): Promise<PostgresClient>
@@ -4792,7 +4798,7 @@ export declare class SqliteCoreDataProvider
     doesNotSupportReturningSyntax?: boolean,
     doesNotSupportReturningSyntaxOnlyForUpdate?: boolean,
   )
-  orderByNullsFirst?: boolean
+  nativeNullSort: NativeNullSort
   maxParametersInOneSqlStatement: number
   getLimitSqlSyntax(limit: number, offset: number): string
   afterMutation?: VoidFunction
@@ -4813,6 +4819,7 @@ export declare class SqliteCoreDataProvider
   wrapIdentifier(name: string): string
 }
 //[ ] SqlCommand from ./src/sql-command.js is not exported
+//[ ] NativeNullSort from ./src/sort.js is not exported
 //[ ] MigrationCode from ./migrations/migration-types.js is not exported
 //[ ] MigrationBuilder from ./migrations/migration-types.js is not exported
 //[ ] SqlImplementation from ./src/sql-command.js is not exported
@@ -4879,6 +4886,7 @@ export declare class TursoDataProvider extends SqliteCoreDataProvider {
 export declare class DuckDBDataProvider extends SqliteCoreDataProvider {
   private connection
   constructor(connection: DuckDBConnection)
+  nativeNullSort: NativeNullSort
   wrapIdentifier(name: string): string
   getCreateTableSql(entity: EntityMetadata<any>): Promise<string[]>
   addColumnSqlSyntax(
@@ -4887,6 +4895,7 @@ export declare class DuckDBDataProvider extends SqliteCoreDataProvider {
     isAlterColumn: boolean,
   ): string
 }
+//[ ] NativeNullSort from ./src/sort.js is not exported
 //[ ] EntityMetadata from ./index.js is not exported
 //[ ] FieldMetadata from ./index.js is not exported
 ```
@@ -5130,6 +5139,11 @@ export declare function getRelationFieldInfo(
 export declare function getRelationInfo(options: FieldOptions): RelationInfo
 export declare function isOfType<T>(obj: any, checkMethod: keyof T): obj is T
 //[ ] FirstTypeNode from TBD is not exported
+export const NullSort: {
+  asc: NullSortOrder
+  desc: NullSortOrder
+}
+export type NullSortOrder = "native" | "NULL FIRST" | "NULL LAST"
 export const omitFilterField: unique symbol
 export declare function pagedQueryResult<T>(
   pageSize: number,

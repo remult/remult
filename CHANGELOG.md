@@ -1,5 +1,20 @@
 All notable changes to this project will be documented in this file.
 
+## [3.5.0] - [unreleased]
+
+### Breaking
+
+- `orderByNullsFirst` is removed from Postgres and `SqlImplementation`: set `NullSort` instead.
+- In memory and JSON, `$gt`, `$gte`, `$lt` and `$lte` no longer match NULL, as in SQL.
+
+### Added
+
+- `NullSort` (`remult/internals`): where NULL sorts for the whole app, set on both the server and the client ([docs](https://remult.dev/docs/field-types#where-null-sorts)).
+
+### Fixed
+
+- `paginator()` and `for await` reach rows whose sort key is NULL. With `native` on Postgres and DuckDB, they can still skip or repeat rows.
+
 ## [3.4.1] - [2026-10-30]
 
 ### Reverted

@@ -384,6 +384,32 @@ price=0;
 
 In this example, the `price` field will be stored as a `decimal` with 16 digits in total and 8 digits after the decimal point in the database. This allows you to control the storage format and precision of numeric fields in your database schema.
 
+## Where NULL sorts
+
+When `ORDER BY` does not say, each database puts NULL in its own place:
+
+| Database                                      | asc        | desc       |
+| --------------------------------------------- | ---------- | ---------- |
+| Postgres, Oracle, Redshift                    | NULL LAST  | NULL FIRST |
+| DuckDB                                        | NULL LAST  | NULL LAST  |
+| SQLite, MySQL, SQL Server, CockroachDB, Mongo | NULL FIRST | NULL LAST  |
+
+Without a database (in memory, JSON, and the paginator's next page filter), NULL is the lowest value: first on asc, last on desc. So with `native`, the default, on Postgres and DuckDB the paginator can skip or repeat rows when a page ends next to a NULL sort key, and `for await` can throw `pagination failure`. Set the order for the whole app in a shared module:
+
+```ts
+// shared/null-sort.ts
+import { NullSort } from 'remult/internals'
+
+NullSort.asc = 'NULL FIRST'
+NullSort.desc = 'NULL LAST'
+```
+
+::: warning Import it on both the server and the client
+The server writes the `ORDER BY`, the client builds the next page filter. If they disagree, the paginator skips or repeats rows. On the server, import it before the api is created. On the client, import it where the app starts, since api requests can run before any page loads.
+:::
+
+`ORDER BY` gets `nulls first` or `nulls last` (a `case` on MySQL and SQL Server) only where the setting differs from the database, and only on `allowNull` columns, so a `not null` column like `id` keeps its index. Mongo sorts NULL as the lowest value only: any other order throws.
+
 ## Creating Custom Field Types
 
 Sometimes, you may need to create custom field types to handle specific requirements or use cases in your application. By creating custom field types, you can encapsulate the logic for generating, validating, and converting field values.
