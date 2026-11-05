@@ -6,6 +6,7 @@ import { testUpdateWithNull } from './test-update-with-null'
 import { aggregateTest } from './test-aggregate.js'
 import { fieldsIdTests } from './fields-id.js'
 import { manyOperations } from './many-operations.js'
+import { nullSortTests } from './test-null-sort.js'
 
 export function allDbTests(props: DbTestProps, options?: DbTestOptions) {
   aggregateTest(props, options)
@@ -15,4 +16,5 @@ export function allDbTests(props: DbTestProps, options?: DbTestOptions) {
   testSpecialValues(props)
   fieldsIdTests(props)
   manyOperations(props)
+  nullSortTests(props)
 }
