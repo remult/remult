@@ -765,7 +765,7 @@ export class KnexSchemaBuilder {
     colName: string,
   ): Knex.SchemaBuilder {
     return this.knex.schema.alterTable(e.$entityName, (b) => {
-      buildColumn(col, colName, b, supportsJsonDataStorage(this.knex))
+      buildColumn(col, colName, b, supportsJsonDataStorage(this.knex), true)
     })
   }
 
@@ -805,7 +805,10 @@ export function buildColumn(
   dbName: string,
   b: Knex.CreateTableBuilder,
   supportsJson = true,
+  isAlterTable = false,
 ) {
+  // No default value fills the existing rows, so an added column stays nullable.
+  const notNull = !x.allowNull && !isAlterTable
   if (x.valueType == Number) {
     if (!x.valueConverter.fieldTypeInDb) {
       let c = b.decimal(dbName, 18, 2)
@@ -822,11 +825,13 @@ export function buildColumn(
       if (!x.allowNull) c.defaultTo(0).notNullable()
     }
   } else if (x.valueType == Date) {
+    let c: Knex.ColumnBuilder
     if (!x.valueConverter.fieldTypeInDb)
-      if (x.valueConverter == ValueConverters.DateOnly) b.date(dbName)
-      else b.dateTime(dbName)
-    else if (x.valueConverter.fieldTypeInDb == 'date') b.date(dbName)
-    else b.specificType(dbName, x.valueConverter.fieldTypeInDb)
+      if (x.valueConverter == ValueConverters.DateOnly) c = b.date(dbName)
+      else c = b.dateTime(dbName)
+    else if (x.valueConverter.fieldTypeInDb == 'date') c = b.date(dbName)
+    else c = b.specificType(dbName, x.valueConverter.fieldTypeInDb)
+    if (notNull) c.notNullable()
   } else if (x.valueType == Boolean) {
     let c = b.boolean(dbName)
     if (!x.allowNull) c.defaultTo(false).notNullable()
@@ -837,12 +842,17 @@ export function buildColumn(
         c.defaultTo(0).notNullable()
       }
     } else if (x.valueConverter.fieldTypeInDb == 'json')
-      if (supportsJson) b.json(dbName)
-      else {
+      if (supportsJson) {
+        let c = b.json(dbName)
+        if (notNull) c.notNullable()
+      } else {
         let c = b.text(dbName)
         if (!x.allowNull) c.defaultTo('').notNullable()
       }
-    else b.specificType(dbName, x.valueConverter.fieldTypeInDb)
+    else {
+      let c = b.specificType(dbName, x.valueConverter.fieldTypeInDb)
+      if (notNull) c.notNullable()
+    }
   } else if (x.valueType === String) {
     let c = b.string(dbName, (<StringFieldOptions>x.options).maxLength)
     if (!x.allowNull) c.defaultTo('').notNullable()

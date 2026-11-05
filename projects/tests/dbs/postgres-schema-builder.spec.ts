@@ -893,6 +893,17 @@ describe('allowNull by field type', () => {
     email = ''
     @Fields.string({ allowNull: true })
     note: string | null = null
+    @Fields.date({ allowNull: false })
+    strictAt = new Date()
+    @Fields.dateOnly({ allowNull: false })
+    strictDay = new Date()
+    @Fields.json({ allowNull: false })
+    strictData = {}
+    @Fields.string({
+      allowNull: false,
+      valueConverter: { fieldTypeInDb: 'citext' },
+    })
+    strictEmail = ''
   }
   @Entity('allowNullOthers')
   class Others {
@@ -946,6 +957,10 @@ describe('allowNull by field type', () => {
         data: true,
         email: true,
         note: true,
+        strictAt: false,
+        strictDay: false,
+        strictData: false,
+        strictEmail: false,
       },
     )
   })
@@ -956,6 +971,29 @@ describe('allowNull by field type', () => {
         expect(sql(f).includes('not null'), f.key).toBe(!f.allowNull)
     },
   )
+  it.each([
+    ['postgres', (f: FieldMetadata) => postgresColumnSyntax(f, f.key, true)],
+    [
+      'knex',
+      (f: FieldMetadata) =>
+        knex.schema
+          .alterTable('t', (b) => buildColumn(f, f.key, b, true, true))
+          .toString(),
+    ],
+    ['sqlite', (f: FieldMetadata) => sqlite.addColumnSqlSyntax(f, f.key, true)],
+  ])('%s adds a column with no default value nullable', (_, sql) => {
+    const { strictAt, strictDay, strictData, strictEmail } = meta.fields
+    for (const f of [strictAt, strictDay, strictData, strictEmail])
+      expect(sql(f), f.key).not.toContain('not null')
+  })
+  it('sqlite gives default 0 only to a number', () => {
+    const { d, strictDay, strictData, strictEmail } = meta.fields
+    expect(sqlite.addColumnSqlSyntax(d, 'd', false)).toContain('default 0')
+    for (const f of [strictDay, strictData, strictEmail])
+      expect(sqlite.addColumnSqlSyntax(f, f.key, false), f.key).not.toContain(
+        'default',
+      )
+  })
   it('is false on an id, as a primary key rejects NULL', () => {
     expect(meta.fields.code.allowNull).toBe(false)
   })

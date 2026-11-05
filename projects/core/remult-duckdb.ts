@@ -85,13 +85,14 @@ export class DuckDBDataProvider extends SqliteCoreDataProvider {
         if (x.valueConverter == ValueConverters.DateOnly) result += ' date'
         else result += ' timestamp'
       else result += ' ' + x.valueConverter.fieldTypeInDb
+      if (!allowNull) result += ' not null'
     } else if (x.valueType == Boolean)
       result += ' boolean' + (allowNull ? '' : ' default false not null')
     else if (x.valueConverter.fieldTypeInDb) {
       result += ' ' + x.valueConverter.fieldTypeInDb
       if (!allowNull && x.valueConverter.fieldTypeInDb == 'integer') {
         result += ' default 0 not null'
-      }
+      } else if (!allowNull) result += ' not null'
     } else result += ' varchar' + (allowNull ? '' : " default '' not null")
     return result
   }

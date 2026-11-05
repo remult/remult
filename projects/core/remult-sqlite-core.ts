@@ -115,9 +115,19 @@ export class SqliteCoreDataProvider
   addColumnSqlSyntax(x: FieldMetadata, dbName: string, isAlterTable: boolean) {
     let result = dbName
     const nullNumber = x.allowNull ? '' : ' default 0 not null'
+    // No default value fills the existing rows, so an added column stays nullable.
+    const notNull = x.allowNull || isAlterTable ? '' : ' not null'
+    const hasZeroDefault =
+      x.valueType == Number ||
+      x.valueType == Boolean ||
+      x.valueConverter.fieldTypeInDb == 'integer'
     if (x.valueConverter.fieldTypeInDb)
-      result += ' ' + x.valueConverter.fieldTypeInDb + ' ' + nullNumber
-    else if (x.valueType == Date) result += ' integer'
+      result +=
+        ' ' +
+        x.valueConverter.fieldTypeInDb +
+        ' ' +
+        (hasZeroDefault ? nullNumber : notNull)
+    else if (x.valueType == Date) result += ' integer' + notNull
     else if (x.valueType == Boolean) result += ' integer ' + nullNumber
     else if (x.valueType == Number) {
       if (!x.valueConverter.fieldTypeInDb) result += ' numeric ' + nullNumber
