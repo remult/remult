@@ -1,5 +1,7 @@
-import { expect, it, describe, beforeEach } from 'vitest'
+import { expect, it, describe, beforeEach, afterEach } from 'vitest'
+import * as Knex from 'knex'
 import {
+  type DataProvider,
   Entity,
   type EntityMetadata,
   Fields,
@@ -10,7 +12,13 @@ import {
   type SqlImplementation,
   dbNamesOf,
 } from '../../core'
+import { NullSort } from '../../core/internals'
+import { PostgresDataProvider, type PostgresPool } from '../../core/postgres'
 import { KnexDataProvider } from '../../core/remult-knex'
+import { SqliteCoreDataProvider } from '../../core/remult-sqlite-core'
+
+const ORDER_BY = / order by /i
+const NULL_ORDER = /nulls|case/
 
 describe('test sql implementation', () => {
   @Entity('tasks')
@@ -260,6 +268,184 @@ describe('test sql implementation', () => {
       ]
     `)
   })
+})
+
+describe('NullSort in ORDER BY', () => {
+  @Entity('tasks')
+  class task {
+    @Fields.integer()
+    id = 0
+    @Fields.string()
+    title = ''
+    @Fields.date({ allowNull: true })
+    due: Date | null = null
+    @Fields.date({ allowNull: true })
+    done: Date | null = null
+  }
+  const NATIVE = { asc: 'native', desc: 'native' } as const
+  const LOWEST = { asc: 'NULL FIRST', desc: 'NULL LAST' } as const
+  const HIGHEST = { asc: 'NULL LAST', desc: 'NULL FIRST' } as const
+  afterEach(() => {
+    Object.assign(NullSort, NATIVE)
+  })
+
+  function postgres(sqls: string[]) {
+    return new SqlDatabase(
+      new PostgresDataProvider({
+        query: async (sql: string) => {
+          sqls.push(sql)
+          return { rows: [], fields: [] }
+        },
+      } as unknown as PostgresPool),
+    )
+  }
+  function sqlite(sqls: string[]) {
+    return new SqlDatabase(
+      new SqliteCoreDataProvider(
+        () => ({
+          addParameterAndReturnSqlToken: (val) => val,
+          param: (val) => val,
+          execute: async (sql) => {
+            sqls.push(sql)
+            return {
+              getColumnKeyInResultForIndexInSelect: undefined!,
+              rows: [],
+            }
+          },
+        }),
+        async () => {},
+      ),
+    )
+  }
+  function knex(client: string) {
+    return (sqls: string[]) => {
+      const knex = Knex.default({ client, useNullAsDefault: true })
+      knex.client.runner = (builder: Knex.Knex.QueryBuilder) => ({
+        run: async () => {
+          sqls.push(builder.toString())
+          // As each driver returns a raw query, which groupBy runs.
+          const raw: Record<string, unknown> = {
+            pg: { rows: [] },
+            mysql2: [[], []],
+          }
+          if (builder.toSQL().method === 'raw') return raw[client] ?? []
+          return []
+        },
+      })
+      return new KnexDataProvider(knex)
+    }
+  }
+
+  async function orderBys(
+    dataProvider: (sqls: string[]) => DataProvider,
+    nullSort: typeof NullSort,
+  ) {
+    const sqls: string[] = []
+    const repo = new Remult(dataProvider(sqls)).repo(task)
+    Object.assign(NullSort, nullSort)
+    await repo.find({ orderBy: { due: 'asc', title: 'asc' } })
+    await repo.find({ orderBy: { due: 'desc', title: 'desc' } })
+    await repo.groupBy({
+      group: ['due'],
+      distinctCount: ['done'],
+      orderBy: { due: 'asc', done: { distinctCount: 'asc' } },
+    })
+    const raw = await SqlDatabase.selectToRaw(repo, {
+      orderBy: { due: 'asc' },
+      select: { id: true },
+    })
+    return [...sqls, raw.sql].map((sql) => sql.split(ORDER_BY)[1])
+  }
+
+  it.each([
+    ['Postgres', postgres, HIGHEST],
+    ['SQLite', sqlite, LOWEST],
+    ['Knex pg', knex('pg'), HIGHEST],
+    ['Knex mysql2', knex('mysql2'), LOWEST],
+    ['Knex mssql', knex('mssql'), LOWEST],
+    ['Knex sqlite3', knex('sqlite3'), LOWEST],
+  ] as const)(
+    '%s writes nothing for native or for its own order',
+    async (_, dataProvider, own) => {
+      const native = await orderBys(dataProvider, NATIVE)
+      expect(await orderBys(dataProvider, own)).toEqual(native)
+      expect(native.join(' | ')).not.toMatch(NULL_ORDER)
+    },
+  )
+
+  it.each([
+    [
+      'Postgres',
+      postgres,
+      LOWEST,
+      [
+        '"due" nulls first, "title"',
+        '"due" desc nulls last, "title" desc',
+        '"due" nulls first, count (distinct "done")',
+        '"due" nulls first',
+      ],
+    ],
+    [
+      'SQLite',
+      sqlite,
+      HIGHEST,
+      [
+        '`due` nulls last, `title`',
+        '`due` desc nulls first, `title` desc',
+        '`due` nulls last, count (distinct `done`)',
+        '`due` nulls last',
+      ],
+    ],
+    [
+      'Knex pg',
+      knex('pg'),
+      LOWEST,
+      [
+        '"due" nulls first, "title" asc',
+        '"due" desc nulls last, "title" desc',
+        '"due" nulls first, count (distinct "done")',
+        '"due" nulls first',
+      ],
+    ],
+    [
+      'Knex mysql2',
+      knex('mysql2'),
+      HIGHEST,
+      [
+        'case when `due` is null then 1 else 0 end, `due`, `title` asc',
+        'case when `due` is null then 0 else 1 end, `due` desc, `title` desc',
+        'case when `due` is null then 1 else 0 end, `due`, count (distinct `done`)',
+        'case when `due` is null then 1 else 0 end, `due`',
+      ],
+    ],
+    [
+      'Knex mssql',
+      knex('mssql'),
+      HIGHEST,
+      [
+        'case when [due] is null then 1 else 0 end, [due], [title] asc',
+        'case when [due] is null then 0 else 1 end, [due] desc, [title] desc',
+        'case when [due] is null then 1 else 0 end, [due], count (distinct [done])',
+        'case when [due] is null then 1 else 0 end, [due]',
+      ],
+    ],
+    [
+      'Knex sqlite3',
+      knex('sqlite3'),
+      HIGHEST,
+      [
+        '`due` nulls last, `title` asc',
+        '`due` desc nulls first, `title` desc',
+        '`due` nulls last, count (distinct `done`)',
+        '`due` nulls last',
+      ],
+    ],
+  ] as const)(
+    '%s writes the other order on allowNull columns, never on a distinct count',
+    async (_, dataProvider, other, expected) => {
+      expect(await orderBys(dataProvider, other)).toEqual(expected)
+    },
+  )
 })
 
 describe('json columns stored as text', () => {

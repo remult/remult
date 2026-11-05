@@ -5,6 +5,7 @@ const { Pool } = pg
 import { Remult } from '../src/context.js'
 import { SqlDatabase } from '../src/data-providers/sql-database.js'
 import type { EntityMetadata } from '../src/remult3/remult3.js'
+import type { NativeNullSort } from '../src/sort.js'
 import type {
   SqlCommand,
   SqlImplementation,
@@ -53,14 +54,11 @@ export class PostgresDataProvider
       wrapIdentifier?: (name: string) => string
       caseInsensitiveIdentifiers?: boolean
       schema?: string
-      orderByNullsFirst?: boolean
     },
   ) {
     if (options?.wrapIdentifier) this.wrapIdentifier = options.wrapIdentifier
     if (!options?.wrapIdentifier && options?.caseInsensitiveIdentifiers)
       this.wrapIdentifier = (name) => name
-    if (options?.orderByNullsFirst)
-      this.orderByNullsFirst = options.orderByNullsFirst
 
     if (options?.schema) {
       this.pool = new PostgresSchemaWrapper(pool, options.schema)
@@ -94,7 +92,7 @@ export class PostgresDataProvider
     var sb = new PostgresSchemaBuilder(db, this.options?.schema)
     await sb.ensureSchema(entities)
   }
-  orderByNullsFirst?: boolean
+  nativeNullSort: NativeNullSort = { asc: 'NULL LAST', desc: 'NULL FIRST' }
   async transaction(
     action: (dataProvider: SqlImplementation) => Promise<void>,
   ) {
@@ -113,7 +111,6 @@ export class PostgresDataProvider
         //@ts-ignore
         pool: client,
         wrapIdentifier: this.wrapIdentifier,
-        orderByNullsFirst: this.orderByNullsFirst,
       })
       await client.query('COMMIT')
     } catch (err) {
@@ -169,7 +166,6 @@ export async function createPostgresDataProvider(options?: {
   wrapIdentifier?: (name: string) => string
   caseInsensitiveIdentifiers?: boolean
   schema?: string
-  orderByNullsFirst?: boolean
 }) {
   if (!options) options = {}
   let config: PoolConfig = {}
@@ -198,7 +194,6 @@ export async function createPostgresDataProvider(options?: {
       wrapIdentifier: options.wrapIdentifier,
       caseInsensitiveIdentifiers: options.caseInsensitiveIdentifiers,
       schema: options.schema,
-      orderByNullsFirst: options.orderByNullsFirst,
     }),
   )
   return db

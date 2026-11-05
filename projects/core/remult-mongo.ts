@@ -32,6 +32,23 @@ import {
   GroupByOperators,
   type InsertOrUpdateOptions,
 } from './src/remult3/remult3.js'
+import {
+  NullSort,
+  nullSortToWrite,
+  type NativeNullSort,
+  type OrderBySegment,
+} from './src/sort.js'
+
+const nativeNullSort: NativeNullSort = { asc: 'NULL FIRST', desc: 'NULL LAST' }
+
+// `$sort` has no NULL option.
+function assertNativeNullSort(segment: OrderBySegment) {
+  if (!nullSortToWrite(nativeNullSort, segment)) return
+  const dir = segment.isDescending ? 'desc' : 'asc'
+  throw new Error(
+    `NullSort.${dir} = '${NullSort[dir]}' is not supported on Mongo, which sorts NULL lowest`,
+  )
+}
 
 export class MongoDataProvider implements DataProvider {
   constructor(
@@ -226,6 +243,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
     if (options?.orderBy) {
       let sort: any = {}
       for (const x of options.orderBy) {
+        assertNativeNullSort(x)
         const direction = x.isDescending ? -1 : 1
         switch (x.operation) {
           case 'count':
@@ -279,6 +297,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
     if (options.orderBy) {
       op.sort = {}
       for (const s of options.orderBy.Segments) {
+        assertNativeNullSort(s)
         op.sort[e.$dbNameOf(s.field)] = s.isDescending ? -1 : 1
       }
     }

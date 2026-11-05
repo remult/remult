@@ -1,4 +1,5 @@
 import type { EntityMetadata } from './remult3/remult3.js'
+import type { NativeNullSort } from './sort.js'
 
 export interface SqlImplementation extends HasWrapIdentifier {
   getLimitSqlSyntax(limit: number, offset: number): string
@@ -10,7 +11,8 @@ export interface SqlImplementation extends HasWrapIdentifier {
   /** true by default */
   doesNotSupportReturningSyntax?: boolean
   doesNotSupportReturningSyntaxOnlyForUpdate?: boolean
-  orderByNullsFirst?: boolean
+  /** `undefined` when unknown: `ORDER BY` then writes no NULL order. */
+  nativeNullSort?: NativeNullSort
   /** Bound-variable cap per statement. Default 2000 (SQL Server is 2100). */
   maxParametersInOneSqlStatement?: number
   end(): Promise<void>

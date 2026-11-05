@@ -1,4 +1,5 @@
 import type { FieldMetadata } from './column-interfaces.js'
+import { remultStatic } from './remult-static.js'
 import { getRelationFieldInfo } from './remult3/relationInfoMember.js'
 import type {
   EntityMetadata,
@@ -177,6 +178,47 @@ export interface SortSegment {
   field: FieldMetadata
   isDescending?: boolean
 }
+/** A `find` sort segment, or a `groupBy` order: on `count` it has no field. */
+export type OrderBySegment = Partial<SortSegment> & { operation?: string }
+export type NullSortOrder = 'native' | 'NULL FIRST' | 'NULL LAST'
+
+/**
+ * Where NULL sorts, for the whole app: set it on both the server and the client.
+ * @see https://remult.dev/docs/field-types#where-null-sorts
+ */
+export const NullSort: { asc: NullSortOrder; desc: NullSortOrder } =
+  remultStatic.nullSort ||
+  (remultStatic.nullSort = { asc: 'native', desc: 'native' })
+
+/** Where the database sorts NULL when `ORDER BY` does not say. */
+export interface NativeNullSort {
+  asc: 'NULL FIRST' | 'NULL LAST'
+  desc: 'NULL FIRST' | 'NULL LAST'
+  /** No `nulls first` / `nulls last`, as on MySQL and SQL Server. */
+  doesNotSupportNullsSyntax?: boolean
+}
+
+/** Remult's own order, without a database: `native` is NULL lowest. */
+export function isNullFirstSort(isDescending?: boolean) {
+  const order = NullSort[isDescending ? 'desc' : 'asc']
+  if (order === 'native') return !isDescending
+  return order === 'NULL FIRST'
+}
+
+/** The NULL order `ORDER BY` must write, `undefined` to leave it to the database. */
+export function nullSortToWrite(
+  native: NativeNullSort | undefined,
+  { field, isDescending, operation }: OrderBySegment,
+) {
+  const dir = isDescending ? 'desc' : 'asc'
+  const order = NullSort[dir]
+  // A distinct count is never NULL; other aggregates are NULL only over NULL values.
+  const canBeNull = !!field?.allowNull && operation !== 'distinctCount'
+  if (!native || !canBeNull || order === 'native' || order === native[dir])
+    return undefined
+  return order
+}
+
 export function compareForSort(
   left: any,
   right: any,
@@ -184,6 +226,11 @@ export function compareForSort(
 ) {
   left = fixValueForSort(left)
   right = fixValueForSort(right)
+  // `null > 'a'` and `null < 'a'` are both false, which is not an order.
+  if (left == null || right == null) {
+    if (left == right) return 0
+    return (left == null) === isNullFirstSort(descending) ? -1 : 1
+  }
   let r = 0
   if (left > right) r = 1
   else if (left < right) r = -1

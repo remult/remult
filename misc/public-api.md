@@ -3212,6 +3212,7 @@ export declare class SqlDatabase
    */
   wrapIdentifier: (name: string) => string
   get jsonColumnStorage(): JsonColumnStorage
+  get nativeNullSort(): NativeNullSort | undefined
   ensureSchema(entities: EntityMetadata[]): Promise<void>
   /**
    * Gets the entity data provider.
@@ -4672,6 +4673,7 @@ export declare class KnexDataProvider
   execute(sql: string): Promise<SqlResult>
   static getDb(dataProvider?: DataProvider): Knex<any, any[]>
   wrapIdentifier: (name: string) => string
+  get nativeNullSort(): NativeNullSort | undefined
   get jsonColumnStorage(): JsonColumnStorage
   getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider
   transaction(
@@ -4691,6 +4693,7 @@ export declare class KnexDataProvider
 //[ ] SqlCommand from ../src/sql-command.js is not exported
 //[ ] SqlResult from ../src/sql-command.js is not exported
 //[ ] DataProvider from ../src/data-interfaces.js is not exported
+//[ ] NativeNullSort from ../src/sort.js is not exported
 //[ ] JsonColumnStorage from ../src/sql-command.js is not exported
 //[ ] EntityMetadata from ../src/remult3/remult3.js is not exported
 //[ ] EntityDataProvider from ../src/data-interfaces.js is not exported

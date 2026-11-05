@@ -34,7 +34,7 @@ import {
   getRepository,
   isAutoIncrement,
 } from '../src/remult3/RepositoryImplementation.js'
-import { Sort } from '../src/sort.js'
+import { Sort, nullSortToWrite, type NativeNullSort } from '../src/sort.js'
 import {
   fromDbColumn,
   toDbColumn,
@@ -60,6 +60,7 @@ import {
   groupByImpl,
   getRowAfterUpdate,
   jsonColumnStorageOf,
+  orderBySql,
 } from '../src/data-providers/sql-database.js'
 import type { InsertOrUpdateOptions } from '../src/remult3/remult3.js'
 
@@ -109,6 +110,29 @@ export class KnexDataProvider
     return r.knex
   }
   wrapIdentifier: (name: string) => string = (x) => this.knex.ref(x) + ''
+  // By `driverName`, as CockroachDB shares the `postgresql` dialect.
+  get nativeNullSort(): NativeNullSort | undefined {
+    switch (this.knex.client.driverName) {
+      case 'pg':
+      case 'pgnative':
+      case 'pg-redshift':
+      case 'oracledb':
+        return { asc: 'NULL LAST', desc: 'NULL FIRST' }
+      case 'mysql':
+      case 'mysql2':
+      case 'mssql':
+        return {
+          asc: 'NULL FIRST',
+          desc: 'NULL LAST',
+          doesNotSupportNullsSyntax: true,
+        }
+      case 'sqlite3':
+      case 'better-sqlite3':
+      case 'cockroachdb':
+        return { asc: 'NULL FIRST', desc: 'NULL LAST' }
+    }
+    return undefined
+  }
   get jsonColumnStorage(): JsonColumnStorage {
     if (!supportsJsonLoadingAndSaving(this.knex)) return 'text'
     if (this.knex.client.config.client === 'mysql2') return 'textOnWrite'
@@ -189,7 +213,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
         true,
       ),
       this.dp.createCommand(),
-      false,
+      this.dp.nativeNullSort,
       (limit, offset) =>
         this.knex.client.config.client?.includes('mssql')
           ? ' offset ' + offset + ' rows fetch next ' + limit + ' rows only'
@@ -254,12 +278,16 @@ class KnexEntityDataProvider implements EntityDataProvider {
       options.orderBy = Sort.createUniqueSort(this.entity, new Sort())
     }
     if (options.orderBy) {
-      query = query.orderBy(
-        options.orderBy.Segments.map((s) => ({
-          column: e.$dbNameOf(s.field),
-          order: s.isDescending ? 'desc' : 'asc',
-        })),
-      )
+      const native = this.dp.nativeNullSort
+      for (const s of options.orderBy.Segments) {
+        const column = e.$dbNameOf(s.field)
+        // Not Knex's own `nulls` option: outside Postgres it sorts on `(x is null)` alone.
+        if (nullSortToWrite(native, s))
+          query = query.orderByRaw(orderBySql(':column:', s, native), {
+            column,
+          })
+        else query = query.orderBy(column, s.isDescending ? 'desc' : 'asc')
+      }
     }
     if (options.limit) {
       query = query.limit(options.limit)

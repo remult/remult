@@ -16,5 +16,5 @@ export function allDbTests(props: DbTestProps, options?: DbTestOptions) {
   testSpecialValues(props)
   fieldsIdTests(props)
   manyOperations(props)
-  nullSortTests(props)
+  nullSortTests(props, options)
 }
