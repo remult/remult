@@ -80,6 +80,50 @@ describe.skipIf(!mongoConnectionStringWithoutTransaction)(
       }
       expect(await repo.count()).toBe(2)
     })
+    const nullable = class {
+      id = 0
+      num: number | null = null
+    }
+    describeClass(nullable, Entity('mongoNullable'), {
+      id: Fields.number(),
+      num: Fields.number({ allowNull: true }),
+    })
+    it('writes NULL as null and still finds the older marker', async () => {
+      const repo = await createEntity(nullable)
+      await repo.insert([
+        { id: 1, num: null },
+        { id: 2, num: 5 },
+      ])
+      const collection = mongoDb.collection('mongoNullable')
+      await collection.insertOne({ id: 3, num: { $null: '$null' } })
+      expect((await collection.findOne({ id: 1 }))!.num).toBe(null)
+      expect((await repo.findId(3))!.num).toBe(null)
+      expect(
+        (await repo.find({ where: { num: null } })).map((x) => x.id),
+      ).toEqual([1, 3])
+      expect(
+        (await repo.find({ where: { num: { $ne: null } } })).map((x) => x.id),
+      ).toEqual([2])
+    })
+    it('finds a row updated to NULL', async () => {
+      const repo = await createEntity(nullable)
+      await repo.insert({ id: 1, num: 5 })
+      await repo.update(1, { num: null })
+      expect(
+        (await repo.find({ where: { num: null } })).map((x) => x.id),
+      ).toEqual([1])
+    })
+    it('sorts NULL as the lowest value', async () => {
+      const repo = await createEntity(nullable)
+      await repo.insert([
+        { id: 1, num: 5 },
+        { id: 2, num: null },
+        { id: 3, num: -1 },
+      ])
+      expect(
+        (await repo.find({ orderBy: { num: 'asc' } })).map((x) => x.id),
+      ).toEqual([2, 3, 1])
+    })
 
     it('transactions mongo no trans', async () => {
       let x = await createEntity(Categories)
