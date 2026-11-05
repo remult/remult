@@ -698,15 +698,16 @@ export function determineSort(sortUrlParm: string, dirUrlParam: string) {
   return result
 }
 
-export function serializeError(data: ErrorInfo) {
+export function serializeError(data: ErrorInfo, errorStack = false) {
+  const stack = errorStack ? data.stack : undefined
   if (data instanceof EntityError) {
     data = { message: data.message, modelState: data.modelState }
   } else if (data instanceof Error) {
-    data = { message: data.message }
+    data = { message: data.message, stack }
   }
 
   let x = JSON.parse(JSON.stringify(data))
-  if (!x.message && !x.modelState) data = { message: data.message }
+  if (!x.message && !x.modelState) data = { message: data.message, stack }
   if (typeof x === 'string') data = { message: x }
 
   return data

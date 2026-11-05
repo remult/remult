@@ -84,6 +84,13 @@ export interface RemultServerOptions<RequestType> {
   defaultGetLimit?: number
   /** When set to true (default) it'll console log each api endpoint that is created */
   logApiEndPoints?: boolean
+  /** Send the error stack in REST error responses. Keep off in production.
+   * @example
+   * import { dev } from '$app/environment'
+   * remultApi({ errorStack: dev })
+   * @default false
+   */
+  errorStack?: boolean
 
   /** A subscription server to use for live query and message channels */
   subscriptionServer?: SubscriptionServer
@@ -216,7 +223,10 @@ export function createRemultServerCore<RequestType>(
 
   remultStatic.actionInfo.runningOnServer = true
   let bridge = new RemultServerImplementation<RequestType>(
-    new inProcessQueueHandler(safeOptions.queueStorage),
+    new inProcessQueueHandler(
+      safeOptions.queueStorage,
+      safeOptions.errorStack,
+    ),
     safeOptions,
     dataProvider,
     serverCoreOptions,
@@ -751,6 +761,7 @@ export class RemultServerImplementation<RequestType>
         req,
         genReq,
         this.options.error,
+        this.options.errorStack,
       )
       try {
         if (
@@ -1275,6 +1286,7 @@ class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
     private req: RequestType | undefined,
     private genReq: GenericRequestInfo,
     private handleError: RemultServerOptions<RequestType>['error'] | undefined,
+    private errorStack?: boolean,
   ) {}
   progress(progress: number): void {}
 
@@ -1298,7 +1310,7 @@ class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
     entity?: EntityMetadata,
     httpStatusCode?: number,
   ) {
-    let data = serializeError(exception)
+    let data = serializeError(exception, this.errorStack)
 
     if (!httpStatusCode) {
       if (data.httpStatusCode) {
@@ -1345,7 +1357,10 @@ class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
 }
 
 class inProcessQueueHandler {
-  constructor(private storage: QueueStorage) {}
+  constructor(
+    private storage: QueueStorage,
+    private errorStack?: boolean,
+  ) {}
   async submitJob(url: string, req: Remult, body: any): Promise<string> {
     let id = await this.storage.createJob(
       url,
@@ -1354,7 +1369,8 @@ class inProcessQueueHandler {
     let job = await this.storage.getJobInfo(id)
 
     this.actions.get(url)!(body, req, {
-      error: (error) => job.setErrorResult(serializeError(error)),
+      error: (error) =>
+        job.setErrorResult(serializeError(error, this.errorStack)),
       success: (result) => job.setResult(result),
       progress: (progress) => job.setProgress(progress),
       created: () => {

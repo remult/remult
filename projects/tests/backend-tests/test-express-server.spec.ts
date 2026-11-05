@@ -162,3 +162,19 @@ it('test remult run', async () => {
     RemultAsyncLocalStorage.disable()
   }
 })
+it('sends the stack when errorStack is on', async () => {
+  const app = express()
+  app.use(remultApi({ controllers: [Task], errorStack: true }))
+  const server = app.listen(3031)
+  try {
+    const response = await axios.post(
+      'http://localhost:3031/api/testProperError',
+      { args: [] },
+      { validateStatus: () => true },
+    )
+    expect(response.data.message).toBe('Test Error')
+    expect(response.data.stack).toContain('Test Error')
+  } finally {
+    await new Promise((res) => server.close(res))
+  }
+})

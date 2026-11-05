@@ -401,4 +401,11 @@ describe('serializeError', () => {
       message: undefined,
     })
   })
+  it('keeps the stack when errorStack is on', () => {
+    const error = new Error('boom')
+    expect(serializeError(error, true)).toEqual({
+      message: 'boom',
+      stack: error.stack,
+    })
+  })
 })
