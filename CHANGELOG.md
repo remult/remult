@@ -1,5 +1,11 @@
 All notable changes to this project will be documented in this file.
 
+## [3.5.0] - [unreleased]
+
+### Fixed
+
+- Mongo writes NULL as `null`, so it sorts as the lowest value like the other databases, and `{ x: null }` finds a row updated to NULL. Rows with the older `{ $null: '$null' }` marker still match NULL filters, but sort above numbers and strings until written again.
+
 ## [3.4.1] - [2026-10-30]
 
 ### Reverted
