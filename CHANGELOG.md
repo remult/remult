@@ -1,5 +1,17 @@
 All notable changes to this project will be documented in this file.
 
+## [3.5.0] - [unreleased]
+
+### Breaking
+
+- `allowNull` defaults to how migrations create the column ([by field type](https://remult.dev/docs/field-types#allownull-by-field-type)): `true` on a Date, `Fields.json` or another custom `fieldTypeInDb`, `false` otherwise and on an id. On those fields, `{ due: null }` finds NULL rows and GraphQL types them nullable.
+- `allowNull: false` on a Date, json or custom type creates the column `not null` on a new table. A column added to an existing table stays nullable.
+- SQLite created json, `Fields.dateOnly` and custom type columns `not null` (Knex on SQLite and SQL Server: json). Set `allowNull: false` on those fields to match existing tables.
+
+### Fixed
+
+- Knex creates a number with a custom `fieldTypeInDb` `not null default 0`, as the other providers do.
+
 ## [3.4.1] - [2026-10-30]
 
 ### Reverted

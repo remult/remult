@@ -1108,7 +1108,11 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
    * ```
    */
   label?: string
-  /** If it can store `null` in the database. @default false */
+  /** If it can store `null` in the database.
+   *
+   * Defaults to `true` on a Date, `Fields.json` or another custom `fieldTypeInDb` (not on a number or boolean), as migrations create those columns without a default value. `false` otherwise, and on an id.
+   * @see [allowNull by field type](https://remult.dev/docs/field-types#allownull-by-field-type)
+   */
   allowNull?: boolean
   /** If a value is required. Short-cut to say `validate: Validators.required`.
    * @default false
@@ -4549,6 +4553,7 @@ export interface PostgresClient extends PostgresCommandSource {
 export declare function postgresColumnSyntax(
   x: FieldMetadata,
   dbName: string,
+  isAlterTable?: boolean,
 ): string
 //[ ] FieldMetadata from TBD is not exported
 export interface PostgresCommandSource {
@@ -4619,6 +4624,7 @@ export declare function preparePostgresQueueStorage(
 export declare function postgresColumnSyntax(
   x: FieldMetadata,
   dbName: string,
+  isAlterTable?: boolean,
 ): string
 //[ ] FieldMetadata from ../src/column-interfaces.js is not exported
 export declare class PostgresSchemaBuilder {
@@ -4645,6 +4651,7 @@ export declare function buildColumn(
   dbName: string,
   b: Knex.CreateTableBuilder,
   supportsJson?: boolean,
+  isAlterTable?: boolean,
 ): void
 //[ ] FieldMetadata from ../src/column-interfaces.js is not exported
 //[ ] Knex.CreateTableBuilder from TBD is not exported
