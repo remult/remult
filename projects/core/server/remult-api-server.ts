@@ -122,7 +122,7 @@ export interface RemultServerOptions<RequestType> {
    * @param info.entity - (Optional) The entity metadata associated with the error, if applicable.
    * @param info.exception - (Optional) The exception object or error that occurred.
    * @param info.httpStatusCode - The HTTP status code.
-   * @param info.responseBody - The body of the response.
+   * @param info.responseBody - The body of the response, without the stack.
    * @param info.sendError - A method to send a custom error response. Call this method with the desired HTTP status code and response body.
    *
    * @returns A promise that resolves when the error handling is complete.
@@ -133,6 +133,17 @@ export interface RemultServerOptions<RequestType> {
    *       e.sendError(500, { message: "An error occurred" })
    *     }
    *   }
+   * })
+   * @example
+   * // Send the stack outside production
+   * export const api = remultApi({
+   *   error: async (e) => {
+   *     if (process.env.NODE_ENV === 'production') return
+   *     e.sendError(e.httpStatusCode, {
+   *       ...e.responseBody,
+   *       stack: e.exception?.stack,
+   *     })
+   *   },
    * })
    */
   error?: (info: {
