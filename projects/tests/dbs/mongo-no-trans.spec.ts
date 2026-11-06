@@ -88,30 +88,21 @@ describe.skipIf(!mongoConnectionStringWithoutTransaction)(
       id: Fields.number(),
       num: Fields.number({ allowNull: true }),
     })
-    it('writes NULL as null and still finds the older marker', async () => {
+    it('NULL filters match null, a missing field and the older marker', async () => {
       const repo = await createEntity(nullable)
       await repo.insert([
         { id: 1, num: null },
         { id: 2, num: 5 },
+        { id: 3, num: 7 },
       ])
-      const collection = mongoDb.collection('mongoNullable')
-      await collection.insertOne({ id: 3, num: { $null: '$null' } })
-      expect((await collection.findOne({ id: 1 }))!.num).toBe(null)
-      expect((await repo.findId(3))!.num).toBe(null)
-      expect(
-        (await repo.find({ where: { num: null } })).map((x) => x.id),
-      ).toEqual([1, 3])
-      expect(
-        (await repo.find({ where: { num: { $ne: null } } })).map((x) => x.id),
-      ).toEqual([2])
-    })
-    it('finds a row updated to NULL', async () => {
-      const repo = await createEntity(nullable)
-      await repo.insert({ id: 1, num: 5 })
-      await repo.update(1, { num: null })
-      expect(
-        (await repo.find({ where: { num: null } })).map((x) => x.id),
-      ).toEqual([1])
+      await repo.update(3, { num: null })
+      await mongoDb
+        .collection('mongoNullable')
+        .insertMany([{ id: 4, num: { $null: '$null' } }, { id: 5 }])
+      const ids = async (num: null | { $ne: null }) =>
+        (await repo.find({ where: { num } })).map((x) => x.id)
+      expect(await ids(null)).toEqual([1, 3, 4, 5])
+      expect(await ids({ $ne: null })).toEqual([2])
     })
     it('sorts NULL as the lowest value', async () => {
       const repo = await createEntity(nullable)

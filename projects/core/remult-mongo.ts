@@ -100,6 +100,10 @@ export class MongoDataProvider implements DataProvider {
 }
 // Older versions wrote NULL as this marker, which sorts above numbers and strings.
 const NULL = { $null: '$null' }
+// `$in: [null, NULL]` fails: Mongo cannot nest `$` under `$in`.
+function nullFilter(name: string) {
+  return { $or: [{ [name]: null }, { [name]: { $eq: NULL } }] }
+}
 function isNull(x: any) {
   return x?.$null === NULL.$null
 }
@@ -421,15 +425,12 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
     )
   }
   isNull(col: FieldMetadata): void {
-    this.result.push(() => ({ $or: this.nullOrMarker(col) }))
+    this.result.push(() => nullFilter(this.nameProvider.$dbNameOf(col)))
   }
   isNotNull(col: FieldMetadata): void {
-    this.result.push(() => ({ $nor: this.nullOrMarker(col) }))
-  }
-  // `$in` rejects the marker's `$null` key, so each value gets its own `$eq`.
-  private nullOrMarker(col: FieldMetadata) {
-    const name = this.nameProvider.$dbNameOf(col)
-    return [{ [name]: { $eq: null } }, { [name]: { $eq: NULL } }]
+    this.result.push(() => ({
+      $nor: [nullFilter(this.nameProvider.$dbNameOf(col))],
+    }))
   }
   isIn(col: FieldMetadata, val: any[]): void {
     this.result.push(() => ({
