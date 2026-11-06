@@ -93,7 +93,7 @@ export class PostgresDataProvider
     await sb.ensureSchema(entities)
   }
   nativeNullSort: NativeNullSort = {
-    order: { asc: 'NULL LAST', desc: 'NULL FIRST' },
+    order: { asc: 'NULLS LAST', desc: 'NULLS FIRST' },
     syntax: 'NULLS FIRST/LAST',
   }
   async transaction(

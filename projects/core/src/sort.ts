@@ -180,10 +180,9 @@ export interface SortSegment {
 }
 /** A `find` sort segment, or a `groupBy` order: on `count` it has no field. */
 export type OrderBySegment = Partial<SortSegment> & { operation?: string }
-/** Where NULL goes, per direction. */
 export interface NullOrder {
-  asc: 'NULL FIRST' | 'NULL LAST'
-  desc: 'NULL FIRST' | 'NULL LAST'
+  asc: 'NULLS FIRST' | 'NULLS LAST'
+  desc: 'NULLS FIRST' | 'NULLS LAST'
 }
 
 /**
@@ -197,32 +196,26 @@ export const NullSort: { order: NullOrder | 'native' } =
 export interface NativeNullSort {
   /** `unknown`: `ORDER BY` always writes the NULL order. */
   order: NullOrder | 'unknown'
-  syntax: 'NULLS FIRST/LAST' | 'CASE WHEN' | 'NOT SUPPORTED'
+  syntax: 'NULLS FIRST/LAST' | 'CASE WHEN'
 }
-
-const NULL_LOWEST: NullOrder = { asc: 'NULL FIRST', desc: 'NULL LAST' }
 
 /** Remult's own order, without a database: `native` is NULL lowest. */
 export function isNullFirstSort(isDescending?: boolean): boolean {
-  const order = NullSort.order === 'native' ? NULL_LOWEST : NullSort.order
-  return order[isDescending ? 'desc' : 'asc'] === 'NULL FIRST'
+  if (NullSort.order === 'native') return !isDescending
+  return NullSort.order[isDescending ? 'desc' : 'asc'] === 'NULLS FIRST'
 }
 
-/** The NULL order `ORDER BY` must write, `native` to leave it to the database. */
+/** The NULL order `ORDER BY` must write, `undefined` when the database's own is right. */
 export function nullSortToWrite(
-  native: NativeNullSort,
+  nativeOrder: NullOrder | 'unknown',
   { field, isDescending, operation }: OrderBySegment,
-): 'NULL FIRST' | 'NULL LAST' | 'native' {
+): 'NULLS FIRST' | 'NULLS LAST' | undefined {
   // A distinct count is never NULL; other aggregates are NULL only over NULL values.
   const canBeNull = !!field?.allowNull && operation !== 'distinctCount'
-  if (!canBeNull || NullSort.order === 'native') return 'native'
+  if (!canBeNull || NullSort.order === 'native') return undefined
   const dir = isDescending ? 'desc' : 'asc'
   const order = NullSort.order[dir]
-  if (native.order !== 'unknown' && native.order[dir] === order) return 'native'
-  if (native.syntax === 'NOT SUPPORTED')
-    throw new Error(
-      `NullSort.order.${dir} = '${order}' is not supported by this database`,
-    )
+  if (nativeOrder !== 'unknown' && nativeOrder[dir] === order) return undefined
   return order
 }
 

@@ -435,7 +435,7 @@ function testPaging(
       onTestFinished(() => {
         NullSort.order = 'native'
       })
-      NullSort.order = { asc: 'NULL LAST', desc: 'NULL FIRST' }
+      NullSort.order = { asc: 'NULLS LAST', desc: 'NULLS FIRST' }
       await expectAfterFilter(
         { d: 'asc', a: 'asc', b: 'asc' },
         { a: 'a', b: 'b', d: null },

@@ -527,7 +527,7 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
       options,
       await this.init(),
       this.sql.createCommand(),
-      this.sql._getSourceSql().nativeNullSort,
+      this.sql.nativeNullSort,
       this.sql._getSourceSql().getLimitSqlSyntax,
       this.sql.jsonColumnStorage,
     )
@@ -543,7 +543,7 @@ class ActualSQLEntityDataProvider implements EntityDataProvider {
       options,
       e,
       r,
-      this.sql._getSourceSql().nativeNullSort,
+      this.sql.nativeNullSort,
       (limit, offset) => this.strategy.getLimitSqlSyntax(limit, offset),
       { jsonColumnStorage: this.sql.jsonColumnStorage },
     )
@@ -865,20 +865,18 @@ export function getRowAfterUpdate<entityType>(
     })
 }
 
-/** `x [desc]`, with the NULL order when it must be written. */
 export function orderBySql(
   expr: string,
   segment: OrderBySegment,
   native: NativeNullSort,
 ): string {
   const sql = segment.isDescending ? expr + ' desc' : expr
-  const nullSort = nullSortToWrite(native, segment)
-  if (nullSort === 'native') return sql
-  if (native.syntax === 'CASE WHEN') {
-    const nullRank = nullSort === 'NULL FIRST' ? '0 else 1' : '1 else 0'
-    return `case when ${expr} is null then ${nullRank} end, ${sql}`
-  }
-  return sql + (nullSort === 'NULL FIRST' ? ' nulls first' : ' nulls last')
+  const nullSort = nullSortToWrite(native.order, segment)
+  if (!nullSort) return sql
+  if (native.syntax === 'NULLS FIRST/LAST')
+    return sql + ' ' + nullSort.toLowerCase()
+  const [ifNull, otherwise] = nullSort === 'NULLS FIRST' ? [0, 1] : [1, 0]
+  return `case when ${expr} is null then ${ifNull} else ${otherwise} end, ${sql}`
 }
 
 /** The select that `find` runs, and the mapping of one result row to field values. With `aliasColumns`, every column is aliased through `wrapIdentifier`, so a row can be read by alias as well as by position. */

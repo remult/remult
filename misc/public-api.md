@@ -2284,11 +2284,11 @@ export type MembersToInclude<T> = {
 export interface NativeNullSort {
   /** `unknown`: `ORDER BY` always writes the NULL order. */
   order: NullOrder | "unknown"
-  syntax: "NULLS FIRST/LAST" | "CASE WHEN" | "NOT SUPPORTED"
+  syntax: "NULLS FIRST/LAST" | "CASE WHEN"
 }
 export interface NullOrder {
-  asc: "NULL FIRST" | "NULL LAST"
-  desc: "NULL FIRST" | "NULL LAST"
+  asc: "NULLS FIRST" | "NULLS LAST"
+  desc: "NULLS FIRST" | "NULLS LAST"
 }
 export type NumericKeys<T> = {
   [K in keyof T]: T[K] extends number | undefined | null ? K : never

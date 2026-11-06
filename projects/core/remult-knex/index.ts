@@ -118,21 +118,21 @@ export class KnexDataProvider
       case 'pg-redshift':
       case 'oracledb':
         return {
-          order: { asc: 'NULL LAST', desc: 'NULL FIRST' },
+          order: { asc: 'NULLS LAST', desc: 'NULLS FIRST' },
           syntax: 'NULLS FIRST/LAST',
         }
       case 'mysql':
       case 'mysql2':
       case 'mssql':
         return {
-          order: { asc: 'NULL FIRST', desc: 'NULL LAST' },
+          order: { asc: 'NULLS FIRST', desc: 'NULLS LAST' },
           syntax: 'CASE WHEN',
         }
       case 'sqlite3':
       case 'better-sqlite3':
       case 'cockroachdb':
         return {
-          order: { asc: 'NULL FIRST', desc: 'NULL LAST' },
+          order: { asc: 'NULLS FIRST', desc: 'NULLS LAST' },
           syntax: 'NULLS FIRST/LAST',
         }
     }
@@ -288,7 +288,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
       for (const s of options.orderBy.Segments) {
         const column = e.$dbNameOf(s.field)
         // Not Knex's own `nulls` option: outside Postgres it sorts on `(x is null)` alone.
-        if (nullSortToWrite(native, s) !== 'native')
+        if (nullSortToWrite(native.order, s))
           query = query.orderByRaw(orderBySql(':column:', s, native), {
             column,
           })

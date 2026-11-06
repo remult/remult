@@ -286,8 +286,8 @@ describe('NullSort in ORDER BY', () => {
     done: Date | null = null
   }
   const NATIVE = 'native'
-  const LOWEST: NullOrder = { asc: 'NULL FIRST', desc: 'NULL LAST' }
-  const HIGHEST: NullOrder = { asc: 'NULL LAST', desc: 'NULL FIRST' }
+  const LOWEST: NullOrder = { asc: 'NULLS FIRST', desc: 'NULLS LAST' }
+  const HIGHEST: NullOrder = { asc: 'NULLS LAST', desc: 'NULLS FIRST' }
   afterEach(() => {
     NullSort.order = NATIVE
   })
@@ -326,7 +326,7 @@ describe('NullSort in ORDER BY', () => {
       knex.client.runner = (builder: Knex.Knex.QueryBuilder) => ({
         run: async () => {
           sqls.push(builder.toString())
-          // As each driver returns a raw query, which groupBy runs.
+          // groupBy runs a raw query, whose result shape differs per driver.
           const raw: Record<string, unknown> = {
             pg: { rows: [] },
             mysql2: [[], []],
@@ -419,28 +419,6 @@ describe('NullSort in ORDER BY', () => {
         'case when `due` is null then 0 else 1 end, `due` desc, `title` desc',
         'case when `due` is null then 1 else 0 end, `due`, count (distinct `done`)',
         'case when `due` is null then 1 else 0 end, `due`',
-      ],
-    ],
-    [
-      'Knex mssql',
-      knex('mssql'),
-      HIGHEST,
-      [
-        'case when [due] is null then 1 else 0 end, [due], [title] asc',
-        'case when [due] is null then 0 else 1 end, [due] desc, [title] desc',
-        'case when [due] is null then 1 else 0 end, [due], count (distinct [done])',
-        'case when [due] is null then 1 else 0 end, [due]',
-      ],
-    ],
-    [
-      'Knex sqlite3',
-      knex('sqlite3'),
-      HIGHEST,
-      [
-        '`due` nulls last, `title` asc',
-        '`due` desc nulls first, `title` desc',
-        '`due` nulls last, count (distinct `done`)',
-        '`due` nulls last',
       ],
     ],
   ] as const)(

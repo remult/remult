@@ -45,7 +45,7 @@ class PostgresBridgeToSQLQueryResult implements SqlResult {
 export class PostgresDataProvider implements SqlImplementation {
   supportsJsonColumnType = true
   nativeNullSort = {
-    order: { asc: 'NULL LAST', desc: 'NULL FIRST' },
+    order: { asc: 'NULLS LAST', desc: 'NULLS FIRST' },
     syntax: 'NULLS FIRST/LAST',
   } as const
   async entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void> {}

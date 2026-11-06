@@ -1,4 +1,12 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  onTestFinished,
+  vi,
+} from 'vitest'
 import {
   Entity,
   Fields,
@@ -45,10 +53,12 @@ class Item {
 }
 
 const nov = (d: number) => new Date(2026, 10, d)
+const dues = (...days: (number | null)[]) =>
+  days.map((d) => ({ due: d === null ? null : nov(d) }))
 
 const NATIVE = 'native'
-const LOWEST: NullOrder = { asc: 'NULL FIRST', desc: 'NULL LAST' }
-const HIGHEST: NullOrder = { asc: 'NULL LAST', desc: 'NULL FIRST' }
+const LOWEST: NullOrder = { asc: 'NULLS FIRST', desc: 'NULLS LAST' }
+const HIGHEST: NullOrder = { asc: 'NULLS LAST', desc: 'NULLS FIRST' }
 
 export function nullSortTests(
   { createEntity }: DbTestProps,
@@ -125,8 +135,10 @@ export function nullSortTests(
     expect(await groups()).toEqual([null, 2, 3])
     NullSort.order = HIGHEST
     if (options?.nullLowestOnly) {
-      await expect(nums(r, 'asc')).rejects.toThrow('NullSort.order.asc')
-      await expect(nums(r, 'desc')).rejects.toThrow('NullSort.order.desc')
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      onTestFinished(() => warn.mockRestore())
+      expect(await nums(r, 'asc')).toEqual([null, 2, 3])
+      expect(warn).toHaveBeenCalledOnce()
       return
     }
     expect(await nums(r, 'asc')).toEqual([2, 3, null])
@@ -155,15 +167,7 @@ export function nullSortTests(
         })
 
         it('reaches every row when a page ends on either side of the NULLs', async () => {
-          const r = await seed([
-            { due: nov(8) },
-            { due: null },
-            { due: nov(7) },
-            { due: null },
-            { due: nov(8) },
-            { due: nov(9) },
-            { due: null },
-          ])
+          const r = await seed(dues(8, null, 7, null, 8, 9, null))
           await expectEveryPageSizeMatchesFind(r, { due: dir, id: 'asc' }, 7)
         })
 
@@ -207,24 +211,12 @@ export function nullSortTests(
 
         // In memory, `null > -5` is true.
         it('reaches every row on negative numbers', async () => {
-          const r = await seed([
-            { num: -5 },
-            { num: null },
-            { num: 0 },
-            { num: null },
-            { num: 5 },
-          ])
+          const r = await seed([-5, null, 0, null, 5].map((num) => ({ num })))
           await expectEveryPageSizeMatchesFind(r, { num: dir, id: 'asc' }, 5)
         })
 
         it('reaches every row when iterating the query', async () => {
-          const r = await seed([
-            { due: nov(7) },
-            { due: null },
-            { due: nov(8) },
-            { due: null },
-            { due: null },
-          ])
+          const r = await seed(dues(7, null, 8, null, null))
           const orderBy: EntityOrderBy<Row> = { due: dir, id: 'asc' }
           const ids: number[] = []
           for await (const row of r.query({ orderBy, pageSize: 2 })) {

@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- `paginator()` and `for await` reach rows whose sort key is NULL. With `native` on Postgres and DuckDB, they can still skip or repeat rows.
+- `paginator()` and `for await` reach rows whose sort key is NULL. With `native` on Postgres, Oracle, Redshift and DuckDB, they can still skip or repeat rows.
 
 ## [3.4.1] - [2026-10-30]
 
