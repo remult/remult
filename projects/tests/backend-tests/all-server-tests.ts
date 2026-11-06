@@ -1,3 +1,4 @@
+import { EntityError } from '../../core/src/data-interfaces.js'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import EventSource from 'eventsource'
 import { Task } from '../../test-servers/shared/Task.js'
@@ -200,13 +201,10 @@ export function allServerTests(
   it(
     'Test error in backend method',
     withRemultForTest(async () => {
-      await expect(() => Task.testStringError()).rejects
-        .toThrowErrorMatchingInlineSnapshot(`
-        {
-          "httpStatusCode": 400,
-          "message": "test error",
-        }
-      `)
+      await expect(() => Task.testStringError()).rejects.toMatchObject({
+        httpStatusCode: 400,
+        message: 'test error',
+      })
     }),
   )
   it(
@@ -386,13 +384,15 @@ export function allServerTests(
       } catch (error: any) {
         err = error
       }
-      expect(err).toEqual({
-        message: 'Title: Should not be empty',
-        httpStatusCode: 400,
-        modelState: {
-          title: 'Should not be empty',
-        },
-      })
+      expect(err).toEqual(
+        new EntityError({
+          message: 'Title: Should not be empty',
+          httpStatusCode: 400,
+          modelState: {
+            title: 'Should not be empty',
+          },
+        }),
+      )
     }),
   )
   it(

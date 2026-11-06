@@ -1,4 +1,5 @@
 import { Remult } from '../../core/src/context'
+import { EntityError } from '../../core/src/data-interfaces'
 import { Done } from './Done'
 
 import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
@@ -80,12 +81,14 @@ describe('angular http client exception ', () => {
         'Http failure response for http://localhost:4201/api/stam: 504 Gateway Timeout',
       error: 'Error occured while trying to proxy to: localhost:4201/api/stam',
     })
-    expect(err).toEqual({
-      message:
-        'Error occured while trying to proxy to: localhost:4201/api/stam',
+    expect(err).toEqual(
+      new EntityError({
+        message:
+          'Error occured while trying to proxy to: localhost:4201/api/stam',
 
-      httpStatusCode: 504,
-    })
+        httpStatusCode: 504,
+      }),
+    )
   })
   it('network disconnect', async () => {
     let err = await processHttpException({
@@ -104,10 +107,12 @@ describe('angular http client exception ', () => {
         isTrusted: true,
       },
     })
-    expect(err).toEqual({
-      message: 'Network Error',
-      httpStatusCode: 0,
-    })
+    expect(err).toEqual(
+      new EntityError({
+        message: 'Network Error',
+        httpStatusCode: 0,
+      }),
+    )
   })
   it('Forbidden', async () => {
     let err = await processHttpException({
@@ -124,10 +129,12 @@ describe('angular http client exception ', () => {
         'Http failure response for http://localhost:4201/api/stam: 403 Forbidden',
       error: 'Forbidden',
     })
-    expect(err).toEqual({
-      message: 'Forbidden',
-      httpStatusCode: 403,
-    })
+    expect(err).toEqual(
+      new EntityError({
+        message: 'Forbidden',
+        httpStatusCode: 403,
+      }),
+    )
   })
   it('syntax error', async () => {
     let err = await processHttpException({
@@ -171,13 +178,15 @@ describe('angular http client exception ', () => {
         message: 'Name: name error',
       },
     })
-    expect(err).toEqual({
-      modelState: {
-        name: 'name error',
-      },
-      message: 'Name: name error',
-      httpStatusCode: 400,
-    })
+    expect(err).toEqual(
+      new EntityError({
+        modelState: {
+          name: 'name error',
+        },
+        message: 'Name: name error',
+        httpStatusCode: 400,
+      }),
+    )
   })
 })
 
@@ -215,11 +224,13 @@ describe('fetch client exception ', () => {
       },
       status: 504,
     })
-    expect(err).toEqual({
-      message:
-        'Error occured while trying to proxy to: localhost:4201/api/stam',
-      httpStatusCode: 504,
-    })
+    expect(err).toEqual(
+      new EntityError({
+        message:
+          'Error occured while trying to proxy to: localhost:4201/api/stam',
+        httpStatusCode: 504,
+      }),
+    )
   })
   it('network disconnect', async () => {
     let err = await processHttpException({
@@ -252,9 +263,11 @@ describe('fetch client exception ', () => {
       },
       status: null,
     })
-    expect(err).toEqual({
-      message: 'Network Error',
-    })
+    expect(err).toEqual(
+      new EntityError({
+        message: 'Network Error',
+      }),
+    )
   })
   it('Forbidden', async () => {
     let err = await processHttpException({
@@ -289,10 +302,12 @@ describe('fetch client exception ', () => {
       },
       status: 403,
     })
-    expect(err).toEqual({
-      message: 'Forbidden',
-      httpStatusCode: 403,
-    })
+    expect(err).toEqual(
+      new EntityError({
+        message: 'Forbidden',
+        httpStatusCode: 403,
+      }),
+    )
   })
   it('syntax error', async () => {
     let err = await processHttpException({
@@ -373,13 +388,15 @@ describe('fetch client exception ', () => {
       status: 400,
     })
 
-    expect(err).toEqual({
-      modelState: {
-        name: 'name error',
-      },
-      message: 'Name: name error',
-      httpStatusCode: 400,
-    })
+    expect(err).toEqual(
+      new EntityError({
+        modelState: {
+          name: 'name error',
+        },
+        message: 'Name: name error',
+        httpStatusCode: 400,
+      }),
+    )
   })
 })
 

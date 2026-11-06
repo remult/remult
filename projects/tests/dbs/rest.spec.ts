@@ -142,13 +142,12 @@ describe('Rest', () => {
       },
     )
 
-    await expect(repo(task).insert({ id: 1, title: 'world' })).rejects
-      .toThrowErrorMatchingInlineSnapshot(`
-      {
-        "httpStatusCode": 403,
-        "message": "field title is not allowed to update",
-      }
-    `)
+    await expect(
+      repo(task).insert({ id: 1, title: 'world' }),
+    ).rejects.toMatchObject({
+      httpStatusCode: 403,
+      message: 'field title is not allowed to update',
+    })
   })
   it('test forbidden on apiPreprocessFilter', async () => {
     const task = entity(
@@ -173,13 +172,10 @@ describe('Rest', () => {
       await repo(task).find({ where: { done: true } }),
     ).toMatchInlineSnapshot('[]')
     expect(await repoServer(task).find({})).toMatchInlineSnapshot('[]')
-    await expect(() => repo(task).find({})).rejects
-      .toThrowErrorMatchingInlineSnapshot(`
-      {
-        "httpStatusCode": 403,
-        "message": "You must specify a done filter",
-      }
-    `)
+    await expect(() => repo(task).find({})).rejects.toMatchObject({
+      httpStatusCode: 403,
+      message: 'You must specify a done filter',
+    })
   })
   it('test forbidden on apiPreprocessFilter', async () => {
     const task = entity(
