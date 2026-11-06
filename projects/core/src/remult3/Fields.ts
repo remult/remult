@@ -153,6 +153,8 @@ export class Fields {
       () => Date,
       {
         allowApiUpdate: false,
+        // Set on every insert, so never NULL.
+        allowNull: false,
         saving: (_, ref, { isNew }) => {
           if (isNew) ref.value = new Date()
         },
@@ -170,6 +172,8 @@ export class Fields {
       () => Date,
       {
         allowApiUpdate: false,
+        // Set on every save, so never NULL.
+        allowNull: false,
         saving: (_, ref) => {
           ref.value = new Date()
         },

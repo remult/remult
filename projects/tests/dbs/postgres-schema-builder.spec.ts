@@ -892,6 +892,10 @@ describe('allowNull by field type', () => {
     email = ''
     @Fields.string({ valueConverter: { fieldTypeInDb: 'dbid' } })
     ref = ''
+    @Fields.createdAt()
+    created = new Date()
+    @Fields.updatedAt()
+    updated = new Date()
     @Fields.date({ allowNull: false })
     strictAt = new Date()
     @Fields.dateOnly({ allowNull: false })

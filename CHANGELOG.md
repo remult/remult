@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ### Breaking
 
-- `allowNull` defaults to how migrations create the column ([by field type](https://remult.dev/docs/field-types#allownull-by-field-type)): `true` on a Date, `Fields.json` or another custom `fieldTypeInDb`, `false` otherwise and on an id. On those fields, `{ field: null }` finds NULL rows and GraphQL types them nullable. `allowNull: false` on them creates the column `not null` on a new table; a column added to an existing table stays nullable.
+- `allowNull` defaults to how migrations create the column ([by field type](https://remult.dev/docs/field-types#allownull-by-field-type)): `true` on a Date, `Fields.json` or another custom `fieldTypeInDb`, `false` otherwise and on an id. On those fields, `{ field: null }` finds NULL rows and GraphQL types them nullable. `allowNull: false` on them creates the column `not null` on a new table; a column added to an existing table stays nullable. `Fields.createdAt` and `Fields.updatedAt` stay `allowNull: false`, so a new table creates them `not null`.
 - Existing SQLite tables have json, `Fields.dateOnly` and custom type columns `not null` (Knex: json on SQLite and SQL Server). Set `allowNull: false` on those fields to match.
 
 ### Fixed
