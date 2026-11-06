@@ -98,7 +98,12 @@ export class MongoDataProvider implements DataProvider {
     return r
   }
 }
+// Older versions wrote NULL as this marker, which sorts above numbers and strings.
 const NULL = { $null: '$null' }
+// `$in: [null, NULL]` fails: Mongo cannot nest `$` under `$in`.
+function nullFilter(name: string) {
+  return { $or: [{ [name]: null }, { [name]: { $eq: NULL } }] }
+}
 function isNull(x: any) {
   return x?.$null === NULL.$null
 }
@@ -156,9 +161,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
     let result: any = {}
     for (const col of this.entity.fields) {
       if (col.dbReadOnly || col.isServerExpression) continue
-      let val = toDb(col, row[col.key])
-      if (val === null) val = NULL
-      result[nameProvider.$dbNameOf(col)] = val
+      result[nameProvider.$dbNameOf(col)] = toDb(col, row[col.key])
     }
     return result
   }
@@ -422,10 +425,12 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
     )
   }
   isNull(col: FieldMetadata): void {
-    this.add(col, NULL, '$eq')
+    this.result.push(() => nullFilter(this.nameProvider.$dbNameOf(col)))
   }
   isNotNull(col: FieldMetadata): void {
-    this.add(col, NULL, '$ne')
+    this.result.push(() => ({
+      $nor: [nullFilter(this.nameProvider.$dbNameOf(col))],
+    }))
   }
   isIn(col: FieldMetadata, val: any[]): void {
     this.result.push(() => ({
@@ -492,7 +497,7 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
   ) {
     this.result.push(() => ({
       [this.nameProvider.$dbNameOf(col)]: {
-        [operator]: isNull(val) ? val : toDb(col, val),
+        [operator]: toDb(col, val),
         ...moreOptions,
       },
     }))

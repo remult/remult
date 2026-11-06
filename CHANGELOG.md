@@ -1,5 +1,11 @@
 All notable changes to this project will be documented in this file.
 
+## [3.5.0] - [unreleased]
+
+### Fixed
+
+- Mongo writes NULL as `null`, so it sorts lowest. Rows with the old `{ $null: '$null' }` marker still match NULL filters.
+
 ## [3.4.1] - [2026-10-30]
 
 ### Reverted
