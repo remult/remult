@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- Mongo writes NULL as `null` instead of `{ $null: '$null' }`, so it sorts lowest, and `{ x: null }` also finds a row updated to NULL or missing the field. Rows with the old marker still match NULL filters, but sort last until rewritten: `updateMany({ x: { $eq: { $null: '$null' } } }, { $set: { x: null } })`.
+- Mongo writes NULL as `null`, so it sorts lowest. Rows with the old `{ $null: '$null' }` marker still match NULL filters.
 
 ## [3.4.1] - [2026-10-30]
 
