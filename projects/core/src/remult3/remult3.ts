@@ -474,6 +474,10 @@ export type GroupByResult<
 
 /** used to perform CRUD operations on an `entityType` */
 export interface Repository<entityType> {
+  /** returns an array based on the provided options. With `typedInclude` on, included relations drop their `?`, see {@link RemultTypeConfig} */
+  find<const include extends MembersToInclude<entityType>>(
+    options: FindOptions<entityType> & { include: include },
+  ): Promise<IncludeResult<entityType, include>[]>
   /** returns an array based on the provided options */
   find(options?: FindOptions<entityType>): Promise<entityType[]>
   /** Using the same options as the {@link find} method, but subscribing to entity changes.
@@ -489,6 +493,10 @@ export interface Repository<entityType> {
    * @example
    * await taskRepo.findFirst({ completed:false },{ createIfNotFound: true })
    *      */
+  findFirst<const include extends MembersToInclude<entityType>>(
+    where: EntityFilter<entityType> | undefined,
+    options: FindFirstOptions<entityType> & { include: include },
+  ): Promise<IncludeResult<entityType, include> | undefined>
   findFirst(
     where?: EntityFilter<entityType>,
     options?: FindFirstOptions<entityType>,
@@ -499,10 +507,17 @@ export interface Repository<entityType> {
    * @example
    * await taskRepo.findFirst({ where:{ completed:false }, createIfNotFound: true })
    *      */
+  findOne<const include extends MembersToInclude<entityType>>(
+    options: FindFirstOptions<entityType> & { include: include },
+  ): Promise<IncludeResult<entityType, include> | undefined>
   findOne(
     options?: FindFirstOptions<entityType>,
   ): Promise<entityType | undefined>
   /** returns the items that matches the id. If id is undefined | null, returns null */
+  findId<const include extends MembersToInclude<entityType>>(
+    id: idType<entityType>,
+    options: FindFirstOptionsBase<entityType> & { include: include },
+  ): Promise<IncludeResult<entityType, include> | undefined | null>
   findId(
     id: idType<entityType>,
     options?: FindFirstOptionsBase<entityType>,
@@ -1490,6 +1505,72 @@ export type MembersToInclude<T> = {
         ? FindOptions<NonNullable<T[K]>[number]>
         : FindFirstOptions<NonNullable<T[K]>>)
 }
+
+type LoadedTarget<target, include> = include extends {
+  include: infer nested
+}
+  ? Loaded<target, nested>
+  : target
+
+type LoadedRelation<value, include> =
+  NonNullable<value> extends (infer target)[]
+    ? LoadedTarget<target, include>[]
+    : null extends value
+      ? LoadedTarget<NonNullable<value>, include> | null
+      : LoadedTarget<NonNullable<value>, include>
+
+type LoadedKeys<entityType, include> = {
+  [K in keyof include & keyof entityType]-?: [include[K]] extends [
+    true | object,
+  ]
+    ? K
+    : never
+}[keyof include & keyof entityType]
+
+/**
+ * Type-level settings, turned on through module augmentation.
+ *
+ * `typedInclude: true` makes `find`, `findFirst`, `findOne` and `findId` return {@link Loaded}
+ * when called with a literal `include`. It's off by default because a narrowed result is no
+ * longer assignable from a plain entity, e.g. reassigning the variable from `insert`.
+ * @example
+ * // remult-types.d.ts
+ * import 'remult'
+ * declare module 'remult' {
+ *   interface RemultTypeConfig {
+ *     typedInclude: true
+ *   }
+ * }
+ */
+export interface RemultTypeConfig {}
+
+type IncludeResult<entityType, include> = RemultTypeConfig extends {
+  typedInclude: true
+}
+  ? Loaded<entityType, include>
+  : entityType
+
+/**
+ * The entity type `find` returns for a given `include` when `typedInclude` is on, see {@link RemultTypeConfig}.
+ * Included relations drop their `?`, and nested `include`s work the same way.
+ * A `toOne` whose target row is missing loads as `null`. Declare the relation `| null` when that can
+ * happen, e.g. an optional FK or a target a `backendPrefilter` can hide.
+ * A relation included with `false` or a widened `boolean` keeps its declared type.
+ * @example
+ * const tasks = await repo(Task).find({ include: { category: true } })
+ * tasks[0].category.name // `category` is loaded, no `?.` needed
+ */
+export type Loaded<entityType, include> = entityType &
+  (0 extends 1 & (entityType | include)
+    ? unknown
+    : [LoadedKeys<entityType, include>] extends [never]
+      ? unknown
+      : {
+          [K in LoadedKeys<entityType, include>]-?: LoadedRelation<
+            Exclude<entityType[K], undefined>,
+            include[K]
+          >
+        })
 
 export type RepositoryRelations<entityType> = {
   [K in keyof ObjectMembersOnly<entityType>]-?: NonNullable<
