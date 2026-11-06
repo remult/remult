@@ -58,6 +58,21 @@ export function SqlDbTests({
       }
     `)
   })
+  it('adds a column with no default value to a table with rows', async () => {
+    const before = await createEntity(
+      createEntityClass('addColumnWithRows', { id: Fields.integer() }),
+    )
+    await before.insert({ id: 1 })
+    const after = getRemult().repo(
+      createEntityClass('addColumnWithRows', {
+        id: Fields.integer(),
+        at: Fields.date({ allowNull: false }),
+        data: Fields.json({ allowNull: false }),
+      }),
+    )
+    await getDb().ensureSchema!([after.metadata])
+    expect((await after.find()).map((x) => x.id)).toEqual([1])
+  })
   it('test sql expression in parallel', async () => {
     @Entity('x_aTb_c_d')
     class c {

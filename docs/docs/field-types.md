@@ -384,6 +384,18 @@ price=0;
 
 In this example, the `price` field will be stored as a `decimal` with 16 digits in total and 8 digits after the decimal point in the database. This allows you to control the storage format and precision of numeric fields in your database schema.
 
+## allowNull by field type
+
+Migrations create a column `not null` when its type has a default value in the database (`''`, `0`, `false`), and nullable otherwise. `allowNull` defaults to match:
+
+| Field                                                                                                                                                                                                   | `allowNull` by default |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| `Fields.string`, `Fields.number`, `Fields.integer`, `Fields.boolean`, `Fields.enum`, `Fields.literal`, `Fields.object`, `ValueListFieldType`, `Relations.toOne`, `Fields.createdAt`, `Fields.updatedAt` | `false`                |
+| `Fields.date`, `Fields.dateOnly`, `Fields.json`, another custom `fieldTypeInDb` (except `integer`, or on a number or boolean)                                                                           | `true`                 |
+| An id                                                                                                                                                                                                   | `false`                |
+
+With `allowNull: false` on a Date, json or custom type, a new table gets the column `not null`, with no default value. A column added to an existing table stays nullable, since nothing fills its existing rows.
+
 ## Creating Custom Field Types
 
 Sometimes, you may need to create custom field types to handle specific requirements or use cases in your application. By creating custom field types, you can encapsulate the logic for generating, validating, and converting field values.

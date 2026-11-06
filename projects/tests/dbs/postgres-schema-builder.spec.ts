@@ -1,16 +1,27 @@
 import { beforeEach, describe, expect, it } from 'vitest'
+import * as Knex from 'knex'
 import {
   Entity,
+  Field,
   Fields,
+  Relations,
+  Remult,
   SqlDatabase,
+  ValueListFieldType,
   dbNamesOf,
   describeClass,
   remult,
+  type FieldMetadata,
 } from '../../core'
 import {
+  PostgresDataProvider,
   PostgresSchemaBuilder,
   createPostgresDataProvider,
+  postgresColumnSyntax,
 } from '../../core/postgres'
+import { KnexDataProvider, buildColumn } from '../../core/remult-knex'
+import { SqliteCoreDataProvider } from '../../core/remult-sqlite-core'
+import { DuckDBDataProvider } from '../../core/remult-duckdb'
 
 //connection string is in a .env file placed in the `tests` folder with key `DATABASE_URL`
 // if we don't have this, tests will be skipped
@@ -834,3 +845,124 @@ describe.skipIf(!connectionString)(
     })
   },
 )
+
+describe('allowNull by field type', () => {
+  @ValueListFieldType()
+  class Level {
+    static low = new Level('low')
+    constructor(public id: string) {}
+  }
+  @ValueListFieldType()
+  class Rank {
+    static first = new Rank(1)
+    constructor(public id: number) {}
+  }
+  @Entity('allowNullCat')
+  class Cat {
+    @Fields.integer()
+    id = 0
+  }
+  @Entity('allowNullKinds', { id: 'code' })
+  class Kinds {
+    @Fields.string({ valueConverter: { fieldTypeInDb: 'uuid' } })
+    code = ''
+    @Fields.string()
+    s = ''
+    @Fields.number()
+    n = 0
+    @Fields.number({ valueConverter: { fieldTypeInDb: 'decimal(16,8)' } })
+    d = 0
+    @Fields.boolean()
+    b = false
+    @Field(() => Level)
+    level = Level.low
+    @Field(() => Rank)
+    rank = Rank.first
+    @Relations.toOne(() => Cat)
+    cat?: Cat
+    @Fields.object()
+    obj = {}
+    @Fields.date()
+    at?: Date
+    @Fields.dateOnly()
+    day?: Date
+    @Fields.json()
+    data?: unknown
+    @Fields.string({ valueConverter: { fieldTypeInDb: 'citext' } })
+    email = ''
+    @Fields.string({ valueConverter: { fieldTypeInDb: 'dbid' } })
+    ref = ''
+    @Fields.createdAt()
+    created = new Date()
+    @Fields.updatedAt()
+    updated = new Date()
+    @Fields.date({ allowNull: false })
+    strictAt = new Date()
+    @Fields.dateOnly({ allowNull: false })
+    strictDay = new Date()
+    @Fields.json({ allowNull: false })
+    strictData = {}
+    @Fields.string({
+      allowNull: false,
+      valueConverter: { fieldTypeInDb: 'citext' },
+    })
+    strictEmail = ''
+  }
+  const r = new Remult()
+  const meta = r.repo(Kinds).metadata
+  const fields = meta.fields.toArray()
+  const knex = Knex.default({ client: 'pg' })
+  const sqlite = new SqliteCoreDataProvider(undefined!, undefined!)
+  const duckdb = new DuckDBDataProvider(undefined!)
+  const knexColumn = (f: FieldMetadata, supportsJson = true) =>
+    knex.schema
+      .createTable('t', (b) => buildColumn(f, f.key, b, supportsJson))
+      .toString()
+  const createColumnSql: [string, (f: FieldMetadata) => string][] = [
+    ['postgres', (f) => postgresColumnSyntax(f, f.key)],
+    ['knex', (f) => knexColumn(f)],
+    ['knex, json as text', (f) => knexColumn(f, false)],
+    ['sqlite', (f) => sqlite.addColumnSqlSyntax(f, f.key, false)],
+    ['duckdb', (f) => duckdb.addColumnSqlSyntax(f, f.key, false)],
+  ]
+
+  it('defaults to true when the column has no default value, false on an id', () => {
+    expect(fields.filter((f) => f.allowNull).map((f) => f.key)).toEqual([
+      'at',
+      'day',
+      'data',
+      'email',
+    ])
+  })
+  it.each(createColumnSql)(
+    'is true exactly when %s creates the column nullable',
+    (_, sql) => {
+      for (const f of fields)
+        expect(sql(f).includes('not null'), f.key).toBe(!f.allowNull)
+    },
+  )
+  it.each([
+    ['postgres', new PostgresDataProvider(undefined!)],
+    ['knex', new KnexDataProvider(knex)],
+    ['sqlite', sqlite],
+  ])('%s keeps an added column nullable', async (_, db) => {
+    const sql: string[] = []
+    const b = db.provideMigrationBuilder({
+      addSql: (s) => sql.push(s),
+      addComment: () => {},
+      addTypescriptCode: () => {},
+    })
+    const { strictAt, strictDay, strictData, strictEmail } = meta.fields
+    for (const f of [strictAt, strictDay, strictData, strictEmail])
+      await b.addColumn(meta, f)
+    expect(sql.join()).not.toContain('not null')
+  })
+  it('sqlite gives no default to a date, json or custom type', () => {
+    const { d, strictDay, strictData, strictEmail } = meta.fields
+    expect(sqlite.addColumnSqlSyntax(d, 'd', false)).toContain('default 0')
+    for (const f of [strictDay, strictData, strictEmail])
+      expect(sqlite.addColumnSqlSyntax(f, f.key, false), f.key).not.toContain(
+        'default',
+      )
+  })
+})
