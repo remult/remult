@@ -2736,8 +2736,8 @@ export function buildLabel(
   return ''
 }
 
-/** Migrations create a column `not null` only when its type has a default value in the db. */
-function hasDefaultValueInDb({
+/** Migrations give the column a default value (`''`, `0`, `false`), so it is `not null`. */
+export function hasColumnDefault({
   valueType,
   valueConverter,
 }: FieldOptions<unknown, unknown>): boolean {
@@ -2745,10 +2745,9 @@ function hasDefaultValueInDb({
   if (valueType === Date) return false
   // A relation id is an integer or a string, and its fieldTypeInDb would load the related entity.
   if (getEntitySettings(valueType, false)) return true
-  const fieldTypeInDb = valueConverter?.fieldTypeInDb
-  // Without one, a string column, default ''. `dbid` is a Mongo ObjectId marker, not a column type.
-  if (!fieldTypeInDb || fieldTypeInDb === 'dbid') return true
-  return fieldTypeInDb === 'integer'
+  const type = valueConverter?.fieldTypeInDb
+  // None is a string column, default ''. `dbid` is a Mongo ObjectId marker, not a column type.
+  return !type || type === 'dbid' || type === 'integer'
 }
 
 export class columnDefsImpl implements FieldMetadata {
@@ -2784,7 +2783,7 @@ export class columnDefsImpl implements FieldMetadata {
         return result
       },
     }) as Required<ValueConverter<any>>
-    this.allowNull = this.settings.allowNull ?? !hasDefaultValueInDb(settings)
+    this.allowNull = this.settings.allowNull ?? !hasColumnDefault(settings)
     this.valueType = this.settings.valueType
     this.key = this.settings.key!
     this.inputType = this.settings.inputType!
@@ -2921,8 +2920,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
     }
     // The database rejects NULL in a primary key.
     for (const f of this.idMetadata.fields)
-      if (f && f.options.allowNull === undefined)
-        (f as columnDefsImpl).allowNull = false
+      if (f) (f as columnDefsImpl).allowNull = f.options.allowNull ?? false
   }
   apiUpdateAllowed(item: T) {
     if (this.options.allowApiUpdate === undefined) return false

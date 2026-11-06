@@ -40,7 +40,7 @@ A human readable name for the field. Can be used to achieve a consistent label f
 ## allowNull
 If it can store `null` in the database.
 
-Defaults to `true` on a Date, `Fields.json` or another custom `fieldTypeInDb` (not on a number or boolean), as migrations create those columns without a default value. `false` otherwise, and on an id.
+Defaults to `true` on a Date, `Fields.json` or another custom `fieldTypeInDb` (except `integer`, or on a number or boolean), as migrations create those columns without a default value. `false` otherwise, and on an id.
 
 
 #### see:

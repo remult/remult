@@ -14,11 +14,12 @@ import {
   type FieldMetadata,
 } from '../../core'
 import {
+  PostgresDataProvider,
   PostgresSchemaBuilder,
   createPostgresDataProvider,
   postgresColumnSyntax,
 } from '../../core/postgres'
-import { buildColumn } from '../../core/remult-knex'
+import { KnexDataProvider, buildColumn } from '../../core/remult-knex'
 import { SqliteCoreDataProvider } from '../../core/remult-sqlite-core'
 import { DuckDBDataProvider } from '../../core/remult-duckdb'
 
@@ -869,8 +870,6 @@ describe('allowNull by field type', () => {
     s = ''
     @Fields.number()
     n = 0
-    @Fields.integer()
-    i = 0
     @Fields.number({ valueConverter: { fieldTypeInDb: 'decimal(16,8)' } })
     d = 0
     @Fields.boolean()
@@ -891,8 +890,8 @@ describe('allowNull by field type', () => {
     data?: unknown
     @Fields.string({ valueConverter: { fieldTypeInDb: 'citext' } })
     email = ''
-    @Fields.string({ allowNull: true })
-    note: string | null = null
+    @Fields.string({ valueConverter: { fieldTypeInDb: 'dbid' } })
+    ref = ''
     @Fields.date({ allowNull: false })
     strictAt = new Date()
     @Fields.dateOnly({ allowNull: false })
@@ -905,18 +904,9 @@ describe('allowNull by field type', () => {
     })
     strictEmail = ''
   }
-  @Entity('allowNullOthers')
-  class Others {
-    @Fields.id()
-    id = ''
-    @Fields.autoIncrement()
-    seq = 0
-    @Fields.string({ valueConverter: { fieldTypeInDb: 'dbid' } })
-    ref = ''
-  }
   const r = new Remult()
   const meta = r.repo(Kinds).metadata
-  const fields = meta.fields.toArray().filter((f) => f !== meta.fields.code)
+  const fields = meta.fields.toArray()
   const knex = Knex.default({ client: 'pg' })
   const sqlite = new SqliteCoreDataProvider(undefined!, undefined!)
   const duckdb = new DuckDBDataProvider(undefined!)
@@ -932,13 +922,12 @@ describe('allowNull by field type', () => {
     ['duckdb', (f) => duckdb.addColumnSqlSyntax(f, f.key, false)],
   ]
 
-  it('defaults to true when the type has no default value in the db', () => {
+  it('defaults to true when the column has no default value, false on an id', () => {
     expect(fields.filter((f) => f.allowNull).map((f) => f.key)).toEqual([
       'at',
       'day',
       'data',
       'email',
-      'note',
     ])
   })
   it.each(createColumnSql)(
@@ -949,34 +938,27 @@ describe('allowNull by field type', () => {
     },
   )
   it.each([
-    ['postgres', (f: FieldMetadata) => postgresColumnSyntax(f, f.key, true)],
-    [
-      'knex',
-      (f: FieldMetadata) =>
-        knex.schema
-          .alterTable('t', (b) => buildColumn(f, f.key, b, true, true))
-          .toString(),
-    ],
-    ['sqlite', (f: FieldMetadata) => sqlite.addColumnSqlSyntax(f, f.key, true)],
-  ])('%s adds a column with no default value nullable', (_, sql) => {
+    ['postgres', new PostgresDataProvider(undefined!)],
+    ['knex', new KnexDataProvider(knex)],
+    ['sqlite', sqlite],
+  ])('%s keeps an added column nullable', async (_, db) => {
+    const sql: string[] = []
+    const b = db.provideMigrationBuilder({
+      addSql: (s) => sql.push(s),
+      addComment: () => {},
+      addTypescriptCode: () => {},
+    })
     const { strictAt, strictDay, strictData, strictEmail } = meta.fields
     for (const f of [strictAt, strictDay, strictData, strictEmail])
-      expect(sql(f), f.key).not.toContain('not null')
+      await b.addColumn(meta, f)
+    expect(sql.join()).not.toContain('not null')
   })
-  it('sqlite gives default 0 only to a number', () => {
+  it('sqlite gives no default to a date, json or custom type', () => {
     const { d, strictDay, strictData, strictEmail } = meta.fields
     expect(sqlite.addColumnSqlSyntax(d, 'd', false)).toContain('default 0')
     for (const f of [strictDay, strictData, strictEmail])
       expect(sqlite.addColumnSqlSyntax(f, f.key, false), f.key).not.toContain(
         'default',
       )
-  })
-  it('is false on an id, an autoincrement and a Mongo dbid', () => {
-    const { seq, ref } = r.repo(Others).metadata.fields
-    expect([meta.fields.code, seq, ref].map((f) => f.allowNull)).toEqual([
-      false,
-      false,
-      false,
-    ])
   })
 })

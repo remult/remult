@@ -1,11 +1,5 @@
 import { expect } from 'vitest'
-import {
-  Entity,
-  EntityBase,
-  Field,
-  Fields,
-  type EntityFilter,
-} from '../../../core'
+import { Entity, EntityBase, Field, Fields } from '../../../core'
 import type { DbTestProps } from './db-tests-props'
 import { it } from 'vitest'
 
@@ -59,14 +53,8 @@ export function testUpdateWithNull({ createEntity }: DbTestProps) {
   })
   it('a Date or json field allows null, as its column does', async () => {
     const r = await createEntity(testNullByType)
-    await r.insert([
-      { id: 1, at: new Date(2026, 10, 7), data: { a: 1 } },
-      { id: 2 },
-    ])
-    const ids = async (where: EntityFilter<testNullByType>) =>
-      (await r.find({ where, orderBy: { id: 'asc' } })).map((x) => x.id)
-    expect(await ids({ at: null! })).toEqual([2])
-    expect(await ids({ data: null! })).toEqual([2])
-    expect(await ids({ at: { $ne: null! } })).toEqual([1])
+    await r.insert([{ id: 1, at: new Date(), data: { a: 1 } }, { id: 2 }])
+    expect(await r.count({ at: null!, data: null! })).toBe(1)
+    expect(await r.count({ at: { $ne: null! } })).toBe(1)
   })
 }

@@ -388,12 +388,11 @@ In this example, the `price` field will be stored as a `decimal` with 16 digits 
 
 Migrations create a column `not null` when its type has a default value in the database (`''`, `0`, `false`), and nullable otherwise. `allowNull` defaults to match:
 
-| Field                                                                                                                                                           | `allowNull` by default |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| `Fields.string`, `Fields.number`, `Fields.integer`, `Fields.boolean`, `Fields.enum`, `Fields.literal`, `Fields.object`, `ValueListFieldType`, `Relations.toOne` | `false`                |
-| `Fields.date`, `Fields.dateOnly`, `Fields.createdAt`, `Fields.updatedAt`                                                                                        | `true`                 |
-| `Fields.json`, another custom `fieldTypeInDb` (not on a number or boolean)                                                                                      | `true`                 |
-| An id                                                                                                                                                           | `false`                |
+| Field                                                                                                                                                                 | `allowNull` by default |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| `Fields.string`, `Fields.number`, `Fields.integer`, `Fields.boolean`, `Fields.enum`, `Fields.literal`, `Fields.object`, `ValueListFieldType`, `Relations.toOne`       | `false`                |
+| `Fields.date`, `Fields.dateOnly`, `Fields.createdAt`, `Fields.updatedAt`, `Fields.json`, another custom `fieldTypeInDb` (except `integer`, or on a number or boolean) | `true`                 |
+| An id                                                                                                                                                                 | `false`                |
 
 With `allowNull: false` on a Date, json or custom type, a new table gets the column `not null`, with no default value. A column added to an existing table stays nullable, since nothing fills its existing rows.
 
