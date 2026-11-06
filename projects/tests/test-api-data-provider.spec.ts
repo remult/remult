@@ -125,6 +125,7 @@ describe('test api data provider', () => {
           ' offset ' + offset + ' rows fetch next ' + limit + ' rows only',
         transaction: undefined!,
         end: async () => {},
+        nativeNullSort: { order: 'unknown', syntax: 'CASE WHEN' },
       }),
     })
     await repo(LoginAudit).groupBy({

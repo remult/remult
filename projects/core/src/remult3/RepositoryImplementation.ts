@@ -11,7 +11,7 @@ import type { AllowedForInstance } from '../context.js'
 import { Remult } from '../context.js'
 import type { EntityOptions } from '../entity.js'
 import { Filter } from '../filter/filter-interfaces.js'
-import { Sort } from '../sort.js'
+import { Sort, isNullFirstSort } from '../sort.js'
 import {
   GroupByCountMember,
   GroupByForApiKey,
@@ -147,37 +147,35 @@ export class RepositoryImplementation<entityType>
     orderBy: EntityOrderBy<entityType>,
     lastRow: entityType,
   ): Promise<EntityFilter<entityType>> {
-    let values = new Map<string, any>()
-
-    for (const s of Sort.translateOrderByToSort(this.metadata, orderBy)
-      .Segments) {
-      let existingVal = lastRow[s.field.key as keyof entityType]
-      // if (typeof existingVal !== "string" && typeof existingVal !== "number") {
-      // }
-      // else {
-      //     let ei = getEntitySettings(s.field.valueType, false);
-      //     if (ei) {
-      //         existingVal = await this.remult.repo(s.field.valueType).findId(existingVal);
-      //     }
-      // }
-      values.set(s.field.key, existingVal)
-    }
-
-    let r: EntityFilter<entityType> = { $or: [] }
-    let equalToColumn: FieldMetadata[] = []
-    for (const s of Sort.translateOrderByToSort(this.metadata, orderBy)
-      .Segments) {
-      let f: EntityFilter<any> = {}
-      for (const c of equalToColumn) {
-        f[c.key] = values.get(c.key)
+    const ref = this.getEntityRef(lastRow)
+    const filter: EntityFilter<entityType> = { $or: [] }
+    const or = filter.$or!
+    let equal: EntityFilter<entityType> = {}
+    for (const { field, isDescending } of Sort.translateOrderByToSort(
+      this.metadata,
+      orderBy,
+    ).Segments) {
+      // A string key cannot name an entity member for TypeScript.
+      const keyIs = (condition: unknown) =>
+        ({ [field.key]: condition }) as EntityFilter<entityType>
+      // An unloaded relation reads `undefined`, its id is there.
+      const value =
+        (
+          ref.fields.find(field.key) as IdFieldRef<entityType, unknown>
+        ).getId() ?? null
+      const nullFirst = isNullFirstSort(isDescending)
+      if (value === null) {
+        if (nullFirst) or.push({ ...equal, $not: keyIs(null) })
+      } else {
+        or.push({
+          ...equal,
+          ...keyIs(isDescending ? { $lt: value } : { $gt: value }),
+        })
+        if (field.allowNull && !nullFirst) or.push({ ...equal, ...keyIs(null) })
       }
-      equalToColumn.push(s.field)
-      if (s.isDescending) {
-        f[s.field.key] = { $lt: values.get(s.field.key) }
-      } else f[s.field.key] = { $gt: values.get(s.field.key) }
-      r.$or!.push(f)
+      equal = { ...equal, ...keyIs(value) }
     }
-    return r
+    return filter
   }
 
   relations(item: entityType) {
