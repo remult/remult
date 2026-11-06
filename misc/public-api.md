@@ -1110,7 +1110,7 @@ export interface FieldOptions<entityType = unknown, valueType = unknown> {
   label?: string
   /** If it can store `null` in the database.
    *
-   * Defaults to `true` on a Date, `Fields.json` or another custom `fieldTypeInDb` (not on a number or boolean), as migrations create those columns without a default value. `false` otherwise, and on an id.
+   * Defaults to `true` on a Date, `Fields.json` or another custom `fieldTypeInDb` (except `integer`, or on a number or boolean), as migrations create those columns without a default value. `false` otherwise, on an id, and on `Fields.createdAt` / `updatedAt`.
    * @see [allowNull by field type](https://remult.dev/docs/field-types#allownull-by-field-type)
    */
   allowNull?: boolean
