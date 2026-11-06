@@ -373,6 +373,17 @@ describe('NullSort in ORDER BY', () => {
     },
   )
 
+  it('writes only the direction where NullSort differs from the database', async () => {
+    const [asc, desc] = await orderBys(postgres, {
+      asc: 'NULLS FIRST',
+      desc: 'NULLS FIRST',
+    })
+    expect([asc, desc]).toEqual([
+      '"due" nulls first, "title"',
+      '"due" desc, "title" desc',
+    ])
+  })
+
   it.each([
     [
       'Postgres',
