@@ -32,13 +32,14 @@ import {
   GroupByOperators,
   type InsertOrUpdateOptions,
 } from './src/remult3/remult3.js'
-import { nullSortToWrite, type OrderBySegment } from './src/sort.js'
+import { NullSort } from './src/sort.js'
 
 let nullSortWarned = false
 // `$sort` has no NULL option, so Mongo sorts NULL lowest whatever NullSort says.
-function warnIfNullSortIgnored(segment: OrderBySegment) {
-  const lowest = { asc: 'NULLS FIRST', desc: 'NULLS LAST' } as const
-  if (nullSortWarned || !nullSortToWrite(lowest, segment)) return
+function warnIfNullSortIgnored() {
+  const order = NullSort.order
+  if (nullSortWarned || order === 'native') return
+  if (order.asc === 'NULLS FIRST' && order.desc === 'NULLS LAST') return
   nullSortWarned = true
   console.warn(
     '[remult] NullSort is ignored on Mongo, which sorts NULL lowest: paginator() can skip or repeat rows',
@@ -236,9 +237,9 @@ class MongoEntityDataProvider implements EntityDataProvider {
     }
 
     if (options?.orderBy) {
+      warnIfNullSortIgnored()
       let sort: any = {}
       for (const x of options.orderBy) {
-        warnIfNullSortIgnored(x)
         const direction = x.isDescending ? -1 : 1
         switch (x.operation) {
           case 'count':
@@ -290,9 +291,9 @@ class MongoEntityDataProvider implements EntityDataProvider {
       }
     }
     if (options.orderBy) {
+      warnIfNullSortIgnored()
       op.sort = {}
       for (const s of options.orderBy.Segments) {
-        warnIfNullSortIgnored(s)
         op.sort[e.$dbNameOf(s.field)] = s.isDescending ? -1 : 1
       }
     }

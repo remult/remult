@@ -178,8 +178,6 @@ export interface SortSegment {
   field: FieldMetadata
   isDescending?: boolean
 }
-/** A `find` sort segment, or a `groupBy` order: on `count` it has no field. */
-export type OrderBySegment = Partial<SortSegment> & { operation?: string }
 export interface NullOrder {
   asc: 'NULLS FIRST' | 'NULLS LAST'
   desc: 'NULLS FIRST' | 'NULLS LAST'
@@ -203,20 +201,6 @@ export interface NativeNullSort {
 export function isNullFirstSort(isDescending?: boolean): boolean {
   if (NullSort.order === 'native') return !isDescending
   return NullSort.order[isDescending ? 'desc' : 'asc'] === 'NULLS FIRST'
-}
-
-/** The NULL order `ORDER BY` must write, `undefined` when the database's own is right. */
-export function nullSortToWrite(
-  nativeOrder: NullOrder | 'unknown',
-  { field, isDescending, operation }: OrderBySegment,
-): 'NULLS FIRST' | 'NULLS LAST' | undefined {
-  // A distinct count is never NULL; other aggregates are NULL only over NULL values.
-  const canBeNull = !!field?.allowNull && operation !== 'distinctCount'
-  if (!canBeNull || NullSort.order === 'native') return undefined
-  const dir = isDescending ? 'desc' : 'asc'
-  const order = NullSort.order[dir]
-  if (nativeOrder !== 'unknown' && nativeOrder[dir] === order) return undefined
-  return order
 }
 
 export function compareForSort(

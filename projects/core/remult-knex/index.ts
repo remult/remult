@@ -34,7 +34,7 @@ import {
   getRepository,
   isAutoIncrement,
 } from '../src/remult3/RepositoryImplementation.js'
-import { Sort, nullSortToWrite, type NativeNullSort } from '../src/sort.js'
+import { Sort, type NativeNullSort } from '../src/sort.js'
 import {
   fromDbColumn,
   toDbColumn,
@@ -285,15 +285,12 @@ class KnexEntityDataProvider implements EntityDataProvider {
     }
     if (options.orderBy) {
       const native = this.dp.nativeNullSort
-      for (const s of options.orderBy.Segments) {
-        const column = e.$dbNameOf(s.field)
-        // Not Knex's own `nulls` option: outside Postgres it sorts on `(x is null)` alone.
-        if (nullSortToWrite(native.order, s))
-          query = query.orderByRaw(orderBySql(':column:', s, native), {
-            column,
-          })
-        else query = query.orderBy(column, s.isDescending ? 'desc' : 'asc')
-      }
+      // Not Knex's own `nulls` option: outside Postgres it sorts on `(x is null)` alone.
+      for (const s of options.orderBy.Segments)
+        query = query.orderByRaw(
+          orderBySql(':column:', s.isDescending, s.field.allowNull, native),
+          { column: e.$dbNameOf(s.field) },
+        )
     }
     if (options.limit) {
       query = query.limit(options.limit)

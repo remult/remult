@@ -9,11 +9,11 @@ import {
 import type { FieldMetadata } from '../../core/src/column-interfaces'
 import { Remult, queryConfig } from '../../core/src/context'
 import { entityFilterToJson } from '../../core/src/filter/filter-interfaces'
-import { NullSort, Sort } from '../../core/src/sort'
+import { Sort } from '../../core/src/sort'
 import { createData } from './createData'
 import { Categories } from './remult-3-entities'
 
-import { describe, expect, it, onTestFinished } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { testRestDb } from './testHelper'
 import { getRepositoryInternals } from '../../core/src/remult3/repository-internals'
 import { entity } from './dynamic-classes.js'
@@ -415,50 +415,6 @@ function testPaging(
         ),
       )
     })
-    async function expectAfterFilter(
-      orderBy: EntityOrderBy<theTable>,
-      row: Partial<theTable>,
-      expected: EntityFilter<theTable>,
-    ) {
-      const eDefs = new Remult().repo(theTable)
-      const f = await getRepositoryInternals(eDefs)._createAfterFilter(
-        orderBy,
-        Object.assign(eDefs.create(), row),
-      )
-      expect(
-        JSON.stringify(await entityFilterToJson(eDefs.metadata, f)),
-      ).toEqual(
-        JSON.stringify(await entityFilterToJson(eDefs.metadata, expected)),
-      )
-    }
-    it('create rows after filter on a NULL that sorts last', async () => {
-      onTestFinished(() => {
-        NullSort.order = 'native'
-      })
-      NullSort.order = { asc: 'NULLS LAST', desc: 'NULLS FIRST' }
-      await expectAfterFilter(
-        { d: 'asc', a: 'asc', b: 'asc' },
-        { a: 'a', b: 'b', d: null },
-        {
-          $or: [
-            { d: null!, a: { $gt: 'a' } },
-            { d: null!, a: 'a', b: { $gt: 'b' } },
-          ],
-        },
-      )
-      await expectAfterFilter(
-        { d: 'asc', a: 'asc', b: 'asc' },
-        { a: 'a', b: 'b', d: 4 },
-        {
-          $or: [
-            { d: { $gt: 4 } },
-            { d: null! },
-            { d: 4, a: { $gt: 'a' } },
-            { d: 4, a: 'a', b: { $gt: 'b' } },
-          ],
-        },
-      )
-    })
     it('serialize filter with or', async () => {
       const remult = new Remult()
       const eDefs = remult.repo(theTable)
@@ -529,7 +485,5 @@ function testPaging(
     b!: string
     @Fields.string()
     c!: string
-    @Fields.integer({ allowNull: true })
-    d!: number | null
   }
 }

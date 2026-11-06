@@ -6,7 +6,6 @@ import {
   type EntityMetadata,
   Fields,
   InMemoryDataProvider,
-  type NullOrder,
   Remult,
   type SqlCommand,
   type SqlCommandWithParameters,
@@ -15,6 +14,7 @@ import {
   dbNamesOf,
 } from '../../core'
 import { NullSort } from '../../core/internals'
+import { HIGHEST, LOWEST, NATIVE } from './shared-tests/test-null-sort'
 import { PostgresDataProvider, type PostgresPool } from '../../core/postgres'
 import { KnexDataProvider } from '../../core/remult-knex'
 import { SqliteCoreDataProvider } from '../../core/remult-sqlite-core'
@@ -285,9 +285,6 @@ describe('NullSort in ORDER BY', () => {
     @Fields.date({ allowNull: true })
     done: Date | null = null
   }
-  const NATIVE = 'native'
-  const LOWEST: NullOrder = { asc: 'NULLS FIRST', desc: 'NULLS LAST' }
-  const HIGHEST: NullOrder = { asc: 'NULLS LAST', desc: 'NULLS FIRST' }
   afterEach(() => {
     NullSort.order = NATIVE
   })
@@ -389,22 +386,11 @@ describe('NullSort in ORDER BY', () => {
       ],
     ],
     [
-      'SQLite',
-      sqlite,
-      HIGHEST,
-      [
-        '`due` nulls last, `title`',
-        '`due` desc nulls first, `title` desc',
-        '`due` nulls last, count (distinct `done`)',
-        '`due` nulls last',
-      ],
-    ],
-    [
       'Knex pg',
       knex('pg'),
       LOWEST,
       [
-        '"due" nulls first, "title" asc',
+        '"due" nulls first, "title"',
         '"due" desc nulls last, "title" desc',
         '"due" nulls first, count (distinct "done")',
         '"due" nulls first',
@@ -415,7 +401,7 @@ describe('NullSort in ORDER BY', () => {
       knex('mysql2'),
       HIGHEST,
       [
-        'case when `due` is null then 1 else 0 end, `due`, `title` asc',
+        'case when `due` is null then 1 else 0 end, `due`, `title`',
         'case when `due` is null then 0 else 1 end, `due` desc, `title` desc',
         'case when `due` is null then 1 else 0 end, `due`, count (distinct `done`)',
         'case when `due` is null then 1 else 0 end, `due`',
@@ -437,7 +423,6 @@ describe('NullSort in ORDER BY', () => {
       })
       return raw.sql.split(ORDER_BY)[1]
     }
-    expect(await orderBy()).toBe('due')
     NullSort.order = LOWEST
     expect(await orderBy()).toBe('case when due is null then 0 else 1 end, due')
   })

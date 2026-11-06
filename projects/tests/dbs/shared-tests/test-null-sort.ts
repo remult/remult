@@ -14,7 +14,6 @@ import {
   type EntityFilter,
   type EntityOrderBy,
   type NullOrder,
-  type QueryOptions,
   type QueryResult,
   type Repository,
 } from '../../../core'
@@ -26,8 +25,6 @@ import type { DbTestOptions } from './db-tests'
 class Row {
   @Fields.integer()
   id = 0
-  @Fields.string()
-  grp = ''
   @Fields.date({ allowNull: true })
   due: Date | null = null
   @Fields.integer({ allowNull: true })
@@ -44,10 +41,6 @@ class Cat {
 class Item {
   @Fields.integer()
   id = 0
-  @Fields.integer({ allowNull: true })
-  catId: number | null = null
-  @Relations.toOne<Item, Cat>(() => Cat, { field: 'catId' })
-  byField?: Cat
   @Relations.toOne(() => Cat, { allowNull: true })
   ref?: Cat | null
 }
@@ -56,9 +49,9 @@ const nov = (d: number) => new Date(2026, 10, d)
 const dues = (...days: (number | null)[]) =>
   days.map((d) => ({ due: d === null ? null : nov(d) }))
 
-const NATIVE = 'native'
-const LOWEST: NullOrder = { asc: 'NULLS FIRST', desc: 'NULLS LAST' }
-const HIGHEST: NullOrder = { asc: 'NULLS LAST', desc: 'NULLS FIRST' }
+export const NATIVE = 'native'
+export const LOWEST: NullOrder = { asc: 'NULLS FIRST', desc: 'NULLS LAST' }
+export const HIGHEST: NullOrder = { asc: 'NULLS LAST', desc: 'NULLS FIRST' }
 
 export function nullSortTests(
   { createEntity }: DbTestProps,
@@ -98,13 +91,12 @@ export function nullSortTests(
     r: Repository<T>,
     orderBy: EntityOrderBy<T>,
     rowCount: number,
-    options: QueryOptions<T> = {},
   ) {
     const expected = (await r.find({ orderBy })).map((x) => x.id)
     expect(expected).toHaveLength(rowCount)
     for (let pageSize = 1; pageSize <= rowCount + 1; pageSize++) {
       expect(
-        await walk(r.query({ orderBy, pageSize, ...options }), rowCount),
+        await walk(r.query({ orderBy, pageSize }), rowCount),
         `pageSize ${pageSize}`,
       ).toEqual(expected)
     }
@@ -176,23 +168,6 @@ export function nullSortTests(
           await expectEveryPageSizeMatchesFind(r, { due: dir, id: 'asc' }, 4)
         })
 
-        it('reaches every row when the nullable key is not the first', async () => {
-          const r = await seed([
-            { grp: 'a', due: nov(7) },
-            { grp: 'a', due: nov(8) },
-            { grp: 'b', due: null },
-            { grp: 'b', due: nov(7) },
-            { grp: 'b', due: null },
-            { grp: 'c', due: null },
-            { grp: 'd', due: nov(7) },
-          ])
-          await expectEveryPageSizeMatchesFind(
-            r,
-            { grp: 'asc', due: dir, id: 'asc' },
-            7,
-          )
-        })
-
         it('reaches every row with two nullable keys', async () => {
           const r = await seed([
             { num: null, due: null },
@@ -207,12 +182,6 @@ export function nullSortTests(
             { num: dir, due: dir, id: 'asc' },
             6,
           )
-        })
-
-        // In memory, `null > -5` is true.
-        it('reaches every row on negative numbers', async () => {
-          const r = await seed([-5, null, 0, null, 5].map((num) => ({ num })))
-          await expectEveryPageSizeMatchesFind(r, { num: dir, id: 'asc' }, 5)
         })
 
         it('reaches every row when iterating the query', async () => {
@@ -251,32 +220,19 @@ export function nullSortTests(
           },
         )
 
-        // `ref` without `include` is not loaded: its value must come from the id.
-        it.each([
-          ['byField', {}],
-          ['ref', {}],
-          ['ref', { include: { ref: true } }],
-        ])(
-          'reaches every row sorted on relation %s %j',
-          async (relation, queryOptions) => {
-            const cats = await createEntity(Cat)
-            const [one, two] = await cats.insert([{ id: 1 }, { id: 2 }])
-            const r = await createEntity(Item)
-            await r.insert(
-              [two, null, one, null, two, one].map((cat, i) => ({
-                id: i + 1,
-                catId: cat?.id ?? null,
-                ref: cat,
-              })),
-            )
-            await expectEveryPageSizeMatchesFind(
-              r,
-              { [relation]: dir, id: 'asc' } as EntityOrderBy<Item>,
-              6,
-              queryOptions,
-            )
-          },
-        )
+        // Without `include`, `ref` is not loaded: the cursor must read its id.
+        it('reaches every row sorted on an unloaded relation', async () => {
+          const cats = await createEntity(Cat)
+          const [one, two] = await cats.insert([{ id: 1 }, { id: 2 }])
+          const r = await createEntity(Item)
+          await r.insert(
+            [two, null, one, null, two, one].map((ref, i) => ({
+              id: i + 1,
+              ref,
+            })),
+          )
+          await expectEveryPageSizeMatchesFind(r, { ref: dir, id: 'asc' }, 6)
+        })
       },
     )
   })

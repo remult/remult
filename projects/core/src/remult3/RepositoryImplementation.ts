@@ -149,6 +149,7 @@ export class RepositoryImplementation<entityType>
   ): Promise<EntityFilter<entityType>> {
     const ref = this.getEntityRef(lastRow)
     const filter: EntityFilter<entityType> = { $or: [] }
+    const or = filter.$or!
     let equal: EntityFilter<entityType> = {}
     for (const { field, isDescending } of Sort.translateOrderByToSort(
       this.metadata,
@@ -164,14 +165,13 @@ export class RepositoryImplementation<entityType>
         ).getId() ?? null
       const nullFirst = isNullFirstSort(isDescending)
       if (value === null) {
-        if (nullFirst) filter.$or!.push({ ...equal, $not: keyIs(null) })
+        if (nullFirst) or.push({ ...equal, $not: keyIs(null) })
       } else {
-        filter.$or!.push({
+        or.push({
           ...equal,
           ...keyIs(isDescending ? { $lt: value } : { $gt: value }),
         })
-        if (field.allowNull && !nullFirst)
-          filter.$or!.push({ ...equal, ...keyIs(null) })
+        if (field.allowNull && !nullFirst) or.push({ ...equal, ...keyIs(null) })
       }
       equal = { ...equal, ...keyIs(value) }
     }

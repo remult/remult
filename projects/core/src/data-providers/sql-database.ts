@@ -52,8 +52,8 @@ import {
   getRepository,
   isAutoIncrement,
 } from '../remult3/RepositoryImplementation.js'
-import type { NativeNullSort, OrderBySegment, SortSegment } from '../sort.js'
-import { Sort, nullSortToWrite } from '../sort.js'
+import type { NativeNullSort, SortSegment } from '../sort.js'
+import { NullSort, Sort } from '../sort.js'
 import { fromDbColumn, toDbColumn } from '../valueConverters.js'
 import { getRepositoryInternals } from '../remult3/repository-internals.js'
 import type {
@@ -865,14 +865,18 @@ export function getRowAfterUpdate<entityType>(
     })
 }
 
+/** Writes the NULL order only on a nullable column, where NullSort differs from the database's own. */
 export function orderBySql(
   expr: string,
-  segment: OrderBySegment,
+  isDescending: boolean | undefined,
+  nullable: boolean,
   native: NativeNullSort,
 ): string {
-  const sql = segment.isDescending ? expr + ' desc' : expr
-  const nullSort = nullSortToWrite(native.order, segment)
-  if (!nullSort) return sql
+  const sql = isDescending ? expr + ' desc' : expr
+  if (!nullable || NullSort.order === 'native') return sql
+  const dir = isDescending ? 'desc' : 'asc'
+  const nullSort = NullSort.order[dir]
+  if (native.order !== 'unknown' && native.order[dir] === nullSort) return sql
   if (native.syntax === 'NULLS FIRST/LAST')
     return sql + ' ' + nullSort.toLowerCase()
   const [ifNull, otherwise] = nullSort === 'NULLS FIRST' ? [0, 1] : [1, 0]
@@ -923,9 +927,10 @@ export async function buildFindSql(
 
         select += orderBySql(
           c.field.options.sqlExpression
-            ? c.field.options.key!
+            ? c.field.key
             : await e.$dbNameOf(c.field),
-          c,
+          c.isDescending,
+          c.field.allowNull,
           nativeNullSort,
         )
       }
@@ -1095,7 +1100,9 @@ export async function buildGroupBySql(
         default:
           field = aggregateSqlSyntax(x.operation, field!)
       }
-      orderBy += orderBySql(field!, x, nativeNullSort)
+      // A distinct count is never NULL; other aggregates are NULL only over NULL values.
+      const nullable = !!x.field?.allowNull && x.operation !== 'distinctCount'
+      orderBy += orderBySql(field!, x.isDescending, nullable, nativeNullSort)
     }
     if (orderBy) select += orderBy
   }
