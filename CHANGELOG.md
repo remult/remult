@@ -1,5 +1,11 @@
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- `NotAField<T>` - type a getter as `NotAField<Money>` (or `NotAField<string>`) to leave it out of `where`, `orderBy`, `insert`, `fields` and the other field types. The marker is on the property, so a `Money` stored as a real field elsewhere stays a field, and a plain `Money` still assigns to it. Types only.
+
 ## [3.4.1] - [2026-10-30]
 
 ### Reverted
