@@ -121,12 +121,9 @@ export class SqliteCoreDataProvider
       x.valueType == Number ||
       x.valueType == Boolean ||
       x.valueConverter.fieldTypeInDb == 'integer'
+    const nullCustomType = hasZeroDefault ? nullNumber : notNull
     if (x.valueConverter.fieldTypeInDb)
-      result +=
-        ' ' +
-        x.valueConverter.fieldTypeInDb +
-        ' ' +
-        (hasZeroDefault ? nullNumber : notNull)
+      result += ' ' + x.valueConverter.fieldTypeInDb + ' ' + nullCustomType
     else if (x.valueType == Date) result += ' integer' + notNull
     else if (x.valueType == Boolean) result += ' integer ' + nullNumber
     else if (x.valueType == Number) {

@@ -2740,7 +2740,7 @@ export function buildLabel(
 function hasDefaultValueInDb({
   valueType,
   valueConverter,
-}: FieldOptions<unknown, unknown>) {
+}: FieldOptions<unknown, unknown>): boolean {
   if (valueType === Number || valueType === Boolean) return true
   if (valueType === Date) return false
   // A relation id is an integer or a string, and its fieldTypeInDb would load the related entity.

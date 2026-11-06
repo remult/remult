@@ -920,49 +920,26 @@ describe('allowNull by field type', () => {
   const knex = Knex.default({ client: 'pg' })
   const sqlite = new SqliteCoreDataProvider(undefined!, undefined!)
   const duckdb = new DuckDBDataProvider(undefined!)
+  const knexColumn = (f: FieldMetadata, supportsJson = true) =>
+    knex.schema
+      .createTable('t', (b) => buildColumn(f, f.key, b, supportsJson))
+      .toString()
   const createColumnSql: [string, (f: FieldMetadata) => string][] = [
     ['postgres', (f) => postgresColumnSyntax(f, f.key)],
-    [
-      'knex',
-      (f) =>
-        knex.schema
-          .createTable('t', (b) => buildColumn(f, f.key, b))
-          .toString(),
-    ],
-    [
-      'knex, json as text',
-      (f) =>
-        knex.schema
-          .createTable('t', (b) => buildColumn(f, f.key, b, false))
-          .toString(),
-    ],
+    ['knex', (f) => knexColumn(f)],
+    ['knex, json as text', (f) => knexColumn(f, false)],
     ['sqlite', (f) => sqlite.addColumnSqlSyntax(f, f.key, false)],
     ['duckdb', (f) => duckdb.addColumnSqlSyntax(f, f.key, false)],
   ]
 
   it('defaults to true when the type has no default value in the db', () => {
-    expect(Object.fromEntries(fields.map((f) => [f.key, f.allowNull]))).toEqual(
-      {
-        s: false,
-        n: false,
-        i: false,
-        d: false,
-        b: false,
-        level: false,
-        rank: false,
-        cat: false,
-        obj: false,
-        at: true,
-        day: true,
-        data: true,
-        email: true,
-        note: true,
-        strictAt: false,
-        strictDay: false,
-        strictData: false,
-        strictEmail: false,
-      },
-    )
+    expect(fields.filter((f) => f.allowNull).map((f) => f.key)).toEqual([
+      'at',
+      'day',
+      'data',
+      'email',
+      'note',
+    ])
   })
   it.each(createColumnSql)(
     'is true exactly when %s creates the column nullable',
@@ -994,11 +971,12 @@ describe('allowNull by field type', () => {
         'default',
       )
   })
-  it('is false on an id, as a primary key rejects NULL', () => {
-    expect(meta.fields.code.allowNull).toBe(false)
-  })
-  it('is false on an autoincrement and on a Mongo dbid', () => {
-    const others = r.repo(Others).metadata.fields
-    expect([others.seq.allowNull, others.ref.allowNull]).toEqual([false, false])
+  it('is false on an id, an autoincrement and a Mongo dbid', () => {
+    const { seq, ref } = r.repo(Others).metadata.fields
+    expect([meta.fields.code, seq, ref].map((f) => f.allowNull)).toEqual([
+      false,
+      false,
+      false,
+    ])
   })
 })
