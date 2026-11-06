@@ -5,6 +5,7 @@ import {
   Relations,
   type EntityFilter,
   type EntityOrderBy,
+  type NullOrder,
   type QueryOptions,
   type QueryResult,
   type Repository,
@@ -45,16 +46,16 @@ class Item {
 
 const nov = (d: number) => new Date(2026, 10, d)
 
-const NATIVE = { asc: 'native', desc: 'native' } as const
-const LOWEST = { asc: 'NULL FIRST', desc: 'NULL LAST' } as const
-const HIGHEST = { asc: 'NULL LAST', desc: 'NULL FIRST' } as const
+const NATIVE = 'native'
+const LOWEST: NullOrder = { asc: 'NULL FIRST', desc: 'NULL LAST' }
+const HIGHEST: NullOrder = { asc: 'NULL LAST', desc: 'NULL FIRST' }
 
 export function nullSortTests(
   { createEntity }: DbTestProps,
   options?: DbTestOptions,
 ) {
   afterEach(() => {
-    Object.assign(NullSort, NATIVE)
+    NullSort.order = NATIVE
   })
 
   async function seed(rows: Partial<Row>[]) {
@@ -118,14 +119,14 @@ export function nullSortTests(
       (await r.groupBy({ group: ['num'], orderBy: { num: 'asc' } })).map(
         (x) => x.num,
       )
-    Object.assign(NullSort, LOWEST)
+    NullSort.order = LOWEST
     expect(await nums(r, 'asc')).toEqual([null, 2, 3])
     expect(await nums(r, 'desc')).toEqual([3, 2, null])
     expect(await groups()).toEqual([null, 2, 3])
-    Object.assign(NullSort, HIGHEST)
+    NullSort.order = HIGHEST
     if (options?.nullLowestOnly) {
-      await expect(nums(r, 'asc')).rejects.toThrow('NullSort.asc')
-      await expect(nums(r, 'desc')).rejects.toThrow('NullSort.desc')
+      await expect(nums(r, 'asc')).rejects.toThrow('NullSort.order.asc')
+      await expect(nums(r, 'desc')).rejects.toThrow('NullSort.order.desc')
       return
     }
     expect(await nums(r, 'asc')).toEqual([2, 3, null])
@@ -150,7 +151,7 @@ export function nullSortTests(
             await probe.deleteMany({ where: { id: [1, 2] } })
             if ((first === null) !== (dir === 'asc')) ctx.skip()
           }
-          Object.assign(NullSort, order)
+          NullSort.order = order
         })
 
         it('reaches every row when a page ends on either side of the NULLs', async () => {

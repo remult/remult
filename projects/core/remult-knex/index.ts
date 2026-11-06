@@ -111,27 +111,33 @@ export class KnexDataProvider
   }
   wrapIdentifier: (name: string) => string = (x) => this.knex.ref(x) + ''
   // By `driverName`, as CockroachDB shares the `postgresql` dialect.
-  get nativeNullSort(): NativeNullSort | undefined {
+  get nativeNullSort(): NativeNullSort {
     switch (this.knex.client.driverName) {
       case 'pg':
       case 'pgnative':
       case 'pg-redshift':
       case 'oracledb':
-        return { asc: 'NULL LAST', desc: 'NULL FIRST' }
+        return {
+          order: { asc: 'NULL LAST', desc: 'NULL FIRST' },
+          syntax: 'NULLS FIRST/LAST',
+        }
       case 'mysql':
       case 'mysql2':
       case 'mssql':
         return {
-          asc: 'NULL FIRST',
-          desc: 'NULL LAST',
-          doesNotSupportNullsSyntax: true,
+          order: { asc: 'NULL FIRST', desc: 'NULL LAST' },
+          syntax: 'CASE WHEN',
         }
       case 'sqlite3':
       case 'better-sqlite3':
       case 'cockroachdb':
-        return { asc: 'NULL FIRST', desc: 'NULL LAST' }
+        return {
+          order: { asc: 'NULL FIRST', desc: 'NULL LAST' },
+          syntax: 'NULLS FIRST/LAST',
+        }
     }
-    return undefined
+    // `case when` runs on any SQL database.
+    return { order: 'unknown', syntax: 'CASE WHEN' }
   }
   get jsonColumnStorage(): JsonColumnStorage {
     if (!supportsJsonLoadingAndSaving(this.knex)) return 'text'
@@ -282,7 +288,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
       for (const s of options.orderBy.Segments) {
         const column = e.$dbNameOf(s.field)
         // Not Knex's own `nulls` option: outside Postgres it sorts on `(x is null)` alone.
-        if (nullSortToWrite(native, s))
+        if (nullSortToWrite(native, s) !== 'native')
           query = query.orderByRaw(orderBySql(':column:', s, native), {
             column,
           })

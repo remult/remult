@@ -5,6 +5,8 @@ import {
   Entity,
   type EntityMetadata,
   Fields,
+  InMemoryDataProvider,
+  type NullOrder,
   Remult,
   type SqlCommand,
   type SqlCommandWithParameters,
@@ -57,6 +59,7 @@ describe('test sql implementation', () => {
     getLimitSqlSyntax: () => '',
     transaction: undefined!,
     end: async () => {},
+    nativeNullSort: { order: 'unknown', syntax: 'CASE WHEN' },
   } satisfies SqlImplementation)
   const repo = new Remult(db).repo(task)
   beforeEach(() => (commands = []))
@@ -282,11 +285,11 @@ describe('NullSort in ORDER BY', () => {
     @Fields.date({ allowNull: true })
     done: Date | null = null
   }
-  const NATIVE = { asc: 'native', desc: 'native' } as const
-  const LOWEST = { asc: 'NULL FIRST', desc: 'NULL LAST' } as const
-  const HIGHEST = { asc: 'NULL LAST', desc: 'NULL FIRST' } as const
+  const NATIVE = 'native'
+  const LOWEST: NullOrder = { asc: 'NULL FIRST', desc: 'NULL LAST' }
+  const HIGHEST: NullOrder = { asc: 'NULL LAST', desc: 'NULL FIRST' }
   afterEach(() => {
-    Object.assign(NullSort, NATIVE)
+    NullSort.order = NATIVE
   })
 
   function postgres(sqls: string[]) {
@@ -338,11 +341,11 @@ describe('NullSort in ORDER BY', () => {
 
   async function orderBys(
     dataProvider: (sqls: string[]) => DataProvider,
-    nullSort: typeof NullSort,
+    nullSort: typeof NullSort.order,
   ) {
     const sqls: string[] = []
     const repo = new Remult(dataProvider(sqls)).repo(task)
-    Object.assign(NullSort, nullSort)
+    NullSort.order = nullSort
     await repo.find({ orderBy: { due: 'asc', title: 'asc' } })
     await repo.find({ orderBy: { due: 'desc', title: 'desc' } })
     await repo.groupBy({
@@ -446,6 +449,20 @@ describe('NullSort in ORDER BY', () => {
       expect(await orderBys(dataProvider, other)).toEqual(expected)
     },
   )
+
+  it('writes a case when where the database is unknown', async () => {
+    const repo = new Remult(new InMemoryDataProvider()).repo(task)
+    const orderBy = async () => {
+      const raw = await SqlDatabase.selectToRaw(repo, {
+        orderBy: { due: 'asc' },
+        select: { id: true },
+      })
+      return raw.sql.split(ORDER_BY)[1]
+    }
+    expect(await orderBy()).toBe('due')
+    NullSort.order = LOWEST
+    expect(await orderBy()).toBe('case when due is null then 0 else 1 end, due')
+  })
 })
 
 describe('json columns stored as text', () => {
@@ -467,6 +484,7 @@ describe('json columns stored as text', () => {
       transaction: undefined!,
       end: async () => {},
       supportsJsonColumnType,
+      nativeNullSort: { order: 'unknown', syntax: 'CASE WHEN' },
     } satisfies SqlImplementation)
   }
 

@@ -27,7 +27,10 @@ export class DuckDBDataProvider extends SqliteCoreDataProvider {
       true,
     )
   }
-  nativeNullSort: NativeNullSort = { asc: 'NULL LAST', desc: 'NULL LAST' }
+  nativeNullSort: NativeNullSort = {
+    order: { asc: 'NULL LAST', desc: 'NULL LAST' },
+    syntax: 'NULLS FIRST/LAST',
+  }
   wrapIdentifier(name: string): string {
     return `"${name}"`
   }

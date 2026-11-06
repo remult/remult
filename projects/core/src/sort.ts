@@ -180,42 +180,49 @@ export interface SortSegment {
 }
 /** A `find` sort segment, or a `groupBy` order: on `count` it has no field. */
 export type OrderBySegment = Partial<SortSegment> & { operation?: string }
-export type NullSortOrder = 'native' | 'NULL FIRST' | 'NULL LAST'
+/** Where NULL goes, per direction. */
+export interface NullOrder {
+  asc: 'NULL FIRST' | 'NULL LAST'
+  desc: 'NULL FIRST' | 'NULL LAST'
+}
 
 /**
  * Where NULL sorts, for the whole app: set it on both the server and the client.
  * @see https://remult.dev/docs/field-types#where-null-sorts
  */
-export const NullSort: { asc: NullSortOrder; desc: NullSortOrder } =
-  remultStatic.nullSort ||
-  (remultStatic.nullSort = { asc: 'native', desc: 'native' })
+export const NullSort: { order: NullOrder | 'native' } =
+  remultStatic.nullSort || (remultStatic.nullSort = { order: 'native' })
 
-/** Where the database sorts NULL when `ORDER BY` does not say. */
+/** Where the database sorts NULL when `ORDER BY` does not say, and how `ORDER BY` puts it elsewhere. */
 export interface NativeNullSort {
-  asc: 'NULL FIRST' | 'NULL LAST'
-  desc: 'NULL FIRST' | 'NULL LAST'
-  /** No `nulls first` / `nulls last`, as on MySQL and SQL Server. */
-  doesNotSupportNullsSyntax?: boolean
+  /** `unknown`: `ORDER BY` always writes the NULL order. */
+  order: NullOrder | 'unknown'
+  syntax: 'NULLS FIRST/LAST' | 'CASE WHEN' | 'NOT SUPPORTED'
 }
+
+const NULL_LOWEST: NullOrder = { asc: 'NULL FIRST', desc: 'NULL LAST' }
 
 /** Remult's own order, without a database: `native` is NULL lowest. */
-export function isNullFirstSort(isDescending?: boolean) {
-  const order = NullSort[isDescending ? 'desc' : 'asc']
-  if (order === 'native') return !isDescending
-  return order === 'NULL FIRST'
+export function isNullFirstSort(isDescending?: boolean): boolean {
+  const order = NullSort.order === 'native' ? NULL_LOWEST : NullSort.order
+  return order[isDescending ? 'desc' : 'asc'] === 'NULL FIRST'
 }
 
-/** The NULL order `ORDER BY` must write, `undefined` to leave it to the database. */
+/** The NULL order `ORDER BY` must write, `native` to leave it to the database. */
 export function nullSortToWrite(
-  native: NativeNullSort | undefined,
+  native: NativeNullSort,
   { field, isDescending, operation }: OrderBySegment,
-) {
-  const dir = isDescending ? 'desc' : 'asc'
-  const order = NullSort[dir]
+): 'NULL FIRST' | 'NULL LAST' | 'native' {
   // A distinct count is never NULL; other aggregates are NULL only over NULL values.
   const canBeNull = !!field?.allowNull && operation !== 'distinctCount'
-  if (!native || !canBeNull || order === 'native' || order === native[dir])
-    return undefined
+  if (!canBeNull || NullSort.order === 'native') return 'native'
+  const dir = isDescending ? 'desc' : 'asc'
+  const order = NullSort.order[dir]
+  if (native.order !== 'unknown' && native.order[dir] === order) return 'native'
+  if (native.syntax === 'NOT SUPPORTED')
+    throw new Error(
+      `NullSort.order.${dir} = '${order}' is not supported by this database`,
+    )
   return order
 }
 

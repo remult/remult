@@ -433,9 +433,9 @@ function testPaging(
     }
     it('create rows after filter on a NULL that sorts last', async () => {
       onTestFinished(() => {
-        NullSort.asc = 'native'
+        NullSort.order = 'native'
       })
-      NullSort.asc = 'NULL LAST'
+      NullSort.order = { asc: 'NULL LAST', desc: 'NULL FIRST' }
       await expectAfterFilter(
         { d: 'asc', a: 'asc', b: 'asc' },
         { a: 'a', b: 'b', d: null },

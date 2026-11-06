@@ -116,7 +116,7 @@ export class SqlDatabase
   get jsonColumnStorage(): JsonColumnStorage {
     return this.sql.supportsJsonColumnType ? 'native' : 'text'
   }
-  get nativeNullSort() {
+  get nativeNullSort(): NativeNullSort {
     return this.sql.nativeNullSort
   }
   /* @internal*/
@@ -791,11 +791,14 @@ function wrapIdentifierOf(r: Repository<any>) {
   return undefined
 }
 
-function nativeNullSortOf(r: Repository<any>) {
+function nativeNullSortOf<entityType>(
+  r: Repository<entityType>,
+): NativeNullSort {
   const dp = getRepositoryInternals(r)._dataProvider
   if (isOfType<{ nativeNullSort: NativeNullSort }>(dp, 'nativeNullSort'))
     return dp.nativeNullSort
-  return undefined
+  // Not a SQL repo, so the raw select's database is unknown.
+  return { order: 'unknown', syntax: 'CASE WHEN' }
 }
 
 export function jsonColumnStorageOf(r: Repository<any>): JsonColumnStorage {
@@ -862,16 +865,16 @@ export function getRowAfterUpdate<entityType>(
     })
 }
 
-/** `x [desc]`, with the NULL order when it must be written: `nulls first`, or a `case` without that syntax. */
+/** `x [desc]`, with the NULL order when it must be written. */
 export function orderBySql(
   expr: string,
   segment: OrderBySegment,
-  native: NativeNullSort | undefined,
-) {
+  native: NativeNullSort,
+): string {
   const sql = segment.isDescending ? expr + ' desc' : expr
   const nullSort = nullSortToWrite(native, segment)
-  if (!nullSort) return sql
-  if (native?.doesNotSupportNullsSyntax) {
+  if (nullSort === 'native') return sql
+  if (native.syntax === 'CASE WHEN') {
     const nullRank = nullSort === 'NULL FIRST' ? '0 else 1' : '1 else 0'
     return `case when ${expr} is null then ${nullRank} end, ${sql}`
   }
@@ -884,7 +887,7 @@ export async function buildFindSql(
   options: EntityDataProviderFindOptions | undefined,
   e: EntityDbNamesBase,
   r: SqlCommandWithParameters,
-  nativeNullSort: NativeNullSort | undefined,
+  nativeNullSort: NativeNullSort,
   limitSyntax: (limit: number, offset: number) => string,
   {
     aliasColumns = false,
@@ -995,7 +998,7 @@ export async function groupByImpl(
   options: EntityDataProviderGroupByOptions | undefined,
   e: EntityDbNamesBase,
   r: SqlCommand,
-  nativeNullSort: NativeNullSort | undefined,
+  nativeNullSort: NativeNullSort,
   limitSyntax: (limit: number, offset: number) => string,
   jsonColumnStorage: JsonColumnStorage = 'native',
 ) {
@@ -1018,7 +1021,7 @@ export async function buildGroupBySql(
   options: EntityDataProviderGroupByOptions | undefined,
   e: EntityDbNamesBase,
   r: SqlCommandWithParameters,
-  nativeNullSort: NativeNullSort | undefined,
+  nativeNullSort: NativeNullSort,
   limitSyntax: (limit: number, offset: number) => string,
   jsonColumnStorage: JsonColumnStorage = 'native',
 ) {

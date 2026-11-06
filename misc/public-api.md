@@ -2282,10 +2282,13 @@ export type MembersToInclude<T> = {
         : FindFirstOptions<NonNullable<T[K]>>)
 }
 export interface NativeNullSort {
+  /** `unknown`: `ORDER BY` always writes the NULL order. */
+  order: NullOrder | "unknown"
+  syntax: "NULLS FIRST/LAST" | "CASE WHEN" | "NOT SUPPORTED"
+}
+export interface NullOrder {
   asc: "NULL FIRST" | "NULL LAST"
   desc: "NULL FIRST" | "NULL LAST"
-  /** No `nulls first` / `nulls last`, as on MySQL and SQL Server. */
-  doesNotSupportNullsSyntax?: boolean
 }
 export type NumericKeys<T> = {
   [K in keyof T]: T[K] extends number | undefined | null ? K : never
@@ -3218,7 +3221,7 @@ export declare class SqlDatabase
    */
   wrapIdentifier: (name: string) => string
   get jsonColumnStorage(): JsonColumnStorage
-  get nativeNullSort(): NativeNullSort | undefined
+  get nativeNullSort(): NativeNullSort
   ensureSchema(entities: EntityMetadata[]): Promise<void>
   /**
    * Gets the entity data provider.
@@ -3355,8 +3358,7 @@ export interface SqlImplementation extends HasWrapIdentifier {
   /** true by default */
   doesNotSupportReturningSyntax?: boolean
   doesNotSupportReturningSyntaxOnlyForUpdate?: boolean
-  /** `undefined` when unknown: `ORDER BY` then writes no NULL order. */
-  nativeNullSort?: NativeNullSort
+  nativeNullSort: NativeNullSort
   /** Bound-variable cap per statement. Default 2000 (SQL Server is 2100). */
   maxParametersInOneSqlStatement?: number
   end(): Promise<void>
@@ -4679,7 +4681,7 @@ export declare class KnexDataProvider
   execute(sql: string): Promise<SqlResult>
   static getDb(dataProvider?: DataProvider): Knex<any, any[]>
   wrapIdentifier: (name: string) => string
-  get nativeNullSort(): NativeNullSort | undefined
+  get nativeNullSort(): NativeNullSort
   get jsonColumnStorage(): JsonColumnStorage
   getEntityDataProvider(entity: EntityMetadata<any>): EntityDataProvider
   transaction(
@@ -5140,10 +5142,9 @@ export declare function getRelationInfo(options: FieldOptions): RelationInfo
 export declare function isOfType<T>(obj: any, checkMethod: keyof T): obj is T
 //[ ] FirstTypeNode from TBD is not exported
 export const NullSort: {
-  asc: NullSortOrder
-  desc: NullSortOrder
+  order: NullOrder | "native"
 }
-export type NullSortOrder = "native" | "NULL FIRST" | "NULL LAST"
+//[ ] NullOrder from TBD is not exported
 export const omitFilterField: unique symbol
 export declare function pagedQueryResult<T>(
   pageSize: number,

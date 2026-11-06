@@ -11,8 +11,7 @@ export interface SqlImplementation extends HasWrapIdentifier {
   /** true by default */
   doesNotSupportReturningSyntax?: boolean
   doesNotSupportReturningSyntaxOnlyForUpdate?: boolean
-  /** `undefined` when unknown: `ORDER BY` then writes no NULL order. */
-  nativeNullSort?: NativeNullSort
+  nativeNullSort: NativeNullSort
   /** Bound-variable cap per statement. Default 2000 (SQL Server is 2100). */
   maxParametersInOneSqlStatement?: number
   end(): Promise<void>

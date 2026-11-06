@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ### Breaking
 
 - `orderByNullsFirst` is removed from Postgres and `SqlImplementation`: set `NullSort` instead.
+- A custom `SqlImplementation` must declare `nativeNullSort`: where its database sorts NULL, and how `ORDER BY` puts it elsewhere.
 - In memory and JSON, `$gt`, `$gte`, `$lt` and `$lte` no longer match NULL, as in SQL.
 
 ### Added

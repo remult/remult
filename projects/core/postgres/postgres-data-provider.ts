@@ -92,7 +92,10 @@ export class PostgresDataProvider
     var sb = new PostgresSchemaBuilder(db, this.options?.schema)
     await sb.ensureSchema(entities)
   }
-  nativeNullSort: NativeNullSort = { asc: 'NULL LAST', desc: 'NULL FIRST' }
+  nativeNullSort: NativeNullSort = {
+    order: { asc: 'NULL LAST', desc: 'NULL FIRST' },
+    syntax: 'NULLS FIRST/LAST',
+  }
   async transaction(
     action: (dataProvider: SqlImplementation) => Promise<void>,
   ) {

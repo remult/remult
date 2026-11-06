@@ -31,7 +31,10 @@ export class SqliteCoreDataProvider
     public doesNotSupportReturningSyntaxOnlyForUpdate = false,
   ) {}
 
-  nativeNullSort: NativeNullSort = { asc: 'NULL FIRST', desc: 'NULL LAST' }
+  nativeNullSort: NativeNullSort = {
+    order: { asc: 'NULL FIRST', desc: 'NULL LAST' },
+    syntax: 'NULLS FIRST/LAST',
+  }
   maxParametersInOneSqlStatement = 999
 
   getLimitSqlSyntax(limit: number, offset: number) {

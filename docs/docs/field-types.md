@@ -400,15 +400,16 @@ Without a database (in memory, JSON, and the paginator's next page filter), NULL
 // shared/null-sort.ts
 import { NullSort } from 'remult/internals'
 
-NullSort.asc = 'NULL FIRST'
-NullSort.desc = 'NULL LAST'
+NullSort.order = { asc: 'NULL FIRST', desc: 'NULL LAST' }
 ```
 
 ::: warning Import it on both the server and the client
 The server writes the `ORDER BY`, the client builds the next page filter. If they disagree, the paginator skips or repeats rows. On the server, import it before the api is created. On the client, import it where the app starts, since api requests can run before any page loads.
 :::
 
-`ORDER BY` gets `nulls first` or `nulls last` (a `case` on MySQL and SQL Server) only where the setting differs from the database, and only on `allowNull` columns, so a `not null` column like `id` keeps its index. Mongo sorts NULL as the lowest value only: any other order throws.
+`ORDER BY` gets `nulls first` or `nulls last` (a `case` on MySQL and SQL Server) only where the setting differs from the database, and only on `allowNull` columns, so a `not null` column like `id` keeps its index. On a database remult does not know, such as a Knex driver not listed above, the `case` is always written. Mongo sorts NULL as the lowest value only: any other order throws.
+
+A custom `SqlImplementation` declares its database in `nativeNullSort`: where it sorts NULL, and the syntax `ORDER BY` uses to put it elsewhere.
 
 ## Creating Custom Field Types
 
