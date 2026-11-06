@@ -243,6 +243,7 @@ function testPaging(
       expect(p.hasNextPage).toBe(true)
       p = await p.nextPage()
       expect(p.items.map((x) => x.id)).toEqual([3, 4])
+      // phantom next page: total (4) is an exact multiple of pageSize (2)
       expect(p.hasNextPage).toBe(true)
       p = await p.nextPage()
       expect(p.items.map((x) => x.id)).toEqual([])
