@@ -8,5 +8,9 @@
     "./projects/tests/**/*.spec.ts",
     "./projects/tests/**/*.backend-spec.ts",
     "./projects/tests/**/*.spec-browser.ts"
+  ],
+  "exclude": [
+    "./projects/tests/typed-include/**",
+    "./projects/tests/typed-select/**"
   ]
 }

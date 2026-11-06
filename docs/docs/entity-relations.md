@@ -139,6 +139,81 @@ Here's an example result of running `JSON.stringify` on the `orders` array:
 
 As shown in the result, each `Order` object contains a nested `customer` object, which holds the details of the associated customer, including their `id`, `name`, and `city`. This structured data allows you to work seamlessly with the many-to-one relationship between `Order` and `Customer` entities .
 
+#### Typing the Result
+
+A relation is optional on the entity, because it's only there when you include it:
+
+```typescript
+customer?: Customer // maybe loaded
+```
+
+By default, `find` returns the entity type, so `orders[0].customer` is `Customer | undefined`. To have a literal `include` drop the `?` from the relations it loads, turn on `typedInclude` in a declaration file:
+
+```typescript
+// remult-types.d.ts
+import 'remult'
+
+declare module 'remult' {
+  interface RemultTypeConfig {
+    typedInclude: true
+  }
+}
+```
+
+```typescript
+const orders = await repo(Order).find({ include: { customer: true } })
+orders[0].customer.name // no `?.` needed
+```
+
+The same goes for `findFirst`, `findOne` and `findId`.
+
+**A loaded result is narrower than the entity.**
+
+```typescript
+Order                             // customer?: Customer   maybe loaded
+Loaded<Order, { customer: true }> // customer:  Customer   loaded
+```
+
+A loaded row fits into an `Order` variable. A plain `Order`, such as the result of `insert`, doesn't fit into a loaded one:
+
+```typescript
+let order = await repo(Order).findFirst({ id }, { include: { customer: true } })
+if (!order) order = await repo(Order).insert({ id })
+//          ^ error: insert's result doesn't have customer loaded
+```
+
+If you don't need `customer` afterwards, type the variable as the plain entity. This gives up the narrowing:
+
+```typescript
+let order: Order | undefined = await repo(Order).findFirst(
+  { id },
+  { include: { customer: true } },
+)
+if (!order) order = await repo(Order).insert({ id })
+order.customer // Customer | undefined
+```
+
+If you do need it, load it again after the insert:
+
+```typescript
+let order = await repo(Order).findFirst({ id }, { include: { customer: true } })
+if (!order) {
+  await repo(Order).insert({ id })
+  order = (await repo(Order).findFirst({ id }, { include: { customer: true } }))!
+}
+order.customer // Customer
+```
+
+**A missing target is `undefined`.** An included `toOne` whose target row doesn't exist loads as `undefined`. If that can happen, e.g. with an optional FK or a target a `backendPrefilter` can hide, declare the relation `| null` so it isn't typed as loaded:
+
+```typescript
+@Fields.string()
+customerId = ''
+@Relations.toOne<Order, Customer>(() => Customer, { field: 'customerId' })
+customer?: Customer | null // [!code ++]
+// loaded: Customer | null | undefined
+```
+
 ### Querying a Single Item
 
 To retrieve a single `Order` item along with its associated `Customer`, you can use the `findFirst` method provided by your repository (`orderRepo` in this case). Here's an example of how to perform this query:

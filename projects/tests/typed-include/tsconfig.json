@@ -1,0 +1,8 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "lib": ["es2021", "dom", "esnext.asynciterable"]
+  },
+  "include": ["./*.spec.ts", "./typed-include.d.ts"]
+}
