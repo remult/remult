@@ -1,3 +1,4 @@
+import type { StandardSchemaV1 } from '../standard-schema/StandardSchemaV1.js'
 import type { ErrorInfo, FieldOptions } from '../../index.js'
 import type { ClassType } from '../../classType.js'
 import type { entityEventListener } from '../__EntityValueProvider.js'
@@ -1546,6 +1547,45 @@ export type ClassFieldDecorator<entityType, valueType> = ((
    * bare function type, which TypeScript skips as an inference candidate when
    * a `Fields.xxx()` call appears in a generically-inferred object alongside a
    * context-sensitive function — e.g. UI schemas built from field decorators. */
+  readonly __fieldValueType?: valueType
+}
+
+type SameType<a, b> = [a] extends [b] ? ([b] extends [a] ? true : false) : false
+// On a mismatch the target needs a `propertyTypeMustBe` key, so the compile error names the
+// expected type.
+type PropertyTypeCheck<propertyType, valueType> =
+  SameType<
+    Exclude<propertyType, undefined>,
+    Exclude<valueType, undefined>
+  > extends true
+    ? unknown
+    : { propertyTypeMustBe: valueType }
+
+// The validator writes the schema's output back to the property. Every later save runs the schema
+// on it again. A schema whose output doesn't fit its input fails on that second run, e.g. a
+// `string -> boolean` parse turns `flag = '1'` into `flag = true`, then rejects `true` next save.
+export type AcceptsOwnOutput<schemaType extends StandardSchemaV1> = [
+  StandardSchemaV1.InferOutput<schemaType>,
+] extends [StandardSchemaV1.InferInput<schemaType>]
+  ? unknown
+  : { schemaMustAcceptItsOwnOutput: StandardSchemaV1.InferOutput<schemaType> }
+
+/** A field decorator that only fits a property of type `valueType`, `null` included. */
+export type SchemaFieldDecorator<valueType> = {
+  <entityType, key extends keyof entityType & string>(
+    target: entityType & {
+      [k in key]?: PropertyTypeCheck<entityType[key], valueType>
+    },
+    key: key,
+  ): void
+  <entityType, propertyType>(
+    target: undefined,
+    context: {
+      readonly name: string | symbol
+      readonly access: { get(object: entityType): propertyType }
+    } & PropertyTypeCheck<propertyType, valueType>,
+  ): void
+} & {
   readonly __fieldValueType?: valueType
 }
 
