@@ -63,10 +63,13 @@ export class Validators {
   /**
    * Validator to check if a value is a valid URL.
    */
-  static url = createValueValidator<string>(
-    (val) => !!new URL(val),
-    'Invalid Url',
-  )
+  static url = createValueValidator<string>((val) => {
+    try {
+      return !!new URL(val)
+    } catch {
+      return false
+    }
+  }, 'Invalid Url')
   /**
    * Validator to check if a value is one of the specified values.
    */
@@ -92,8 +95,11 @@ export class Validators {
   /**
    * Validator to check if a value is not null.
    */
-  static notNull = createValueValidator(
-    (val) => val != null,
+  // createValueValidator skips null values, so it can't be used here.
+  // `undefined` is allowed on purpose: it means "not loaded / unchanged"
+  // (for example a relation that wasn't loaded), not an empty value.
+  static notNull = createValidator<unknown>(
+    (_, e) => e.value !== null,
     'Should not be null',
   )
   /**
@@ -274,14 +280,21 @@ export function createValueValidatorWithArgs<valueType, argsType>(
       (defaultMessage as string),
     true,
   )
-  return Object.assign((entity: any, e: any) => result(entity, e), {
-    get defaultMessage() {
-      return defaultMessage!
+  // Object.assign would copy only the getter's current value (not the setter),
+  // so a global `Validators.min.defaultMessage = ...` would be ignored.
+  return Object.defineProperty(
+    (entity: any, e: any) => result(entity, e),
+    'defaultMessage',
+    {
+      get: () => defaultMessage!,
+      set: (val) => {
+        defaultMessage = val
+      },
+      enumerable: true,
     },
-    set defaultMessage(val) {
-      defaultMessage = val
-    },
-  })
+  ) as ValidatorWithArgs<valueType, argsType> & {
+    defaultMessage: ValueValidationMessage<argsType>
+  }
 }
 
 /**
@@ -356,13 +369,12 @@ function createValidatorWithArgsInternal<valueType, argsType>(
               : Validators.defaultMessage
       }
 
-  return Object.assign(result, {
-    get defaultMessage() {
-      return defaultMessage
-    },
-    set defaultMessage(val) {
+  return Object.defineProperty(result, 'defaultMessage', {
+    get: () => defaultMessage,
+    set: (val) => {
       defaultMessage = val
     },
+    enumerable: true,
   }) as ValidatorWithArgs<valueType, argsType> & {
     defaultMessage: ValidationMessage<valueType, argsType>
   }
