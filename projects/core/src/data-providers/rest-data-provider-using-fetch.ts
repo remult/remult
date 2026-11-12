@@ -1,4 +1,7 @@
-import type { RestDataProviderHttpProvider } from '../data-interfaces.js'
+import {
+  EntityError,
+  type RestDataProviderHttpProvider,
+} from '../data-interfaces.js'
 import { isReadPost, retry } from './retry.js'
 
 export class RestDataProviderHttpProviderUsingFetch
@@ -78,19 +81,23 @@ function onSuccess(response: Response) {
     throw response
       .json()
       .then((x: any) => {
-        return {
+        const info = {
           ...x,
           message: x.message || response.statusText,
           url: response.url,
           status: response.status,
+          httpStatusCode: response.status,
         }
+        return new EntityError(info)
       })
       .catch(() => {
-        throw {
+        const info = {
           message: response.statusText,
           url: response.url,
           status: response.status,
+          httpStatusCode: response.status,
         }
+        throw new EntityError(info)
       })
   }
 }

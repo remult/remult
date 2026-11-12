@@ -86,13 +86,10 @@ describe('test api data provider', () => {
       name = ''
     }
     remult.dataProvider = TestApiDataProvider()
-    await expect(() => repo(Person).count()).rejects
-      .toThrowErrorMatchingInlineSnapshot(`
-      {
-        "httpStatusCode": 403,
-        "message": "Forbidden",
-      }
-    `)
+    await expect(() => repo(Person).count()).rejects.toMatchObject({
+      httpStatusCode: 403,
+      message: 'Forbidden',
+    })
   })
   test('groupBy api ignores orderBy on fields not included in api', async () => {
     @Entity('LoginAudit', { allowApiCrud: true })
