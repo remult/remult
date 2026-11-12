@@ -27,6 +27,14 @@ import { InputTypes } from '../../inputTypes.js'
 const validateNumber = createValueValidator((x: number) => {
   return !isNaN(x) && isFinite(x)
 }) as unknown as FieldOptions['validate']
+export type IdFieldOptions<entityType = unknown> = FieldOptions<
+  entityType,
+  string
+> & {
+  /** Generates the id for a new row. Defaults to `Fields.defaultIdFactory`. */
+  idFactory?: () => string
+}
+
 export class Fields {
   /**
    * Stored as a JSON.stringify - to store as json use Fields.json
@@ -145,6 +153,8 @@ export class Fields {
       () => Date,
       {
         allowApiUpdate: false,
+        // Set on every insert, so never NULL.
+        allowNull: false,
         saving: (_, ref, { isNew }) => {
           if (isNew) ref.value = new Date()
         },
@@ -162,6 +172,8 @@ export class Fields {
       () => Date,
       {
         allowApiUpdate: false,
+        // Set on every save, so never NULL.
+        allowNull: false,
         saving: (_, ref) => {
           ref.value = new Date()
         },
@@ -177,10 +189,7 @@ export class Fields {
       | ((options: FieldOptions<entityType, string>, remult: Remult) => void)
     )[]
   ): ClassFieldDecorator<entityType, string | undefined> {
-    return Fields.id({
-      idFactory: () => crypto.randomUUID(),
-      ...options,
-    })
+    return Fields.id({ idFactory: () => crypto.randomUUID() }, ...options)
   }
 
   /**
@@ -246,22 +255,28 @@ export class Fields {
    * ```
    */
   static id<entityType = unknown>(
-    options?: FieldOptions<entityType, string> & { idFactory?: () => string },
+    ...options: (
+      | IdFieldOptions<entityType>
+      | ((options: IdFieldOptions<entityType>, remult: Remult) => void)
+    )[]
   ): ClassFieldDecorator<entityType, string | undefined> {
-    return Field(() => String as any, {
-      allowApiUpdate: false,
-      defaultValue: () => {
-        let idFactory = options?.idFactory ?? Fields.defaultIdFactory
-        return idFactory()
-      },
-      saving: (_, r) => {
-        if (!r.value) {
-          let idFactory = options?.idFactory ?? Fields.defaultIdFactory
-          r.value = idFactory()
-        }
+    // Read once the options are merged, so a later option or a function option can set it.
+    let idFactory: (() => string) | undefined
+    const newId = () => (idFactory ?? Fields.defaultIdFactory)()
+    return Field(
+      () => String as any,
+      {
+        allowApiUpdate: false,
+        defaultValue: newId,
+        saving: (_, r) => {
+          if (!r.value) r.value = newId()
+        },
       },
       ...options,
-    })
+      (o: IdFieldOptions<entityType>) => {
+        idFactory = o.idFactory
+      },
+    )
   }
 
   /**

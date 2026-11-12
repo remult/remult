@@ -165,7 +165,7 @@ export type {
 } from './src/context.js'
 export type { ExternalHttpProvider } from './src/buildRestDataProvider.js'
 export { Sort } from './src/sort.js'
-export type { SortSegment } from './src/sort.js'
+export type { SortSegment, NativeNullSort, NullOrder } from './src/sort.js'
 export { CompoundIdField } from './src/CompoundIdField.js'
 export { Filter } from './src/filter/filter-interfaces.js'
 export type {

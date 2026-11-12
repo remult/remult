@@ -1,5 +1,25 @@
 All notable changes to this project will be documented in this file.
 
+## [3.5.0] - [unreleased]
+
+### Breaking
+
+- `allowNull` defaults to `true` on Date, json and custom `fieldTypeInDb` fields, as their columns are nullable ([details](https://remult.dev/docs/field-types#allownull-by-field-type)).
+- SQLite, and json with Knex on SQLite or SQL Server: existing json, `dateOnly` and custom type columns are `not null`, set `allowNull: false` on them.
+- `orderByNullsFirst` is removed, use `NullSort`.
+- A custom `SqlImplementation` must declare `nativeNullSort`.
+- In memory, `$gt`, `$gte`, `$lt` and `$lte` no longer match NULL.
+
+### Added
+
+- `NullSort` (`remult/internals`): where NULL sorts, for the whole app ([docs](https://remult.dev/docs/field-types#where-null-sorts)).
+
+### Fixed
+
+- `paginator()` and `for await` reach rows with a NULL sort key. On Postgres or DuckDB, set `NullSort`.
+- Knex creates a number with a custom `fieldTypeInDb` `not null default 0`, like the other providers.
+- Mongo writes NULL as `null`, so it sorts lowest. Rows with the old `{ $null: '$null' }` marker still match NULL filters.
+
 ## [3.4.2] - [2026-10-31]
 
 ### Fixed
@@ -48,6 +68,7 @@ All notable changes to this project will be documented in this file.
 - `SqlDatabase.selectToRaw` and `groupByToRaw` map JSON columns using the provider's JSON storage mode; `jsonAsString` can override it when querying a different database.
 - `SseSubscriptionClient` reconnects forever with backoff (was 4 tries), reconnects on `visibilitychange` / `online` / `pageshow`, and recreates a socket that stops delivering events for `flags.sseStaleMs`.
 - `liveQuery` first `next()` no longer waits for the SSE connection.
+- `applyChanges` keeps the array in `orderBy` (or `defaultOrderBy`) order by default (added items used to go last). `applyChanges(prev, { pos: 'first' | 'last' })` picks the placement instead.
 - Each server-side live query carries a version, sent with every change and returned by the keep-alive. The client refetches the snapshot on any version gap, so a dead socket, a half-open socket, or a missed message is recovered within one keep-alive. `LiveQueryChange` has an internal `{ type: 'version', from, to }` member, filtered out before reaching `liveQuery` listeners.
 
 ### Fixed
