@@ -6,9 +6,17 @@ All notable changes to this project will be documented in this file.
 
 - `allowNull` defaults to `true` on Date, json and custom `fieldTypeInDb` fields, as their columns are nullable ([details](https://remult.dev/docs/field-types#allownull-by-field-type)).
 - SQLite, and json with Knex on SQLite or SQL Server: existing json, `dateOnly` and custom type columns are `not null`, set `allowNull: false` on them.
+- `orderByNullsFirst` is removed, use `NullSort`.
+- A custom `SqlImplementation` must declare `nativeNullSort`.
+- In memory, `$gt`, `$gte`, `$lt` and `$lte` no longer match NULL.
+
+### Added
+
+- `NullSort` (`remult/internals`): where NULL sorts, for the whole app ([docs](https://remult.dev/docs/field-types#where-null-sorts)).
 
 ### Fixed
 
+- `paginator()` and `for await` reach rows with a NULL sort key. On Postgres or DuckDB, set `NullSort`.
 - Knex creates a number with a custom `fieldTypeInDb` `not null default 0`, like the other providers.
 
 ## [3.4.1] - [2026-10-30]
