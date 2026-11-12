@@ -8,6 +8,7 @@ import type {
   DuckDBDateValue,
 } from '@duckdb/node-api'
 import { SqliteCoreDataProvider } from './remult-sqlite-core.js'
+import type { NativeNullSort } from './src/sort.js'
 import {
   ValueConverters,
   type FieldMetadata,
@@ -25,6 +26,10 @@ export class DuckDBDataProvider extends SqliteCoreDataProvider {
       false,
       true,
     )
+  }
+  nativeNullSort: NativeNullSort = {
+    order: { asc: 'NULLS LAST', desc: 'NULLS LAST' },
+    syntax: 'NULLS FIRST/LAST',
   }
   wrapIdentifier(name: string): string {
     return `"${name}"`

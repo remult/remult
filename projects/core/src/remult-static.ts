@@ -2,6 +2,7 @@ import type { ClassType } from '../classType.js'
 import type { ClassHelper, Remult, RemultAsyncLocalStorage } from './context.js'
 import type { DataProvider } from './data-interfaces.js'
 import type { columnInfo } from './remult3/columnInfo.js'
+import type { NullSort } from './sort.js'
 
 const remultStaticKey = Symbol.for('remult-static1')
 
@@ -26,6 +27,7 @@ let x = {
   },
   fieldOptionsEnricher: undefined as unknown as any,
   labelTransformer: undefined as unknown as any,
+  nullSort: undefined as unknown as typeof NullSort,
   defaultIdFactory: undefined as unknown as () => string,
   defaultDataProvider: () =>
     undefined as unknown as Promise<DataProvider | undefined>,
