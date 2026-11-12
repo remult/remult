@@ -11,14 +11,8 @@ import { isAutoIncrement } from '../src/remult3/RepositoryImplementation.js'
 import type { SqlCommand } from '../src/sql-command.js'
 import { ValueConverters } from '../src/valueConverters.js'
 
-export function postgresColumnSyntax(
-  x: FieldMetadata,
-  dbName: string,
-  isAlterTable = false,
-) {
+export function postgresColumnSyntax(x: FieldMetadata, dbName: string) {
   if (isAutoIncrement(x)) return dbName + ' serial'
-  // No default value fills the existing rows, so an added column stays nullable.
-  const notNull = x.allowNull || isAlterTable ? '' : ' not null'
   let result = dbName
   if (x.valueType == Number) {
     if (!x.valueConverter.fieldTypeInDb)
@@ -33,14 +27,13 @@ export function postgresColumnSyntax(
       if (x.valueConverter == ValueConverters.DateOnly) result += ' date'
       else result += ' timestamptz'
     else result += ' ' + x.valueConverter.fieldTypeInDb
-    result += notNull
   } else if (x.valueType == Boolean)
     result += ' boolean' + (x.allowNull ? '' : ' default false not null')
   else if (x.valueConverter.fieldTypeInDb) {
     result += ' ' + x.valueConverter.fieldTypeInDb
     if (!x.allowNull && x.valueConverter.fieldTypeInDb == 'integer') {
       result += ' default 0 not null'
-    } else result += notNull
+    }
   } else result += ' varchar' + (x.allowNull ? '' : " default '' not null")
   return result
 }
@@ -148,7 +141,7 @@ export class PostgresSchemaBuilder {
     )
     return (
       `ALTER table ${this.schemaAndName(e)} ` +
-      `ADD column ${postgresColumnSyntax(field, e.$dbNameOf(field), true)}`
+      `ADD column ${postgresColumnSyntax(field, e.$dbNameOf(field))}`
     )
   }
   /* @internal*/
@@ -193,7 +186,7 @@ CREATE table ${this.schemaAndName(e)} (${result}\r\n)`
           if (!cols.includes(colName)) {
             let sql =
               `ALTER table ${this.schemaAndName(e)} ` +
-              `add column ${postgresColumnSyntax(col, e.$dbNameOf(col), true)}`
+              `add column ${postgresColumnSyntax(col, e.$dbNameOf(col))}`
             if (PostgresSchemaBuilder.logToConsole) console.info(sql)
             await this.pool.execute(sql)
           }

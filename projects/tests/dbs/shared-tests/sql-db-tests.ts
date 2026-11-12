@@ -34,10 +34,12 @@ export function SqlDbTests({
   skipMigrations,
   doesNotSupportDdlTransactions,
   isKnex,
+  addedColumnIsNullable,
 }: DbTestProps & {
   skipMigrations?: boolean
   doesNotSupportDdlTransactions?: boolean
   isKnex?: boolean
+  addedColumnIsNullable?: boolean
 }) {
   it('test dbReadonly ', async () => {
     const e = await createEntity(
@@ -73,6 +75,34 @@ export function SqlDbTests({
     await getDb().ensureSchema!([after.metadata])
     expect((await after.find()).map((x) => x.id)).toEqual([1])
   })
+  it.skipIf(addedColumnIsNullable)(
+    'adds a column with a default value as not null to a table with rows',
+    async () => {
+      const before = await createEntity(
+        createEntityClass('addDefaultColumnWithRows', { id: Fields.integer() }),
+      )
+      await before.insert({ id: 1 })
+      const after = getRemult().repo(
+        createEntityClass('addDefaultColumnWithRows', {
+          id: Fields.integer(),
+          s: Fields.string(),
+          n: Fields.number(),
+          b: Fields.boolean(),
+        }),
+      )
+      await getDb().ensureSchema!([after.metadata])
+      expect(await after.count({ s: '', n: 0, b: false })).toBe(1)
+      const db = SqlDatabase.getDb(getDb())
+      const e = await dbNamesOf(after, db.wrapIdentifier)
+      for (const col of [e.s, e.n, e.b])
+        await expect(
+          db.execute(
+            `insert into ${e.$entityName} (${e.id}, ${col}) values (2, null)`,
+          ),
+          col,
+        ).rejects.toThrow()
+    },
+  )
   it('test sql expression in parallel', async () => {
     @Entity('x_aTb_c_d')
     class c {

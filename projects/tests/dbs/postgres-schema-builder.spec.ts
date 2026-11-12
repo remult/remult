@@ -26,6 +26,7 @@ import { DuckDBDataProvider } from '../../core/remult-duckdb'
 //connection string is in a .env file placed in the `tests` folder with key `DATABASE_URL`
 // if we don't have this, tests will be skipped
 const connectionString = process.env['DATABASE_URL']
+const REGEX_UP_TO_ADD_COLUMN = /^.* add column /i
 
 let db: SqlDatabase = undefined!
 PostgresSchemaBuilder.logToConsole = false
@@ -934,10 +935,15 @@ describe('allowNull by field type', () => {
       'email',
     ])
   })
+  // An id is not null as the primary key, and `dbid` is not a SQL type.
+  const defaulted = fields.filter(
+    (f) =>
+      f.options.allowNull === undefined && !['code', 'ref'].includes(f.key),
+  )
   it.each(createColumnSql)(
-    'is true exactly when %s creates the column nullable',
+    'defaults to true exactly when %s creates the column nullable',
     (_, sql) => {
-      for (const f of fields)
+      for (const f of defaulted)
         expect(sql(f).includes('not null'), f.key).toBe(!f.allowNull)
     },
   )
@@ -945,24 +951,25 @@ describe('allowNull by field type', () => {
     ['postgres', new PostgresDataProvider(undefined!)],
     ['knex', new KnexDataProvider(knex)],
     ['sqlite', sqlite],
-  ])('%s keeps an added column nullable', async (_, db) => {
+  ])('%s adds a column exactly as it creates it', async (_, db) => {
     const sql: string[] = []
     const b = db.provideMigrationBuilder({
       addSql: (s) => sql.push(s),
       addComment: () => {},
       addTypescriptCode: () => {},
     })
-    const { strictAt, strictDay, strictData, strictEmail } = meta.fields
-    for (const f of [strictAt, strictDay, strictData, strictEmail])
+    await b.createTable(meta)
+    const created = sql.join()
+    for (const f of fields) {
+      sql.length = 0
       await b.addColumn(meta, f)
-    expect(sql.join()).not.toContain('not null')
-  })
-  it('sqlite gives no default to a date, json or custom type', () => {
-    const { d, strictDay, strictData, strictEmail } = meta.fields
-    expect(sqlite.addColumnSqlSyntax(d, 'd', false)).toContain('default 0')
-    for (const f of [strictDay, strictData, strictEmail])
-      expect(sqlite.addColumnSqlSyntax(f, f.key, false), f.key).not.toContain(
-        'default',
-      )
+      const column = sql.join().replace(REGEX_UP_TO_ADD_COLUMN, '')
+      expect(
+        [',', '\r', ' primary key'].some((end) =>
+          created.includes(column + end),
+        ),
+        `${column} in ${created}`,
+      ).toBe(true)
+    }
   })
 })

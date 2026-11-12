@@ -4553,7 +4553,6 @@ export interface PostgresClient extends PostgresCommandSource {
 export declare function postgresColumnSyntax(
   x: FieldMetadata,
   dbName: string,
-  isAlterTable?: boolean,
 ): string
 //[ ] FieldMetadata from TBD is not exported
 export interface PostgresCommandSource {
@@ -4624,7 +4623,6 @@ export declare function preparePostgresQueueStorage(
 export declare function postgresColumnSyntax(
   x: FieldMetadata,
   dbName: string,
-  isAlterTable?: boolean,
 ): string
 //[ ] FieldMetadata from ../src/column-interfaces.js is not exported
 export declare class PostgresSchemaBuilder {
@@ -4651,7 +4649,6 @@ export declare function buildColumn(
   dbName: string,
   b: Knex.CreateTableBuilder,
   supportsJson?: boolean,
-  isAlterTable?: boolean,
 ): void
 //[ ] FieldMetadata from ../src/column-interfaces.js is not exported
 //[ ] Knex.CreateTableBuilder from TBD is not exported

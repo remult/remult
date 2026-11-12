@@ -2737,7 +2737,7 @@ export function buildLabel(
 }
 
 /** Migrations give the column a default value (`''`, `0`, `false`), so it is `not null`. */
-export function hasColumnDefault({
+function hasColumnDefault({
   valueType,
   valueConverter,
 }: FieldOptions<unknown, unknown>): boolean {

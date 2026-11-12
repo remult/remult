@@ -4,8 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ### Breaking
 
-- `allowNull` defaults to `true` on Date, json and custom `fieldTypeInDb` fields, as their columns are nullable ([details](https://remult.dev/docs/field-types#allownull-by-field-type)). `allowNull: false` on them creates the column `not null`.
-- SQLite: existing json, `dateOnly` and custom type columns are `not null`, set `allowNull: false` on them.
+- `allowNull` defaults to `true` on Date, json and custom `fieldTypeInDb` fields, as their columns are nullable ([details](https://remult.dev/docs/field-types#allownull-by-field-type)).
+- SQLite, and json with Knex on SQLite or SQL Server: existing json, `dateOnly` and custom type columns are `not null`, set `allowNull: false` on them.
 
 ### Fixed
 

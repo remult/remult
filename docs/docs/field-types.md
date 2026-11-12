@@ -394,8 +394,6 @@ Migrations create a column `not null` when its type has a default value in the d
 | `Fields.date`, `Fields.dateOnly`, `Fields.json`, another custom `fieldTypeInDb` (except `integer`, or on a number or boolean)                                                                           | `true`                 |
 | An id                                                                                                                                                                                                   | `false`                |
 
-With `allowNull: false` on a Date, json or custom type, a new table gets the column `not null`, with no default value. A column added to an existing table stays nullable, since nothing fills its existing rows.
-
 ## Creating Custom Field Types
 
 Sometimes, you may need to create custom field types to handle specific requirements or use cases in your application. By creating custom field types, you can encapsulate the logic for generating, validating, and converting field values.
