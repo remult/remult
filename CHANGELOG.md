@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 
 - `paginator()` and `for await` reach rows with a NULL sort key. On Postgres or DuckDB, set `NullSort`.
 - Knex creates a number with a custom `fieldTypeInDb` `not null default 0`, like the other providers.
+- Mongo writes NULL as `null`, so it sorts lowest. Rows with the old `{ $null: '$null' }` marker still match NULL filters.
 
 ## [3.4.1] - [2026-10-30]
 
