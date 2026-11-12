@@ -531,7 +531,6 @@ export declare class EntityError<entityType = unknown>
   modelState?: {
     [Properties in keyof Partial<MembersOnly<entityType>>]?: string
   }
-  stack?: string
   exception?: any
   httpStatusCode?: number
 }
@@ -1388,9 +1387,10 @@ export declare class Fields {
    * ```
    */
   static id<entityType = unknown>(
-    options?: FieldOptions<entityType, string> & {
-      idFactory?: () => string
-    },
+    ...options: (
+      | IdFieldOptions<entityType>
+      | ((options: IdFieldOptions<entityType>, remult: Remult) => void)
+    )[]
   ): ClassFieldDecorator<entityType, string | undefined>
   /**
    * Defines a field that can hold a value from a specified set of string literals.
@@ -1457,6 +1457,7 @@ export declare class Fields {
     )[]
   ): ClassFieldDecorator<entityType, boolean | undefined>
 }
+//[ ] IdFieldOptions from TBD is not exported
 export type FieldsMetadata<entityType> = {
   [Properties in keyof MembersOnly<entityType>]-?: FieldMetadata<
     entityType[Properties],
@@ -4118,7 +4119,7 @@ export interface RemultServerOptions<RequestType> {
    * @param info.entity - (Optional) The entity metadata associated with the error, if applicable.
    * @param info.exception - (Optional) The exception object or error that occurred.
    * @param info.httpStatusCode - The HTTP status code.
-   * @param info.responseBody - The body of the response.
+   * @param info.responseBody - The body of the response, without the stack.
    * @param info.sendError - A method to send a custom error response. Call this method with the desired HTTP status code and response body.
    *
    * @returns A promise that resolves when the error handling is complete.
@@ -4129,6 +4130,17 @@ export interface RemultServerOptions<RequestType> {
    *       e.sendError(500, { message: "An error occurred" })
    *     }
    *   }
+   * })
+   * @example
+   * // Send the stack outside production
+   * export const api = remultApi({
+   *   error: async (e) => {
+   *     if (process.env.NODE_ENV === 'production') return
+   *     e.sendError(e.httpStatusCode, {
+   *       ...e.responseBody,
+   *       stack: e.exception?.stack,
+   *     })
+   *   },
    * })
    */
   error?: (info: {
@@ -4365,7 +4377,7 @@ export interface RemultServerOptions<RequestType> {
    * @param info.entity - (Optional) The entity metadata associated with the error, if applicable.
    * @param info.exception - (Optional) The exception object or error that occurred.
    * @param info.httpStatusCode - The HTTP status code.
-   * @param info.responseBody - The body of the response.
+   * @param info.responseBody - The body of the response, without the stack.
    * @param info.sendError - A method to send a custom error response. Call this method with the desired HTTP status code and response body.
    *
    * @returns A promise that resolves when the error handling is complete.
@@ -4376,6 +4388,17 @@ export interface RemultServerOptions<RequestType> {
    *       e.sendError(500, { message: "An error occurred" })
    *     }
    *   }
+   * })
+   * @example
+   * // Send the stack outside production
+   * export const api = remultApi({
+   *   error: async (e) => {
+   *     if (process.env.NODE_ENV === 'production') return
+   *     e.sendError(e.httpStatusCode, {
+   *       ...e.responseBody,
+   *       stack: e.exception?.stack,
+   *     })
+   *   },
    * })
    */
   error?: (info: {

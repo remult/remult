@@ -4,21 +4,30 @@ All notable changes to this project will be documented in this file.
 
 ### Breaking
 
-- `allowNull` defaults to `true` on Date, json and custom `fieldTypeInDb` fields, as their columns are nullable ([details](https://remult.dev/docs/field-types#allownull-by-field-type)).
-- SQLite, and json with Knex on SQLite or SQL Server: existing json, `dateOnly` and custom type columns are `not null`, set `allowNull: false` on them.
-- `orderByNullsFirst` is removed, use `NullSort`.
-- A custom `SqlImplementation` must declare `nativeNullSort`.
-- In memory, `$gt`, `$gte`, `$lt` and `$lte` no longer match NULL.
+- `allowNull` defaults to `true` on Date, json and custom `fieldTypeInDb` fields, as their columns are nullable ([details](https://remult.dev/docs/field-types#allownull-by-field-type), [#1078](https://github.com/remult/remult/pull/1078) by @jycouet).
+- SQLite, and json with Knex on SQLite or SQL Server: existing json, `dateOnly` and custom type columns are `not null`, set `allowNull: false` on them ([#1078](https://github.com/remult/remult/pull/1078) by @jycouet).
+- `orderByNullsFirst` is removed, use `NullSort` ([#1079](https://github.com/remult/remult/pull/1079) by @jycouet).
+- A custom `SqlImplementation` must declare `nativeNullSort` ([#1079](https://github.com/remult/remult/pull/1079) by @jycouet).
+- In memory, `$gt`, `$gte`, `$lt` and `$lte` no longer match NULL ([#1079](https://github.com/remult/remult/pull/1079) by @jycouet).
 
 ### Added
 
-- `NullSort` (`remult/internals`): where NULL sorts, for the whole app ([docs](https://remult.dev/docs/field-types#where-null-sorts)).
+- `NullSort` (`remult/internals`): where NULL sorts, for the whole app ([docs](https://remult.dev/docs/field-types#where-null-sorts), [#1079](https://github.com/remult/remult/pull/1079) by @jycouet).
+
+### Changed
+
+- Database drivers are now optional peer dependencies, so apps only need to install the drivers they use ([#1072](https://github.com/remult/remult/pull/1072) by @AndrewSouthpaw).
 
 ### Fixed
 
-- `paginator()` and `for await` reach rows with a NULL sort key. On Postgres or DuckDB, set `NullSort`.
-- Knex creates a number with a custom `fieldTypeInDb` `not null default 0`, like the other providers.
-- Mongo writes NULL as `null`, so it sorts lowest. Rows with the old `{ $null: '$null' }` marker still match NULL filters.
+- `paginator()` and `for await` reach rows with a NULL sort key. On Postgres or DuckDB, set `NullSort` ([#1079](https://github.com/remult/remult/pull/1079) by @jycouet).
+- Knex creates a number with a custom `fieldTypeInDb` `not null default 0`, like the other providers ([#1078](https://github.com/remult/remult/pull/1078) by @jycouet).
+- Mongo writes NULL as `null`, so it sorts lowest. Rows with the old `{ $null: '$null' }` marker still match NULL filters ([#1077](https://github.com/remult/remult/pull/1077) by @jycouet).
+- REST error responses no longer expose server stack traces ([#1074](https://github.com/remult/remult/pull/1074) by @AndrewSouthpaw).
+- `EntityError` retains its stack and works with `instanceof` in CommonJS builds ([#1065](https://github.com/remult/remult/pull/1065), [#1066](https://github.com/remult/remult/pull/1066) by @AndrewSouthpaw).
+- Relation change tracking is preserved when a query doesn't include the relation ([#1071](https://github.com/remult/remult/pull/1071) by @AndrewSouthpaw).
+- Writes are no longer retried after an HTTP 500 response ([#1063](https://github.com/remult/remult/pull/1063) by @AndrewSouthpaw).
+- `Fields.uuid` now applies the supplied options, including a custom ID factory ([#1054](https://github.com/remult/remult/pull/1054) by @AndrewSouthpaw).
 
 ## [3.4.2] - [2026-10-31]
 
@@ -68,7 +77,7 @@ All notable changes to this project will be documented in this file.
 - `SqlDatabase.selectToRaw` and `groupByToRaw` map JSON columns using the provider's JSON storage mode; `jsonAsString` can override it when querying a different database.
 - `SseSubscriptionClient` reconnects forever with backoff (was 4 tries), reconnects on `visibilitychange` / `online` / `pageshow`, and recreates a socket that stops delivering events for `flags.sseStaleMs`.
 - `liveQuery` first `next()` no longer waits for the SSE connection.
-- `applyChanges` keeps the array in `orderBy` (or `defaultOrderBy`) order by default (added items used to go last). `applyChanges(prev, { pos: 'first' | 'last' })` picks the placement instead.
+- `applyChanges` keeps the array in `orderBy` (or `defaultOrderBy`) order by default (added items used to go last). `applyChanges(prev, { pos: 'first' | 'last' })` picks the placement instead ([#1025](https://github.com/remult/remult/pull/1025) by @jycouet).
 - Each server-side live query carries a version, sent with every change and returned by the keep-alive. The client refetches the snapshot on any version gap, so a dead socket, a half-open socket, or a missed message is recovered within one keep-alive. `LiveQueryChange` has an internal `{ type: 'version', from, to }` member, filtered out before reaching `liveQuery` listeners.
 
 ### Fixed
