@@ -848,7 +848,10 @@ export function buildColumn(
       if (!x.allowNull) {
         c.defaultTo(0).notNullable()
       }
-    } else b.specificType(dbName, x.valueConverter.fieldTypeInDb)
+    } else {
+      let c = b.specificType(dbName, x.valueConverter.fieldTypeInDb)
+      if (!x.allowNull) c.defaultTo(0).notNullable()
+    }
   } else if (x.valueType == Date) {
     if (!x.valueConverter.fieldTypeInDb)
       if (x.valueConverter == ValueConverters.DateOnly) b.date(dbName)

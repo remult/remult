@@ -384,6 +384,16 @@ price=0;
 
 In this example, the `price` field will be stored as a `decimal` with 16 digits in total and 8 digits after the decimal point in the database. This allows you to control the storage format and precision of numeric fields in your database schema.
 
+## allowNull by field type
+
+Migrations create a column `not null` when its type has a default value in the database (`''`, `0`, `false`), and nullable otherwise. `allowNull` defaults to match:
+
+| Field                                                                                                                                                                                                   | `allowNull` by default |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| `Fields.string`, `Fields.number`, `Fields.integer`, `Fields.boolean`, `Fields.enum`, `Fields.literal`, `Fields.object`, `ValueListFieldType`, `Relations.toOne`, `Fields.createdAt`, `Fields.updatedAt` | `false`                |
+| `Fields.date`, `Fields.dateOnly`, `Fields.json`, another custom `fieldTypeInDb` (except `integer`, or on a number or boolean)                                                                           | `true`                 |
+| An id                                                                                                                                                                                                   | `false`                |
+
 ## Where NULL sorts
 
 When `ORDER BY` does not say, each database puts NULL in its own place:
