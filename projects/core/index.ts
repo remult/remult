@@ -27,6 +27,7 @@ export type {
   GroupByResult,
   FindFirstOptions,
   ComparisonValueFilter,
+  ComparableTypes,
   ValueFilter,
   IdFilter,
   ContainsStringValueFilter,
