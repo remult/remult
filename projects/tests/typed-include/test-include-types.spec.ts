@@ -105,6 +105,24 @@ describe('test include types', () => {
     const found = category!.tasks.find((t) => t.id === 101)
     expectTypeOf(found!.category).toEqualTypeOf<Category>()
   })
+  it('findIdOrThrow types an included relation as loaded', async () => {
+    const category = await remult
+      .repo(Category)
+      .findIdOrThrow(1, { include: { tasks: true } })
+    expectTypeOf(category.tasks).toEqualTypeOf<Task[]>()
+    expect(category.tasks.map((t) => t.title)).toEqual(['task1'])
+  })
+  it('findFirstOrThrow and findOneOrThrow type an included relation as loaded', async () => {
+    const first = await remult
+      .repo(Category)
+      .findFirstOrThrow({ id: 1 }, { include: { tasks: true } })
+    expectTypeOf(first.tasks).toEqualTypeOf<Task[]>()
+    const one = await remult
+      .repo(Category)
+      .findOneOrThrow({ where: { id: 1 }, include: { tasks: true } })
+    expectTypeOf(one.tasks).toEqualTypeOf<Task[]>()
+    expect(one.tasks.map((t) => t.title)).toEqual(['task1'])
+  })
   it('nullable relation stays nullable', async () => {
     const categories = await remult
       .repo(Category)

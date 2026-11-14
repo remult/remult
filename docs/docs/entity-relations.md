@@ -165,7 +165,7 @@ const orders = await repo(Order).find({ include: { customer: true } })
 orders[0].customer.name // no `?.` needed
 ```
 
-The same goes for `findFirst`, `findOne` and `findId`.
+The same goes for `findFirst`, `findOne`, `findId` and their `OrThrow` versions.
 
 **A loaded result is narrower than the entity.**
 
