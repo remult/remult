@@ -213,6 +213,16 @@ export class RemultProxy implements Remult {
           .remultFactory()
           .repo(...args)
           .findIdOrThrow(a as any, b),
+      findFirstOrThrow: (...args2) =>
+        self
+          .remultFactory()
+          .repo(...args)
+          .findFirstOrThrow(...args2),
+      findOneOrThrow: (...args2) =>
+        self
+          .remultFactory()
+          .repo(...args)
+          .findOneOrThrow(...args2),
       //@ts-ignore
       toJson: (json: any) =>
         self
