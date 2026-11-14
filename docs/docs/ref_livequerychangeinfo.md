@@ -29,3 +29,6 @@ useEffect(() => {
 
 Arguments:
 * **prevState** - The previous state of the array of result items.
+* **options** - Controls where added items are placed.
+`'auto'` (default) keeps the array sorted by the query's `orderBy` (or the entity's `defaultOrderBy`, falling back to `'last'` when neither is set);
+`'first'` prepends added items; `'last'` appends them.

@@ -32,6 +32,19 @@ import {
   GroupByOperators,
   type InsertOrUpdateOptions,
 } from './src/remult3/remult3.js'
+import { NullSort } from './src/sort.js'
+
+let nullSortWarned = false
+// `$sort` has no NULL option, so Mongo sorts NULL lowest whatever NullSort says.
+function warnIfNullSortIgnored() {
+  const order = NullSort.order
+  if (nullSortWarned || order === 'native') return
+  if (order.asc === 'NULLS FIRST' && order.desc === 'NULLS LAST') return
+  nullSortWarned = true
+  console.warn(
+    '[remult] NullSort is ignored on Mongo, which sorts NULL lowest: paginator() can skip or repeat rows',
+  )
+}
 
 export class MongoDataProvider implements DataProvider {
   constructor(
@@ -98,7 +111,12 @@ export class MongoDataProvider implements DataProvider {
     return r
   }
 }
+// Older versions wrote NULL as this marker, which sorts above numbers and strings.
 const NULL = { $null: '$null' }
+// `$in: [null, NULL]` fails: Mongo cannot nest `$` under `$in`.
+function nullFilter(name: string) {
+  return { $or: [{ [name]: null }, { [name]: { $eq: NULL } }] }
+}
 function isNull(x: any) {
   return x?.$null === NULL.$null
 }
@@ -156,9 +174,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
     let result: any = {}
     for (const col of this.entity.fields) {
       if (col.dbReadOnly || col.isServerExpression) continue
-      let val = toDb(col, row[col.key])
-      if (val === null) val = NULL
-      result[nameProvider.$dbNameOf(col)] = val
+      result[nameProvider.$dbNameOf(col)] = toDb(col, row[col.key])
     }
     return result
   }
@@ -224,6 +240,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
     }
 
     if (options?.orderBy) {
+      warnIfNullSortIgnored()
       let sort: any = {}
       for (const x of options.orderBy) {
         const direction = x.isDescending ? -1 : 1
@@ -277,6 +294,7 @@ class MongoEntityDataProvider implements EntityDataProvider {
       }
     }
     if (options.orderBy) {
+      warnIfNullSortIgnored()
       op.sort = {}
       for (const s of options.orderBy.Segments) {
         op.sort[e.$dbNameOf(s.field)] = s.isDescending ? -1 : 1
@@ -422,10 +440,12 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
     )
   }
   isNull(col: FieldMetadata): void {
-    this.add(col, NULL, '$eq')
+    this.result.push(() => nullFilter(this.nameProvider.$dbNameOf(col)))
   }
   isNotNull(col: FieldMetadata): void {
-    this.add(col, NULL, '$ne')
+    this.result.push(() => ({
+      $nor: [nullFilter(this.nameProvider.$dbNameOf(col))],
+    }))
   }
   isIn(col: FieldMetadata, val: any[]): void {
     this.result.push(() => ({
@@ -492,7 +512,7 @@ class FilterConsumerBridgeToMongo implements FilterConsumer {
   ) {
     this.result.push(() => ({
       [this.nameProvider.$dbNameOf(col)]: {
-        [operator]: isNull(val) ? val : toDb(col, val),
+        [operator]: toDb(col, val),
         ...moreOptions,
       },
     }))

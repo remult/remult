@@ -1,4 +1,5 @@
 import type { FieldMetadata } from './column-interfaces.js'
+import { remultStatic } from './remult-static.js'
 import { getRelationFieldInfo } from './remult3/relationInfoMember.js'
 import type {
   EntityMetadata,
@@ -177,6 +178,31 @@ export interface SortSegment {
   field: FieldMetadata
   isDescending?: boolean
 }
+export interface NullOrder {
+  asc: 'NULLS FIRST' | 'NULLS LAST'
+  desc: 'NULLS FIRST' | 'NULLS LAST'
+}
+
+/**
+ * Where NULL sorts, for the whole app: set it on both the server and the client.
+ * @see https://remult.dev/docs/field-types#where-null-sorts
+ */
+export const NullSort: { order: NullOrder | 'native' } =
+  remultStatic.nullSort || (remultStatic.nullSort = { order: 'native' })
+
+/** Where the database sorts NULL when `ORDER BY` does not say, and how `ORDER BY` puts it elsewhere. */
+export interface NativeNullSort {
+  /** `unknown`: `ORDER BY` always writes the NULL order. */
+  order: NullOrder | 'unknown'
+  syntax: 'NULLS FIRST/LAST' | 'CASE WHEN'
+}
+
+/** Remult's own order, without a database: `native` is NULL lowest. */
+export function isNullFirstSort(isDescending?: boolean): boolean {
+  if (NullSort.order === 'native') return !isDescending
+  return NullSort.order[isDescending ? 'desc' : 'asc'] === 'NULLS FIRST'
+}
+
 export function compareForSort(
   left: any,
   right: any,
@@ -184,6 +210,11 @@ export function compareForSort(
 ) {
   left = fixValueForSort(left)
   right = fixValueForSort(right)
+  // `null > 'a'` and `null < 'a'` are both false, which is not an order.
+  if (left == null || right == null) {
+    if (left == right) return 0
+    return (left == null) === isNullFirstSort(descending) ? -1 : 1
+  }
   let r = 0
   if (left > right) r = 1
   else if (left < right) r = -1

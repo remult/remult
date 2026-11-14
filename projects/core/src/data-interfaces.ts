@@ -108,12 +108,13 @@ export class EntityError<entityType = unknown>
 {
   constructor(errorInfo: ErrorInfo<entityType>) {
     super(errorInfo.message)
+    // The ES5 build gets a plain Error back from super(), so instanceof EntityError would be false.
+    Object.setPrototypeOf(this, new.target.prototype)
     Object.assign(this, errorInfo)
   }
   modelState?: {
     [Properties in keyof Partial<MembersOnly<entityType>>]?: string
   }
-  stack?: string
   exception?: any
   httpStatusCode?: number
 }

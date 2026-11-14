@@ -1,8 +1,11 @@
-import { expect, it, describe, beforeEach } from 'vitest'
+import { expect, it, describe, beforeEach, afterEach } from 'vitest'
+import * as Knex from 'knex'
 import {
+  type DataProvider,
   Entity,
   type EntityMetadata,
   Fields,
+  InMemoryDataProvider,
   Remult,
   type SqlCommand,
   type SqlCommandWithParameters,
@@ -10,7 +13,14 @@ import {
   type SqlImplementation,
   dbNamesOf,
 } from '../../core'
+import { NullSort } from '../../core/internals'
+import { HIGHEST, LOWEST, NATIVE } from './shared-tests/test-null-sort'
+import { PostgresDataProvider, type PostgresPool } from '../../core/postgres'
 import { KnexDataProvider } from '../../core/remult-knex'
+import { SqliteCoreDataProvider } from '../../core/remult-sqlite-core'
+
+const ORDER_BY = / order by /i
+const NULL_ORDER = /nulls|case/
 
 describe('test sql implementation', () => {
   @Entity('tasks')
@@ -49,6 +59,7 @@ describe('test sql implementation', () => {
     getLimitSqlSyntax: () => '',
     transaction: undefined!,
     end: async () => {},
+    nativeNullSort: { order: 'unknown', syntax: 'CASE WHEN' },
   } satisfies SqlImplementation)
   const repo = new Remult(db).repo(task)
   beforeEach(() => (commands = []))
@@ -262,6 +273,172 @@ describe('test sql implementation', () => {
   })
 })
 
+describe('NullSort in ORDER BY', () => {
+  @Entity('tasks')
+  class task {
+    @Fields.integer()
+    id = 0
+    @Fields.string()
+    title = ''
+    @Fields.date({ allowNull: true })
+    due: Date | null = null
+    @Fields.date({ allowNull: true })
+    done: Date | null = null
+  }
+  afterEach(() => {
+    NullSort.order = NATIVE
+  })
+
+  function postgres(sqls: string[]) {
+    return new SqlDatabase(
+      new PostgresDataProvider({
+        query: async (sql: string) => {
+          sqls.push(sql)
+          return { rows: [], fields: [] }
+        },
+      } as unknown as PostgresPool),
+    )
+  }
+  function sqlite(sqls: string[]) {
+    return new SqlDatabase(
+      new SqliteCoreDataProvider(
+        () => ({
+          addParameterAndReturnSqlToken: (val) => val,
+          param: (val) => val,
+          execute: async (sql) => {
+            sqls.push(sql)
+            return {
+              getColumnKeyInResultForIndexInSelect: undefined!,
+              rows: [],
+            }
+          },
+        }),
+        async () => {},
+      ),
+    )
+  }
+  function knex(client: string) {
+    return (sqls: string[]) => {
+      const knex = Knex.default({ client, useNullAsDefault: true })
+      knex.client.runner = (builder: Knex.Knex.QueryBuilder) => ({
+        run: async () => {
+          sqls.push(builder.toString())
+          // groupBy runs a raw query, whose result shape differs per driver.
+          const raw: Record<string, unknown> = {
+            pg: { rows: [] },
+            mysql2: [[], []],
+          }
+          if (builder.toSQL().method === 'raw') return raw[client] ?? []
+          return []
+        },
+      })
+      return new KnexDataProvider(knex)
+    }
+  }
+
+  async function orderBys(
+    dataProvider: (sqls: string[]) => DataProvider,
+    nullSort: typeof NullSort.order,
+  ) {
+    const sqls: string[] = []
+    const repo = new Remult(dataProvider(sqls)).repo(task)
+    NullSort.order = nullSort
+    await repo.find({ orderBy: { due: 'asc', title: 'asc' } })
+    await repo.find({ orderBy: { due: 'desc', title: 'desc' } })
+    await repo.groupBy({
+      group: ['due'],
+      distinctCount: ['done'],
+      orderBy: { due: 'asc', done: { distinctCount: 'asc' } },
+    })
+    const raw = await SqlDatabase.selectToRaw(repo, {
+      orderBy: { due: 'asc' },
+      select: { id: true },
+    })
+    return [...sqls, raw.sql].map((sql) => sql.split(ORDER_BY)[1])
+  }
+
+  it.each([
+    ['Postgres', postgres, HIGHEST],
+    ['SQLite', sqlite, LOWEST],
+    ['Knex pg', knex('pg'), HIGHEST],
+    ['Knex mysql2', knex('mysql2'), LOWEST],
+    ['Knex mssql', knex('mssql'), LOWEST],
+    ['Knex sqlite3', knex('sqlite3'), LOWEST],
+  ] as const)(
+    '%s writes nothing for native or for its own order',
+    async (_, dataProvider, own) => {
+      const native = await orderBys(dataProvider, NATIVE)
+      expect(await orderBys(dataProvider, own)).toEqual(native)
+      expect(native.join(' | ')).not.toMatch(NULL_ORDER)
+    },
+  )
+
+  it('writes only the direction where NullSort differs from the database', async () => {
+    const [asc, desc] = await orderBys(postgres, {
+      asc: 'NULLS FIRST',
+      desc: 'NULLS FIRST',
+    })
+    expect([asc, desc]).toEqual([
+      '"due" nulls first, "title"',
+      '"due" desc, "title" desc',
+    ])
+  })
+
+  it.each([
+    [
+      'Postgres',
+      postgres,
+      LOWEST,
+      [
+        '"due" nulls first, "title"',
+        '"due" desc nulls last, "title" desc',
+        '"due" nulls first, count (distinct "done")',
+        '"due" nulls first',
+      ],
+    ],
+    [
+      'Knex pg',
+      knex('pg'),
+      LOWEST,
+      [
+        '"due" nulls first, "title"',
+        '"due" desc nulls last, "title" desc',
+        '"due" nulls first, count (distinct "done")',
+        '"due" nulls first',
+      ],
+    ],
+    [
+      'Knex mysql2',
+      knex('mysql2'),
+      HIGHEST,
+      [
+        'case when `due` is null then 1 else 0 end, `due`, `title`',
+        'case when `due` is null then 0 else 1 end, `due` desc, `title` desc',
+        'case when `due` is null then 1 else 0 end, `due`, count (distinct `done`)',
+        'case when `due` is null then 1 else 0 end, `due`',
+      ],
+    ],
+  ] as const)(
+    '%s writes the other order on allowNull columns, never on a distinct count',
+    async (_, dataProvider, other, expected) => {
+      expect(await orderBys(dataProvider, other)).toEqual(expected)
+    },
+  )
+
+  it('writes a case when where the database is unknown', async () => {
+    const repo = new Remult(new InMemoryDataProvider()).repo(task)
+    const orderBy = async () => {
+      const raw = await SqlDatabase.selectToRaw(repo, {
+        orderBy: { due: 'asc' },
+        select: { id: true },
+      })
+      return raw.sql.split(ORDER_BY)[1]
+    }
+    NullSort.order = LOWEST
+    expect(await orderBy()).toBe('case when due is null then 0 else 1 end, due')
+  })
+})
+
 describe('json columns stored as text', () => {
   function dbReturning(parts: any, supportsJsonColumnType?: boolean) {
     return new SqlDatabase({
@@ -281,6 +458,7 @@ describe('json columns stored as text', () => {
       transaction: undefined!,
       end: async () => {},
       supportsJsonColumnType,
+      nativeNullSort: { order: 'unknown', syntax: 'CASE WHEN' },
     } satisfies SqlImplementation)
   }
 

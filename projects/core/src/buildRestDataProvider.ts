@@ -1,6 +1,6 @@
 import type { RestDataProviderHttpProvider } from './data-interfaces.js'
 import { RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider-using-fetch.js'
-import { retry } from './data-providers/retry.js'
+import { isReadPost, retry } from './data-providers/retry.js'
 
 
 export function buildRestDataProvider(
@@ -33,7 +33,9 @@ export class HttpProviderBridgeToRestDataProviderHttpProvider
   implements RestDataProviderHttpProvider {
   constructor(private http: ExternalHttpProvider) { }
   async post(url: string, data: any): Promise<any> {
-    return await retry(() => toPromise(this.http.post(url, data)))
+    return await retry(() => toPromise(this.http.post(url, data)), {
+      read: isReadPost(url),
+    })
   }
   delete(url: string): Promise<void> {
     return toPromise(this.http.delete(url))

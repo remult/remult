@@ -42,6 +42,10 @@ class PostgresBridgeToSQLQueryResult implements SqlResult {
   rows: any[]
 }
 export class PostgresDataProvider implements SqlImplementation {
+  nativeNullSort = {
+    order: { asc: 'NULLS LAST', desc: 'NULLS FIRST' },
+    syntax: 'NULLS FIRST/LAST',
+  } as const
   async entityIsUsedForTheFirstTime(entity: EntityMetadata): Promise<void> {}
   getLimitSqlSyntax(limit: number, offset: number) {
     return ' limit ' + limit + ' offset ' + offset

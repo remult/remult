@@ -219,8 +219,19 @@ export function allServerTests(
       } catch (err: any) {
         expect(err.message).toBe('Test Error')
         expect(err.httpStatusCode).toBe(400)
-        expect(err.stack.length > 10).toBe(true)
       }
+    }),
+  )
+  it(
+    'Test error in backend method does not send the stack',
+    withRemultForTest(async () => {
+      const response = await axios.post(
+        remult.apiClient.url + '/testProperError',
+        { args: [] },
+        { validateStatus: () => true },
+      )
+      expect(response.status).toBe(400)
+      expect(response.data).toEqual({ message: 'Test Error' })
     }),
   )
   it(

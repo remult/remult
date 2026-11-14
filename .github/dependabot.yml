@@ -1,0 +1,31 @@
+version: 2
+updates:
+  # Published code: security updates only, one grouped PR per directory
+  - package-ecosystem: npm
+    directories:
+      - /
+      - /projects/remult-admin
+      - /projects/create-remult
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 0
+    groups:
+      security:
+        applies-to: security-updates
+        patterns:
+          - '*'
+
+  # Examples, test apps and docs never ship: no PRs at all
+  - package-ecosystem: npm
+    directories:
+      - /examples/*
+      - /projects/test-servers/*
+      - /projects/tests/*
+      - /docs
+      - /docs/interactive
+      - /misc/build
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 0
+    ignore:
+      - dependency-name: '*'

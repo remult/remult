@@ -43,6 +43,7 @@ describe.skipIf(!mongoConnectionString)('mongo with Transaction', () => {
     },
     {
       skipAutoIncrement: true,
+      nullLowestOnly: true,
     },
   )
   it('work with native mongo and condition', async () => {

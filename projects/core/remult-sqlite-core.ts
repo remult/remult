@@ -1,4 +1,5 @@
 import type { EntityMetadata } from './src/remult3/remult3.js'
+import type { NativeNullSort } from './src/sort.js'
 import type {
   SqlCommand,
   SqlImplementation,
@@ -30,7 +31,10 @@ export class SqliteCoreDataProvider
     public doesNotSupportReturningSyntaxOnlyForUpdate = false,
   ) {}
 
-  orderByNullsFirst?: boolean
+  nativeNullSort: NativeNullSort = {
+    order: { asc: 'NULLS FIRST', desc: 'NULLS LAST' },
+    syntax: 'NULLS FIRST/LAST',
+  }
   maxParametersInOneSqlStatement = 999
 
   getLimitSqlSyntax(limit: number, offset: number) {
