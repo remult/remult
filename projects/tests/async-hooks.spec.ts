@@ -252,14 +252,14 @@ describe('keepDefaultRemult', () => {
     remultStatic.asyncContext = new RemultAsyncLocalStorage(undefined)
   })
   it('uses the default remult outside a request', async () => {
-    remultApi({ dataProvider: new InMemoryDataProvider(), entities: [t] })
+    remultApi({ dataProvider: new InMemoryDataProvider(), entities: [] })
     await repo(t).insert({ id: '1' })
     expect(await repo(t).count()).toBe(1)
   })
   it('still uses the request remult inside a request', async () => {
     const api = remultApi({
       dataProvider: new InMemoryDataProvider(),
-      entities: [t],
+      entities: [],
       getUser: async () => ({ id: 'ada' }),
     })
     const userId = await api.withRemultAsync(
