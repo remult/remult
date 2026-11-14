@@ -1470,6 +1470,15 @@ export class RepositoryImplementation<entityType>
     )
   }
 
+  async findIdOrThrow(
+    id: any,
+    options?: FindFirstOptionsBase<entityType>,
+  ): Promise<entityType> {
+    const row = await this.findId(id, options)
+    if (!row) throw new EntityError(this._notFoundError(id))
+    return row
+  }
+
   async _translateWhereToFilter(
     where?: EntityFilter<entityType>,
   ): Promise<Filter> {

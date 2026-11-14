@@ -208,6 +208,11 @@ export class RemultProxy implements Remult {
           .remultFactory()
           .repo(...args)
           .findId(a as any, b),
+      findIdOrThrow: (a, b) =>
+        self
+          .remultFactory()
+          .repo(...args)
+          .findIdOrThrow(a as any, b),
       //@ts-ignore
       toJson: (json: any) =>
         self
