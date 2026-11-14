@@ -51,4 +51,22 @@ describe('include through the remult proxy', () => {
     expectTypeOf(task!.category).toEqualTypeOf<Category>()
     expect(task!.category.name).toBe('cat1')
   })
+  it('findIdOrThrow', async () => {
+    const task = await repo(Task).findIdOrThrow(101, { include })
+    expectTypeOf(task.category).toEqualTypeOf<Category>()
+    expect(task.category.name).toBe('cat1')
+  })
+  it('findFirstOrThrow', async () => {
+    const task = await repo(Task).findFirstOrThrow({ id: 101 }, { include })
+    expectTypeOf(task.category).toEqualTypeOf<Category>()
+    expect(task.category.name).toBe('cat1')
+  })
+  it('findOneOrThrow', async () => {
+    const task = await repo(Task).findOneOrThrow({
+      where: { id: 101 },
+      include,
+    })
+    expectTypeOf(task.category).toEqualTypeOf<Category>()
+    expect(task.category.name).toBe('cat1')
+  })
 })

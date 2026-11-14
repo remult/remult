@@ -566,6 +566,10 @@ export interface Repository<entityType> {
    * @example
    * const task = await taskRepo.findIdOrThrow(id)
    */
+  findIdOrThrow<const include extends MembersToInclude<entityType>>(
+    id: idType<entityType>,
+    options: FindFirstOptionsBase<entityType> & { include: include },
+  ): Promise<IncludeResult<entityType, include>>
   findIdOrThrow(
     id: idType<entityType>,
     options?: FindFirstOptionsBase<entityType>,
@@ -574,6 +578,10 @@ export interface Repository<entityType> {
    * @example
    * await taskRepo.findFirstOrThrow({ completed: false })
    */
+  findFirstOrThrow<const include extends MembersToInclude<entityType>>(
+    where: EntityFilter<entityType> | undefined,
+    options: FindFirstOptions<entityType> & { include: include },
+  ): Promise<IncludeResult<entityType, include>>
   findFirstOrThrow(
     where?: EntityFilter<entityType>,
     options?: FindFirstOptions<entityType>,
@@ -582,6 +590,9 @@ export interface Repository<entityType> {
    * @example
    * await taskRepo.findOneOrThrow({ where: { completed: false } })
    */
+  findOneOrThrow<const include extends MembersToInclude<entityType>>(
+    options: FindFirstOptions<entityType> & { include: include },
+  ): Promise<IncludeResult<entityType, include>>
   findOneOrThrow(options?: FindFirstOptions<entityType>): Promise<entityType>
 
   /**
@@ -1617,7 +1628,7 @@ type LoadedKeys<entityType, include> = {
 /**
  * Type-level settings, turned on through module augmentation.
  *
- * `typedInclude: true` makes `find`, `findFirst`, `findOne` and `findId` return {@link Loaded}
+ * `typedInclude: true` makes `find`, `findFirst`, `findOne`, `findId` and their `OrThrow` versions return {@link Loaded}
  * when called with a literal `include`. It's off by default because a narrowed result is no
  * longer assignable from a plain entity, e.g. reassigning the variable from `insert`.
  * @example
