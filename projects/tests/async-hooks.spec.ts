@@ -3,18 +3,20 @@ import { expect, it, describe, beforeAll, beforeEach, afterEach } from 'vitest'
 import { Remult, RemultAsyncLocalStorage } from '../core/src/context.js'
 
 import { remult } from '../core/src/remult-proxy.js'
-import { remultStatic } from '../core/src/remult-static.js'
+import { defaultFactory, remultStatic } from '../core/src/remult-static.js'
 import {
   AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore,
   StubRemultAsyncLocalStorageCore,
 } from '../core/server/initAsyncHooks.js'
 import { remultApi } from '../core/remult-express'
+import { keepDefaultRemult } from '../core/async-hooks'
 import { entity } from './tests/dynamic-classes'
 import {
   Fields,
   InMemoryDataProvider,
   repo,
   withRemult,
+  type DataProvider,
   type UserInfo,
 } from '../core'
 
@@ -229,5 +231,42 @@ describe('errors with withRemult', () => {
       expect(err).toMatchInlineSnapshot(`[Error: get user error]`)
     }
     expect(error).toBe(true)
+  })
+})
+
+describe('keepDefaultRemult', () => {
+  const t = entity('t', { id: Fields.string() })
+  let defaultDataProvider: DataProvider
+  beforeEach(() => {
+    remultStatic.asyncContext = new RemultAsyncLocalStorage(
+      new AsyncLocalStorageBridgeToRemultAsyncLocalStorageCore(),
+    )
+    defaultDataProvider = defaultFactory().dataProvider
+    defaultFactory().dataProvider = new InMemoryDataProvider()
+    keepDefaultRemult()
+  })
+  afterEach(() => {
+    remultStatic.keepDefaultRemult = false
+    RemultAsyncLocalStorage.disable()
+    defaultFactory().dataProvider = defaultDataProvider
+    remultStatic.asyncContext = new RemultAsyncLocalStorage(undefined)
+  })
+  it('uses the default remult outside a request', async () => {
+    remultApi({ dataProvider: new InMemoryDataProvider(), entities: [] })
+    await repo(t).insert({ id: '1' })
+    expect(await repo(t).count()).toBe(1)
+  })
+  it('still uses the request remult inside a request', async () => {
+    const api = remultApi({
+      dataProvider: new InMemoryDataProvider(),
+      entities: [],
+      getUser: async () => ({ id: 'ada' }),
+    })
+    const userId = await api.withRemultAsync(
+      {} as any,
+      async () => remult.user?.id,
+    )
+    expect(userId).toBe('ada')
+    expect(remult.user).toBeUndefined()
   })
 })

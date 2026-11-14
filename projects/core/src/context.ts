@@ -39,7 +39,7 @@ import type {
   SubscriptionServer,
 } from './live-query/SubscriptionServer.js'
 import { verifyFieldRelationInfo } from './remult3/relationInfoMember.js'
-import { remultStatic, resetFactory } from './remult-static.js'
+import { defaultFactory, remultStatic, resetFactory } from './remult-static.js'
 import { initDataProvider } from '../server/initDataProvider.js'
 import { SubscribableImp } from './remult3/SubscribableImp.js'
 import { getEntitySettings } from './remult3/getEntityRef.js'
@@ -49,6 +49,7 @@ export class RemultAsyncLocalStorage {
     remultStatic.remultFactory = () => {
       const r = remultStatic.asyncContext.getStore()
       if (r) return r.remult
+      if (remultStatic.keepDefaultRemult) return defaultFactory()
       else
         throw new Error(
           'remult object was requested outside of a valid request cycle.valid context, try running `withRemult` or run  within initApi or a remult request cycle',
