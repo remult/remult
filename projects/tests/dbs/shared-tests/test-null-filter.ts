@@ -27,19 +27,45 @@ const cases: [EntityFilter<NullFilter>, number[]][] = [
   [{ n: { $ne: null } }, [1, 3]],
 ]
 
+// Rows: 1 → -1, 2 → null, 3 → 0, 4 → 1.
+// Each comparison is one 0 would pass. null is not 0, so the null row stays out.
+const notZero: [EntityFilter<NullFilter>, number[]][] = [
+  [{ n: { $gt: -1 } }, [3, 4]],
+  [{ n: { $gte: 0 } }, [3, 4]],
+  [{ n: { $lt: 1 } }, [1, 3]],
+  [{ n: { $lte: 0 } }, [1, 3]],
+]
+
 export function nullFilterTests({ createEntity }: DbTestProps) {
-  describe('null membership', () => {
-    for (const [where, ids] of cases) {
-      it(JSON.stringify(where), async () => {
-        const repo = await createEntity(NullFilter)
-        await repo.insert([
-          { id: 1, n: 1 },
-          { id: 2, n: null },
-          { id: 3, n: 5 },
-        ])
-        const rows = await repo.find({ where, orderBy: { id: 'asc' } })
-        expect(rows.map((row) => row.id)).toEqual(ids)
-      })
+  function rows(seed: { id: number; n: number | null }[]) {
+    return function test(
+      cases: [EntityFilter<NullFilter>, number[]][],
+    ) {
+      for (const [where, ids] of cases) {
+        it(JSON.stringify(where), async () => {
+          const repo = await createEntity(NullFilter)
+          await repo.insert(seed)
+          const found = await repo.find({ where, orderBy: { id: 'asc' } })
+          expect(found.map((row) => row.id)).toEqual(ids)
+        })
+      }
     }
+  }
+
+  describe('null membership', () => {
+    rows([
+      { id: 1, n: 1 },
+      { id: 2, n: null },
+      { id: 3, n: 5 },
+    ])(cases)
+  })
+
+  describe('null is not 0', () => {
+    rows([
+      { id: 1, n: -1 },
+      { id: 2, n: null },
+      { id: 3, n: 0 },
+      { id: 4, n: 1 },
+    ])(notZero)
   })
 }
