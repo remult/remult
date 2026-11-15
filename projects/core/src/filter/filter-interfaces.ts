@@ -882,7 +882,7 @@ export function buildFilterFromRequestParameters(
     addFilter('.ne', (val) => ({ $ne: val }))
     addFilter('.in', (val) => val, true)
     var nullFilter = filterInfo.get(col.key + '.null')
-    if (nullFilter) {
+    if (nullFilter !== undefined) {
       nullFilter = nullFilter.toString().trim().toLowerCase()
       switch (nullFilter) {
         case 'y':
