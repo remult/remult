@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - `orderByNullsFirst` is removed, use `NullSort` ([#1079](https://github.com/remult/remult/pull/1079) by @jycouet).
 - A custom `SqlImplementation` must declare `nativeNullSort` ([#1079](https://github.com/remult/remult/pull/1079) by @jycouet).
 - In memory, `$gt`, `$gte`, `$lt` and `$lte` no longer match NULL ([#1079](https://github.com/remult/remult/pull/1079) by @jycouet).
+- On a nullable column, `null` is a value in `$in`, `$nin` and `$ne` ([#1085](https://github.com/remult/remult/issues/1085), [#1089](https://github.com/remult/remult/pull/1089)). `{ n: { $in: [null] } }` returns the null rows on every database. `{ n: { $nin: [1] } }` and `{ n: { $ne: 1 } }` return them too. SQL used to drop those rows (`in (null)`, `<>`).
 
 ### Added
 
