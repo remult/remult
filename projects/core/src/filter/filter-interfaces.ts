@@ -518,15 +518,21 @@ class filterHelper {
   }
   isNotIn(values: any[]): Filter {
     return new Filter((add) => {
-      for (const v of values) {
-        add.isDifferentFrom(this.metadata, this.processVal(v))
-      }
+      for (const v of values) this.isDifferentFrom(v).__applyToConsumer(add)
     })
   }
   isDifferentFrom(val: any) {
     val = this.processVal(val)
     if ((val === null || val === undefined) && this.metadata.allowNull)
       return new Filter((add) => add.isNotNull(this.metadata))
+    // NULL is a value, so it differs from every other value. SQL `<>` does not.
+    if (this.metadata.allowNull)
+      return new Filter((add) =>
+        add.or([
+          new Filter((add) => add.isDifferentFrom(this.metadata, val)),
+          new Filter((add) => add.isNull(this.metadata)),
+        ]),
+      )
     return new Filter((add) => add.isDifferentFrom(this.metadata, val))
   }
   isLessOrEqualTo(val: any): Filter {
@@ -545,6 +551,14 @@ class filterHelper {
   }
   isIn(val: any[]): Filter {
     val = val.map((x) => this.processVal(x))
+    if (this.metadata.allowNull) {
+      const values = val.filter((x) => x !== null && x !== undefined)
+      if (values.length !== val.length) {
+        const isNull = new Filter((add) => add.isNull(this.metadata))
+        if (values.length === 0) return isNull
+        return new Filter((add) => add.or([this.isIn(values), isNull]))
+      }
+    }
     if (val?.length == 1 && val[0] != undefined && val[0] !== null)
       return new Filter((add) => add.isEqualTo(this.metadata, val[0]))
     return new Filter((add) => add.isIn(this.metadata, val))
