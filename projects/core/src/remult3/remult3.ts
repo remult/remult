@@ -997,12 +997,32 @@ export declare type EntityOrderBy<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?: 'asc' | 'desc'
 }
 
+/**
+ * Fields of a type added to this interface accept `$gt`, `$gte`, `$lt` and
+ * `$lte` in an {@link EntityFilter}. The in-memory and JSON providers compare
+ * `valueConverter.toJson` output with `<`/`>`, so it has to sort like the
+ * values, e.g. `Temporal.Instant.toString()` drops trailing zeros and sorts
+ * `00:00:00Z` after `00:00:00.5Z`.
+ * @example
+ * declare module 'remult' {
+ *   interface ComparableTypes {
+ *     instant: Temporal.Instant
+ *   }
+ * }
+ */
+export interface ComparableTypes {}
+
 /**Used to filter the desired result set
  * @see [EntityFilter](http://remult.dev/docs/entityFilter.html)
  */
 export declare type EntityFilter<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?:
-    | (Partial<entityType>[Properties] extends number | Date | undefined | null
+    | (Partial<entityType>[Properties] extends
+        | number
+        | Date
+        | ComparableTypes[keyof ComparableTypes]
+        | undefined
+        | null
         ? ComparisonValueFilter<Partial<entityType>[Properties]>
         : Partial<entityType>[Properties] extends string | undefined
           ?
