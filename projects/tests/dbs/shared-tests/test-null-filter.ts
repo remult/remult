@@ -29,6 +29,12 @@ const cases: [EntityFilter<NullFilter>, number[]][] = [
   [{ n: { $gte: 0 } }, [3, 4]],
   [{ n: { $lt: 5 } }, [1, 3]],
   [{ n: { $lte: 0 } }, [1, 3]],
+  [{ $not: { n: 0 } }, [1, 2, 4]],
+  [{ $not: { n: { $in: [0, 5] } } }, [1, 2]],
+  [{ $not: { n: { $gt: 0 } } }, [1, 2, 3]],
+  [{ $not: { n: { $ne: 0 } } }, [3]],
+  [{ $not: { n: null! } }, [1, 3, 4]],
+  [{ $not: { $or: [{ n: 0 }, { n: { $gt: 0 } }] } }, [1, 2]],
 ]
 
 export function nullFilterTests({ createEntity }: DbTestProps) {
@@ -42,7 +48,10 @@ export function nullFilterTests({ createEntity }: DbTestProps) {
     ])
     for (const [where, ids] of cases) {
       const found = await repo.find({ where, orderBy: { id: 'asc' } })
-      expect(found.map((row) => row.id), JSON.stringify(where)).toEqual(ids)
+      expect(
+        found.map((row) => row.id),
+        JSON.stringify(where),
+      ).toEqual(ids)
     }
   })
 }

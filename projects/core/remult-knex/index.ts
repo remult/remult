@@ -607,9 +607,17 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
         let where = await f.resolveWhere()
         if (where.length > 0) {
           this.result.push((b) => {
-            b.whereNot((b) => {
-              where.forEach((x) => x(b))
-            })
+            // `whereNot` drops rows where the inner filter is NULL; keep them, as in memory.
+            const inner = (b as any).client.queryBuilder() as Knex.QueryBuilder
+            where.forEach((x) => x(inner))
+            const { sql, bindings } = inner.toSQL()
+            const condition = sql.slice(
+              sql.indexOf(' where ') + ' where '.length,
+            )
+            b.whereRaw(
+              '(case when ' + condition + ' then 1 else 0 end) = 0',
+              bindings,
+            )
           })
         } else return //empty or means all rows
       })(),
