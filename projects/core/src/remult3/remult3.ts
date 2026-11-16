@@ -507,6 +507,27 @@ export interface Repository<entityType> {
     id: idType<entityType>,
     options?: FindFirstOptionsBase<entityType>,
   ): Promise<entityType | undefined | null>
+  /** returns the item that matches the id, and throws an `EntityError` with `httpStatusCode` 404 if no item matches
+   * @example
+   * const task = await taskRepo.findIdOrThrow(id)
+   */
+  findIdOrThrow(
+    id: idType<entityType>,
+    options?: FindFirstOptionsBase<entityType>,
+  ): Promise<entityType>
+  /** returns the first item that matches the `where` condition, and throws an `EntityError` with `httpStatusCode` 404 if no item matches
+   * @example
+   * await taskRepo.findFirstOrThrow({ completed: false })
+   */
+  findFirstOrThrow(
+    where?: EntityFilter<entityType>,
+    options?: FindFirstOptions<entityType>,
+  ): Promise<entityType>
+  /** returns the first item that matches the `where` condition, and throws an `EntityError` with `httpStatusCode` 404 if no item matches
+   * @example
+   * await taskRepo.findOneOrThrow({ where: { completed: false } })
+   */
+  findOneOrThrow(options?: FindFirstOptions<entityType>): Promise<entityType>
 
   /**
    * Performs an aggregation on the repository's entity type based on the specified options.

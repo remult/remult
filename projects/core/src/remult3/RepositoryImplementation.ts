@@ -140,6 +140,12 @@ export class RepositoryImplementation<entityType>
       httpStatusCode: 404,
     } satisfies ErrorInfo<any>
   }
+  _noMatchError() {
+    return {
+      message: `no row matches the filter in entity ${this.metadata.key}`,
+      httpStatusCode: 404,
+    } satisfies ErrorInfo<any>
+  }
   [getInternalKey]() {
     return this
   }
@@ -1468,6 +1474,32 @@ export class RepositoryImplementation<entityType>
       },
       true,
     )
+  }
+
+  async findIdOrThrow(
+    id: any,
+    options?: FindFirstOptionsBase<entityType>,
+  ): Promise<entityType> {
+    const row = await this.findId(id, options)
+    if (!row) throw new EntityError(this._notFoundError(id))
+    return row
+  }
+
+  async findFirstOrThrow(
+    where?: EntityFilter<entityType>,
+    options?: FindFirstOptions<entityType>,
+  ): Promise<entityType> {
+    const row = await this.findFirst(where, options)
+    if (!row) throw new EntityError(this._noMatchError())
+    return row
+  }
+
+  async findOneOrThrow(
+    options?: FindFirstOptions<entityType>,
+  ): Promise<entityType> {
+    const row = await this.findOne(options)
+    if (!row) throw new EntityError(this._noMatchError())
+    return row
   }
 
   async _translateWhereToFilter(

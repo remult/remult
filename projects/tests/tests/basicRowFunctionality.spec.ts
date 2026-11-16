@@ -32,6 +32,7 @@ import {
   type Repository,
   type EntityFilter,
   type MembersOnly,
+  EntityError,
 } from '../../core'
 
 import axios from 'axios'
@@ -1787,6 +1788,150 @@ describe('cache', () => {
     await r.find().then((x) => assign(x[0], { categoryName: 'a' }).save())
     expect((await r.findId(1, { useCache: true }))!.categoryName).toBe('noam')
     expect((await r.findId(1))!.categoryName).toBe('a')
+  })
+})
+
+describe('findIdOrThrow', () => {
+  it('returns the row that matches the id', async () => {
+    let [r] = await createData(async (i) => i(1, 'noam'))
+    const c = await r.findIdOrThrow(1)
+    expect(c.categoryName).toBe('noam')
+  })
+  it('throws a 404 EntityError when no row matches', async () => {
+    let [r] = await createData(async (i) => i(1, 'noam'))
+    const error = await r.findIdOrThrow(2).catch((e) => e)
+    expect(error).toBeInstanceOf(EntityError)
+    expect(error).toMatchObject({
+      message: 'id 2 not found in entity Categories',
+      httpStatusCode: 404,
+    })
+  })
+  it('throws when the id is null or undefined', async () => {
+    let [r] = await createData(async (i) => i(1, 'noam'))
+    await expect(r.findIdOrThrow(null!)).rejects.toThrow(
+      'id null not found in entity Categories',
+    )
+    await expect(r.findIdOrThrow(undefined!)).rejects.toThrow(
+      'id undefined not found in entity Categories',
+    )
+  })
+  it('passes the options to findId', async () => {
+    let [r] = await createData(async (i) => i(1, 'noam'))
+    await r.findIdOrThrow(1, { useCache: true })
+    await r.find().then((x) => assign(x[0], { categoryName: 'a' }).save())
+    expect((await r.findIdOrThrow(1, { useCache: true })).categoryName).toBe(
+      'noam',
+    )
+    expect((await r.findIdOrThrow(1)).categoryName).toBe('a')
+  })
+  it('throws through the rest data provider', async () => {
+    let [, serverRemult] = await createData(async (i) => i(1, 'noam'))
+    const remult = new Remult(
+      TestApiDataProvider({ dataProvider: serverRemult.dataProvider }),
+    )
+    expect((await remult.repo(Categories).findIdOrThrow(1)).categoryName).toBe(
+      'noam',
+    )
+    await expect(remult.repo(Categories).findIdOrThrow(2)).rejects.toThrow(
+      'id 2 not found in entity Categories',
+    )
+  })
+  it('works through the remult proxy', async () => {
+    try {
+      remultStatic.remultFactory = () => new Remult(new InMemoryDataProvider())
+      await expect(remult.repo(Categories).findIdOrThrow(1)).rejects.toThrow(
+        'id 1 not found in entity Categories',
+      )
+    } finally {
+      resetFactory()
+    }
+  })
+})
+describe('findFirstOrThrow', () => {
+  it('returns the first row that matches', async () => {
+    let [r] = await createData(async (i) => {
+      await i(1, 'noam')
+      await i(2, 'yoni')
+    })
+    const c = await r.findFirstOrThrow({ categoryName: 'yoni' })
+    expect(c.id).toBe(2)
+  })
+  it('throws a 404 EntityError when no row matches', async () => {
+    let [r] = await createData(async (i) => i(1, 'noam'))
+    const error = await r
+      .findFirstOrThrow({ categoryName: 'yoni' })
+      .catch((e) => e)
+    expect(error).toBeInstanceOf(EntityError)
+    expect(error).toMatchObject({
+      message: 'no row matches the filter in entity Categories',
+      httpStatusCode: 404,
+    })
+  })
+  it('passes the options to findFirst', async () => {
+    let [r] = await createData(async (i) => {
+      await i(1, 'noam')
+      await i(2, 'yoni')
+    })
+    const c = await r.findFirstOrThrow(
+      { id: { $gt: 0 } },
+      { orderBy: { id: 'desc' } },
+    )
+    expect(c.id).toBe(2)
+  })
+  it('creates the row with createIfNotFound', async () => {
+    let [r] = await createData()
+    const c = await r.findFirstOrThrow({ id: 5 }, { createIfNotFound: true })
+    expect(c.id).toBe(5)
+  })
+  it('throws through the rest data provider', async () => {
+    let [, serverRemult] = await createData(async (i) => i(1, 'noam'))
+    const remult = new Remult(
+      TestApiDataProvider({ dataProvider: serverRemult.dataProvider }),
+    )
+    await expect(
+      remult.repo(Categories).findFirstOrThrow({ categoryName: 'yoni' }),
+    ).rejects.toThrow('no row matches the filter in entity Categories')
+  })
+  it('works through the remult proxy', async () => {
+    try {
+      remultStatic.remultFactory = () => new Remult(new InMemoryDataProvider())
+      await expect(remult.repo(Categories).findFirstOrThrow()).rejects.toThrow(
+        'no row matches the filter in entity Categories',
+      )
+    } finally {
+      resetFactory()
+    }
+  })
+})
+describe('findOneOrThrow', () => {
+  it('returns the first row that matches', async () => {
+    let [r] = await createData(async (i) => {
+      await i(1, 'noam')
+      await i(2, 'yoni')
+    })
+    const c = await r.findOneOrThrow({ where: { categoryName: 'yoni' } })
+    expect(c.id).toBe(2)
+  })
+  it('throws a 404 EntityError when no row matches', async () => {
+    let [r] = await createData(async (i) => i(1, 'noam'))
+    const error = await r
+      .findOneOrThrow({ where: { categoryName: 'yoni' } })
+      .catch((e) => e)
+    expect(error).toBeInstanceOf(EntityError)
+    expect(error).toMatchObject({
+      message: 'no row matches the filter in entity Categories',
+      httpStatusCode: 404,
+    })
+  })
+  it('works through the remult proxy', async () => {
+    try {
+      remultStatic.remultFactory = () => new Remult(new InMemoryDataProvider())
+      await expect(remult.repo(Categories).findOneOrThrow()).rejects.toThrow(
+        'no row matches the filter in entity Categories',
+      )
+    } finally {
+      resetFactory()
+    }
   })
 })
 
