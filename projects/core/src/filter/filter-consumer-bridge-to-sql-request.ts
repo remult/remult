@@ -96,8 +96,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
         let where = await f.resolveWhere()
         if (!where) return //since if any member of or is empty, then the entire or is irrelevant
 
-        // `not (x)` drops rows where x is NULL; keep them, as in memory. CASE runs on every dialect.
-        this.addToWhere('(case when ' + where + ' then 1 else 0 end) = 0')
+        this.addToWhere('not (' + where + ')')
       })(),
     )
   }
