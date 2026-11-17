@@ -1701,21 +1701,21 @@ type IncludeResult<entityType, include> = RemultTypeConfig extends {
  * const tasks = await repo(Task).find({ include: { category: true } })
  * tasks[0].category.name // `category` is loaded, no `?.` needed
  */
-export type Loaded<entityType, include> = ([
-  SelectNarrowedKeys<include>,
-] extends [never]
-  ? entityType
-  : Omit<entityType, SelectNarrowedKeys<include>>) &
-  (0 extends 1 & (entityType | include)
+export type Loaded<entityType, include> = (0 extends 1 & (entityType | include)
+  ? unknown
+  : [LoadedKeys<entityType, include>] extends [never]
     ? unknown
-    : [LoadedKeys<entityType, include>] extends [never]
-      ? unknown
-      : {
-          [K in LoadedKeys<entityType, include>]-?: LoadedRelation<
-            Exclude<entityType[K], undefined>,
-            include[K]
-          >
-        })
+    : {
+        [K in LoadedKeys<entityType, include>]-?: LoadedRelation<
+          Exclude<entityType[K], undefined>,
+          include[K]
+        >
+      }) &
+  // Last, so a to-many is `LoadedRow[] & Row[]`. Array methods like `map` and `find` resolve
+  // against the first member, and the other order would hand back unloaded rows.
+  ([SelectNarrowedKeys<include>] extends [never]
+    ? entityType
+    : Omit<entityType, SelectNarrowedKeys<include>>)
 
 type UnselectedKeys<entityType, select, include> = Exclude<
   {
