@@ -1,7 +1,11 @@
 import type { packedRowInfo } from './__EntityValueProvider.js'
 import { buildRestDataProvider } from './buildRestDataProvider.js'
 import type { FieldOptions } from './column-interfaces.js'
-import type { AllowedForInstance, ControllerOptions } from './context.js'
+import type {
+  AllowedForInstance,
+  ApiClient,
+  ControllerOptions,
+} from './context.js'
 import {
   ClassHelper,
   Remult,
@@ -48,8 +52,11 @@ export abstract class Action<inParam, outParam> implements ActionInterface {
     baseUrl?: string,
     http?: RestDataProviderHttpProvider,
   ): Promise<outParam> {
-    if (baseUrl === undefined) baseUrl = remult.apiClient.url
-    if (!http) http = buildRestDataProvider(remult.apiClient.httpClient!)
+    const apiClient =
+      (remult.dataProvider as { __apiClientForTesting?: ApiClient })
+        .__apiClientForTesting ?? remult.apiClient
+    if (baseUrl === undefined) baseUrl = apiClient.url
+    if (!http) http = buildRestDataProvider(apiClient.httpClient!)
 
     let r = await http.post(baseUrl + '/' + this.actionUrl, pIn)
     let p: jobWasQueuedResult = r
