@@ -1,6 +1,7 @@
 //
-import { describe, expect, test } from 'vitest'
+import { beforeEach, describe, expect, test } from 'vitest'
 import {
+  BackendMethod,
   Entity,
   Fields,
   InMemoryDataProvider,
@@ -164,5 +165,71 @@ describe('test api data provider', () => {
         "length": 4,
       }
     `)
+  })
+})
+
+describe('backend methods through the test api', () => {
+  @Entity('tasks', { allowApiCrud: true })
+  class Task {
+    @Fields.integer()
+    id = 0
+    @Fields.boolean()
+    completed = false
+
+    @BackendMethod({ allowed: 'admin' })
+    async complete() {
+      this.completed = true
+      await repo(Task).save(this)
+    }
+  }
+  class TasksController {
+    @BackendMethod({ allowed: 'admin' })
+    static async completeAll() {
+      await repo(Task).updateMany({
+        where: { completed: false },
+        set: { completed: true },
+      })
+    }
+    @BackendMethod({ allowed: true })
+    static async whoAmI() {
+      return remult.user?.id
+    }
+  }
+
+  let mem: InMemoryDataProvider
+  beforeEach(async () => {
+    mem = new InMemoryDataProvider()
+    remult.dataProvider = TestApiDataProvider({ dataProvider: mem })
+    await repo(Task, mem).insert({ id: 1 })
+  })
+
+  test('a static backend method checks allowed', async () => {
+    remult.user = { id: 'ada' }
+    await expect(() => TasksController.completeAll()).rejects.toThrow(
+      'Forbidden',
+    )
+    expect(await repo(Task, mem).count({ completed: true })).toBe(0)
+  })
+  test('a static backend method runs for an allowed user', async () => {
+    remult.user = { id: 'grace', roles: ['admin'] }
+    await TasksController.completeAll()
+    expect(await repo(Task, mem).count({ completed: true })).toBe(1)
+  })
+  test('a static backend method sees the calling user', async () => {
+    remult.user = { id: 'ada' }
+    expect(await TasksController.whoAmI()).toBe('ada')
+  })
+  test('an entity backend method checks allowed', async () => {
+    remult.user = { id: 'ada' }
+    const task = await repo(Task).findFirst()
+    await expect(() => task!.complete()).rejects.toThrow('Forbidden')
+    expect(await repo(Task, mem).count({ completed: true })).toBe(0)
+  })
+  test('an entity backend method updates the calling object', async () => {
+    remult.user = { id: 'grace', roles: ['admin'] }
+    const task = await repo(Task).findFirst()
+    await task!.complete()
+    expect(task!.completed).toBe(true)
+    expect(await repo(Task, mem).count({ completed: true })).toBe(1)
   })
 })
