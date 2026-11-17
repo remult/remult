@@ -235,6 +235,17 @@ export function allServerTests(
     }),
   )
   it(
+    'an Error with an httpStatusCode keeps that status',
+    withRemultForTest(async () => {
+      await expect(
+        repo(Task).insert({ title: 'throw teapot' }),
+      ).rejects.toMatchObject({
+        message: 'Test Teapot',
+        httpStatusCode: 418,
+      })
+    }),
+  )
+  it(
     'update many',
     withRemultForTest(async () => {
       await create3Tasks()
