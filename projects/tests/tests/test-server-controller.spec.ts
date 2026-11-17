@@ -12,7 +12,11 @@ import {
   Controller,
   prepareArgsToSend,
 } from '../../core/src/server-action'
-import type { BackendMethodSerializer } from '../../core/src/server-action'
+import type {
+  BackendMethodOptions,
+  BackendMethodSerializer,
+  BackendMethodSerializerContext,
+} from '../../core/src/server-action'
 import { ActionTestConfig, testAsIfOnBackend } from './testHelper'
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
@@ -609,12 +613,14 @@ const dateTagging: BackendMethodSerializer = {
         ),
 }
 
+const nextDayOptions: BackendMethodOptions<unknown> = { allowed: true }
+
 @Controller('serializerProbe')
 class SerializerProbe {
   @Fields.date()
   since = new Date('2025-01-01')
 
-  @BackendMethod({ allowed: true })
+  @BackendMethod(nextDayOptions)
   static async nextDay(at: Date) {
     return {
       argWasDate: at instanceof Date,
@@ -650,6 +656,21 @@ class SerializerProbeEntity {
   async stamp(at: Date) {
     return { argWasDate: at instanceof Date, id: this.id, at }
   }
+}
+
+const recordContexts = () => {
+  const seen: ({ op: string } & BackendMethodSerializerContext)[] = []
+  BackendMethod.serializer = {
+    serialize: (value, context) => {
+      seen.push({ op: 'serialize', ...context })
+      return dateTagging.serialize(value, context)
+    },
+    deserialize: (value, context) => {
+      seen.push({ op: 'deserialize', ...context })
+      return dateTagging.deserialize(value, context)
+    },
+  }
+  return seen
 }
 
 describe('BackendMethod.serializer', () => {
@@ -707,29 +728,50 @@ describe('BackendMethod.serializer', () => {
         return value
       },
     }
-    expect(oneParameter.serialize(1, remult)).toBe(1)
+    expect(oneParameter.serialize(1, { remult, options: nextDayOptions })).toBe(
+      1,
+    )
+  })
+
+  it('gives the serializer the options passed to the decorator', async () => {
+    const seen = recordContexts()
+    await SerializerProbe.nextDay(new Date('2026-01-01'))
+    expect(seen).toHaveLength(4)
+    for (const x of seen) expect(x.options).toBe(nextDayOptions)
+  })
+
+  it('awaits serializers that return promises', async () => {
+    BackendMethod.serializer = {
+      serialize: async (value, context) =>
+        dateTagging.serialize(value, context),
+      deserialize: async (value, context) =>
+        dateTagging.deserialize(value, context),
+    }
+    expect(await SerializerProbe.nextDay(new Date('2026-01-01'))).toEqual({
+      argWasDate: true,
+      next: new Date('2026-01-02'),
+    })
+    const row = remult.repo(SerializerProbeEntity).create({ id: 7 })
+    expect(await row.stamp(new Date('2026-01-01'))).toEqual({
+      argWasDate: true,
+      id: 7,
+      at: new Date('2026-01-01'),
+    })
   })
 
   it('gives the serializer the Remult making a client call', async () => {
-    const seen: { op: string; remult: Remult }[] = []
-    BackendMethod.serializer = {
-      serialize: (value, r) => {
-        seen.push({ op: 'serialize', remult: r })
-        return dateTagging.serialize(value, r)
-      },
-      deserialize: (value, r) => {
-        seen.push({ op: 'deserialize', remult: r })
-        return dateTagging.deserialize(value, r)
-      },
-    }
-    const c = new Remult({
+    const seen = recordContexts()
+    const c: Remult = new Remult({
       url: 'xx',
       httpClient: {
         delete: () => undefined!,
         get: () => undefined!,
         put: () => undefined!,
         post: async () => ({
-          data: dateTagging.serialize({ next: new Date('2026-01-02') }, c),
+          data: dateTagging.serialize(
+            { next: new Date('2026-01-02') },
+            { remult: c, options: nextDayOptions },
+          ),
         }),
       },
     })
@@ -741,17 +783,7 @@ describe('BackendMethod.serializer', () => {
   })
 
   it('gives the serializer the global remult on a direct call and the request Remult on the server', async () => {
-    const seen: { op: string; remult: Remult }[] = []
-    BackendMethod.serializer = {
-      serialize: (value, r) => {
-        seen.push({ op: 'serialize', remult: r })
-        return dateTagging.serialize(value, r)
-      },
-      deserialize: (value, r) => {
-        seen.push({ op: 'deserialize', remult: r })
-        return dateTagging.deserialize(value, r)
-      },
-    }
+    const seen = recordContexts()
     await SerializerProbe.nextDay(new Date('2026-01-01'))
     // client serialize, server deserialize, server serialize, client deserialize
     expect(seen.map((x) => x.op)).toEqual([
@@ -768,7 +800,7 @@ describe('BackendMethod.serializer', () => {
   })
 
   it('posts the serialized arguments', async () => {
-    const c = new Remult({
+    const c: Remult = new Remult({
       url: 'xx',
       httpClient: {
         delete: () => undefined!,
@@ -780,7 +812,10 @@ describe('BackendMethod.serializer', () => {
             encoded: '[{"$date":"2026-01-01T00:00:00.000Z"}]',
           })
           return {
-            data: dateTagging.serialize({ next: new Date('2026-01-02') }),
+            data: dateTagging.serialize(
+              { next: new Date('2026-01-02') },
+              { remult: c, options: nextDayOptions },
+            ),
           }
         },
       },

@@ -73,4 +73,20 @@ import superjson from 'superjson'
 BackendMethod.serializer = superjson
 ```
 
-The serializer also gets the `Remult` making the call as a second argument, so it can rebuild entities with `remult.repo(...)`. `paramTypes` still runs first, so an entity listed there is still sent as its id and fetched on the backend.
+Both methods get a second argument with the `Remult` making the call and the options passed to `@BackendMethod`, and either may return a promise. That lets a serializer rebuild entities with `remult.repo(...)`, or read settings you add to the options.
+
+```ts
+declare module 'remult' {
+  interface BackendMethodOptions<type> {
+    returns?: string
+  }
+}
+
+BackendMethod.serializer = {
+  serialize: (value, { remult, options }) => encode(value, options.returns),
+  deserialize: async (value, { remult, options }) =>
+    decode(value, options.returns, (key, row) => remult.repo(entities[key]).fromJson(row)),
+}
+```
+
+`paramTypes` still runs first, so an entity listed there is still sent as its id and fetched on the backend.
