@@ -95,6 +95,16 @@ describe('test include types', () => {
     expectTypeOf(category!.tasks).toEqualTypeOf<Task[]>()
     expect(category!.tasks.map((t) => t.title)).toEqual(['task1'])
   })
+  it('array methods on a to many relation keep its nested include', async () => {
+    const category = await remult
+      .repo(Category)
+      .findId(1, { include: { tasks: { include: { category: true } } } })
+    const categories = category!.tasks.map((t) => t.category)
+    expectTypeOf(categories).toEqualTypeOf<Category[]>()
+    expect(categories.map((c) => c.name)).toEqual(['cat1'])
+    const found = category!.tasks.find((t) => t.id === 101)
+    expectTypeOf(found!.category).toEqualTypeOf<Category>()
+  })
   it('nullable relation stays nullable', async () => {
     const categories = await remult
       .repo(Category)
