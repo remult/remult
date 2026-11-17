@@ -34,7 +34,7 @@ import {
   getRepository,
   isAutoIncrement,
 } from '../src/remult3/RepositoryImplementation.js'
-import { Sort } from '../src/sort.js'
+import { Sort, type NativeNullSort } from '../src/sort.js'
 import {
   fromDbColumn,
   toDbColumn,
@@ -60,6 +60,7 @@ import {
   groupByImpl,
   getRowAfterUpdate,
   jsonColumnStorageOf,
+  orderBySql,
 } from '../src/data-providers/sql-database.js'
 import type { InsertOrUpdateOptions } from '../src/remult3/remult3.js'
 
@@ -109,6 +110,35 @@ export class KnexDataProvider
     return r.knex
   }
   wrapIdentifier: (name: string) => string = (x) => this.knex.ref(x) + ''
+  // By `driverName`, as CockroachDB shares the `postgresql` dialect.
+  get nativeNullSort(): NativeNullSort {
+    switch (this.knex.client.driverName) {
+      case 'pg':
+      case 'pgnative':
+      case 'pg-redshift':
+      case 'oracledb':
+        return {
+          order: { asc: 'NULLS LAST', desc: 'NULLS FIRST' },
+          syntax: 'NULLS FIRST/LAST',
+        }
+      case 'mysql':
+      case 'mysql2':
+      case 'mssql':
+        return {
+          order: { asc: 'NULLS FIRST', desc: 'NULLS LAST' },
+          syntax: 'CASE WHEN',
+        }
+      case 'sqlite3':
+      case 'better-sqlite3':
+      case 'cockroachdb':
+        return {
+          order: { asc: 'NULLS FIRST', desc: 'NULLS LAST' },
+          syntax: 'NULLS FIRST/LAST',
+        }
+    }
+    // `case when` runs on any SQL database.
+    return { order: 'unknown', syntax: 'CASE WHEN' }
+  }
   get jsonColumnStorage(): JsonColumnStorage {
     if (!supportsJsonLoadingAndSaving(this.knex)) return 'text'
     if (this.knex.client.config.client === 'mysql2') return 'textOnWrite'
@@ -189,7 +219,7 @@ class KnexEntityDataProvider implements EntityDataProvider {
         true,
       ),
       this.dp.createCommand(),
-      false,
+      this.dp.nativeNullSort,
       (limit, offset) =>
         this.knex.client.config.client?.includes('mssql')
           ? ' offset ' + offset + ' rows fetch next ' + limit + ' rows only'
@@ -254,12 +284,13 @@ class KnexEntityDataProvider implements EntityDataProvider {
       options.orderBy = Sort.createUniqueSort(this.entity, new Sort())
     }
     if (options.orderBy) {
-      query = query.orderBy(
-        options.orderBy.Segments.map((s) => ({
-          column: e.$dbNameOf(s.field),
-          order: s.isDescending ? 'desc' : 'asc',
-        })),
-      )
+      const native = this.dp.nativeNullSort
+      // Not Knex's own `nulls` option: outside Postgres it sorts on `(x is null)` alone.
+      for (const s of options.orderBy.Segments)
+        query = query.orderByRaw(
+          orderBySql(':column:', s.isDescending, s.field.allowNull, native),
+          { column: e.$dbNameOf(s.field) },
+        )
     }
     if (options.limit) {
       query = query.limit(options.limit)
@@ -817,7 +848,10 @@ export function buildColumn(
       if (!x.allowNull) {
         c.defaultTo(0).notNullable()
       }
-    } else b.specificType(dbName, x.valueConverter.fieldTypeInDb)
+    } else {
+      let c = b.specificType(dbName, x.valueConverter.fieldTypeInDb)
+      if (!x.allowNull) c.defaultTo(0).notNullable()
+    }
   } else if (x.valueType == Date) {
     if (!x.valueConverter.fieldTypeInDb)
       if (x.valueConverter == ValueConverters.DateOnly) b.date(dbName)

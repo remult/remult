@@ -32,7 +32,7 @@ duckdb('duckdb', { retry: 2 }, () => {
   }
 
   allDbTests(props)
-  SqlDbTests({ ...props })
+  SqlDbTests({ ...props, addedColumnIsNullable: true })
   it('start works', async () => {
     expect((await db.execute('select 1 as a')).rows).toMatchInlineSnapshot(`
       [
