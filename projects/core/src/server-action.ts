@@ -1,7 +1,11 @@
 import type { packedRowInfo } from './__EntityValueProvider.js'
 import { buildRestDataProvider } from './buildRestDataProvider.js'
 import type { FieldOptions } from './column-interfaces.js'
-import type { AllowedForInstance, ControllerOptions } from './context.js'
+import type {
+  AllowedForInstance,
+  ApiClient,
+  ControllerOptions,
+} from './context.js'
 import {
   ClassHelper,
   Remult,
@@ -36,6 +40,12 @@ interface inArgs {
 interface result {
   data: any
 }
+// TestApiDataProvider serves backend methods in-process, and remult.apiClient would point at a
+// real server.
+const apiClientFor = (calling: Remult): ApiClient =>
+  (calling.dataProvider as { __apiClientForTesting?: ApiClient })
+    .__apiClientForTesting ?? calling.apiClient
+
 export abstract class Action<inParam, outParam> implements ActionInterface {
   constructor(
     private actionUrl: string,
@@ -49,8 +59,9 @@ export abstract class Action<inParam, outParam> implements ActionInterface {
     baseUrl?: string,
     http?: RestDataProviderHttpProvider,
   ): Promise<outParam> {
-    if (baseUrl === undefined) baseUrl = remult.apiClient.url
-    if (!http) http = buildRestDataProvider(remult.apiClient.httpClient!)
+    const apiClient = apiClientFor(remult)
+    if (baseUrl === undefined) baseUrl = apiClient.url
+    if (!http) http = buildRestDataProvider(apiClient.httpClient!)
 
     let r = await http.post(baseUrl + '/' + this.actionUrl, pIn)
     let p: jobWasQueuedResult = r
@@ -304,8 +315,9 @@ export function BackendMethod<type = unknown>(
       )
       serverAction.doWork = async (args, self, caller) => {
         const calling = caller ?? remult
-        const url = calling.apiClient.url
-        const http = buildRestDataProvider(calling.apiClient.httpClient)
+        const apiClient = apiClientFor(calling)
+        const url = apiClient.url
+        const http = buildRestDataProvider(apiClient.httpClient)
         const sent = await toWire(
           prepareArgsToSend(getTypes(), args),
           calling,
@@ -491,8 +503,9 @@ export function BackendMethod<type = unknown>(
         caller?: Remult,
       ): Promise<any> {
         const calling = caller ?? remult
-        const baseUrl = calling.apiClient.url
-        const http = buildRestDataProvider(calling.apiClient.httpClient)
+        const apiClient = apiClientFor(calling)
+        const baseUrl = apiClient.url
+        const http = buildRestDataProvider(apiClient.httpClient)
         args = await toWire(
           prepareArgsToSend(getTypes(), args),
           calling,

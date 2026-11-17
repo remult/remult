@@ -630,6 +630,9 @@ export class RemultServerImplementation<RequestType>
   __addEntityForTesting(e: EntityMetadata) {
     this.addEntity(e.entityType, e.key, this.getRouteImpl())
   }
+  __addActionForTesting(action: ActionInterface) {
+    this.addAction(action, this.getRouteImpl())
+  }
   private addEntity(
     e: ClassType<unknown>,
     key: string,
