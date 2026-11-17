@@ -1314,6 +1314,29 @@ export function commonDbTests(
       'back\\slash',
     ])
   })
+  it('text operators treat an empty string as a value', async () => {
+    const e = class {
+      a = 0
+      firstName = ''
+    }
+    describeClass(e, Entity('testEmptyContains', { allowApiCrud: true }), {
+      a: Fields.number(),
+      firstName: Fields.string(),
+    })
+    const r = await createEntity(e)
+    await r.insert([
+      { a: 1, firstName: 'milk' },
+      { a: 2, firstName: '' },
+    ])
+    const ids = async (
+      firstName: EntityFilter<InstanceType<typeof e>>['firstName'],
+    ) =>
+      (await r.find({ where: { firstName }, orderBy: { a: 'asc' } })).map(
+        (x) => x.a,
+      )
+    expect(await ids({ $notContains: 'milk' })).toEqual([2])
+    expect(await ids({ $contains: '' })).toEqual([1, 2])
+  })
   it('text operators with a quote or backslash value do not alter the query', async () => {
     const names = await createSpecialNames()
     expect(await names({ $contains: "o'h" })).toEqual(["o'hara"])
