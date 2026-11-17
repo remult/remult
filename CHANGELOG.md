@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- `flags.clientErrorsAsEntityError` (`remult/internals`): client calls reject with an `EntityError` instead of a plain object, so `instanceof Error` works and the error has a stack. Off by default, and on by default in the next major ([#1064](https://github.com/remult/remult/pull/1064) by @AndrewSouthpaw).
 - `NullSort` (`remult/internals`): where NULL sorts, for the whole app ([docs](https://remult.dev/docs/field-types#where-null-sorts), [#1079](https://github.com/remult/remult/pull/1079) by @jycouet).
 
 ### Changed

@@ -71,10 +71,13 @@ describe('test express server', async () => {
           `)
           e.sendError(432, e.responseBody)
         }
-        await expect(() => r.delete(1232131)).rejects.toMatchObject({
-          httpStatusCode: 432,
-          message: 'NotFound',
-        })
+        await expect(() => r.delete(1232131)).rejects
+          .toThrowErrorMatchingInlineSnapshot(`
+          {
+            "httpStatusCode": 432,
+            "message": "NotFound",
+          }
+        `)
       }),
     )
     it(
@@ -101,10 +104,13 @@ describe('test express server', async () => {
         const r = repo(test_compound_id)
         throwExceptionOnGetUser = true
 
-        await expect(() => r.find()).rejects.toMatchObject({
-          httpStatusCode: 403,
-          message: 'not allowed',
-        })
+        await expect(() => r.find()).rejects
+          .toThrowErrorMatchingInlineSnapshot(`
+          {
+            "httpStatusCode": 403,
+            "message": "not allowed",
+          }
+        `)
       }),
     )
   })

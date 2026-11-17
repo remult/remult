@@ -1604,6 +1604,8 @@ export const flags = {
   liveQueryKeepAliveMs: 30_000,
   /** Version poll while SSE is stale */
   liveQueryPollWhenStaleMs: 1_000,
+  /** Client calls reject with an `EntityError` instead of a plain object. On by default in the next major. */
+  clientErrorsAsEntityError: false,
 }
 
 /*p1 - issues in https://stackblitz.com/edit/demo-allow-delete-based-on-other-entity:

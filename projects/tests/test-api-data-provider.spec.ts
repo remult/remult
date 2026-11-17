@@ -1,7 +1,8 @@
 //
-import { describe, expect, test } from 'vitest'
+import { afterEach, beforeEach, describe, expect, test } from 'vitest'
 import {
   Entity,
+  EntityError,
   Fields,
   InMemoryDataProvider,
   Remult,
@@ -11,6 +12,8 @@ import {
 } from '../core/index.js'
 import { TestApiDataProvider } from '../core/server/test-api-data-provider.js'
 import { createSqlite3DataProvider } from '../core/remult-sqlite3.js'
+import { processHttpException } from '../core/src/buildRestDataProvider.js'
+import { flags } from '../core/src/remult3/remult3.js'
 
 declare module 'remult' {
   export interface RemultContext {
@@ -86,10 +89,13 @@ describe('test api data provider', () => {
       name = ''
     }
     remult.dataProvider = TestApiDataProvider()
-    await expect(() => repo(Person).count()).rejects.toMatchObject({
-      httpStatusCode: 403,
-      message: 'Forbidden',
-    })
+    await expect(() => repo(Person).count()).rejects
+      .toThrowErrorMatchingInlineSnapshot(`
+      {
+        "httpStatusCode": 403,
+        "message": "Forbidden",
+      }
+    `)
   })
   test('groupBy api ignores orderBy on fields not included in api', async () => {
     @Entity('LoginAudit', { allowApiCrud: true })
@@ -161,5 +167,46 @@ describe('test api data provider', () => {
         "length": 4,
       }
     `)
+  })
+})
+
+describe('test api data provider with flags.clientErrorsAsEntityError', () => {
+  beforeEach(() => {
+    flags.clientErrorsAsEntityError = true
+  })
+  afterEach(() => {
+    flags.clientErrorsAsEntityError = false
+  })
+
+  test('rejects with an EntityError', async () => {
+    @Entity('test', { allowApiCrud: true, allowApiInsert: false })
+    class Person {
+      @Fields.integer()
+      id = 0
+    }
+    remult.dataProvider = TestApiDataProvider()
+    const err = await repo(Person)
+      .insert({ id: 1 })
+      .catch((e) => e)
+    expect(err).toBeInstanceOf(EntityError)
+    expect(err).toMatchObject({ httpStatusCode: 403, message: 'Forbidden' })
+  })
+
+  test('keeps the status of a client error rethrown on the server', async () => {
+    @Entity('test', {
+      allowApiCrud: true,
+      saving: async () => {
+        throw await processHttpException({ status: 403, error: 'Nope' })
+      },
+    })
+    class Person {
+      @Fields.integer()
+      id = 0
+    }
+    remult.dataProvider = TestApiDataProvider()
+    await expect(() => repo(Person).insert({ id: 1 })).rejects.toMatchObject({
+      httpStatusCode: 403,
+      message: 'Nope',
+    })
   })
 })
