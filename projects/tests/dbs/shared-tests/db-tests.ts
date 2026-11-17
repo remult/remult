@@ -1324,6 +1324,31 @@ export function commonDbTests(
     expect(await names({ $contains: "\\') or 1=1 -- " })).toEqual([])
     expect(await names({ $startsWith: "' or 'a'='a" })).toEqual([])
   })
+  it('text operators match an empty string value', async () => {
+    const e = class {
+      a = 0
+      firstName = ''
+    }
+    describeClass(e, Entity('testNameContains', { allowApiCrud: true }), {
+      a: Fields.number(),
+      firstName: Fields.string(),
+    })
+    const r = await createEntity(e)
+    await r.insert([
+      { a: 1, firstName: 'buy milk' },
+      { a: 2, firstName: '' },
+    ])
+    const findNames = async (
+      firstName: EntityFilter<InstanceType<typeof e>>['firstName'],
+    ) =>
+      (
+        await r.find({ where: { firstName }, orderBy: { a: 'asc' } })
+      ).map((x) => x.firstName)
+    expect(await findNames({ $notContains: 'milk' })).toEqual([''])
+    expect(await findNames({ $contains: '' })).toEqual(['buy milk', ''])
+    expect(await findNames({ $startsWith: '' })).toEqual(['buy milk', ''])
+    expect(await findNames({ $endsWith: '' })).toEqual(['buy milk', ''])
+  })
   it.skipIf(options?.excludeLiveQuery)('test live query storage', async () => {
     await createEntity(LiveQueryStorageEntity)
     const s = new DataProviderLiveQueryStorage(getDb())

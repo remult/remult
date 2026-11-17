@@ -488,7 +488,7 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
   }
   public containsCaseInsensitive(col: FieldMetadata, val: any): void {
     let v = this.row[this.dbNames.$dbNameOf(col)]
-    if (!v) {
+    if (v === null || v === undefined) {
       this.ok = false
       return
     }
@@ -500,7 +500,7 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
   }
   public notContainsCaseInsensitive(col: FieldMetadata, val: any): void {
     let v = this.row[this.dbNames.$dbNameOf(col)]
-    if (!v) {
+    if (v === null || v === undefined) {
       this.ok = false
       return
     }
@@ -512,7 +512,7 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
   }
   public startsWithCaseInsensitive(col: FieldMetadata, val: any): void {
     let v = this.row[this.dbNames.$dbNameOf(col)]
-    if (!v) {
+    if (v === null || v === undefined) {
       this.ok = false
       return
     }
@@ -524,7 +524,7 @@ class FilterConsumerBridgeToObject implements FilterConsumer {
   }
   public endsWithCaseInsensitive(col: FieldMetadata, val: any): void {
     let v = this.row[this.dbNames.$dbNameOf(col)]
-    if (!v) {
+    if (v === null || v === undefined) {
       this.ok = false
       return
     }
