@@ -2,6 +2,7 @@ import type { Remult } from './context.js'
 import { doTransaction } from './context.js'
 import { EntityError, type ErrorInfo } from './data-interfaces.js'
 import {
+  findOptionsFromJson,
   findOptionsToJson,
   liveQueryAction,
 } from './data-providers/rest-data-provider.js'
@@ -237,10 +238,7 @@ export class DataApi<T = unknown> {
     if (body?.orderBy) {
       for (const element of body?.orderBy) {
         const direction = element.isDescending ? 'desc' : 'asc'
-        if (
-          element.operation !== 'count' &&
-          !this.fieldIsInApi(element.field)
-        )
+        if (element.operation !== 'count' && !this.fieldIsInApi(element.field))
           continue
         switch (element.operation) {
           case undefined:
@@ -416,14 +414,42 @@ export class DataApi<T = unknown> {
     }
     try {
       const r = await this.getArrayImpl(request, body)
+      const findOptionsJson = findOptionsToJson(
+        r.findOptions,
+        this.repository.metadata,
+      )
       const data: QueryData = {
         requestJson: await serializeContext(),
-        findOptionsJson: findOptionsToJson(
-          r.findOptions,
-          this.repository.metadata,
-        ),
+        findOptionsJson,
         lastIds: r.r.map((y) => this.repository.metadata.idMetadata.getId(y)),
         version: 0,
+      }
+      // The REST layer never sends `include` for a regular find — the client
+      // resolves relations itself. A live query is different: the server must
+      // know which related entities the query expands, so it can re-evaluate
+      // the query when one of them changes. The client sends the include
+      // (already serialized) with the subscription request.
+      if (body?.include) {
+        findOptionsJson.include = body.include
+        data.relatedEntityKeys = getRelatedEntityKeysForLiveQuery(
+          this.repository.metadata,
+          body.include,
+        )
+        // Baseline for detecting related-content changes: load the items
+        // once with relations included, so the first related change after
+        // subscribing is detected instead of being swallowed as the baseline.
+        if (data.relatedEntityKeys.length > 0) {
+          const itemsWithRelations = await this.repository.find(
+            findOptionsFromJson(findOptionsJson, this.repository.metadata),
+          )
+          data.lastItemsJson = {}
+          for (const item of itemsWithRelations) {
+            const ref = this.repository.getEntityRef(item)
+            data.lastItemsJson[String(ref.getId())] = JSON.stringify(
+              ref.toApiJson(true),
+            )
+          }
+        }
       }
       await this.remult.liveQueryStorage!.add({
         entityKey: this.repository.metadata.key,
@@ -666,6 +692,30 @@ export class DataApi<T = unknown> {
       return result
     } else return await insert(body)
   }
+}
+
+/** Entity keys of the related entities reachable through a live query's
+ * `include` options (already serialized to JSON by the client), at any level
+ * of nesting. A change to any of them must re-evaluate the query. */
+export function getRelatedEntityKeysForLiveQuery(
+  metadata: EntityMetadata,
+  include: any,
+): string[] {
+  const result = new Set<string>()
+  const walk = (meta: EntityMetadata, inc: any) => {
+    if (!inc || typeof inc !== 'object') return
+    for (const key of Object.keys(inc)) {
+      const value = inc[key]
+      if (!value) continue
+      const rel = getRelationFieldInfo(meta.fields.find(key))
+      if (!rel) continue
+      result.add(rel.toRepo.metadata.key)
+      if (typeof value === 'object')
+        walk(rel.toRepo.metadata, (value as any).include)
+    }
+  }
+  walk(metadata, include)
+  return [...result]
 }
 
 export interface DataApiResponse {

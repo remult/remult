@@ -55,7 +55,17 @@ export class DataProviderLiveQueryStorage implements LiveQueryStorage, Storage {
     let d = new Date()
     d.setMinutes(d.getMinutes() - 5)
     const iso = d.toISOString()
-    for (const query of await repo.find({ where: { entityKey } })) {
+    // A query may also depend on related entities (see
+    // QueryData.relatedEntityKeys). Those dependencies live inside the opaque
+    // `data` blob, which can't be filtered portably in the database, so scan
+    // and filter in memory. The table only holds live subscriptions and
+    // stale rows are pruned here, so the scan stays bounded.
+    for (const query of await repo.find({})) {
+      if (
+        query.entityKey !== entityKey &&
+        !(query.data?.relatedEntityKeys ?? []).includes(entityKey)
+      )
+        continue
       if (query.lastUsedIso < iso) await repo.delete(query)
       else {
         await callback({
@@ -68,9 +78,7 @@ export class DataProviderLiveQueryStorage implements LiveQueryStorage, Storage {
       }
     }
   }
-  async keepAliveAndReturnUnknownQueryIds(
-    queryIds: string[],
-  ): Promise<{
+  async keepAliveAndReturnUnknownQueryIds(queryIds: string[]): Promise<{
     unknownQueryIds: string[]
     versions: Record<string, number>
   }> {

@@ -33,9 +33,12 @@ export class LiveQueryPublisher implements LiveQueryChangesListener {
         entityKey,
         async ({ query: q, setData }) => {
           let query = { ...q.data } as QueryData
+          // The query is always evaluated against its own entity's repo,
+          // even when the change that triggered this evaluation was to a
+          // related entity (see relatedEntityKeys below).
           await this.performWithContext(
             query.requestJson,
-            entityKey,
+            q.entityKey,
             async (repo) => {
               const messages: LiveQueryChange[] = []
               const currentItems = await repo.find(
@@ -60,9 +63,19 @@ export class LiveQueryPublisher implements LiveQueryChangesListener {
                     },
                   })
               }
+              // When the query includes related entities, a change to a
+              // related row doesn't change the item itself, so the id-based
+              // diff above can't see it. Compare the full serialized item
+              // (relations included) with what was last sent instead.
+              const trackRelatedContent =
+                (query.relatedEntityKeys?.length ?? 0) > 0
+              const nextItemsJson: Record<string, string> = {}
               for (const item of currentItems) {
                 const itemRef = repo.getEntityRef(item)
-                let c = changes.find((c) => c.id == itemRef.getId())
+                const id = itemRef.getId()
+                if (trackRelatedContent)
+                  nextItemsJson[id] = JSON.stringify(itemRef.toApiJson(true))
+                let c = changes.find((c) => c.id == id)
                 if (c !== undefined && query.lastIds.includes(c.oldId)) {
                   messages.push({
                     type: 'replace',
@@ -71,10 +84,24 @@ export class LiveQueryPublisher implements LiveQueryChangesListener {
                       item: itemRef.toApiJson(),
                     },
                   })
-                } else if (!query.lastIds.includes(itemRef.getId())) {
+                } else if (!query.lastIds.includes(id)) {
                   messages.push({
                     type: 'add',
                     data: { item: itemRef.toApiJson() },
+                  })
+                } else if (
+                  trackRelatedContent &&
+                  // No baseline yet (query registered before this feature):
+                  // record it silently instead of replacing everything.
+                  query.lastItemsJson !== undefined &&
+                  query.lastItemsJson[id] !== nextItemsJson[id]
+                ) {
+                  messages.push({
+                    type: 'replace',
+                    data: {
+                      oldId: id,
+                      item: itemRef.toApiJson(),
+                    },
                   })
                 }
               }
@@ -86,6 +113,7 @@ export class LiveQueryPublisher implements LiveQueryChangesListener {
                 messages,
               })
               query.lastIds = currentIds
+              if (trackRelatedContent) query.lastItemsJson = nextItemsJson
               if (messages.length > 0) {
                 const from = query.version ?? 0
                 query.version = from + 1
@@ -171,7 +199,12 @@ export class InMemoryLiveQueryStorage implements LiveQueryStorage {
     d.setMinutes(d.getMinutes() - 5)
     this.queries = this.queries.filter((x) => x.lastUsed > d.toISOString())
     for (const q of this.queries) {
-      if (q.entityKey === entityKey) {
+      // A query is also affected by changes to entities it includes
+      // (see QueryData.relatedEntityKeys), not just its own entity.
+      if (
+        q.entityKey === entityKey ||
+        (q.data as QueryData)?.relatedEntityKeys?.includes(entityKey)
+      ) {
         await handle({
           query: q,
           setData: async (data) => {
@@ -194,4 +227,13 @@ export interface QueryData {
   requestJson: any
   lastIds: any[]
   version?: number
+  /** Entity keys of related entities reachable through the query's `include`
+   * options, at any level of nesting. A change to any of them re-evaluates
+   * this query. Empty/absent for queries without includes (and for queries
+   * registered before this was introduced). */
+  relatedEntityKeys?: string[]
+  /** Full serialized item (relations included) per item id, from the last
+   * evaluation. Lets the publisher notice when only a related entity's
+   * content changed. Absent until the first evaluation that tracks it. */
+  lastItemsJson?: Record<string, string>
 }

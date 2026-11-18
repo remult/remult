@@ -30,7 +30,7 @@ export interface EntityRefBase<entityType> extends Subscribable {
   getOriginalId(): idType<entityType>
   repository: Repository<unknown> //unknown for hagai ts 4.6
   metadata: EntityMetadata<unknown> //unknown for hagai ts 4.6
-  toApiJson(): any
+  toApiJson(includeRelatedEntities?: boolean): any
   validate(): Promise<ErrorInfo<entityType> | undefined>
   readonly apiUpdateAllowed: boolean
   readonly apiDeleteAllowed: boolean

@@ -1,6 +1,9 @@
 import { buildRestDataProvider } from '../buildRestDataProvider.js'
 import type { ApiClient } from '../context.js'
-import { RestDataProvider } from '../data-providers/rest-data-provider.js'
+import {
+  RestDataProvider,
+  findOptionsToJson,
+} from '../data-providers/rest-data-provider.js'
 import { remultStatic } from '../remult-static.js'
 import type {
   FindOptions,
@@ -118,11 +121,16 @@ export class LiveQueryClient {
         ._buildEntityDataProviderFindOptions(options)
         .then((opts) => {
           if (!alive) return
+          // The server needs the include to know which related entities this
+          // query expands (see #712); it is also part of the subscription's
+          // identity, so two queries that differ only by include don't share
+          // one server registration.
+          const include = findOptionsToJson(options, repo.metadata).include
           const { createKey, subscribe } = new RestDataProvider(
             this.apiProvider,
           )
             .getEntityDataProvider(repo.metadata)
-            .buildFindRequest(opts)
+            .buildFindRequest({ ...opts, include })
           const eventTypeKey = createKey()
           let q = this.queries.get(eventTypeKey)!
           if (!q) {
@@ -193,7 +201,7 @@ export class LiveQueryClient {
               )
 
               this.runPromise(
-                subscribe(q.queryChannel)
+                subscribe(q.queryChannel, include)
                   .then(applySnapshot)
                   .catch((err) => {
                     q.listeners.forEach((l) => l.error(err))

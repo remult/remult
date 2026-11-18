@@ -306,10 +306,20 @@ export class RestEntityDataProvider
     }
 
     return {
-      createKey: () => JSON.stringify({ url, filterObject }),
+      createKey: () =>
+        JSON.stringify({
+          url,
+          filterObject,
+          include: (options as any)?.include,
+        }),
       run,
-      subscribe: async (queryId: string) => {
-        const result: any[] = await run(liveQueryAction + queryId)
+      subscribe: async (queryId: string, include?: any) => {
+        const result: any[] = await run(
+          liveQueryAction + queryId,
+          include !== undefined
+            ? { include, where: filterObject ?? 'all' }
+            : undefined,
+        )
         return {
           result,
           unsubscribe: async () => {
@@ -356,9 +366,7 @@ export class RestEntityDataProvider
   async delete(ids: any[]): Promise<void> {
     if (ids.length === 0) return
     if (ids.length === 1 && ids[0] !== '')
-      return this.http().delete(
-        this.url() + '/' + encodeURIComponent(ids[0]),
-      )
+      return this.http().delete(this.url() + '/' + encodeURIComponent(ids[0]))
     await this.deleteMany(
       Filter.fromEntityFilter(
         this.entity,

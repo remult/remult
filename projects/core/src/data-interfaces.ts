@@ -74,6 +74,10 @@ export interface EntityDataProviderFindOptions {
   args?: any
   page?: number
   orderBy?: Sort
+  /** Serialized `include` options (see `findOptionsToJson`). Only used by
+   * live queries: it tells the server which related entities the query
+   * expands, and it is part of the subscription's identity. */
+  include?: any
 }
 export interface RestDataProviderHttpProvider {
   post(url: string, data: any): Promise<any>
@@ -142,10 +146,7 @@ class EntityDataProviderPromiseWrapper implements EntityDataProvider {
   delete(ids: any[]): Promise<void> {
     return this.dataProvider.then((dp) => dp.delete(ids))
   }
-  insert(
-    data: any[],
-    options?: InsertOrUpdateOptions,
-  ): Promise<any[]> {
+  insert(data: any[], options?: InsertOrUpdateOptions): Promise<any[]> {
     return this.dataProvider.then((dp) => dp.insert(data, options))
   }
   count(where: Filter): Promise<number> {
