@@ -584,7 +584,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
           element.__applyToConsumer(f)
           let where = await f.resolveWhere()
           if (where.length > 0) {
-            branches.or(f.handleNull)
+            branches.add(f.handleNull)
             result.push((b) => {
               b.orWhere((b) => {
                 where.forEach((x) => x(b))
@@ -593,7 +593,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
           } else return //empty or means all rows
         }
         if (result.length > 0) {
-          this.handleNull.and(branches)
+          this.handleNull.add(branches)
           this.result.push((b) => b.where((x) => result.find((y) => y(x))))
         }
       })(),
@@ -611,7 +611,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
         element.__applyToConsumer(f)
         let where = await f.resolveWhere()
         if (where.length > 0) {
-          if (f.handleNull.needsCase) {
+          if (f.handleNull.nullable) {
             this.result.push((b) => {
               const nested = b.client.queryBuilder()
               where.forEach((x) => x(nested))
@@ -634,17 +634,17 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     )
   }
   isNull(col: FieldMetadata): void {
-    this.handleNull.isNull()
+    this.handleNull.column(col)
     this.result.push((b) => b.whereNull(this.innerNameProvider.$dbNameOf(col)))
   }
   isNotNull(col: FieldMetadata): void {
-    this.handleNull.isNotNull()
+    this.handleNull.column(col)
     this.result.push((b) =>
       b.whereNotNull(this.innerNameProvider.$dbNameOf(col)),
     )
   }
   isIn(col: FieldMetadata, val: any[]): void {
-    if (val?.length) this.handleNull.comparison(col)
+    if (val?.length) this.handleNull.column(col)
     this.result.push((knex) =>
       knex.whereIn(
         this.innerNameProvider.$dbNameOf(col),
@@ -689,7 +689,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     this.like(col, '%' + escapeLike(val))
   }
   private like(col: FieldMetadata, pattern: string, not = '') {
-    this.handleNull.comparison(col)
+    this.handleNull.column(col)
     this.result.push((b) =>
       b.whereRaw(
         not +
@@ -704,7 +704,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
   }
 
   private add(col: FieldMetadata, val: any, operator: string) {
-    this.handleNull.comparison(col)
+    this.handleNull.column(col)
     this.result.push((b) =>
       b.where(
         this.innerNameProvider.$dbNameOf(col),
