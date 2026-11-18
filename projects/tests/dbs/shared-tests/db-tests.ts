@@ -1317,16 +1317,17 @@ export function commonDbTests(
   it('text operators treat an empty string as a value', async () => {
     const e = class {
       a = 0
-      firstName = ''
+      firstName: string | null = ''
     }
     describeClass(e, Entity('testEmptyContains', { allowApiCrud: true }), {
       a: Fields.number(),
-      firstName: Fields.string(),
+      firstName: Fields.string({ allowNull: true }),
     })
     const r = await createEntity(e)
     await r.insert([
       { a: 1, firstName: 'milk' },
       { a: 2, firstName: '' },
+      { a: 3, firstName: null },
     ])
     const ids = async (
       firstName: EntityFilter<InstanceType<typeof e>>['firstName'],
@@ -1334,8 +1335,15 @@ export function commonDbTests(
       (await r.find({ where: { firstName }, orderBy: { a: 'asc' } })).map(
         (x) => x.a,
       )
+    // 3 is null. NULL LIKE / NOT LIKE is unknown, so it matches none of these.
     expect(await ids({ $notContains: 'milk' })).toEqual([2])
+    expect(await ids({ $notContains: 'x' })).toEqual([1, 2])
     expect(await ids({ $contains: '' })).toEqual([1, 2])
+    expect(await ids({ $contains: 'milk' })).toEqual([1])
+    expect(await ids({ $startsWith: '' })).toEqual([1, 2])
+    expect(await ids({ $startsWith: 'mi' })).toEqual([1])
+    expect(await ids({ $endsWith: '' })).toEqual([1, 2])
+    expect(await ids({ $endsWith: 'lk' })).toEqual([1])
   })
   it('text operators with a quote or backslash value do not alter the query', async () => {
     const names = await createSpecialNames()
