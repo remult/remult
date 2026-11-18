@@ -648,6 +648,84 @@ describe('test live query full cycle', () => {
     expect(messageCount()).toBe(before)
     u()
   })
+  it('test closing live query client stops related entity tracking - #712', async () => {
+    var { repo, pm, remult, messageCount, unsubscribeCount } = setup2()
+    const catRepo = remult.repo(Category)
+    const category = await catRepo.insert({ id: 11, name: 'cat1' })
+    await repo.insert({
+      id: 1,
+      title: 'noam',
+      categoryReference: category,
+      categoryId: 11,
+    })
+    let items: eventTestEntity[] = []
+    const u = repo
+      .liveQuery({
+        include: {
+          category: true,
+        },
+      })
+      .subscribe(({ applyChanges: reducer }) => (items = reducer(items)))
+    await pm.flush()
+    expect(items.length).toBe(1)
+    expect(items[0].category.name).toBe('cat1')
+    const unsubsBefore = unsubscribeCount()
+    // closing the client tears down the follow-up live queries (see #712)
+    remult.liveQuerySubscriber.close()
+    expect(unsubscribeCount()).toBeGreaterThan(unsubsBefore)
+    const before = messageCount()
+    const c = await catRepo.findId(11)
+    c!.name = 'cat2'
+    await catRepo.save(c!)
+    await pm.flush()
+    expect(messageCount()).toBe(before)
+    expect(items[0].category.name).toBe('cat1')
+    u()
+  })
+  it('test re-sent snapshot through handle keeps raw rows in sync - #712', async () => {
+    var { repo, pm, remult, qm } = setup2()
+    const catRepo = remult.repo(Category)
+    const category = await catRepo.insert({ id: 11, name: 'cat1' })
+    const task = await repo.insert({
+      id: 1,
+      title: 'noam',
+      categoryReference: category,
+      categoryId: 11,
+    })
+    let items: eventTestEntity[] = []
+    const u = repo
+      .liveQuery({
+        include: {
+          category: true,
+        },
+      })
+      .subscribe(({ applyChanges: reducer }) => (items = reducer(items)))
+    await pm.flush()
+    expect(items.length).toBe(1)
+    expect(items[0].category.name).toBe('cat1')
+    // re-send the full snapshot as an 'all' message on the query channel, as
+    // a re-subscribe after a version gap would: the items are replaced and
+    // the raw rows behind them stay in step (see #712)
+    const channel = qm.queries.find((q) => q.entityKey === 'event-test')!.id
+    const row = getEntityRef(task).toApiJson()
+    await remult.subscriptionServer!.publishMessage(channel, [
+      { type: 'all', data: [row] },
+    ])
+    await pm.flush()
+    // setAllItems runs fire-and-forget from handle's reducer
+    await new Promise((r) => setTimeout(r, 50))
+    expect(items.length).toBe(1)
+    expect(items[0].category.name).toBe('cat1')
+    // a later related-entity change still refreshes, proving the raw rows
+    // behind the re-sent snapshot are the current ones
+    const c = await catRepo.findId(11)
+    c!.name = 'cat2'
+    await catRepo.save(c!)
+    await pm.flush()
+    expect(items.length).toBe(1)
+    expect(items[0].category.name).toBe('cat2')
+    u()
+  })
   it('test delete works', async () => {
     var { repo, pm, repo2 } = setup2()
     let result1: eventTestEntity[] = []

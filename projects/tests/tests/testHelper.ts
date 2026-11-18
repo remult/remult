@@ -160,7 +160,7 @@ export function createMockHttpDataProvider(
       .filter((x) => x !== '')
     // '/api/<entityKey>' or '/api/<entityKey>/<id>' -> the key is parts[1]
     const key = parts[1]
-    return (key && getDataApi(key)) ?? dataApi
+    return (key ? getDataApi(key) : undefined) ?? dataApi
   }
   return new HttpProviderBridgeToRestDataProviderHttpProvider({
     delete: async (url) => {
