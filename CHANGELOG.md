@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - `NullSort` (`remult/internals`): where NULL sorts, for the whole app ([docs](https://remult.dev/docs/field-types#where-null-sorts), [#1079](https://github.com/remult/remult/pull/1079) by @jycouet).
+- `NotAField<T>`: type a getter as `NotAField<Money>` to keep it out of `where`, `orderBy`, `insert`, `fields` and the other field types ([docs](https://remult.dev/docs/field-types#getters-that-are-not-fields), [#1056](https://github.com/remult/remult/pull/1056) by @AndrewSouthpaw).
 
 ### Changed
 
