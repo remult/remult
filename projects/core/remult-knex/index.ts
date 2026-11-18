@@ -5,6 +5,7 @@ import {
   CustomSqlFilterBuilder,
   dbNamesOfWithForceSqlExpression,
   escapeLike,
+  HandleNull,
   LIKE_ESCAPE_SQL,
   type CustomSqlFilterObject,
   type EntityDbNamesBase,
@@ -546,6 +547,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
   _addWhere = true
   promises: Promise<void>[] = []
   result = [] as ((builder: Knex.QueryBuilder) => void)[]
+  handleNull = new HandleNull()
   async resolveWhere() {
     while (this.promises.length > 0) {
       let p = this.promises
@@ -571,6 +573,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     this.promises.push(
       (async () => {
         const result = [] as ((builder: Knex.QueryBuilder) => void)[]
+        const branches = new HandleNull()
         for (const element of orElements) {
           let f = new FilterConsumerBridgeToKnexRequest(
             this.innerNameProvider,
@@ -581,6 +584,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
           element.__applyToConsumer(f)
           let where = await f.resolveWhere()
           if (where.length > 0) {
+            branches.or(f.handleNull)
             result.push((b) => {
               b.orWhere((b) => {
                 where.forEach((x) => x(b))
@@ -589,6 +593,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
           } else return //empty or means all rows
         }
         if (result.length > 0) {
+          this.handleNull.and(branches)
           this.result.push((b) => b.where((x) => result.find((y) => y(x))))
         }
       })(),
@@ -606,24 +611,40 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
         element.__applyToConsumer(f)
         let where = await f.resolveWhere()
         if (where.length > 0) {
-          this.result.push((b) => {
-            b.whereNot((b) => {
-              where.forEach((x) => x(b))
+          if (f.handleNull.needsCase) {
+            this.result.push((b) => {
+              const nested = b.client.queryBuilder()
+              where.forEach((x) => x(nested))
+              const compiled = nested.toSQL()
+              const pred = compiled.sql.replace(/^select \* where /i, '')
+              b.whereRaw(
+                `case when (${pred}) then 0 else 1 end = 1`,
+                compiled.bindings as Knex.Value[],
+              )
             })
-          })
-        } else return //empty or means all rows
+          } else {
+            this.result.push((b) => {
+              b.whereNot((x) => {
+                where.forEach((w) => w(x))
+              })
+            })
+          }
+        } else this.result.push((b) => b.whereRaw('1 = 0'))
       })(),
     )
   }
   isNull(col: FieldMetadata): void {
+    this.handleNull.isNull()
     this.result.push((b) => b.whereNull(this.innerNameProvider.$dbNameOf(col)))
   }
   isNotNull(col: FieldMetadata): void {
+    this.handleNull.isNotNull()
     this.result.push((b) =>
       b.whereNotNull(this.innerNameProvider.$dbNameOf(col)),
     )
   }
   isIn(col: FieldMetadata, val: any[]): void {
+    if (val?.length) this.handleNull.comparison(col)
     this.result.push((knex) =>
       knex.whereIn(
         this.innerNameProvider.$dbNameOf(col),
@@ -668,6 +689,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
     this.like(col, '%' + escapeLike(val))
   }
   private like(col: FieldMetadata, pattern: string, not = '') {
+    this.handleNull.comparison(col)
     this.result.push((b) =>
       b.whereRaw(
         not +
@@ -682,6 +704,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
   }
 
   private add(col: FieldMetadata, val: any, operator: string) {
+    this.handleNull.comparison(col)
     this.result.push((b) =>
       b.where(
         this.innerNameProvider.$dbNameOf(col),
@@ -704,6 +727,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
       (async () => {
         if (databaseCustom?.buildKnex) {
           this.result.push(await databaseCustom.buildKnex())
+          this.handleNull.custom()
         }
         if (databaseCustom?.buildSql) {
           let r = new KnexCommandHelper()
@@ -716,6 +740,7 @@ class FilterConsumerBridgeToKnexRequest implements FilterConsumer {
           if (typeof sql !== 'string') sql = item.sql
 
           if (sql) {
+            this.handleNull.custom()
             this.result.push((b) => b.whereRaw(sql as string, r.values))
           }
         }

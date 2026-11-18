@@ -31,10 +31,56 @@ export function escapeLike(val: string) {
   return val.replace(REGEX_LIKE_SPECIAL, '!$&')
 }
 
+type NullState = 'unknown' | 'match' | 'reject'
+
+/** Tracks whether a null can still make a predicate unknown, so `$not` knows when it needs `case when`. */
+export class HandleNull {
+  private state?: NullState
+
+  get needsCase() {
+    return this.state === 'unknown'
+  }
+
+  and(other: HandleNull) {
+    this.andState(other.state)
+  }
+  or(other: HandleNull) {
+    const a = this.state
+    const b = other.state
+    if (!a) this.state = b
+    else if (!b) return
+    else if (a === 'match' || b === 'match') this.state = 'match'
+    else if (a === 'unknown' || b === 'unknown') this.state = 'unknown'
+    else this.state = 'reject'
+  }
+  isNull() {
+    this.andState('match')
+  }
+  isNotNull() {
+    this.andState('reject')
+  }
+  comparison(col: FieldMetadata) {
+    if (col.allowNull) this.andState('unknown')
+  }
+  custom() {
+    this.andState('unknown')
+  }
+
+  private andState(state: NullState | undefined) {
+    const current = this.state
+    if (!current) this.state = state
+    else if (!state) return
+    else if (current === 'reject' || state === 'reject') this.state = 'reject'
+    else if (current === 'unknown' || state === 'unknown') this.state = 'unknown'
+    else this.state = 'match'
+  }
+}
+
 export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   private where = ''
   _addWhere = true
   promises: Promise<void>[] = []
+  handleNull = new HandleNull()
   async resolveWhere() {
     while (this.promises.length > 0) {
       let p = this.promises
@@ -57,9 +103,10 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   }
 
   or(orElements: Filter[]) {
-    let statement = ''
     this.promises.push(
       (async () => {
+        let statement = ''
+        const branches = new HandleNull()
         for (const element of orElements) {
           let f = new FilterConsumerBridgeToSqlRequest(
             this.r,
@@ -71,6 +118,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
           let where = await f.resolveWhere()
           if (!where) return //since if any member of or is empty, then the entire or is irrelevant
           if (where.length > 0) {
+            branches.or(f.handleNull)
             if (statement.length > 0) {
               statement += ' or '
             }
@@ -79,6 +127,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
             } else statement += where
           }
         }
+        this.handleNull.and(branches)
         this.addToWhere('(' + statement + ')')
       })(),
     )
@@ -94,25 +143,36 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
         f._addWhere = false
         element.__applyToConsumer(f)
         let where = await f.resolveWhere()
-        if (!where) return //since if any member of or is empty, then the entire or is irrelevant
-
-        this.addToWhere('not (' + where + ')')
+        // An empty filter matches every row, so its not matches none.
+        if (!where) {
+          this.addToWhere('1 = 0')
+          return
+        }
+        // `not` drops unknown. Use `case when` only while a null can still make this unknown.
+        this.addToWhere(
+          f.handleNull.needsCase
+            ? 'case when (' + where + ') then 0 else 1 end = 1'
+            : 'not (' + where + ')',
+        )
       })(),
     )
   }
   isNull(col: FieldMetadata): void {
+    this.handleNull.isNull()
     this.promises.push(
       (async () =>
         this.addToWhere(this.nameProvider.$dbNameOf(col) + ' is null'))(),
     )
   }
   isNotNull(col: FieldMetadata): void {
+    this.handleNull.isNotNull()
     this.promises.push(
       (async () =>
         this.addToWhere(this.nameProvider.$dbNameOf(col) + ' is not null'))(),
     )
   }
   isIn(col: FieldMetadata, val: any[]): void {
+    if (val?.length) this.handleNull.comparison(col)
     this.promises.push(
       (async () => {
         if (val && val.length > 0)
@@ -165,6 +225,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
     this.like(col, '%' + escapeLike(val))
   }
   private like(col: FieldMetadata, pattern: string, not = '') {
+    this.handleNull.comparison(col)
     this.promises.push(
       (async () => {
         this.addToWhere(
@@ -181,6 +242,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
   }
 
   private add(col: FieldMetadata, val: any, operator: string) {
+    this.handleNull.comparison(col)
     this.promises.push(
       (async () => {
         let x =
@@ -213,6 +275,7 @@ export class FilterConsumerBridgeToSqlRequest implements FilterConsumer {
           if (typeof sql !== 'string') sql = item.sql
 
           if (sql) {
+            this.handleNull.custom()
             this.addToWhere('(' + sql + ')')
           }
         }

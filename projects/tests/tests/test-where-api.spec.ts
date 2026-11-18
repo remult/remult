@@ -22,6 +22,8 @@ import { Categories } from './remult-3-entities'
 import { ArrayEntityDataProvider } from '../../core/src//data-providers/array-entity-data-provider'
 
 import { beforeAll, describe, expect, it } from 'vitest'
+import * as Knex from 'knex'
+import { KnexDataProvider } from '../../core/remult-knex'
 import { Remult } from '../../core/src//context'
 import {
   describeClass,
@@ -846,5 +848,107 @@ describe('Filter.getPreciseFilterValuesForKey', () => {
         "status": undefined,
       }
     `)
+  })
+})
+
+describe('$not sql', () => {
+  @Entity('nullNotSql')
+  class Row {
+    @Fields.integer()
+    id = 0
+    @Fields.integer()
+    a = 0
+    @Fields.integer({ allowNull: true })
+    n: number | null = null
+  }
+  const repo = new Remult().repo(Row)
+  const sql = (where: EntityFilter<Row>) => SqlDatabase.filterToRaw(repo, where)
+
+  it('plain not when a null cannot make the predicate unknown', async () => {
+    expect(await sql({ $not: { a: 5 } })).toBe('not (a = 5)')
+    expect(await sql({ $not: { n: null! } })).toBe('not (n is null)')
+    expect(await sql({ $not: { n: { $ne: null! } } })).toBe(
+      'not (n is not null)',
+    )
+    expect(await sql({ $not: { n: { $ne: 0 } } })).toBe(
+      'not (((n <> 0) or (n is null)))',
+    )
+    expect(await sql({ $not: { $or: [{ n: 1 }, { n: null! }] } })).toBe(
+      'not (((n = 1) or (n is null)))',
+    )
+    expect(await sql({ $not: { n: { $in: [0, null!] } } })).toBe(
+      'not (((n = 0) or (n is null)))',
+    )
+    expect(
+      await sql({
+        $not: { $and: [{ n: { $gt: 0 } }, { n: { $ne: null! } }] },
+      }),
+    ).toBe('not (n > 0 and n is not null)')
+    expect(await sql({ $not: { $not: { n: 5 } } })).toBe(
+      'not (case when (n = 5) then 0 else 1 end = 1)',
+    )
+  })
+
+  it('case when a nullable comparison can still be unknown', async () => {
+    expect(await sql({ $not: { n: 5 } })).toBe(
+      'case when (n = 5) then 0 else 1 end = 1',
+    )
+    expect(await sql({ $not: { n: { $gt: 0 } } })).toBe(
+      'case when (n > 0) then 0 else 1 end = 1',
+    )
+    expect(await sql({ $not: { n: { $in: [-5, 0, 5] } } })).toBe(
+      'case when (n in (-5,0,5)) then 0 else 1 end = 1',
+    )
+    expect(await sql({ $not: { $or: [{ n: 1 }, { n: 2 }] } })).toBe(
+      'case when (((n = 1) or (n = 2))) then 0 else 1 end = 1',
+    )
+  })
+
+  const k = Knex.default({ client: 'pg' })
+  async function knexSql(where: EntityFilter<Row>) {
+    const filter = await KnexDataProvider.filterToRaw(repo, where)
+    const q = k.queryBuilder()
+    filter(q)
+    return q.toSQL().sql.replace(/^select \* where /i, '')
+  }
+
+  it('knex plain not when a null cannot make the predicate unknown', async () => {
+    expect(await knexSql({ $not: { a: 5 } })).toBe('not ("a" = ?)')
+    expect(await knexSql({ $not: { n: null! } })).toBe('not ("n" is null)')
+    expect(await knexSql({ $not: { n: { $ne: null! } } })).toBe(
+      'not ("n" is not null)',
+    )
+    expect(await knexSql({ $not: { n: { $ne: 0 } } })).toBe(
+      'not ((("n" <> ?) or ("n" is null)))',
+    )
+    expect(await knexSql({ $not: { $or: [{ n: 1 }, { n: null! }] } })).toBe(
+      'not ((("n" = ?) or ("n" is null)))',
+    )
+    expect(await knexSql({ $not: { n: { $in: [0, null!] } } })).toBe(
+      'not ((("n" = ?) or ("n" is null)))',
+    )
+    expect(
+      await knexSql({
+        $not: { $and: [{ n: { $gt: 0 } }, { n: { $ne: null! } }] },
+      }),
+    ).toBe('not ("n" > ? and "n" is not null)')
+    expect(await knexSql({ $not: { $not: { n: 5 } } })).toBe(
+      'not (case when ("n" = ?) then 0 else 1 end = 1)',
+    )
+  })
+
+  it('knex case when a nullable comparison can still be unknown', async () => {
+    expect(await knexSql({ $not: { n: 5 } })).toBe(
+      'case when ("n" = ?) then 0 else 1 end = 1',
+    )
+    expect(await knexSql({ $not: { n: { $gt: 0 } } })).toBe(
+      'case when ("n" > ?) then 0 else 1 end = 1',
+    )
+    expect(await knexSql({ $not: { n: { $in: [-5, 0, 5] } } })).toBe(
+      'case when ("n" in (?, ?, ?)) then 0 else 1 end = 1',
+    )
+    expect(await knexSql({ $not: { $or: [{ n: 1 }, { n: 2 }] } })).toBe(
+      'case when ((("n" = ?) or ("n" = ?))) then 0 else 1 end = 1',
+    )
   })
 })
