@@ -1312,11 +1312,10 @@ class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
     let data = serializeError(exception)
 
     if (!httpStatusCode) {
-      if (data.httpStatusCode) {
-        httpStatusCode = data.httpStatusCode
-      } else if (exception?.httpStatusCode) {
-        // serializeError drops it from an EntityError
-        httpStatusCode = exception.httpStatusCode
+      // serializeError drops httpStatusCode from an Error.
+      const explicitStatus = exception.httpStatusCode ?? data.httpStatusCode
+      if (explicitStatus) {
+        httpStatusCode = explicitStatus
       } else if (
         isOfType<ForbiddenError>(exception, 'isForbiddenError') &&
         exception.isForbiddenError
