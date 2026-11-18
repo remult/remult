@@ -62,6 +62,7 @@ import {
 import { getEntityKey } from '../../core/src/remult3/getEntityRef'
 import { actionInfo } from '../../core/internals'
 import { remultStatic, resetFactory } from '../../core/src/remult-static'
+import { flags } from '../../core/src/remult3/remult3'
 import { TestApiDataProvider } from '../../core/server/test-api-data-provider.js'
 
 //SqlDatabase.LogToConsole = true;
@@ -2157,6 +2158,58 @@ describe('test http retry', () => {
       ok = true
     } catch {}
     expect(ok).toBe(false)
+  })
+})
+describe('fetch client errors with flags.clientErrorsAsEntityError', () => {
+  beforeEach(() => {
+    flags.clientErrorsAsEntityError = true
+  })
+  afterEach(() => {
+    flags.clientErrorsAsEntityError = false
+  })
+
+  it('rejects with an EntityError', async () => {
+    const err = await new RestDataProviderHttpProviderUsingFetch(
+      async () =>
+        new mockResponse({
+          status: 403,
+          statusText: 'Forbidden',
+          url: 'url',
+          json: async () => ({ message: 'Forbidden' }),
+        }),
+    )
+      .put('abc', {})
+      .catch((e) => e)
+    expect(err).toBeInstanceOf(EntityError)
+    expect(err).toMatchObject({
+      status: 403,
+      httpStatusCode: 403,
+      message: 'Forbidden',
+      url: 'url',
+    })
+  })
+
+  it('rejects with an EntityError when the body is not JSON', async () => {
+    const err = await new RestDataProviderHttpProviderUsingFetch(
+      async () =>
+        new mockResponse({
+          status: 401,
+          statusText: 'text',
+          url: 'url',
+          json: async () => {
+            throw 'not json'
+          },
+        }),
+    )
+      .get('abc')
+      .catch((e) => e)
+    expect(err).toBeInstanceOf(EntityError)
+    expect(err).toMatchObject({
+      status: 401,
+      httpStatusCode: 401,
+      message: 'text',
+      url: 'url',
+    })
   })
 })
 describe('test http retry for writes', () => {
