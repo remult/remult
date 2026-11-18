@@ -1,12 +1,17 @@
 import type { Remult } from '../context.js'
+import type { FieldMetadata } from '../column-interfaces.js'
 import { Sort } from '../sort.js'
 import { remult as defaultRemult } from '../remult-proxy.js'
 import type {
+  EntityFilter,
   FindOptions,
   LiveQueryChangeInfo,
   Repository,
 } from '../remult3/remult3.js'
 import { getRepositoryInternals } from '../remult3/repository-internals.js'
+import { getEntityRef } from '../remult3/getEntityRef.js'
+import type { RelationFieldInfo } from '../remult3/relationInfoMember.js'
+import { getRelationFieldInfo } from '../remult3/relationInfoMember.js'
 
 export const streamUrl = 'stream'
 //@internal
@@ -26,10 +31,78 @@ export class LiveQuerySubscriber<entityType> {
   unsubscribeQuery: VoidFunction = () => {}
   snapshotReady = false
   droppedWhilePending = false
+  /** The raw json rows behind the current items. Re-running
+   * `_fromJsonArray` on them re-resolves the included relations with fresh
+   * follow-up finds — how a related-entity change refreshes this query
+   * (see #712). Kept in step with the items in `setAllItems` / `handle`. */
+  rawRows: any[] | undefined
+  private relationTracker: LiveQueryRelationTracker<entityType> | undefined
+  /** Tear down the follow-up live queries that track this query's included
+   * relations (see #712). Called when the outer query is unsubscribed. */
+  disposeRelationSubscriptions() {
+    this.relationTracker?.dispose()
+  }
+  /** Replace the given items (matched by id) with refreshed instances and
+   * notify the listeners with `replace` changes. Used by the relation
+   * tracker when a related entity changed (see #712). This is a client-side
+   * refresh only — it does not touch the server version counter. */
+  applyRelatedRefresh(
+    replacements: { oldId: any; item: entityType }[],
+  ) {
+    if (replacements.length === 0) return
+    const byId = new Map<any, entityType>()
+    for (const r of replacements) byId.set(r.oldId, r.item)
+    this.forListeners(
+      (listener) => {
+        listener((items) =>
+          (items ?? []).map(
+            (x) =>
+              byId.get(this.repo.metadata.idMetadata.getId(x)) ?? x,
+          ),
+        )
+      },
+      replacements.map(
+        (r) =>
+          ({
+            type: 'replace',
+            data: { oldId: r.oldId, item: r.item },
+          }) as LiveQueryChange,
+      ),
+    )
+  }
+  private updateRawRows(
+    data: LiveQueryChange[],
+    rawAddReplace: { type: 'add' | 'replace'; oldId?: any; item: any }[],
+  ) {
+    if (this.rawRows === undefined) return
+    for (const m of data) {
+      if (m.type === 'all') {
+        this.rawRows = [...(m.data as any[])]
+      } else if (m.type === 'remove') {
+        const id = (m.data as { id: any }).id
+        this.rawRows = this.rawRows.filter(
+          (row) => this.repo.metadata.idMetadata.getId(row) !== id,
+        )
+      }
+    }
+    for (const r of rawAddReplace) {
+      if (r.type === 'replace' && r.oldId !== undefined) {
+        this.rawRows = this.rawRows.filter(
+          (row) => this.repo.metadata.idMetadata.getId(row) !== r.oldId,
+        )
+      }
+      const id = this.repo.metadata.idMetadata.getId(r.item)
+      this.rawRows = this.rawRows.filter(
+        (row) => this.repo.metadata.idMetadata.getId(row) !== id,
+      )
+      this.rawRows.push(r.item)
+    }
+  }
   async setAllItems(result: any[]) {
     // server re-registers the query at version 0; reset before the await so a
     // version message landing mid-parse is judged against the new baseline
     this.version = 0
+    this.rawRows = [...result]
     const items = await getRepositoryInternals(this.repo)._fromJsonArray(
       result,
       this.query.options,
@@ -40,6 +113,7 @@ export class LiveQuerySubscriber<entityType> {
       })
     }, this.allItemsMessage(items))
     this.snapshotReady = true
+    this.relationTracker?.sync()
   }
 
   private allItemsMessage(items: entityType[]): LiveQueryChange[] {
@@ -105,6 +179,16 @@ export class LiveQuerySubscriber<entityType> {
     const data = messages.filter((m) => m.type !== 'version')
     {
       let x = data.filter(({ type }) => type == 'add' || type == 'replace')
+      // capture the raw json before it is replaced by the loaded entities
+      // below, so the raw rows behind the items stay in step (see #712)
+      const rawAddReplace = x.map((m) => ({
+        type: m.type as 'add' | 'replace',
+        oldId:
+          m.type === 'replace'
+            ? (m.data as { oldId: any }).oldId
+            : undefined,
+        item: (m.data as { item: any }).item,
+      }))
       let loadedItems = await getRepositoryInternals(this.repo)._fromJsonArray(
         x.map((m) => m.data.item),
         this.query.options,
@@ -113,6 +197,7 @@ export class LiveQuerySubscriber<entityType> {
         const element = x[index]
         element.data.item = loadedItems[index]
       }
+      this.updateRawRows(data, rawAddReplace)
     }
 
     this.forListeners((listener) => {
@@ -163,6 +248,9 @@ export class LiveQuerySubscriber<entityType> {
       })
     }, data)
     if (!ver && data.length > 0) this.version++
+    // the item set may have changed (add / remove / fk switch): the tracked
+    // related rows change with it (see #712)
+    this.relationTracker?.sync()
   }
 
   defaultQueryState: entityType[] = []
@@ -173,10 +261,230 @@ export class LiveQuerySubscriber<entityType> {
     private repo: Repository<entityType>,
     private query: SubscribeToQueryArgs<entityType>,
     userId: string | undefined,
+    runPromise: (p: Promise<any>) => Promise<any> = (p) => p,
   ) {
     this.queryChannel = `users:${userId}:queries:${this.id}`
     this.id = this.queryChannel
+    this.relationTracker = new LiveQueryRelationTracker(
+      this.repo,
+      this.query.options,
+      this,
+      runPromise,
+    )
   }
+}
+
+/**
+ * Tracks the related rows of a live query's included relations, on the
+ * frontend, as the maintainer requested for #712: each relation is another
+ * find call to the backend, and that follow-up find is turned into a live
+ * query call of its own, owned by the outer live query. When a related row
+ * changes, the follow-up live query fires and the outer items are refreshed
+ * with fresh related data.
+ *
+ * The follow-up live queries have their own channels (their own server
+ * registrations): the live-query storage replaces a stored query when a
+ * second one is added with the same id, so a related query cannot share the
+ * outer query's channel without a storage / wire-protocol change. The
+ * observable behaviour is the same — the related subscriptions live and die
+ * with the outer query and only ever refresh its items.
+ */
+class LiveQueryRelationTracker<entityType> {
+  private tracked = new Map<
+    string,
+    { unsubscribe: () => void; whereJson: string }
+  >()
+  private refreshChain: Promise<void> = Promise.resolve()
+  private generation = 0
+  private disposed = false
+
+  constructor(
+    private repo: Repository<entityType>,
+    private options: FindOptions<entityType>,
+    private subscriber: LiveQuerySubscriber<entityType>,
+    private runPromise: (p: Promise<any>) => Promise<any>,
+  ) {}
+
+  dispose() {
+    this.disposed = true
+    this.generation++
+    for (const t of this.tracked.values()) t.unsubscribe()
+    this.tracked.clear()
+  }
+
+  /** (Re)build the follow-up live queries for the currently loaded items. */
+  sync() {
+    if (this.disposed) return
+    const items = this.subscriber.defaultQueryState
+    const wanted = new Map<
+      string,
+      { rel: RelationFieldInfo; innerOptions: FindOptions<any>; whereJson: string }
+    >()
+    for (const { field, rel, incl } of this.includedRelations()) {
+      const where = this.buildRelationWhere(rel, field, incl, items)
+      if (!where) continue
+      const innerOptions: FindOptions<any> = { where }
+      if (incl && typeof incl === 'object' && (incl as any).include)
+        innerOptions.include = (incl as any).include
+      wanted.set(field.key, {
+        rel,
+        innerOptions,
+        whereJson: JSON.stringify(where),
+      })
+    }
+    for (const [key, t] of this.tracked) {
+      const w = wanted.get(key)
+      if (!w || w.whereJson !== t.whereJson) {
+        t.unsubscribe()
+        this.tracked.delete(key)
+      }
+    }
+    for (const [key, w] of wanted) {
+      if (this.tracked.has(key)) continue
+      const unsubscribe = w.rel.toRepo.liveQuery(w.innerOptions).subscribe({
+        next: () => this.scheduleRefresh(),
+        error: () => {},
+        complete: () => {},
+      })
+      this.tracked.set(key, { unsubscribe, whereJson: w.whereJson })
+    }
+  }
+
+  private includedRelations(): {
+    field: FieldMetadata
+    rel: RelationFieldInfo
+    incl: any
+  }[] {
+    const include = (this.options as any)?.include
+    const result: {
+      field: FieldMetadata
+      rel: RelationFieldInfo
+      incl: any
+    }[] = []
+    for (const field of this.repo.metadata.fields.toArray()) {
+      const rel = getRelationFieldInfo(field)
+      if (!rel) continue
+      let incl = (field.options as any).defaultIncluded
+      if (include !== undefined && include[field.key as any] !== undefined)
+        incl = include[field.key as any]
+      if (incl) result.push({ field, rel, incl })
+    }
+    return result
+  }
+
+  private buildRelationWhere(
+    rel: RelationFieldInfo,
+    field: FieldMetadata,
+    incl: any,
+    items: entityType[],
+  ): EntityFilter<any> | undefined {
+    const internals = getRepositoryInternals(this.repo)
+    const wheres: any[] = []
+    for (const row of items) {
+      const { findOptions, returnNull, returnUndefined } =
+        internals._findOptionsBasedOnRelation(
+          rel,
+          field,
+          incl,
+          row,
+          rel.toRepo,
+        )
+      if (returnNull || returnUndefined) continue
+      if (findOptions?.where) wheres.push(findOptions.where)
+    }
+    if (wheres.length === 0) return undefined
+    return mergeRelationWheres(wheres)
+  }
+
+  private scheduleRefresh() {
+    if (this.disposed) return
+    const gen = ++this.generation
+    this.refreshChain = this.refreshChain.then(() =>
+      this.refreshRelations(gen),
+    )
+    this.refreshChain.catch(() => {})
+    // route through runPromise so test harnesses that track pending work
+    // (and the live-query keep-alive) observe the refresh
+    this.runPromise(this.refreshChain)
+  }
+
+  private async refreshRelations(gen: number) {
+    if (this.disposed || gen !== this.generation) return
+    const rawRows = this.subscriber.rawRows
+    if (!rawRows || rawRows.length === 0) return
+    // re-resolve the relations with fresh follow-up finds; the outer rows
+    // themselves are not re-fetched
+    const freshItems = await getRepositoryInternals(
+      this.repo,
+    )._fromJsonArray(rawRows, this.options)
+    if (this.disposed || gen !== this.generation) return
+    const freshById = new Map<any, entityType>()
+    for (const item of freshItems)
+      freshById.set(this.repo.metadata.idMetadata.getId(item), item)
+    const replacements: { oldId: any; item: entityType }[] = []
+    for (const oldItem of this.subscriber.defaultQueryState) {
+      const id = this.repo.metadata.idMetadata.getId(oldItem)
+      const fresh = freshById.get(id)
+      if (fresh && !this.relationsEqual(oldItem, fresh))
+        replacements.push({ oldId: id, item: fresh })
+    }
+    if (replacements.length > 0)
+      this.subscriber.applyRelatedRefresh(replacements)
+    // the refresh may have picked up fk changes: re-sync the tracked set
+    this.sync()
+  }
+
+  private relationsEqual(oldItem: entityType, freshItem: entityType): boolean {
+    for (const { field, rel } of this.includedRelations()) {
+      const a = (oldItem as any)[field.key]
+      const b = (freshItem as any)[field.key]
+      if (!this.relatedValueEquals(a, b, rel.toRepo as Repository<any>))
+        return false
+    }
+    return true
+  }
+
+  private relatedValueEquals(
+    a: any,
+    b: any,
+    relRepo: Repository<any>,
+  ): boolean {
+    if (a === b) return true
+    if (a == null || b == null) return a == b
+    if (Array.isArray(a) || Array.isArray(b)) {
+      if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length)
+        return false
+      return a.every((x, i) => this.relatedValueEquals(x, b[i], relRepo))
+    }
+    return (
+      JSON.stringify((getEntityRef(a) as any).toApiJson(true)) ===
+      JSON.stringify((getEntityRef(b) as any).toApiJson(true))
+    )
+  }
+}
+
+/** Merge the per-row relation wheres into one where for the follow-up live
+ * query. When every row filters on the same single field with a scalar value
+ * (the toOne / toMany cases), the values merge into one `$in` filter; anything
+ * else (compound ids, extra conditions from the include) falls back to an
+ * `$or` of the per-row wheres, which is always correct. */
+function mergeRelationWheres(wheres: any[]): any {
+  let key: string | undefined
+  const values: any[] = []
+  for (const w of wheres) {
+    const and = w?.$and
+    if (!Array.isArray(and) || and.length !== 1) return { $or: wheres }
+    const cond = and[0]
+    const keys = Object.keys(cond)
+    if (keys.length !== 1) return { $or: wheres }
+    const k = keys[0]
+    const v = cond[k]
+    if (v === null || typeof v === 'object') return { $or: wheres }
+    if (key === undefined) key = k
+    else if (key !== k) return { $or: wheres }
+    if (!values.includes(v)) values.push(v)
+  }
+  return { [key!]: values }
 }
 
 export interface SubscriptionListener<type> {

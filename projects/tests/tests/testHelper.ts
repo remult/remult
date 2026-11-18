@@ -145,10 +145,27 @@ export class MockRestDataProvider implements DataProvider {
 }
 export function createMockHttpDataProvider(
   dataApi: DataApi<any>,
+  // In production the api server routes each request to the DataApi of the
+  // entity in the url path. The mock used to send every request to the one
+  // DataApi it was given, so a live-query subscribe for a *related* entity
+  // (see #712) was registered under the wrong entity. When provided, the
+  // resolver picks the DataApi for the entity key in the url path.
+  getDataApi?: (entityKey: string) => DataApi<any> | undefined,
 ): RestDataProviderHttpProvider {
+  const resolveApi = (url: string): DataApi<any> => {
+    if (!getDataApi) return dataApi
+    const parts = url
+      .split('?')[0]
+      .split('/')
+      .filter((x) => x !== '')
+    // '/api/<entityKey>' or '/api/<entityKey>/<id>' -> the key is parts[1]
+    const key = parts[1]
+    return (key && getDataApi(key)) ?? dataApi
+  }
   return new HttpProviderBridgeToRestDataProviderHttpProvider({
     delete: async (url) => {
       let urlSplit = url.split('/')
+      const api = resolveApi(url)
 
       let r = new TestDataApiResponse()
       let result
@@ -157,9 +174,9 @@ export function createMockHttpDataProvider(
         result = data
       }
       try {
-        if (urlSplit.length == 1) await dataApi.deleteMany(r, urlToReq(url))
+        if (urlSplit.length == 1) await api.deleteMany(r, urlToReq(url))
         else
-          await dataApi.delete(
+          await api.delete(
             r,
             decodeURIComponent(urlSplit[urlSplit.length - 1]),
           )
@@ -175,7 +192,7 @@ export function createMockHttpDataProvider(
         result = data
       }
       try {
-        await dataApi.httpGet(r, urlToReq(url), async () => '')
+        await resolveApi(url).httpGet(r, urlToReq(url), async () => '')
       } finally {
       }
       return result
@@ -194,13 +211,14 @@ export function createMockHttpDataProvider(
         throw Error(message || 'forbidden')
       }
       try {
-        await dataApi.httpPost(r, urlToReq(url), data, async () => ({}))
+        await resolveApi(url).httpPost(r, urlToReq(url), data, async () => ({}))
       } finally {
       }
       return result
     },
     put: async (url, data) => {
       let urlSplit = url.split('/')
+      const api = resolveApi(url)
       let r = new TestDataApiResponse()
       let result
       r.success = (data) => {
@@ -208,9 +226,9 @@ export function createMockHttpDataProvider(
       }
       try {
         if (urlSplit.length == 1)
-          await dataApi.updateManyThroughPutRequest(r, urlToReq(url), data)
+          await api.updateManyThroughPutRequest(r, urlToReq(url), data)
         else
-          await dataApi.put(
+          await api.put(
             r,
             new TestDataApiRequest(),
             decodeURIComponent(urlSplit[urlSplit.length - 1]),

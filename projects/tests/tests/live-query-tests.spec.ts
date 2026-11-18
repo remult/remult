@@ -361,10 +361,16 @@ describe('test live query full cycle', () => {
     const qm = new LiveQueryPublisher(
       () => remult.subscriptionServer!,
       () => remult.liveQueryStorage!,
-      async (_, _1, c) => c(repo),
+      // like the production api server, resolve the repo by entity key:
+      // the follow-up live queries for included relations (see #712) are
+      // registered under the *related* entity, so re-evaluating them needs
+      // that entity's repo, not the outer query's repo
+      async (_, entityKey, c) =>
+        c(entityKey === 'categories' ? remult.repo(Category) : repo),
     )
     remult.liveQueryPublisher = qm
     var dataApi = new DataApi(repo, remult)
+    var categoryDataApi = new DataApi(remult.repo(Category), remult)
     const clientStatus = {
       connected: true,
       reconnect: () => {},
@@ -403,7 +409,9 @@ describe('test live query full cycle', () => {
               }
             },
           },
-          httpClient: createMockHttpDataProvider(dataApi),
+          httpClient: createMockHttpDataProvider(dataApi, (key) =>
+            key === 'categories' ? categoryDataApi : undefined,
+          ),
         }),
         () => remult.user?.id,
       )
@@ -501,6 +509,143 @@ describe('test live query full cycle', () => {
     expect(items[1].category.id).toBe(11)
     expect(items[1].categoryReference.id).toBe(11)
     expect(items[1].categories.length).toBe(1)
+    u()
+  })
+  it('test related entity change notifies live query - #712', async () => {
+    var { repo, pm, remult, messageCount } = setup2()
+    const catRepo = remult.repo(Category)
+    const category = await catRepo.insert({ id: 11, name: 'cat1' })
+    await repo.insert({
+      id: 1,
+      title: 'noam',
+      categoryReference: category,
+      categoryId: 11,
+    })
+    let items: eventTestEntity[] = []
+    const u = repo
+      .liveQuery({
+        include: {
+          category: true,
+        },
+      })
+      .subscribe(({ applyChanges: reducer }) => (items = reducer(items)))
+    await pm.flush()
+    expect(items.length).toBe(1)
+    expect(items[0].category.name).toBe('cat1')
+    const before = messageCount()
+    const c = await catRepo.findId(11)
+    c!.name = 'cat2'
+    await catRepo.save(c!)
+    await pm.flush()
+    expect(messageCount()).toBeGreaterThan(before)
+    expect(items.length).toBe(1)
+    expect(items[0].category.name).toBe('cat2')
+    u()
+  })
+  it('test related toMany change notifies live query - #712', async () => {
+    var { repo, pm, remult, messageCount } = setup2()
+    const catRepo = remult.repo(Category)
+    const category = await catRepo.insert({ id: 11, name: 'cat1' })
+    await repo.insert({
+      id: 1,
+      title: 'noam',
+      categoryReference: category,
+      categoryId: 11,
+    })
+    let items: eventTestEntity[] = []
+    const u = repo
+      .liveQuery({
+        include: {
+          categories: true,
+        },
+      })
+      .subscribe(({ applyChanges: reducer }) => (items = reducer(items)))
+    await pm.flush()
+    expect(items.length).toBe(1)
+    expect(items[0].categories.length).toBe(1)
+    expect(items[0].categories[0].name).toBe('cat1')
+    const before = messageCount()
+    const c = await catRepo.findId(11)
+    c!.name = 'cat2'
+    await catRepo.save(c!)
+    await pm.flush()
+    expect(messageCount()).toBeGreaterThan(before)
+    expect(items.length).toBe(1)
+    expect(items[0].categories.length).toBe(1)
+    expect(items[0].categories[0].name).toBe('cat2')
+    // deleting the related entity also notifies
+    await catRepo.delete(c!)
+    await pm.flush()
+    expect(items.length).toBe(1)
+    expect(items[0].categories.length).toBe(0)
+    u()
+  })
+  it('test live query follows new related entity after fk change - #712', async () => {
+    var { repo, pm, remult, messageCount } = setup2()
+    const catRepo = remult.repo(Category)
+    await catRepo.insert({ id: 11, name: 'cat1' })
+    await catRepo.insert({ id: 12, name: 'cat12' })
+    const category = await catRepo.findId(11)
+    await repo.insert({
+      id: 1,
+      title: 'noam',
+      categoryReference: category!,
+      categoryId: 11,
+    })
+    let items: eventTestEntity[] = []
+    const u = repo
+      .liveQuery({
+        include: {
+          category: true,
+        },
+      })
+      .subscribe(({ applyChanges: reducer }) => (items = reducer(items)))
+    await pm.flush()
+    expect(items[0].category.name).toBe('cat1')
+    // point the task at the other category
+    const t = await repo.findId(1)
+    t!.categoryId = 12
+    await repo.save(t!)
+    await pm.flush()
+    expect(items[0].category.name).toBe('cat12')
+    // changes to the newly related entity are now tracked
+    const c12 = await catRepo.findId(12)
+    c12!.name = 'cat12-renamed'
+    await catRepo.save(c12!)
+    await pm.flush()
+    expect(items[0].category.name).toBe('cat12-renamed')
+    // changes to the no-longer-related entity are not reported
+    const before = messageCount()
+    const c11 = await catRepo.findId(11)
+    c11!.name = 'cat1-renamed'
+    await catRepo.save(c11!)
+    await pm.flush()
+    expect(messageCount()).toBe(before)
+    expect(items[0].category.name).toBe('cat12-renamed')
+    u()
+  })
+  it('test related entity change does not notify live query without include - #712', async () => {
+    var { repo, pm, remult, messageCount } = setup2()
+    const catRepo = remult.repo(Category)
+    const category = await catRepo.insert({ id: 11, name: 'cat1' })
+    await repo.insert({
+      id: 1,
+      title: 'noam',
+      categoryReference: category,
+      categoryId: 11,
+    })
+    let items: eventTestEntity[] = []
+    const u = repo
+      .liveQuery()
+      .subscribe(({ applyChanges: reducer }) => (items = reducer(items)))
+    await pm.flush()
+    expect(items.length).toBe(1)
+    const before = messageCount()
+    const c = await catRepo.findId(11)
+    c!.name = 'cat2'
+    await catRepo.save(c!)
+    await pm.flush()
+    expect(messageCount()).toBe(before)
     u()
   })
   it('test delete works', async () => {
