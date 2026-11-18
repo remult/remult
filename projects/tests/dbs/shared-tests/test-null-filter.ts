@@ -34,6 +34,8 @@ const cases: [EntityFilter<NullFilter>, number[]][] = [
   // Under `$not`, a null in m must not hide a null in n.
   [{ n: { $gt: -10 }, m: { $ne: null! } }, [1, 4]],
   [{ $or: [{ n: 0 }, { m: null! }] }, [3]],
+  // `id = 1` can be false, so a null n does not make the first branch true.
+  [{ $or: [{ id: 1, n: null! }, { n: 0 }] }, [3]],
 ]
 
 export function nullFilterTests({ createEntity }: DbTestProps) {
@@ -48,7 +50,10 @@ export function nullFilterTests({ createEntity }: DbTestProps) {
     const allIds = rows.map((row) => row.id).sort((a, b) => a - b)
     for (const [where, ids] of cases) {
       const found = await repo.find({ where, orderBy: { id: 'asc' } })
-      expect(found.map((row) => row.id), JSON.stringify(where)).toEqual(ids)
+      expect(
+        found.map((row) => row.id),
+        JSON.stringify(where),
+      ).toEqual(ids)
       const foundNot = await repo.find({
         where: { $not: where },
         orderBy: { id: 'asc' },
