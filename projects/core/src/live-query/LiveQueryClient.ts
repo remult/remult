@@ -39,6 +39,7 @@ export class LiveQueryClient {
     return p
   }
   close() {
+    for (const q of this.queries.values()) q.disposeRelationSubscriptions()
     this.queries.clear()
     this.channels.clear()
     this.detachForeground()
@@ -132,6 +133,7 @@ export class LiveQueryClient {
                 repo,
                 { entityKey: repo.metadata.key, options },
                 this.getUserId(),
+                (p) => this.runPromise(p),
               )),
             )
             q.subscribeCode = () => {
@@ -199,6 +201,7 @@ export class LiveQueryClient {
                     q.listeners.forEach((l) => l.error(err))
                     unsubscribeToChannel()
                     this.queries.delete(eventTypeKey)
+                    q.disposeRelationSubscriptions()
                     this.closeIfNoListeners()
                   }),
               )
@@ -214,6 +217,7 @@ export class LiveQueryClient {
             if (q.listeners.length == 0) {
               this.queries.delete(eventTypeKey)
               q.unsubscribe()
+              q.disposeRelationSubscriptions()
             }
             this.closeIfNoListeners()
           }
