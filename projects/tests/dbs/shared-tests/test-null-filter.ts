@@ -8,9 +8,11 @@ class NullFilter {
   id = 0
   @Fields.integer({ allowNull: true })
   n: number | null = null
+  @Fields.integer({ allowNull: true })
+  m: number | null = null
 }
 
-// Rows: 1 → -5, 2 → null, 3 → 0, 4 → 5.
+// Rows (n, m): 1 → (-5, 1), 2 → (null, 1), 3 → (0, null), 4 → (5, 1).
 // null is a value, and it is not 0.
 const cases: [EntityFilter<NullFilter>, number[]][] = [
   [{ n: { $in: [] } }, []],
@@ -29,16 +31,19 @@ const cases: [EntityFilter<NullFilter>, number[]][] = [
   [{ n: { $gte: 0 } }, [3, 4]],
   [{ n: { $lt: 5 } }, [1, 3]],
   [{ n: { $lte: 0 } }, [1, 3]],
+  // Under `$not`, a null in m must not hide a null in n.
+  [{ n: { $gt: -10 }, m: { $ne: null! } }, [1, 4]],
+  [{ $or: [{ n: 0 }, { m: null! }] }, [3]],
 ]
 
 export function nullFilterTests({ createEntity }: DbTestProps) {
   it('null filters', async () => {
     const repo = await createEntity(NullFilter)
     const rows = await repo.insert([
-      { id: 1, n: -5 },
-      { id: 2, n: null! },
-      { id: 3, n: 0 },
-      { id: 4, n: 5 },
+      { id: 1, n: -5, m: 1 },
+      { id: 2, n: null!, m: 1 },
+      { id: 3, n: 0, m: null! },
+      { id: 4, n: 5, m: 1 },
     ])
     const allIds = rows.map((row) => row.id).sort((a, b) => a - b)
     for (const [where, ids] of cases) {
