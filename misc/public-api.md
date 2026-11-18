@@ -2302,8 +2302,10 @@ export interface NullOrder {
   desc: "NULLS FIRST" | "NULLS LAST"
 }
 export type NumericKeys<T> = {
-  [K in keyof T]: T[K] extends number | undefined | null ? K : never
-}[keyof T]
+  [K in keyof MembersOnly<T>]: T[K] extends number | undefined | null
+    ? K
+    : never
+}[keyof MembersOnly<T>]
 export type ObjectMembersOnly<T> = MembersOnly<{
   [K in keyof Pick<
     T,

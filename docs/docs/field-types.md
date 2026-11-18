@@ -607,5 +607,5 @@ repo(Order).find({ where: { total } }) // fine, `total` is a real field
 
 - The marker goes on the property, not on `Money`. `total` holds a `Money` too, but it's stored, so it stays a field.
 - A plain `Money` still assigns to `NotAField<Money>`, so neither the getter nor `order.price = money` needs a cast, and `order.price` reads as a `Money`.
-- It works on a plain property too, e.g. one a decorator turns into an accessor: `tax: NotAField<Money> | null = null`.
+- It works on a plain property without a decorator too: `tax: NotAField<Money> | null = null`.
 - It's types only. Nothing changes at runtime.

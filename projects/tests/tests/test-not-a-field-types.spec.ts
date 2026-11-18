@@ -49,8 +49,11 @@ class Invoice {
     this.subtotalCents = value.cents
     this.subtotalCurrency = value.currency
   }
+  get subtotalUnits(): NotAField<number> {
+    return this.subtotalCents / 100
+  }
 
-  // a plain property, like one a decorator turns into an accessor
+  // a plain property, without a decorator
   tax: NotAField<Money> | null = null
 
   // the same class stored as a real field
@@ -94,15 +97,16 @@ describe('NotAField types', () => {
     expect(saved.address.city).toBe('Springfield')
   })
 
-  it('keeps fields typed any, optional or only null', () => {
+  it('keeps fields typed any, optional, only null or symbol keyed', () => {
     class Mixed {
       anything: any = null
       maybe?: Money
       a: null = null
       b: undefined = undefined
+      bag: Record<PropertyKey, unknown> = {}
     }
     expectTypeOf<keyof MembersOnly<Mixed>>().toEqualTypeOf<
-      'anything' | 'maybe' | 'a' | 'b'
+      'anything' | 'maybe' | 'a' | 'b' | 'bag'
     >()
   })
 
@@ -134,6 +138,14 @@ describe('NotAField types', () => {
       // @ts-expect-error not a field
       repo.groupBy({ group: ['subtotal'] }),
     ).rejects.toThrow('key "subtotal" not found')
+    await expect(
+      // @ts-expect-error not a field
+      repo.aggregate({ sum: ['subtotalUnits'] }),
+    ).rejects.toThrow('key "subtotalUnits" not found')
+    await expect(
+      // @ts-expect-error not a field
+      repo.groupBy({ group: ['id'], avg: ['subtotalUnits'] }),
+    ).rejects.toThrow('key "subtotalUnits" not found')
     // @ts-expect-error not a field
     repo.fields.subtotal
   })

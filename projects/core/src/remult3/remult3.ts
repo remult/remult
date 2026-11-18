@@ -339,7 +339,9 @@ type IsNotAField<V> = 0 extends 1 & V
   : [NonNullable<V>] extends [never]
     ? false // `null` or `undefined` alone, since `keyof never` is every key
     : typeof notAFieldMarker extends keyof NonNullable<V>
-      ? true
+      ? {} extends Pick<NonNullable<V>, typeof notAFieldMarker>
+        ? true
+        : false // a symbol index signature, e.g. Record<PropertyKey, unknown>
       : false
 
 export declare type MembersOnly<T> = {
@@ -366,8 +368,10 @@ export declare type idType<entityType> = entityType extends {
   : string | number
 
 export type NumericKeys<T> = {
-  [K in keyof T]: T[K] extends number | undefined | null ? K : never
-}[keyof T]
+  [K in keyof MembersOnly<T>]: T[K] extends number | undefined | null
+    ? K
+    : never
+}[keyof MembersOnly<T>]
 
 /**
  * Options for performing aggregation on an entity in the repository.
