@@ -29,6 +29,7 @@ All notable changes to this project will be documented in this file.
 - `EntityError` retains its stack and works with `instanceof` in CommonJS builds ([#1065](https://github.com/remult/remult/pull/1065), [#1066](https://github.com/remult/remult/pull/1066) by @AndrewSouthpaw).
 - Relation change tracking is preserved when a query doesn't include the relation ([#1071](https://github.com/remult/remult/pull/1071) by @AndrewSouthpaw).
 - Writes are no longer retried after an HTTP 500 response ([#1063](https://github.com/remult/remult/pull/1063) by @AndrewSouthpaw).
+- A read that gets a 500 is retried through axios or Angular `HttpClient` too. Only the default fetch client retried it, because `retry` read `status` and the bridge sets `httpStatusCode`.
 - `Fields.uuid` now applies the supplied options, including a custom ID factory ([#1054](https://github.com/remult/remult/pull/1054) by @AndrewSouthpaw).
 
 ## [3.4.2] - [2026-10-31]
