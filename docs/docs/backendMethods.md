@@ -90,3 +90,26 @@ BackendMethod.serializer = {
 ```
 
 `paramTypes` still runs first, so an entity listed there is still sent as its id and fetched on the backend.
+
+### Validating arguments
+
+The second argument also has `part`, which is `'args'` for the argument list and `'result'` for the return value. On the backend, `deserialize` with `part: 'args'` runs before the method does, so it's a place to validate. Throw an `EntityError` and its `message` and `modelState` reach the caller.
+
+Here `args` is a zod schema added to `BackendMethodOptions` the same way as `returns` above.
+
+```ts
+BackendMethod.serializer = {
+  serialize: (value) => superjson.serialize(value),
+  deserialize: (value, { options, part }) => {
+    const parsed = superjson.deserialize(value as SuperJSONResult)
+    if (part !== 'args' || !options.args) return parsed
+    const result = options.args.safeParse(parsed)
+    if (!result.success)
+      throw new EntityError({
+        message: 'Invalid arguments',
+        modelState: toModelState(result.error),
+      })
+    return result.data
+  },
+}
+```

@@ -1,5 +1,6 @@
 import {
   Entity,
+  EntityError,
   Field,
   Fields,
   getFields,
@@ -728,9 +729,13 @@ describe('BackendMethod.serializer', () => {
         return value
       },
     }
-    expect(oneParameter.serialize(1, { remult, options: nextDayOptions })).toBe(
-      1,
-    )
+    expect(
+      oneParameter.serialize(1, {
+        remult,
+        options: nextDayOptions,
+        part: 'args',
+      }),
+    ).toBe(1)
   })
 
   it('gives the serializer the options passed to the decorator', async () => {
@@ -738,6 +743,64 @@ describe('BackendMethod.serializer', () => {
     await SerializerProbe.nextDay(new Date('2026-01-01'))
     expect(seen).toHaveLength(4)
     for (const x of seen) expect(x.options).toBe(nextDayOptions)
+  })
+
+  it('tells the serializer whether the value is the arguments or the result', async () => {
+    const seen = recordContexts()
+    await SerializerProbe.nextDay(new Date('2026-01-01'))
+    expect(seen.map((x) => `${x.op} ${x.part}`)).toEqual([
+      'serialize args',
+      'deserialize args',
+      'serialize result',
+      'deserialize result',
+    ])
+    seen.length = 0
+    await new SerializerProbe().isAfterSince(new Date('2026-01-01'))
+    expect(seen.map((x) => `${x.op} ${x.part}`)).toEqual([
+      'serialize args',
+      'deserialize args',
+      'serialize result',
+      'deserialize result',
+    ])
+  })
+
+  describe('when the serializer rejects the arguments on the backend', () => {
+    beforeEach(() => {
+      BackendMethod.serializer = {
+        serialize: dateTagging.serialize,
+        deserialize: (value, context) => {
+          if (context.part === 'args')
+            throw new EntityError({
+              message: 'Invalid arguments',
+              modelState: { at: 'must be in the future' },
+            })
+          return dateTagging.deserialize(value, context)
+        },
+      }
+    })
+    const rejection = {
+      message: 'Invalid arguments',
+      modelState: { at: 'must be in the future' },
+    }
+
+    it('sends the modelState to the caller of a static method', async () => {
+      await expect(
+        SerializerProbe.nextDay(new Date('2026-01-01')),
+      ).rejects.toMatchObject(rejection)
+    })
+
+    it('sends the modelState to the caller of a controller method', async () => {
+      await expect(
+        new SerializerProbe().isAfterSince(new Date('2026-01-01')),
+      ).rejects.toMatchObject(rejection)
+    })
+
+    it('sends the modelState to the caller of an entity method', async () => {
+      const row = remult.repo(SerializerProbeEntity).create({ id: 7 })
+      await expect(row.stamp(new Date('2026-01-01'))).rejects.toMatchObject(
+        rejection,
+      )
+    })
   })
 
   it('awaits serializers that return promises', async () => {
@@ -770,7 +833,7 @@ describe('BackendMethod.serializer', () => {
         post: async () => ({
           data: dateTagging.serialize(
             { next: new Date('2026-01-02') },
-            { remult: c, options: nextDayOptions },
+            { remult: c, options: nextDayOptions, part: 'result' },
           ),
         }),
       },
@@ -814,7 +877,7 @@ describe('BackendMethod.serializer', () => {
           return {
             data: dateTagging.serialize(
               { next: new Date('2026-01-02') },
-              { remult: c, options: nextDayOptions },
+              { remult: c, options: nextDayOptions, part: 'result' },
             ),
           }
         },

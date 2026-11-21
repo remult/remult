@@ -141,7 +141,7 @@ export class myServerAction extends Action<inArgs, result> {
 
       info.args = await prepareReceivedArgs(
         this.types(),
-        await fromWire(info.args, remult, this.options),
+        await fromWire(info.args, remult, this.options, 'args'),
         remult,
         ds,
         res,
@@ -151,6 +151,7 @@ export class myServerAction extends Action<inArgs, result> {
           await this.originalMethod(info.args),
           remult,
           this.options,
+          'result',
         )
       } catch (err) {
         throw err
@@ -201,6 +202,8 @@ export interface BackendMethodSerializerContext {
   remult: Remult
   /** The options passed to `@BackendMethod`, so a serializer can read settings added to them. */
   options: BackendMethodOptions<unknown>
+  /** Whether the value is the method's argument list or its return value. */
+  part: 'args' | 'result'
 }
 
 interface serverMethodInArgs {
@@ -299,6 +302,7 @@ export function BackendMethod<type = unknown>(
           prepareArgsToSend(getTypes(), args),
           calling,
           options,
+          'args',
         )
         if (options.blockUser === false) {
           return await remultStatic.actionInfo.runActionWithoutBlockingUI(
@@ -307,6 +311,7 @@ export function BackendMethod<type = unknown>(
                 (await serverAction.run({ args: sent }, url, http)).data,
                 calling,
                 options,
+                'result',
               ),
           )
         } else
@@ -314,6 +319,7 @@ export function BackendMethod<type = unknown>(
             (await serverAction.run({ args: sent }, url, http)).data,
             calling,
             options,
+            'result',
           )
       }
 
@@ -365,13 +371,13 @@ export function BackendMethod<type = unknown>(
             options ? (options.queue ?? false) : false,
             options.allowed,
             async (d: serverMethodInArgs, req, res) => {
-              d.args = (await fromWire(d.args, req, options)).map((x: any) =>
-                isCustomUndefined(x) ? undefined : x,
-              )
               let allowed = options.allowed
 
               try {
                 let remult = req
+                d.args = (await fromWire(d.args, remult, options, 'args')).map(
+                  (x: any) => (isCustomUndefined(x) ? undefined : x),
+                )
 
                 let r: serverMethodOutArgs
                 await decideTransaction(remult, options, async () => {
@@ -417,6 +423,7 @@ export function BackendMethod<type = unknown>(
                           await originalMethod.apply(y, d.args),
                           remult,
                           options,
+                          'result',
                         ),
                         rowInfo: {
                           data: await defs.toApiJson(),
@@ -445,6 +452,7 @@ export function BackendMethod<type = unknown>(
                           await originalMethod.apply(y, d.args),
                           remult,
                           options,
+                          'result',
                         ),
                         fields: await controllerRef.toApiJson(),
                       }
@@ -476,6 +484,7 @@ export function BackendMethod<type = unknown>(
           prepareArgsToSend(getTypes(), args),
           calling,
           options,
+          'args',
         )
 
         if (remultStatic.allEntities.includes(target.constructor)) {
@@ -517,7 +526,7 @@ export function BackendMethod<type = unknown>(
             )
             await defs._updateResultsFromServerAction(r.rowInfo!)
 
-            return fromWire(r.result, calling, options)
+            return fromWire(r.result, calling, options, 'result')
           } catch (err) {
             throw defs.catchSaveErrors(err)
           }
@@ -553,7 +562,7 @@ export function BackendMethod<type = unknown>(
               http,
             )
             await defs._updateEntityBasedOnApi(r.fields)
-            return fromWire(r.result, calling, options)
+            return fromWire(r.result, calling, options, 'result')
           } catch (e) {
             throw defs.catchSaveErrors(e)
           }
@@ -612,18 +621,24 @@ async function toWire(
   value: any,
   remult: Remult,
   options: BackendMethodOptions<any>,
+  part: BackendMethodSerializerContext['part'],
 ) {
   const serializer = remultStatic.backendMethodSerializer
-  return serializer ? serializer.serialize(value, { remult, options }) : value
+  return serializer
+    ? serializer.serialize(value, { remult, options, part })
+    : value
 }
 
 async function fromWire(
   value: any,
   remult: Remult,
   options: BackendMethodOptions<any>,
+  part: BackendMethodSerializerContext['part'],
 ) {
   const serializer = remultStatic.backendMethodSerializer
-  return serializer ? serializer.deserialize(value, { remult, options }) : value
+  return serializer
+    ? serializer.deserialize(value, { remult, options, part })
+    : value
 }
 
 export interface jobWasQueuedResult {
