@@ -1,4 +1,5 @@
 import { RemultAsyncLocalStorage } from './src/context.js'
+import { remultStatic } from './src/remult-static.js'
 import { initAsyncHooks as _initAsyncHooks } from './server/initAsyncHooks.js'
 
 /**
@@ -29,4 +30,22 @@ import { initAsyncHooks as _initAsyncHooks } from './server/initAsyncHooks.js'
 export function initAsyncHooks() {
   _initAsyncHooks()
   RemultAsyncLocalStorage.enable()
+}
+
+/**
+ * Makes `remult` fall back to the default instance when there's no request or `withRemult()` call,
+ * instead of throwing. Meant for test setup, which calls `repo()` directly while a `remultApi` serves
+ * requests.
+ * @example
+ * import { remult, repo } from 'remult';
+ * import { keepDefaultRemult } from 'remult/async-hooks';
+ *
+ * remult.dataProvider = testDataProvider;
+ * keepDefaultRemult();
+ *
+ * // Later, after a `remultApi` is created
+ * await repo(Task).insert({ title: 'from test setup' });
+ */
+export function keepDefaultRemult() {
+  remultStatic.keepDefaultRemult = true
 }
