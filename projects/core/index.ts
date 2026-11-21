@@ -148,7 +148,12 @@ export {
   ProgressListener,
   ForbiddenError,
 } from './src/server-action.js'
-export type { BackendMethodOptions } from './src/server-action.js'
+export type {
+  BackendMethodOptions,
+  BackendMethodSerializer,
+  BackendMethodSerializerContext,
+  BackendMethodValueSerializer,
+} from './src/server-action.js'
 
 export {
   Allow,
