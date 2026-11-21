@@ -183,10 +183,19 @@ export interface BackendMethodOptions<type> {
 }
 
 /**
- * Turns backend method arguments and return values into JSON and back. superjson and oRPC's
- * `StandardRPCSerializer` both fit. Either method may return a promise.
+ * Sends a backend method's argument list through `args` and its return value through `result`.
+ * An `EntityError` thrown from either on the backend reaches the caller.
  */
 export interface BackendMethodSerializer {
+  args: BackendMethodValueSerializer
+  result: BackendMethodValueSerializer
+}
+
+/**
+ * Turns a value into JSON and back. superjson and oRPC's `StandardRPCSerializer` both fit.
+ * Either method may return a promise.
+ */
+export interface BackendMethodValueSerializer {
   serialize(
     value: unknown,
     context: BackendMethodSerializerContext,
@@ -202,8 +211,6 @@ export interface BackendMethodSerializerContext {
   remult: Remult
   /** The options passed to `@BackendMethod`, so a serializer can read settings added to them. */
   options: BackendMethodOptions<unknown>
-  /** Whether the value is the method's argument list or its return value. */
-  part: 'args' | 'result'
 }
 
 interface serverMethodInArgs {
@@ -598,7 +605,7 @@ export declare namespace BackendMethod {
    * file that both the frontend and the backend import, or calls break.
    * @example
    * import superjson from 'superjson'
-   * BackendMethod.serializer = superjson
+   * BackendMethod.serializer = { args: superjson, result: superjson }
    */
   let serializer: BackendMethodSerializer | undefined
 }
@@ -621,11 +628,11 @@ async function toWire(
   value: any,
   remult: Remult,
   options: BackendMethodOptions<any>,
-  part: BackendMethodSerializerContext['part'],
+  part: keyof BackendMethodSerializer,
 ) {
   const serializer = remultStatic.backendMethodSerializer
   return serializer
-    ? serializer.serialize(value, { remult, options, part })
+    ? serializer[part].serialize(value, { remult, options })
     : value
 }
 
@@ -633,11 +640,11 @@ async function fromWire(
   value: any,
   remult: Remult,
   options: BackendMethodOptions<any>,
-  part: BackendMethodSerializerContext['part'],
+  part: keyof BackendMethodSerializer,
 ) {
   const serializer = remultStatic.backendMethodSerializer
   return serializer
-    ? serializer.deserialize(value, { remult, options, part })
+    ? serializer[part].deserialize(value, { remult, options })
     : value
 }
 

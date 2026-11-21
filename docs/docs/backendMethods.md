@@ -70,10 +70,17 @@ Backend methods send arguments and return values as plain JSON. A `Date` argumen
 import { BackendMethod } from 'remult'
 import superjson from 'superjson'
 
-BackendMethod.serializer = superjson
+BackendMethod.serializer = { args: superjson, result: superjson }
 ```
 
-Both methods get a second argument with the `Remult` making the call and the options passed to `@BackendMethod`, and either may return a promise. That lets a serializer rebuild entities with `remult.repo(...)`, or read settings you add to the options.
+`args` handles the argument list and `result` handles the return value. For a call from the frontend they run in this order:
+
+1. `args.serialize` on the frontend
+2. `args.deserialize` on the backend, then the method runs
+3. `result.serialize` on the backend
+4. `result.deserialize` on the frontend
+
+Every one of them gets a second argument with the `Remult` making the call and the options passed to `@BackendMethod`, and may return a promise. That lets a serializer rebuild entities with `remult.repo(...)`, or read settings you add to the options.
 
 ```ts
 declare module 'remult' {
@@ -83,9 +90,12 @@ declare module 'remult' {
 }
 
 BackendMethod.serializer = {
-  serialize: (value, { remult, options }) => encode(value, options.returns),
-  deserialize: async (value, { remult, options }) =>
-    decode(value, options.returns, (key, row) => remult.repo(entities[key]).fromJson(row)),
+  args: superjson,
+  result: {
+    serialize: (value, { options }) => encode(value, options.returns),
+    deserialize: async (value, { remult, options }) =>
+      decode(value, options.returns, (key, row) => remult.repo(entities[key]).fromJson(row)),
+  },
 }
 ```
 
@@ -93,23 +103,33 @@ BackendMethod.serializer = {
 
 ### Validating arguments
 
-The second argument also has `part`, which is `'args'` for the argument list and `'result'` for the return value. On the backend, `deserialize` with `part: 'args'` runs before the method does, so it's a place to validate. Throw an `EntityError` and its `message` and `modelState` reach the caller.
-
-Here `args` is a zod schema added to `BackendMethodOptions` the same way as `returns` above.
+`args.deserialize` runs on the backend before the method does, so it's a place to validate. Throw an `EntityError` and its `message` and `modelState` reach the caller. Running the same check in `args.serialize` validates on the frontend before the call is sent.
 
 ```ts
+declare module 'remult' {
+  interface BackendMethodOptions<type> {
+    argsSchema?: z.ZodType
+  }
+}
+
+const validate = (schema: z.ZodType | undefined, value: unknown) => {
+  if (!schema) return value
+  const parsed = schema.safeParse(value)
+  if (parsed.success) return parsed.data
+  throw new EntityError({
+    message: 'Invalid arguments',
+    modelState: Object.fromEntries(
+      parsed.error.issues.map((issue) => [issue.path.join('.'), issue.message]),
+    ),
+  })
+}
+
 BackendMethod.serializer = {
-  serialize: (value) => superjson.serialize(value),
-  deserialize: (value, { options, part }) => {
-    const parsed = superjson.deserialize(value as SuperJSONResult)
-    if (part !== 'args' || !options.args) return parsed
-    const result = options.args.safeParse(parsed)
-    if (!result.success)
-      throw new EntityError({
-        message: 'Invalid arguments',
-        modelState: toModelState(result.error),
-      })
-    return result.data
+  args: {
+    serialize: (args, { options }) => superjson.serialize(validate(options.argsSchema, args)),
+    deserialize: (wire, { options }) =>
+      validate(options.argsSchema, superjson.deserialize(wire as SuperJSONResult)),
   },
+  result: superjson,
 }
 ```

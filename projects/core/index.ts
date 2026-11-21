@@ -151,6 +151,7 @@ export type {
   BackendMethodOptions,
   BackendMethodSerializer,
   BackendMethodSerializerContext,
+  BackendMethodValueSerializer,
 } from './src/server-action.js'
 
 export {

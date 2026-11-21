@@ -17,6 +17,7 @@ import type {
   BackendMethodOptions,
   BackendMethodSerializer,
   BackendMethodSerializerContext,
+  BackendMethodValueSerializer,
 } from '../../core/src/server-action'
 import { ActionTestConfig, testAsIfOnBackend } from './testHelper'
 
@@ -594,7 +595,7 @@ describe("test proxy implementation doesn't meet something", () => {
   })
 })
 
-const dateTagging: BackendMethodSerializer = {
+const dateTagging: BackendMethodValueSerializer = {
   serialize: (value) => ({
     encoded:
       value === undefined
@@ -661,15 +662,19 @@ class SerializerProbeEntity {
 
 const recordContexts = () => {
   const seen: ({ op: string } & BackendMethodSerializerContext)[] = []
-  BackendMethod.serializer = {
+  const recording = (part: string): BackendMethodValueSerializer => ({
     serialize: (value, context) => {
-      seen.push({ op: 'serialize', ...context })
+      seen.push({ op: `${part}.serialize`, ...context })
       return dateTagging.serialize(value, context)
     },
     deserialize: (value, context) => {
-      seen.push({ op: 'deserialize', ...context })
+      seen.push({ op: `${part}.deserialize`, ...context })
       return dateTagging.deserialize(value, context)
     },
+  })
+  BackendMethod.serializer = {
+    args: recording('args'),
+    result: recording('result'),
   }
   return seen
 }
@@ -678,7 +683,7 @@ describe('BackendMethod.serializer', () => {
   beforeEach(() => {
     // An earlier test leaves a factory whose remult counts as the backend, which would skip the wire.
     resetFactory()
-    BackendMethod.serializer = dateTagging
+    BackendMethod.serializer = { args: dateTagging, result: dateTagging }
   })
   afterEach(() => {
     BackendMethod.serializer = undefined
@@ -721,7 +726,7 @@ describe('BackendMethod.serializer', () => {
 
   it('accepts serializers whose methods take one parameter', () => {
     // superjson's methods take one parameter, and must keep assigning.
-    const oneParameter: BackendMethodSerializer = {
+    const oneParameter: BackendMethodValueSerializer = {
       serialize(value: unknown) {
         return value
       },
@@ -729,13 +734,9 @@ describe('BackendMethod.serializer', () => {
         return value
       },
     }
-    expect(
-      oneParameter.serialize(1, {
-        remult,
-        options: nextDayOptions,
-        part: 'args',
-      }),
-    ).toBe(1)
+    expect(oneParameter.serialize(1, { remult, options: nextDayOptions })).toBe(
+      1,
+    )
   })
 
   it('gives the serializer the options passed to the decorator', async () => {
@@ -745,37 +746,38 @@ describe('BackendMethod.serializer', () => {
     for (const x of seen) expect(x.options).toBe(nextDayOptions)
   })
 
-  it('tells the serializer whether the value is the arguments or the result', async () => {
+  it('sends arguments through args and return values through result', async () => {
     const seen = recordContexts()
     await SerializerProbe.nextDay(new Date('2026-01-01'))
-    expect(seen.map((x) => `${x.op} ${x.part}`)).toEqual([
-      'serialize args',
-      'deserialize args',
-      'serialize result',
-      'deserialize result',
+    expect(seen.map((x) => x.op)).toEqual([
+      'args.serialize',
+      'args.deserialize',
+      'result.serialize',
+      'result.deserialize',
     ])
     seen.length = 0
     await new SerializerProbe().isAfterSince(new Date('2026-01-01'))
-    expect(seen.map((x) => `${x.op} ${x.part}`)).toEqual([
-      'serialize args',
-      'deserialize args',
-      'serialize result',
-      'deserialize result',
+    expect(seen.map((x) => x.op)).toEqual([
+      'args.serialize',
+      'args.deserialize',
+      'result.serialize',
+      'result.deserialize',
     ])
   })
 
   describe('when the serializer rejects the arguments on the backend', () => {
     beforeEach(() => {
       BackendMethod.serializer = {
-        serialize: dateTagging.serialize,
-        deserialize: (value, context) => {
-          if (context.part === 'args')
+        args: {
+          serialize: dateTagging.serialize,
+          deserialize: () => {
             throw new EntityError({
               message: 'Invalid arguments',
               modelState: { at: 'must be in the future' },
             })
-          return dateTagging.deserialize(value, context)
+          },
         },
+        result: dateTagging,
       }
     })
     const rejection = {
@@ -804,12 +806,13 @@ describe('BackendMethod.serializer', () => {
   })
 
   it('awaits serializers that return promises', async () => {
-    BackendMethod.serializer = {
+    const asynchronous: BackendMethodValueSerializer = {
       serialize: async (value, context) =>
         dateTagging.serialize(value, context),
       deserialize: async (value, context) =>
         dateTagging.deserialize(value, context),
     }
+    BackendMethod.serializer = { args: asynchronous, result: asynchronous }
     expect(await SerializerProbe.nextDay(new Date('2026-01-01'))).toEqual({
       argWasDate: true,
       next: new Date('2026-01-02'),
@@ -833,14 +836,17 @@ describe('BackendMethod.serializer', () => {
         post: async () => ({
           data: dateTagging.serialize(
             { next: new Date('2026-01-02') },
-            { remult: c, options: nextDayOptions, part: 'result' },
+            { remult: c, options: nextDayOptions },
           ),
         }),
       },
     })
     seen.length = 0
     await c.call(SerializerProbe.nextDay, undefined, new Date('2026-01-01'))
-    expect(seen.map((x) => x.op)).toEqual(['serialize', 'deserialize'])
+    expect(seen.map((x) => x.op)).toEqual([
+      'args.serialize',
+      'result.deserialize',
+    ])
     expect(seen[0]!.remult).toBe(c)
     expect(seen[1]!.remult).toBe(c)
   })
@@ -850,10 +856,10 @@ describe('BackendMethod.serializer', () => {
     await SerializerProbe.nextDay(new Date('2026-01-01'))
     // client serialize, server deserialize, server serialize, client deserialize
     expect(seen.map((x) => x.op)).toEqual([
-      'serialize',
-      'deserialize',
-      'serialize',
-      'deserialize',
+      'args.serialize',
+      'args.deserialize',
+      'result.serialize',
+      'result.deserialize',
     ])
     expect(seen[0]!.remult).toBe(remult)
     expect(seen[3]!.remult).toBe(remult)
@@ -877,7 +883,7 @@ describe('BackendMethod.serializer', () => {
           return {
             data: dateTagging.serialize(
               { next: new Date('2026-01-02') },
-              { remult: c, options: nextDayOptions, part: 'result' },
+              { remult: c, options: nextDayOptions },
             ),
           }
         },
