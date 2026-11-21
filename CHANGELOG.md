@@ -9,12 +9,14 @@ All notable changes to this project will be documented in this file.
 - `orderByNullsFirst` is removed, use `NullSort` ([#1079](https://github.com/remult/remult/pull/1079) by @jycouet).
 - A custom `SqlImplementation` must declare `nativeNullSort` ([#1079](https://github.com/remult/remult/pull/1079) by @jycouet).
 - In memory, `$gt`, `$gte`, `$lt` and `$lte` no longer match NULL ([#1079](https://github.com/remult/remult/pull/1079) by @jycouet).
+- An included `toOne` whose target row is missing loads as `null` instead of `undefined` (`field`/`fields` relations; an own-column `toOne` already returned `null`). `undefined` now always means "not included". Code that checks `=== undefined` for a missing target should use `== null` or `?.`, and `JSON.stringify` now writes `"customer": null`. The FK keeps its value, including when the row is copied into `update(id, { ...row })`. With `typedInclude` on, a relation declared `| null` loads as `X | null`.
 
 ### Added
 
 - `flags.clientErrorsAsEntityError` (`remult/internals`): client calls reject with an `EntityError` instead of a plain object, so `instanceof Error` works and the error has a stack. Off by default, and on by default in the next major ([#1064](https://github.com/remult/remult/pull/1064) by @AndrewSouthpaw).
 - `NullSort` (`remult/internals`): where NULL sorts, for the whole app ([docs](https://remult.dev/docs/field-types#where-null-sorts), [#1079](https://github.com/remult/remult/pull/1079) by @jycouet).
 - `NotAField<T>`: type a getter as `NotAField<Money>` to keep it out of `where`, `orderBy`, `insert`, `fields` and the other field types ([docs](https://remult.dev/docs/field-types#getters-that-are-not-fields), [#1056](https://github.com/remult/remult/pull/1056) by @AndrewSouthpaw).
+- Opt-in typed `include` results ([#1053](https://github.com/remult/remult/pull/1053) re-landed). Turn on with `declare module 'remult' { interface RemultTypeConfig { typedInclude: true } }`; then a literal `include` types its relations as loaded in `find`, `findFirst`, `findOne` and `findId` results, so `task.category.name` needs no `?.`. Off by default, so existing code is unchanged. Exports `Loaded<T, include>` and `RemultTypeConfig`. Planned to become the default in the next major.
 
 ### Changed
 

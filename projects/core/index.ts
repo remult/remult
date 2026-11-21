@@ -42,6 +42,8 @@ export type {
   RelationOptions,
   ObjectMembersOnly,
   MembersToInclude,
+  Loaded,
+  RemultTypeConfig,
   RepositoryRelations,
   EntityIdFields,
   EntitySelectFields,
