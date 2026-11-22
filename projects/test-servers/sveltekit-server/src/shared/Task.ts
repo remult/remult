@@ -12,6 +12,8 @@ import {
   allowApiCrud: true,
   saving: (task) => {
     if (task.title.startsWith('empty')) task.id = ''
+    if (task.title === 'throw teapot')
+      throw Object.assign(new Error('Test Teapot'), { httpStatusCode: 418 })
   },
 })
 export class Task {

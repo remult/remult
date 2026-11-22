@@ -1,4 +1,8 @@
-import type { RestDataProviderHttpProvider } from '../data-interfaces.js'
+import {
+  EntityError,
+  type RestDataProviderHttpProvider,
+} from '../data-interfaces.js'
+import { flags } from '../remult3/remult3.js'
 import { isReadPost, retry } from './retry.js'
 
 export class RestDataProviderHttpProviderUsingFetch
@@ -78,19 +82,25 @@ function onSuccess(response: Response) {
     throw response
       .json()
       .then((x: any) => {
-        return {
+        return fetchError({
           ...x,
           message: x.message || response.statusText,
           url: response.url,
           status: response.status,
-        }
+        })
       })
       .catch(() => {
-        throw {
+        throw fetchError({
           message: response.statusText,
           url: response.url,
           status: response.status,
-        }
+        })
       })
   }
+}
+
+function fetchError(info: { message: string; url: string; status: number }) {
+  return flags.clientErrorsAsEntityError
+    ? new EntityError({ ...info, httpStatusCode: info.status })
+    : info
 }

@@ -3,6 +3,7 @@ import { commonDbTests, type DbTestOptions } from './db-tests'
 import { customIdTests } from './test-custom-id-column'
 import { testSpecialValues } from './test-special-value'
 import { testUpdateWithNull } from './test-update-with-null'
+import { nullFilterTests } from './test-null-filter'
 import { aggregateTest } from './test-aggregate.js'
 import { fieldsIdTests } from './fields-id.js'
 import { manyOperations } from './many-operations.js'
@@ -13,6 +14,7 @@ export function allDbTests(props: DbTestProps, options?: DbTestOptions) {
   commonDbTests(props, options)
   customIdTests(props)
   testUpdateWithNull(props)
+  nullFilterTests(props)
   testSpecialValues(props)
   fieldsIdTests(props)
   manyOperations(props)

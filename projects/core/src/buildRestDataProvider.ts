@@ -1,6 +1,10 @@
-import type { RestDataProviderHttpProvider } from './data-interfaces.js'
+import {
+  EntityError,
+  type RestDataProviderHttpProvider,
+} from './data-interfaces.js'
 import { RestDataProviderHttpProviderUsingFetch } from './data-providers/rest-data-provider-using-fetch.js'
 import { isReadPost, retry } from './data-providers/retry.js'
+import { flags } from './remult3/remult3.js'
 
 
 export function buildRestDataProvider(
@@ -95,10 +99,8 @@ export async function processHttpException(ex: any) {
   if (httpStatusCode !== undefined && httpStatusCode !== null) {
     error.httpStatusCode = httpStatusCode
   }
-  var result = Object.assign(error ?? {}, {
-    //     exception: ex disabled for now because JSON.stringify crashed with this
-  })
-  return result
+  error ??= {}
+  return flags.clientErrorsAsEntityError ? new EntityError(error) : error
 }
 
 export interface ExternalHttpProvider {

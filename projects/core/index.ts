@@ -27,6 +27,7 @@ export type {
   GroupByResult,
   FindFirstOptions,
   ComparisonValueFilter,
+  ComparableTypes,
   ValueFilter,
   IdFilter,
   ContainsStringValueFilter,
@@ -58,6 +59,7 @@ export type {
   IdMetadata,
   FindFirstOptionsBase,
 } from './src/remult3/remult3.js'
+export type { NotAField } from './src/remult3/remult3.js'
 export { standardSchema } from './src/standard-schema/index.js'
 export {
   EntityBase,
