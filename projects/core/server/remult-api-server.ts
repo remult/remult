@@ -86,9 +86,17 @@ export interface RemultServerOptions<RequestType> {
   /** The status for an `Error` thrown without an `httpStatusCode`, like a failed
    * query or a `TypeError`. Thrown strings, plain objects and `EntityError`s stay 400.
    *
+   * The client retries reads on a 500 (`flags.error500RetryCount`), so keep that retry
+   * for dev only, where it covers a proxy while the backend restarts.
+   *
    * @default 400
    * @example
+   * // server
    * remultApi({ defaultErrorStatus: 500 })
+   *
+   * // client
+   * import { flags } from 'remult/internals'
+   * flags.error500RetryCount = isDev ? 4 : 0 // isDev: your framework's flag, e.g. import.meta.env.DEV
    */
   defaultErrorStatus?: number
   /** When set to true (default) it'll console log each api endpoint that is created */
