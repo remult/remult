@@ -77,6 +77,46 @@ describe('Test authorization', () => {
 
 For SQL-based tests, you can use the `SqlDatabase.LogToConsole = true` setting to see SQL queries and understand the underlying operations during tests.
 
+### Testing a Running Server
+
+`TestApiDataProvider` doesn't run your `getUser` or `initRequest`, and doesn't reach other routes on your server. To cover those, send real requests to the server (for example with `supertest`).
+
+Once `remultApi` is created, `repo()` outside a request throws. To call it directly in test setup and assertions, use `allowDefaultRemult_FOR_TESTS_ONLY()`:
+
+```ts
+import { beforeAll, afterAll, afterEach, test, expect } from 'vitest'
+import request from 'supertest'
+import { remult, repo } from 'remult'
+import { allowDefaultRemult_FOR_TESTS_ONLY } from 'remult/async-hooks'
+import { app, dataProvider } from '../server/app'
+import { Task } from '../shared/Task'
+
+beforeAll(() => {
+  remult.dataProvider = dataProvider // the one passed to `remultApi`
+  allowDefaultRemult_FOR_TESTS_ONLY()
+})
+afterEach(() => {
+  remult.user = undefined
+})
+afterAll(() => {
+  allowDefaultRemult_FOR_TESTS_ONLY(false)
+})
+
+test('renames a task through the API', async () => {
+  const task = await repo(Task).insert({ title: 'my task' })
+
+  await request(app).put(`/api/tasks/${task.id}`).send({ title: 'renamed' })
+
+  expect((await repo(Task).findId(task.id))?.title).toBe('renamed')
+})
+```
+
+Requests still get their own `remult` and `remult.user`. Outside a request, `remult` is one shared default instance: set its `dataProvider` to the server's, and reset `remult.user` between tests.
+
+:::warn
+Never call `allowDefaultRemult_FOR_TESTS_ONLY()` in a server. Code running outside a request (timers, queues) would silently use the default instance, with no user, instead of throwing.
+:::
+
 ---
 
 Using these techniques allows you to simulate real API operations within tests, ensuring robust access control and proper handling of user permissions in your application.
