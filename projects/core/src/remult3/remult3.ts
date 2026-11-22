@@ -308,12 +308,50 @@ export interface EntityMetadata<entityType = unknown> {
   readonly idMetadata: IdMetadata<entityType>
 }
 
+// Type-only, so nothing ships at runtime. Users never write it, they write `NotAField<T>`.
+declare const notAFieldMarker: unique symbol
+
+/**
+ * Marks one property as not a field, e.g. a getter computed from other fields. It's left out of
+ * `where`, `orderBy`, `insert`, `fields` and the other field types. Types only.
+ *
+ * The marker goes on the property, not on the value's class, so the same class can still be
+ * stored as a real field elsewhere. A plain `T` still assigns to it, so no casts are needed.
+ *
+ * @example
+ * \@Entity('orders')
+ * class Order {
+ *   \@Fields.integer() priceCents = 0
+ *   \@Fields.string() priceCurrency = 'USD'
+ *   get price(): NotAField<Money> {
+ *     return new Money(this.priceCents, this.priceCurrency)
+ *   }
+ * }
+ *
+ * // Type error. Without NotAField this typechecks and throws "field not found".
+ * repo(Order).find({ where: { price: new Money(100, 'USD') } })
+ */
+export type NotAField<T> = T & { readonly [notAFieldMarker]?: true }
+
+// Checks for the marker key, not assignability: an optional key is satisfied by every object.
+type IsNotAField<V> = 0 extends 1 & V
+  ? false // `any`, whose keys include every symbol
+  : [NonNullable<V>] extends [never]
+    ? false // `null` or `undefined` alone, since `keyof never` is every key
+    : typeof notAFieldMarker extends keyof NonNullable<V>
+      ? {} extends Pick<NonNullable<V>, typeof notAFieldMarker>
+        ? true
+        : false // a symbol index signature, e.g. Record<PropertyKey, unknown>
+      : false
+
 export declare type MembersOnly<T> = {
   [K in keyof Omit<T, keyof EntityBase> as T[K] extends Function
     ? never
-    : K extends string
-      ? K
-      : never]: T[K]
+    : IsNotAField<T[K]> extends true
+      ? never
+      : K extends string
+        ? K
+        : never]: T[K]
 }
 //Pick<
 //   T,
@@ -330,8 +368,10 @@ export declare type idType<entityType> = entityType extends {
   : string | number
 
 export type NumericKeys<T> = {
-  [K in keyof T]: T[K] extends number | undefined | null ? K : never
-}[keyof T]
+  [K in keyof MembersOnly<T>]: T[K] extends number | undefined | null
+    ? K
+    : never
+}[keyof MembersOnly<T>]
 
 /**
  * Options for performing aggregation on an entity in the repository.
@@ -1604,6 +1644,8 @@ export const flags = {
   liveQueryKeepAliveMs: 30_000,
   /** Version poll while SSE is stale */
   liveQueryPollWhenStaleMs: 1_000,
+  /** Client calls reject with an `EntityError` instead of a plain object. On by default in the next major. */
+  clientErrorsAsEntityError: false,
 }
 
 /*p1 - issues in https://stackblitz.com/edit/demo-allow-delete-based-on-other-entity:

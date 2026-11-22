@@ -3,13 +3,14 @@ import { Done } from './Done'
 
 import { InMemoryDataProvider } from '../../core/src//data-providers/in-memory-database'
 
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { Entity, EntityBase, EntityError, Fields } from '../../core'
 import { serializeError } from '../../core/src/data-api'
 import {
   processHttpException,
   toPromise,
 } from '../../core/src/buildRestDataProvider'
+import { flags } from '../../core/src/remult3/remult3'
 
 describe('test exception', () => {
   it('test save exception', async () => {
@@ -400,5 +401,31 @@ describe('serializeError', () => {
     expect(serializeError({ stack: 'at somewhere' })).toEqual({
       message: undefined,
     })
+  })
+})
+
+describe('with flags.clientErrorsAsEntityError', () => {
+  beforeEach(() => {
+    flags.clientErrorsAsEntityError = true
+  })
+  afterEach(() => {
+    flags.clientErrorsAsEntityError = false
+  })
+
+  it('processHttpException returns an EntityError with the same fields', async () => {
+    const err = await processHttpException({
+      error: {
+        modelState: { name: 'name error' },
+        message: 'Name: name error',
+      },
+      status: 400,
+    })
+    expect(err).toEqual(
+      new EntityError({
+        modelState: { name: 'name error' },
+        message: 'Name: name error',
+        httpStatusCode: 400,
+      }),
+    )
   })
 })

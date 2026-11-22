@@ -2275,10 +2275,13 @@ export interface LiveQueryStorage {
 export declare type MembersOnly<T> = {
   [K in keyof Omit<T, keyof EntityBase> as T[K] extends Function
     ? never
-    : K extends string
-      ? K
-      : never]: T[K]
+    : IsNotAField<T[K]> extends true
+      ? never
+      : K extends string
+        ? K
+        : never]: T[K]
 }
+//[ ] IsNotAField from TBD is not exported
 export type MembersToInclude<T> = {
   [K in keyof ObjectMembersOnly<T>]?:
     | boolean
@@ -2291,13 +2294,18 @@ export interface NativeNullSort {
   order: NullOrder | "unknown"
   syntax: "NULLS FIRST/LAST" | "CASE WHEN"
 }
+export type NotAField<T> = T & {
+  readonly [notAFieldMarker]?: true
+}
 export interface NullOrder {
   asc: "NULLS FIRST" | "NULLS LAST"
   desc: "NULLS FIRST" | "NULLS LAST"
 }
 export type NumericKeys<T> = {
-  [K in keyof T]: T[K] extends number | undefined | null ? K : never
-}[keyof T]
+  [K in keyof MembersOnly<T>]: T[K] extends number | undefined | null
+    ? K
+    : never
+}[keyof MembersOnly<T>]
 export type ObjectMembersOnly<T> = MembersOnly<{
   [K in keyof Pick<
     T,
