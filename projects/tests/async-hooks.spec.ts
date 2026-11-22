@@ -9,7 +9,7 @@ import {
   StubRemultAsyncLocalStorageCore,
 } from '../core/server/initAsyncHooks.js'
 import { remultApi } from '../core/remult-express'
-import { keepDefaultRemult } from '../core/async-hooks'
+import { allowDefaultRemult_FOR_TESTS_ONLY } from '../core/async-hooks'
 import { entity } from './tests/dynamic-classes'
 import {
   Fields,
@@ -234,7 +234,7 @@ describe('errors with withRemult', () => {
   })
 })
 
-describe('keepDefaultRemult', () => {
+describe('allowDefaultRemult_FOR_TESTS_ONLY', () => {
   const t = entity('t', { id: Fields.string() })
   let defaultDataProvider: DataProvider
   beforeEach(() => {
@@ -243,10 +243,10 @@ describe('keepDefaultRemult', () => {
     )
     defaultDataProvider = defaultFactory().dataProvider
     defaultFactory().dataProvider = new InMemoryDataProvider()
-    keepDefaultRemult()
+    allowDefaultRemult_FOR_TESTS_ONLY()
   })
   afterEach(() => {
-    remultStatic.keepDefaultRemult = false
+    allowDefaultRemult_FOR_TESTS_ONLY(false)
     RemultAsyncLocalStorage.disable()
     defaultFactory().dataProvider = defaultDataProvider
     remultStatic.asyncContext = new RemultAsyncLocalStorage(undefined)
@@ -268,5 +268,10 @@ describe('keepDefaultRemult', () => {
     )
     expect(userId).toBe('ada')
     expect(remult.user).toBeUndefined()
+  })
+  it('throws again once turned off', () => {
+    remultApi({ dataProvider: new InMemoryDataProvider(), entities: [] })
+    allowDefaultRemult_FOR_TESTS_ONLY(false)
+    expect(() => remult.user).toThrow('outside of a valid request cycle')
   })
 })

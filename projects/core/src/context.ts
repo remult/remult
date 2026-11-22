@@ -49,7 +49,7 @@ export class RemultAsyncLocalStorage {
     remultStatic.remultFactory = () => {
       const r = remultStatic.asyncContext.getStore()
       if (r) return r.remult
-      if (remultStatic.keepDefaultRemult) return defaultFactory()
+      if (remultStatic.allowDefaultRemult) return defaultFactory()
       else
         throw new Error(
           'remult object was requested outside of a valid request cycle.valid context, try running `withRemult` or run  within initApi or a remult request cycle',

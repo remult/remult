@@ -33,19 +33,23 @@ export function initAsyncHooks() {
 }
 
 /**
- * Makes `remult` fall back to the default instance when there's no request or `withRemult()` call,
- * instead of throwing. Meant for test setup, which calls `repo()` directly while a `remultApi` serves
- * requests.
+ * Tests only: outside a request or `withRemult()`, `remult` falls back to the default instance instead of throwing.
+ *
+ * Never call it in a server: code outside a request (timers, queues) would silently run with no user.
+ *
+ * The default instance is shared: set `remult.dataProvider` to the one passed to `remultApi`, and reset `remult.user` between tests.
  * @example
  * import { remult, repo } from 'remult';
- * import { keepDefaultRemult } from 'remult/async-hooks';
+ * import { allowDefaultRemult_FOR_TESTS_ONLY } from 'remult/async-hooks';
  *
- * remult.dataProvider = testDataProvider;
- * keepDefaultRemult();
+ * remult.dataProvider = dataProvider; // same as remultApi({ dataProvider })
+ * allowDefaultRemult_FOR_TESTS_ONLY();
  *
- * // Later, after a `remultApi` is created
  * await repo(Task).insert({ title: 'from test setup' });
+ *
+ * // afterAll
+ * allowDefaultRemult_FOR_TESTS_ONLY(false);
  */
-export function keepDefaultRemult() {
-  remultStatic.keepDefaultRemult = true
+export function allowDefaultRemult_FOR_TESTS_ONLY(allow = true) {
+  remultStatic.allowDefaultRemult = allow
 }
