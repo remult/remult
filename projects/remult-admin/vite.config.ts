@@ -42,6 +42,7 @@ export default defineConfig({
   test: {
     // a DOM environment makes vitest compile/resolve svelte for the client, where $effect runs
     environment: 'happy-dom',
+    env: { TZ: 'Europe/Paris' },
     include: ['src/**/*.spec.ts'],
   },
 })
