@@ -2970,7 +2970,7 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
   }
 
   apiInsertAllowed(item: T) {
-    if (this.options.allowApiUpdate === undefined) return false
+    if (this.options.allowApiInsert === undefined) return false
     return !item
       ? this.remult.isAllowedForInstance(undefined, this.options.allowApiInsert)
       : this.getEntityMetadataWithoutBreakingTheEntity(item).apiInsertAllowed
