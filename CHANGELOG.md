@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- `remultApi({ defaultErrorStatus: 500 })`: status of an `Error` thrown without an `httpStatusCode`, 400 by default ([docs](https://remult.dev/docs/ref_remultserveroptions#defaulterrorstatus), [#1094](https://github.com/remult/remult/pull/1094) by @AndrewSouthpaw).
 - `flags.clientErrorsAsEntityError` (`remult/internals`): client calls reject with an `EntityError` instead of a plain object, so `instanceof Error` works and the error has a stack. Off by default, and on by default in the next major ([#1064](https://github.com/remult/remult/pull/1064) by @AndrewSouthpaw).
 - `NullSort` (`remult/internals`): where NULL sorts, for the whole app ([docs](https://remult.dev/docs/field-types#where-null-sorts), [#1079](https://github.com/remult/remult/pull/1079) by @jycouet).
 - `NotAField<T>`: type a getter as `NotAField<Money>` to keep it out of `where`, `orderBy`, `insert`, `fields` and the other field types ([docs](https://remult.dev/docs/field-types#getters-that-are-not-fields), [#1056](https://github.com/remult/remult/pull/1056) by @AndrewSouthpaw).
@@ -26,6 +27,7 @@ All notable changes to this project will be documented in this file.
 - `paginator()` and `for await` reach rows with a NULL sort key. On Postgres or DuckDB, set `NullSort` ([#1079](https://github.com/remult/remult/pull/1079) by @jycouet).
 - Knex creates a number with a custom `fieldTypeInDb` `not null default 0`, like the other providers ([#1078](https://github.com/remult/remult/pull/1078) by @jycouet).
 - Mongo writes NULL as `null`, so it sorts lowest. Rows with the old `{ $null: '$null' }` marker still match NULL filters ([#1077](https://github.com/remult/remult/pull/1077) by @jycouet).
+- REST error responses keep the `httpStatusCode` of a thrown `Error` instead of returning 400 ([#1075](https://github.com/remult/remult/pull/1075) by @AndrewSouthpaw).
 - REST error responses no longer expose server stack traces ([#1074](https://github.com/remult/remult/pull/1074) by @AndrewSouthpaw).
 - `EntityError` retains its stack and works with `instanceof` in CommonJS builds ([#1065](https://github.com/remult/remult/pull/1065), [#1066](https://github.com/remult/remult/pull/1066) by @AndrewSouthpaw).
 - Relation change tracking is preserved when a query doesn't include the relation ([#1071](https://github.com/remult/remult/pull/1071) by @AndrewSouthpaw).

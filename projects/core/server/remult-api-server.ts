@@ -15,6 +15,7 @@ import type {
   ErrorInfo,
   Storage,
 } from '../src/data-interfaces.js'
+import { EntityError } from '../src/data-interfaces.js'
 import { liveQueryKeepAliveRoute } from '../src/live-query/SubscriptionChannel.js'
 import type {
   LiveQueryStorage,
@@ -82,6 +83,22 @@ export interface RemultServerOptions<RequestType> {
   rootPath?: string
   /** The default limit to use for find requests that did not specify a limit */
   defaultGetLimit?: number
+  /** The status for an `Error` thrown without an `httpStatusCode`, like a failed
+   * query or a `TypeError`. Thrown strings, plain objects and `EntityError`s stay 400.
+   *
+   * The client retries reads on a 500 (`flags.error500RetryCount`), so keep that retry
+   * for dev only, where it covers a proxy while the backend restarts.
+   *
+   * @default 400
+   * @example
+   * // server
+   * remultApi({ defaultErrorStatus: 500 })
+   *
+   * // client
+   * import { flags } from 'remult/internals'
+   * flags.error500RetryCount = isDev ? 4 : 0 // isDev: your framework's flag, e.g. import.meta.env.DEV
+   */
+  defaultErrorStatus?: number
   /** When set to true (default) it'll console log each api endpoint that is created */
   logApiEndPoints?: boolean
 
@@ -762,6 +779,7 @@ export class RemultServerImplementation<RequestType>
         req,
         genReq,
         this.options.error,
+        this.options.defaultErrorStatus,
       )
       try {
         if (
@@ -1286,6 +1304,7 @@ class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
     private req: RequestType | undefined,
     private genReq: GenericRequestInfo,
     private handleError: RemultServerOptions<RequestType>['error'] | undefined,
+    private defaultErrorStatus = 400,
   ) {}
   progress(progress: number): void {}
 
@@ -1321,8 +1340,10 @@ class ResponseBridgeToDataApiResponse<RequestType> implements DataApiResponse {
         exception.isForbiddenError
       ) {
         httpStatusCode = 403
-      } else if (data.modelState) {
+      } else if (data.modelState || exception instanceof EntityError) {
         httpStatusCode = 400
+      } else if (exception instanceof Error) {
+        httpStatusCode = this.defaultErrorStatus
       } else {
         httpStatusCode = 400
       }
