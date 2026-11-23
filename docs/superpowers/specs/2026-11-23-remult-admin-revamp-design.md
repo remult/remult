@@ -157,6 +157,21 @@ Suspects (confirm by repro before fixing):
 - Svelte 4 `<select bind:value>` writes the first option back when the value is `undefined` (booleans, value lists, fields hidden per-row by `includeInApi`).
 Rewrite design: change detection compares a draft against the latest server row, re-baselined on every server update to a row that has no local edits.
 
+#### Root cause (Task 2)
+
+Reproduced with Playwright on the demo app. Clean demo data: 0 green rows on arrival for every entity, live query on and off. Two arrival causes, two secondary ones:
+
+1. **Confirmed (main, deterministic): `<select bind:value>` writes back on `undefined`.** Svelte 4 compiles `if (value === void 0) add_render_callback(select_change_handler)`, so a select mounted on `undefined` writes its first option into the row (`value = row`, so it mutates the row itself), then `row[key] !== rowFrozzen[key]` -> green. Entity `contacts`, field `status` (`ValueListFieldType`): DB value `null` or an id no longer in the list -> API omits the field -> client `undefined` -> select writes `"cold"`. With `status` missing on all contacts: 25/25 rows green on arrival, live on and off. Same code path for boolean selects (server sends defaults, so only a per-row `includeInApi` hidden boolean hits it). Literal fields come back as `""`, not `undefined`: not affected.
+2. **Confirmed (race): stale `rowFrozzen` when a row object is swapped under the same key.** `rowFrozzen = { ...row }` is taken once at mount; keyed `{#each}` reuses the component when a new object with the same id arrives, and the snapshot is never refreshed. Triggers seen:
+   - Entity switch: `App.svelte` writes `$LSContext.currentLocationHash` on every route change, the still-mounted `Table` (`options` depends on `$LSContext`) re-runs `reSub` for the *previous* entity, then the props update resets `items = null` and subscribes the new one. `reSub` has no staleness guard: the previous entity's `find` resolves after the reset and its rows render under the new columns, then the new rows replace them. Ids that collide between the two entities keep their component -> green on every column. Demo: `accountManagers_ext_1` -> `accountManagers` (same entity key, twin tables) gives 10/10 green on `email2`; with ids forced to collide between `tags` and `accountManagers`, 6/6 colliding rows green. Live query off only (live query unsubscribes the stale query before it fires). Real apps with autoincrement ids hit this on many entity pairs.
+   - Live query `replace` from another session: page 2 saves a row, page 1 shows the new value and stays green (snapshot still the old value). Live query on only.
+3. **Confirmed (secondary): 2s GET cache in `App.svelte` `httpClient`.** Live query off, saving the same row twice within 2s: the post-save refetch is served from cache, the row shows the previous value and is green.
+4. **Ruled out as false-green, but a missed change:** compare uses `x.key`, binding uses `x.valFieldKey`. For toOne relations with `fields` (`contacts.company` -> `companyId`) both sides are always `undefined`, so changing the relation never turns the row green and no Save button appears. Number, date-only, color and json inputs: no write-back at mount, 0 green.
+
+Minimal repro (cause 1): in `db/contacts.json` set one contact's `status` to `null`, open `#/entity/contacts`: that row is green on arrival with `status` highlighted, without touching anything. Cause 2: live query off, open `#/entity/accountManagers_ext_1`, then click `accountManagers`: all rows green on `email2`.
+
+Regression test for the rewrite: "a row whose value-list/boolean field is `undefined` or `null`, or whose row object is replaced by a server refresh or an entity switch with colliding ids, renders with no pending change".
+
 ### Look
 
 My call, refinable during build: dense, calm data-tool aesthetic. System font stack, tabular numbers, subtle borders, per-entity hue as accent only. Light + dark (follows `prefers-color-scheme`, toggle in settings). Toasts (ui-sdk) for save/delete/errors instead of `alert()`. Command palette (ui-sdk `command`, Ctrl/Cmd+K) to jump to entities. Styling via CSS custom properties on ui-sdk's headless parts; no Tailwind (bundle).
