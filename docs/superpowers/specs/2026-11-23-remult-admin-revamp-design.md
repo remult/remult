@@ -143,7 +143,7 @@ admin: {
   - Non-function rules (boolean, role, role list): evaluated once, exact `true | false`.
   - Function rules: entity flag is `'row'`. Insert: call with `undefined` in try/catch; boolean result used, throw -> `'row'` (show, server decides).
   - Per-row for `'row'` update/delete: admin-only `__row-permissions` route (same `allow` guard as the admin) takes entity key + ids of the visible rows, loads them, returns `apiUpdateAllowed(row)` / `apiDeleteAllowed(row)` per id. Called after each page load and live-query change; skipped when no flag is `'row'`.
-- Core bug to fix (my call, own changeset): `apiInsertAllowed` checks `allowApiUpdate === undefined` instead of `allowApiInsert` (`RepositoryImplementation.ts`). Without the fix, insert-only entities hide "+".
+- Core bug to fix (my call, own CHANGELOG entry): `apiInsertAllowed` checks `allowApiUpdate === undefined` instead of `allowApiInsert` (`RepositoryImplementation.ts`). Without the fix, insert-only entities hide "+".
 - UI: `false` hides the affordance (no "+", no delete, read-only cells/drawer). Per-row results apply the same per row. Any server rejection still surfaces cleanly (toast + field errors).
 - Field `readOnly` stays as today (`apiUpdateAllowed()` per field).
 - God.ts no longer fakes `allowApiCrud: true` blindly; client entity mirrors these flags so the client repo fails fast.
