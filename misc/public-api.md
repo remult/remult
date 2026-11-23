@@ -4181,6 +4181,22 @@ export interface RemultServerOptions<RequestType> {
         customHtmlHead?: (remult: Remult) => string
         requireAuthToken?: boolean
         disableLiveQuery?: boolean
+        /** Hide entities from the admin UI or tune how they are edited. UI filtering only, not security.
+         * `false` hides the entity, `true` keeps the defaults, an object overrides them.
+         * @example
+         * admin: {
+         *   allow: Allow.authenticated,
+         *   entities: (entity, remult) => {
+         *     if (remult.isAllowed('admin')) return true
+         *     if (!['tasks', 'contacts'].includes(entity.key)) return false
+         *     return { editMode: 'drawer', lockEditMode: true }
+         *   },
+         * }
+         */
+        entities?: (
+          entity: EntityMetadata,
+          remult: Remult,
+        ) => boolean | AdminEntityConfig
       }
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
@@ -4254,6 +4270,7 @@ export interface RemultServerOptions<RequestType> {
 //[ ] SubscriptionServer from TBD is not exported
 //[ ] Allowed from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
+//[ ] AdminEntityConfig from TBD is not exported
 export interface ResponseRequiredForSSE {
   write(data: string): void
   writeHead(status: number, headers: any): void
@@ -4455,6 +4472,22 @@ export interface RemultServerOptions<RequestType> {
         customHtmlHead?: (remult: Remult) => string
         requireAuthToken?: boolean
         disableLiveQuery?: boolean
+        /** Hide entities from the admin UI or tune how they are edited. UI filtering only, not security.
+         * `false` hides the entity, `true` keeps the defaults, an object overrides them.
+         * @example
+         * admin: {
+         *   allow: Allow.authenticated,
+         *   entities: (entity, remult) => {
+         *     if (remult.isAllowed('admin')) return true
+         *     if (!['tasks', 'contacts'].includes(entity.key)) return false
+         *     return { editMode: 'drawer', lockEditMode: true }
+         *   },
+         * }
+         */
+        entities?: (
+          entity: EntityMetadata,
+          remult: Remult,
+        ) => boolean | AdminEntityConfig
       }
   /** Storage to use for backend methods that use queue */
   queueStorage?: QueueStorage
@@ -4532,6 +4565,7 @@ export interface RemultServerOptions<RequestType> {
 //[ ] LiveQueryStorage from TBD is not exported
 //[ ] Allowed from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
+//[ ] AdminEntityConfig from TBD is not exported
 //[ ] Module from TBD is not exported
 export type SpecificRoute<RequestType> = {
   get(handler: GenericRequestHandler<RequestType>): SpecificRoute<RequestType>
