@@ -82,12 +82,7 @@ export abstract class Action<inParam, outParam> implements ActionInterface {
       }
     } else return r
   }
-  doWork!: (
-    args: any[],
-    self: any,
-    baseUrl?: string,
-    http?: RestDataProviderHttpProvider,
-  ) => Promise<any>
+  doWork!: (args: any[], self: any, caller?: Remult) => Promise<any>
 
   protected abstract execute(
     info: inParam,
@@ -146,13 +141,18 @@ export class myServerAction extends Action<inArgs, result> {
 
       info.args = await prepareReceivedArgs(
         this.types(),
-        info.args,
+        await fromWire(info.args, remult, this.options, 'args'),
         remult,
         ds,
         res,
       )
       try {
-        result.data = await this.originalMethod(info.args)
+        result.data = await toWire(
+          await this.originalMethod(info.args),
+          remult,
+          this.options,
+          'result',
+        )
       } catch (err) {
         throw err
       }
@@ -180,6 +180,37 @@ export interface BackendMethodOptions<type> {
   /** EXPERIMENTAL: Determines if the user should be blocked while this `BackendMethod` is running*/
   blockUser?: boolean
   paramTypes?: any[] | (() => any[])
+}
+
+/**
+ * Sends a backend method's argument list through `args` and its return value through `result`.
+ * An `EntityError` thrown from either on the backend reaches the caller.
+ */
+export interface BackendMethodSerializer {
+  args: BackendMethodValueSerializer
+  result: BackendMethodValueSerializer
+}
+
+/**
+ * Turns a value into JSON and back. superjson and oRPC's `StandardRPCSerializer` both fit.
+ * Either method may return a promise.
+ */
+export interface BackendMethodValueSerializer {
+  serialize(
+    value: unknown,
+    context: BackendMethodSerializerContext,
+  ): unknown | Promise<unknown>
+  deserialize(
+    value: unknown,
+    context: BackendMethodSerializerContext,
+  ): unknown | Promise<unknown>
+}
+
+export interface BackendMethodSerializerContext {
+  /** The `Remult` making the call, so a serializer can rebuild entities with `remult.repo(...)`. */
+  remult: Remult
+  /** The options passed to `@BackendMethod`, so a serializer can read settings added to them. */
+  options: BackendMethodOptions<unknown>
 }
 
 interface serverMethodInArgs {
@@ -270,13 +301,33 @@ export function BackendMethod<type = unknown>(
         options,
         (args) => originalMethod.apply(undefined, args),
       )
-      serverAction.doWork = async (args, self, url, http) => {
-        args = prepareArgsToSend(getTypes(), args)
+      serverAction.doWork = async (args, self, caller) => {
+        const calling = caller ?? remult
+        const url = calling.apiClient.url
+        const http = buildRestDataProvider(calling.apiClient.httpClient)
+        const sent = await toWire(
+          prepareArgsToSend(getTypes(), args),
+          calling,
+          options,
+          'args',
+        )
         if (options.blockUser === false) {
           return await remultStatic.actionInfo.runActionWithoutBlockingUI(
-            async () => (await serverAction.run({ args }, url, http)).data,
+            async () =>
+              fromWire(
+                (await serverAction.run({ args: sent }, url, http)).data,
+                calling,
+                options,
+                'result',
+              ),
           )
-        } else return (await serverAction.run({ args }, url, http)).data
+        } else
+          return fromWire(
+            (await serverAction.run({ args: sent }, url, http)).data,
+            calling,
+            options,
+            'result',
+          )
       }
 
       result = async function (...args: any[]) {
@@ -327,11 +378,13 @@ export function BackendMethod<type = unknown>(
             options ? (options.queue ?? false) : false,
             options.allowed,
             async (d: serverMethodInArgs, req, res) => {
-              d.args = d.args.map((x) => (isCustomUndefined(x) ? undefined : x))
               let allowed = options.allowed
 
               try {
                 let remult = req
+                d.args = (await fromWire(d.args, remult, options, 'args')).map(
+                  (x: any) => (isCustomUndefined(x) ? undefined : x),
+                )
 
                 let r: serverMethodOutArgs
                 await decideTransaction(remult, options, async () => {
@@ -373,7 +426,12 @@ export function BackendMethod<type = unknown>(
                     await defs.__validateEntity()
                     try {
                       r = {
-                        result: await originalMethod.apply(y, d.args),
+                        result: await toWire(
+                          await originalMethod.apply(y, d.args),
+                          remult,
+                          options,
+                          'result',
+                        ),
                         rowInfo: {
                           data: await defs.toApiJson(),
                           isNewRow: defs.isNew(),
@@ -397,7 +455,12 @@ export function BackendMethod<type = unknown>(
                     await controllerRef.__validateEntity()
                     try {
                       r = {
-                        result: await originalMethod.apply(y, d.args),
+                        result: await toWire(
+                          await originalMethod.apply(y, d.args),
+                          remult,
+                          options,
+                          'result',
+                        ),
                         fields: await controllerRef.toApiJson(),
                       }
                     } catch (err) {
@@ -419,10 +482,17 @@ export function BackendMethod<type = unknown>(
       doWork: async function (
         args: any[],
         self: any,
-        baseUrl?: string,
-        http?: RestDataProviderHttpProvider,
+        caller?: Remult,
       ): Promise<any> {
-        args = prepareArgsToSend(getTypes(), args)
+        const calling = caller ?? remult
+        const baseUrl = calling.apiClient.url
+        const http = buildRestDataProvider(calling.apiClient.httpClient)
+        args = await toWire(
+          prepareArgsToSend(getTypes(), args),
+          calling,
+          options,
+          'args',
+        )
 
         if (remultStatic.allEntities.includes(target.constructor)) {
           let defs = getEntityRef(self) as rowHelperImplementation<any>
@@ -463,7 +533,7 @@ export function BackendMethod<type = unknown>(
             )
             await defs._updateResultsFromServerAction(r.rowInfo!)
 
-            return r.result
+            return fromWire(r.result, calling, options, 'result')
           } catch (err) {
             throw defs.catchSaveErrors(err)
           }
@@ -499,7 +569,7 @@ export function BackendMethod<type = unknown>(
               http,
             )
             await defs._updateEntityBasedOnApi(r.fields)
-            return r.result
+            return fromWire(r.result, calling, options, 'result')
           } catch (e) {
             throw defs.catchSaveErrors(e)
           }
@@ -523,6 +593,22 @@ export function BackendMethod<type = unknown>(
     } else return result
   }
 }
+Object.defineProperty(BackendMethod, 'serializer', {
+  get: () => remultStatic.backendMethodSerializer,
+  set: (value: BackendMethodSerializer | undefined) => {
+    remultStatic.backendMethodSerializer = value
+  },
+})
+export declare namespace BackendMethod {
+  /**
+   * Sends every backend method's arguments and return value through this serializer. Set it in a
+   * file that both the frontend and the backend import, or calls break.
+   * @example
+   * import superjson from 'superjson'
+   * BackendMethod.serializer = { args: superjson, result: superjson }
+   */
+  let serializer: BackendMethodSerializer | undefined
+}
 
 const customUndefined = {
   _isUndefined: true,
@@ -536,6 +622,30 @@ function registerAction(target: any, resultMethod: any) {
 
 function isCustomUndefined(x: any) {
   return x && x._isUndefined
+}
+
+async function toWire(
+  value: any,
+  remult: Remult,
+  options: BackendMethodOptions<any>,
+  part: keyof BackendMethodSerializer,
+) {
+  const serializer = remultStatic.backendMethodSerializer
+  return serializer
+    ? serializer[part].serialize(value, { remult, options })
+    : value
+}
+
+async function fromWire(
+  value: any,
+  remult: Remult,
+  options: BackendMethodOptions<any>,
+  part: keyof BackendMethodSerializer,
+) {
+  const serializer = remultStatic.backendMethodSerializer
+  return serializer
+    ? serializer[part].deserialize(value, { remult, options })
+    : value
 }
 
 export interface jobWasQueuedResult {
@@ -618,12 +728,7 @@ export async function prepareReceivedArgs(
 export const classBackendMethodsArray = Symbol.for('classBackendMethodsArray')
 
 export interface ActionInterface {
-  doWork: (
-    args: any[],
-    self: any,
-    baseUrl?: string,
-    http?: RestDataProviderHttpProvider,
-  ) => Promise<any>
+  doWork: (args: any[], self: any, caller?: Remult) => Promise<any>
   __register(
     reg: (
       url: string,
