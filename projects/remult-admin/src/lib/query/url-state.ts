@@ -1,6 +1,7 @@
 import type { FieldUIInfo } from '../../../../core/server/remult-admin'
 import {
   FILTER_OPS,
+  isValidYmd,
   operatorsFor,
   type FilterChip,
   type FilterOp,
@@ -15,9 +16,12 @@ function parseValue(
 ): { ok: true; v: unknown } | { ok: false } {
   if (f.type === 'number' && !f.values.length && !f.relationToOne) {
     const n = Number(raw)
-    return raw.trim() === '' || Number.isNaN(n)
+    return raw.trim() === '' || !Number.isFinite(n)
       ? { ok: false }
       : { ok: true, v: n }
+  }
+  if (f.type === 'date' && !f.values.length && !f.relationToOne) {
+    return isValidYmd(raw) ? { ok: true, v: raw } : { ok: false }
   }
   if (f.type === 'boolean') {
     return raw === 'true' || raw === 'false'
@@ -43,7 +47,6 @@ function splitKey(key: string, byKey: Map<string, FieldUIInfo>) {
   const suffix = key.slice(i + 1)
   const field = key.slice(0, i)
   if (suffix === 'null') return { field, op: 'null' as const }
-  // plain `field=v` is eq, `between` is only ever a gte+lte pair
   if (suffix === 'eq' || suffix === 'between' || !URL_OPS.has(suffix))
     return undefined
   return { field, op: suffix as FilterOp }
@@ -79,19 +82,22 @@ export function parseQuery(
     if (parsed.ok) filters.push({ field: f.key, op: parts.op, value: parsed.v })
   }
 
-  // a gte+lte pair on the same field is one between chip
   const merged: FilterChip[] = []
   for (const chip of filters) {
     const f = byKey.get(chip.field)!
-    if (chip.op === 'lte' && operatorsFor(f).includes('between')) {
-      const gte = merged.find((c) => c.field === chip.field && c.op === 'gte')
-      if (gte) {
-        gte.op = 'between'
-        gte.value2 = chip.value
-        continue
-      }
-    }
-    merged.push(chip)
+    const other =
+      chip.op === 'gte' ? 'lte' : chip.op === 'lte' ? 'gte' : undefined
+    const mate =
+      other && operatorsFor(f).includes('between')
+        ? merged.find((c) => c.field === chip.field && c.op === other)
+        : undefined
+    if (mate) {
+      const [v1, v2] =
+        chip.op === 'gte' ? [chip.value, mate.value] : [mate.value, chip.value]
+      mate.op = 'between'
+      mate.value = v1
+      mate.value2 = v2
+    } else merged.push(chip)
   }
 
   const q: TableQuery = { filters: merged, page: 1 }

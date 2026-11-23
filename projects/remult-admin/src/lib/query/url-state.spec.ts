@@ -64,4 +64,28 @@ describe('url state', () => {
   it('omits page 1', () => {
     expect(serializeQuery({ filters: [], page: 1 }, fields).toString()).toBe('')
   })
+  it('drops invalid dates and non-finite numbers', () => {
+    for (const p of [
+      'createdAt.gt=abc',
+      'createdAt.gte=2026-13-45',
+      'createdAt.gte=2026-02-30',
+      'age.gt=Infinity',
+    ]) {
+      expect(parseQuery(new URLSearchParams(p), fields).filters).toEqual([])
+    }
+  })
+  it('between merge does not depend on URL order', () => {
+    const q = parseQuery(
+      new URLSearchParams('createdAt.lte=2026-11-30&createdAt.gte=2026-11-01'),
+      fields,
+    )
+    expect(q.filters).toEqual([
+      {
+        field: 'createdAt',
+        op: 'between',
+        value: '2026-11-01',
+        value2: '2026-11-30',
+      },
+    ])
+  })
 })

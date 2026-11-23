@@ -4,7 +4,11 @@ import { RowDraft } from './row-draft.svelte.js'
 
 const fields = [
   field({ key: 'name' }),
-  field({ key: 'status', values: [{ id: 'open', caption: 'Open' }], allowNull: true }),
+  field({
+    key: 'status',
+    values: [{ id: 'open', caption: 'Open' }],
+    allowNull: true,
+  }),
   field({ key: 'done', type: 'boolean', allowNull: true }),
   field({ key: 'meta', type: 'json' }),
   field({ key: 'owner', valFieldKey: 'ownerId', relationToOne: {} as any }),
@@ -89,5 +93,10 @@ describe('RowDraft', () => {
     d.reset()
     expect(d.dirty).toBe(false)
     expect(d.values.name).toBe('a')
+  })
+  it('a dirty field cleared to undefined is emitted as null', () => {
+    const d = new RowDraft(server(), fields)
+    d.values.name = undefined as any
+    expect(d.changes()).toEqual({ name: null })
   })
 })

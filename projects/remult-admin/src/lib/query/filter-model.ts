@@ -64,9 +64,21 @@ function isTimestamp(f: FieldUIInfo) {
 
 const REGEX_YMD = /^(\d{4})-(\d{2})-(\d{2})$/
 
+/** Real calendar date, no rollover (2026-02-30 is invalid). */
+export function isValidYmd(ymd: unknown): boolean {
+  const m = typeof ymd === 'string' ? REGEX_YMD.exec(ymd) : null
+  if (!m) return false
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])]
+  const dt = new Date(Date.UTC(y, mo - 1, d))
+  return (
+    dt.getUTCFullYear() === y &&
+    dt.getUTCMonth() === mo - 1 &&
+    dt.getUTCDate() === d
+  )
+}
+
 function localDay(ymd: string, end: boolean): string {
-  const m = REGEX_YMD.exec(ymd)
-  if (!m) return ymd
+  const m = REGEX_YMD.exec(ymd)!
   const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])]
   return (
     end
@@ -124,6 +136,11 @@ export function chipsToWhere(
   for (const chip of chips) {
     const f = fields.find((x) => x.key === chip.field)
     if (!f) continue
+    if (
+      f.type === 'date' &&
+      ![chip.value, chip.value2].every((v) => v === undefined || isValidYmd(v))
+    )
+      continue
     const part = chipToFilter(chip, f)
     const key = Object.keys(part)[0]
     if (!(key in where)) where[key] = part[key]

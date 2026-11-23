@@ -26,7 +26,7 @@ function same(a: unknown, b: unknown): boolean {
   return a === b
 }
 
-const clone = <T>(v: T): T => (v === undefined ? v : structuredClone($state.snapshot(v) as T))
+const clone = <T>(v: T): T => (v === undefined ? v : ($state.snapshot(v) as T))
 
 export class RowDraft<T extends Record<string, any>> {
   values: T = $state() as T
@@ -59,7 +59,7 @@ export class RowDraft<T extends Record<string, any>> {
     const next: Record<string, any> = { ...clone(server) }
     for (const k of this.#keys) {
       // an edited field keeps the user's value, everything else follows the server
-      if (this.isDirty(k)) next[k] = this.values[k]
+      if (this.isDirty(k)) next[k] = $state.snapshot(this.values[k])
     }
     this.#baseline = clone(server)
     this.values = next as T
@@ -71,7 +71,8 @@ export class RowDraft<T extends Record<string, any>> {
 
   changes(): Partial<T> {
     const out: Record<string, any> = {}
-    for (const k of this.#keys) if (this.isDirty(k)) out[k] = $state.snapshot(this.values[k])
+    for (const k of this.#keys)
+      if (this.isDirty(k)) out[k] = $state.snapshot(this.values[k]) ?? null
     return out as Partial<T>
   }
 }
