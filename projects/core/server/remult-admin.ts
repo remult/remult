@@ -6,10 +6,18 @@ import { Filter } from '../src/filter/filter-interfaces.js'
 import type { ClassType } from '../classType.js'
 import type { AllowedForInstance, Remult } from '../src/context.js'
 import { getValueList } from '../src/remult3/RepositoryImplementation.js'
-import type { EntityFilter } from '../src/remult3/remult3.js'
+import type {
+  EntityFilter,
+  EntityMetadata,
+} from '../src/remult3/remult3.js'
 import { InputTypes } from '../inputTypes.js'
 
 export type AdminPermission = boolean | 'row'
+export type AdminEditMode = 'inline' | 'drawer'
+export interface AdminEntityConfig {
+  editMode?: AdminEditMode
+  lockEditMode?: boolean
+}
 
 export interface EntityUIInfo {
   superKey: string
@@ -20,6 +28,9 @@ export interface EntityUIInfo {
   relations: EntityRelationToManyInfo[]
   defaultOrderBy?: EntityFilter<any>
   color?: string
+  hidden: boolean
+  editMode: AdminEditMode
+  editModeLocked: boolean
   permissions: {
     insert: AdminPermission
     update: AdminPermission
@@ -57,6 +68,10 @@ export interface FieldRelationToOneInfo extends RelationFields {
 export interface AdminEntitiesOptions {
   entities: ClassType<any>[]
   remult: Remult
+  entityConfig?: (
+    entity: EntityMetadata,
+    remult: Remult,
+  ) => boolean | AdminEntityConfig
 }
 export interface AdminDisplayOptions {
   rootPath: string
@@ -160,13 +175,11 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
     }
 
     if (metadata.apiReadAllowed) {
-      let superKey = metadata.key
-      let caption = metadata.label
       const nbOfEntities = entities.filter((e) => e.key === metadata.key).length
-      if (nbOfEntities > 0) {
-        superKey = metadata.key + '_ext_' + nbOfEntities
-        caption = metadata.label + '*'.repeat(nbOfEntities)
-      }
+      const superKey = adminSuperKey(metadata.key, nbOfEntities)
+      const caption = metadata.label + '*'.repeat(nbOfEntities)
+      const config = options.entityConfig?.(metadata, options.remult) ?? true
+      const custom = typeof config === 'object' ? config : undefined
 
       entities.push({
         superKey,
@@ -176,6 +189,9 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
         fields,
         relations,
         defaultOrderBy: metadata.options.defaultOrderBy ?? { id: 'asc' },
+        hidden: config === false,
+        editMode: custom?.editMode ?? 'inline',
+        editModeLocked: custom?.lockEditMode ?? false,
         permissions: {
           insert: resolveAdminPermission(
             options.remult,
@@ -200,6 +216,11 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
   return entities
 }
 
+/** First occurrence of a key is the key itself, later ones get `_ext_n`. */
+function adminSuperKey(key: string, nbOfPrevious: number) {
+  return nbOfPrevious > 0 ? key + '_ext_' + nbOfPrevious : key
+}
+
 export type RelationsToOneValues = Record<string, Map<any, any>>
 
 const hasFn = (rule: AllowedForInstance<any>): boolean =>
@@ -217,6 +238,7 @@ export function resolveAdminPermission(
   try {
     return remult.isAllowedForInstance(undefined, rule) === true
   } catch {
+    // Rule dereferences the row, so it can only be decided per row
     return 'row'
   }
 }

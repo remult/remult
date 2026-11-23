@@ -67,6 +67,8 @@ describe('remult-admin', () => {
           "defaultOrderBy": {
             "id": "asc",
           },
+          "editMode": "inline",
+          "editModeLocked": false,
           "fields": [
             {
               "allowNull": false,
@@ -231,6 +233,7 @@ describe('remult-admin', () => {
               "values": undefined,
             },
           ],
+          "hidden": false,
           "ids": {
             "id": true,
           },
@@ -248,6 +251,8 @@ describe('remult-admin', () => {
           "defaultOrderBy": {
             "id": "asc",
           },
+          "editMode": "inline",
+          "editModeLocked": false,
           "fields": [
             {
               "allowNull": false,
@@ -401,6 +406,7 @@ describe('remult-admin', () => {
               "values": undefined,
             },
           ],
+          "hidden": false,
           "ids": {
             "id": true,
           },
@@ -418,6 +424,8 @@ describe('remult-admin', () => {
           "defaultOrderBy": {
             "id": "asc",
           },
+          "editMode": "inline",
+          "editModeLocked": false,
           "fields": [
             {
               "allowNull": false,
@@ -453,6 +461,7 @@ describe('remult-admin', () => {
               "values": undefined,
             },
           ],
+          "hidden": false,
           "ids": {
             "id": true,
           },
@@ -570,7 +579,7 @@ describe('remult-admin', () => {
       expect(buildEntityInfo({ entities: [E], remult: other })).toHaveLength(0)
     })
 
-    it('allowApiCrud role, read open', () => {
+    it('allowApiInsert role, read open', () => {
       @Entity('p2b', { allowApiRead: true, allowApiInsert: 'admin' })
       class E {
         @Fields.id()
@@ -605,6 +614,30 @@ describe('remult-admin', () => {
         update: 'row',
         delete: false,
       })
+    })
+
+    it('allowApiInsert function returning true is insert true', () => {
+      @Entity('p3c', { allowApiRead: true, allowApiInsert: () => true })
+      class E {
+        @Fields.id()
+        id!: string
+      }
+      expect(perms(E).insert).toBe(true)
+    })
+
+    it('array rule containing a function is row level', () => {
+      @Entity('p3d', {
+        allowApiRead: true,
+        allowApiUpdate: ['nobody', () => false],
+        allowApiDelete: ['nobody', () => false],
+      })
+      class E {
+        @Fields.id()
+        id!: string
+      }
+      const p = perms(E)
+      expect(p.update).toBe('row')
+      expect(p.delete).toBe('row')
     })
 
     it('row level rules', () => {
@@ -653,6 +686,55 @@ describe('remult-admin', () => {
         update: 'row',
         delete: 'row',
       })
+    })
+  })
+
+  describe('entities hook', () => {
+    @Entity('eh_users', { allowApiCrud: true })
+    class U {
+      @Fields.id()
+      id!: string
+    }
+    @Entity('eh_tasks', { allowApiCrud: true })
+    class T {
+      @Fields.id()
+      id!: string
+    }
+    const info = (entityConfig?: any, remult = new Remult()) =>
+      buildEntityInfo({ entities: [U, T], remult, entityConfig })
+
+    it('defaults without hook', () => {
+      for (const e of info()) {
+        expect(e).toMatchObject({
+          hidden: false,
+          editMode: 'inline',
+          editModeLocked: false,
+        })
+      }
+    })
+
+    it('false hides but keeps the entity', () => {
+      const res = info((e: any) => e.key !== 'eh_users')
+      expect(res.map((e) => e.key)).toEqual(['eh_users', 'eh_tasks'])
+      expect(res[0].hidden).toBe(true)
+      expect(res[1].hidden).toBe(false)
+    })
+
+    it('object overrides', () => {
+      const res = info(() => ({ editMode: 'drawer', lockEditMode: true }))
+      expect(res[0]).toMatchObject({
+        hidden: false,
+        editMode: 'drawer',
+        editModeLocked: true,
+      })
+    })
+
+    it('receives the request remult', () => {
+      const remult = new Remult()
+      remult.user = { id: 'u', name: 'u', roles: ['admin'] }
+      const hook = (_e: any, r: Remult) => r.isAllowed('admin')
+      expect(info(hook, remult).every((e) => !e.hidden)).toBe(true)
+      expect(info(hook).every((e) => e.hidden)).toBe(true)
     })
   })
 
