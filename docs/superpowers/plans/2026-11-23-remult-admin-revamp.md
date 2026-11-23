@@ -10,6 +10,27 @@
 
 **Spec:** `docs/superpowers/specs/2026-11-23-remult-admin-revamp-design.md` (read it first; this plan argues from it).
 
+## Spike result
+
+**GO**, with a size watch: no blocker, but the spike alone is already over today's size.
+
+- Versions (all as targeted, no fallback needed): @sveltejs/kit 3.4.0, svelte 5.59.1, vite 8.3.8 (rolldown), @sveltejs/adapter-static 4.0.1, @sveltejs/vite-plugin-svelte 7.3.2, @xyflow/svelte 2.0.3, @ui-sdk/svelte + @ui-sdk/core 0.1.0-beta.16, codemirror 6.0.2 + @codemirror/lang-json 6.0.2, scaffolded with `sv` 1.7.0 (`--template minimal --types ts --no-add-ons`).
+- Config: Kit 3 has no `svelte.config.js` and no `kit:` wrapper. Options go straight into the plugin in `vite.config.ts`:
+  ```ts
+  sveltekit({
+    compilerOptions: { runes: ({ filename }) => (filename.split(REGEX_SEP).includes('node_modules') ? undefined : true) },
+    adapter: adapter(), // adapter-static; hash router already emits build/index.html
+    router: { type: 'hash' },
+    output: { bundleStrategy: 'inline' },
+  })
+  ```
+- `ssr = false` is NOT allowed: any page option (`ssr`, `csr`, `prerender`...) in a `+layout.ts` fails the build with `router_hash_page_options`. No `+layout.ts` needed.
+- `adapter({ fallback: 'index.html' })` works but warns `adapter_fallback_overwrites`; plain `adapter()` gives the same `build/index.html`.
+- Output: one `build/index.html`, 1 inline `<script>`, 2 inline `<style>`, 0 `<script src`, both `<!--PLACE_HERE_HEAD-->` / `<!--PLACE_HERE_BODY-->` kept (put them in `src/app.html` outside `%sveltekit.head%` / `%sveltekit.body%`). `build/_app/version.json` is ignorable.
+- Hash query: `page.url.searchParams` only sees a real `?` before `#`; a query inside the hash (`#/entity/tasks?status.in=a,b`) is ignored by Kit for matching and NOT parsed. Read it with `new URLSearchParams(page.url.hash.split('?')[1] ?? '')`; write with `goto('#/entity/tasks?' + q, { replaceState: true, keepFocus: true, noScroll: true })`. Verified in Playwright (chromium) at `/api/admin` and `/api/admin/` via express: hash nav, reload, back/forward, deep link, replaceState adds no history entry, plain `#/entity/x` links drop the query, no console errors. Kit decodes the hash on load (`%2C` -> `,`), harmless.
+- Size, spike (Drawer + DatePicker range + SvelteFlow + CodeMirror json `basicSetup`): `index.html` 936,462 bytes (gzip 310,394); as `get-remult-admin-html.ts` 950,175 vs 812,243 today (+17%). With CodeMirror `minimalSetup` instead: 833,649 / 845,926. Top contributors (pre-minify): @ui-sdk/core 373k (popups/sheet/position/calendar, tree-shaken, just big), @codemirror/view 346k, svelte 226k, @xyflow/svelte + system 258k, @sveltejs/kit 97k, codemirror autocomplete/search/lint ~113k.
+- For Task 7: use `minimalSetup` + only needed CM extensions; real app code will push toward 1MB, so measure on every task and stop at ~1MB. The `sv` scaffold uses `#lib` (package.json `imports`) as the lib alias.
+
 ## Global Constraints
 
 - One PR for everything (core + admin + docs + CHANGELOG).
