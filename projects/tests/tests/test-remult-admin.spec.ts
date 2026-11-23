@@ -235,6 +235,11 @@ describe('remult-admin', () => {
             "id": true,
           },
           "key": "users",
+          "permissions": {
+            "delete": false,
+            "insert": false,
+            "update": false,
+          },
           "relations": [],
           "superKey": "users",
         },
@@ -400,6 +405,11 @@ describe('remult-admin', () => {
             "id": true,
           },
           "key": "users",
+          "permissions": {
+            "delete": false,
+            "insert": false,
+            "update": false,
+          },
           "relations": [],
           "superKey": "users_ext_1",
         },
@@ -447,6 +457,11 @@ describe('remult-admin', () => {
             "id": true,
           },
           "key": "accounts",
+          "permissions": {
+            "delete": false,
+            "insert": false,
+            "update": false,
+          },
           "relations": [
             {
               "caption": "Users",
@@ -521,6 +536,124 @@ describe('remult-admin', () => {
     const remult = new Remult()
     expect(remult.repo(A).metadata.apiInsertAllowed()).toBe(true)
     expect(remult.repo(B).metadata.apiInsertAllowed()).toBe(false)
+  })
+
+  describe('permissions', () => {
+    const perms = (entity: any, remult = new Remult()) =>
+      buildEntityInfo({ entities: [entity], remult })[0].permissions
+
+    it('allowApiCrud true', () => {
+      @Entity('p1', { allowApiCrud: true })
+      class E {
+        @Fields.id()
+        id!: string
+      }
+      expect(perms(E)).toEqual({ insert: true, update: true, delete: true })
+    })
+
+    it('allowApiCrud role', () => {
+      @Entity('p2', { allowApiCrud: 'admin' })
+      class E {
+        @Fields.id()
+        id!: string
+      }
+      const remult = new Remult()
+      // read requires 'admin' too, so entity is hidden without the role
+      remult.user = { id: 'u', name: 'u', roles: ['admin'] }
+      expect(perms(E, remult)).toEqual({
+        insert: true,
+        update: true,
+        delete: true,
+      })
+      const other = new Remult()
+      other.user = { id: 'u', name: 'u', roles: [] }
+      expect(buildEntityInfo({ entities: [E], remult: other })).toHaveLength(0)
+    })
+
+    it('allowApiCrud role, read open', () => {
+      @Entity('p2b', { allowApiRead: true, allowApiInsert: 'admin' })
+      class E {
+        @Fields.id()
+        id!: string
+      }
+      expect(perms(E)).toEqual({
+        insert: false,
+        update: false,
+        delete: false,
+      })
+    })
+
+    it('allowApiCrud function', () => {
+      @Entity('p3', { allowApiCrud: () => false })
+      class E {
+        @Fields.id()
+        id!: string
+      }
+      expect(buildEntityInfo({ entities: [E], remult: new Remult() })).toEqual(
+        [],
+      )
+    })
+
+    it('allowApiCrud function with read open', () => {
+      @Entity('p3b', { allowApiRead: true, allowApiUpdate: () => false })
+      class E {
+        @Fields.id()
+        id!: string
+      }
+      expect(perms(E)).toEqual({
+        insert: false,
+        update: 'row',
+        delete: false,
+      })
+    })
+
+    it('row level rules', () => {
+      const remult = new Remult()
+      @Entity('p4', {
+        allowApiRead: true,
+        allowApiUpdate: (t: any) => t.owner === remult.user?.id,
+        allowApiInsert: (t: any) => t.x > 1,
+      })
+      class E {
+        @Fields.id()
+        id!: string
+        @Fields.string()
+        owner = ''
+        @Fields.number()
+        x = 0
+      }
+      expect(perms(E, remult)).toEqual({
+        insert: 'row',
+        update: 'row',
+        delete: false,
+      })
+    })
+
+    it('no rules', () => {
+      @Entity('p5', { allowApiRead: true })
+      class E {
+        @Fields.id()
+        id!: string
+      }
+      expect(perms(E)).toEqual({
+        insert: false,
+        update: false,
+        delete: false,
+      })
+    })
+
+    it('allowApiCrud function is row level for update and delete', () => {
+      @Entity('p6', { allowApiRead: true, allowApiCrud: () => false })
+      class E {
+        @Fields.id()
+        id!: string
+      }
+      expect(perms(E)).toEqual({
+        insert: false,
+        update: 'row',
+        delete: 'row',
+      })
+    })
   })
 
   it('should correctly set valueType for json fields', () => {

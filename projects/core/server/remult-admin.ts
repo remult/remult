@@ -4,10 +4,12 @@ import {
 } from '../src/remult3/relationInfoMember.js'
 import { Filter } from '../src/filter/filter-interfaces.js'
 import type { ClassType } from '../classType.js'
-import type { Remult } from '../src/context.js'
+import type { AllowedForInstance, Remult } from '../src/context.js'
 import { getValueList } from '../src/remult3/RepositoryImplementation.js'
 import type { EntityFilter } from '../src/remult3/remult3.js'
 import { InputTypes } from '../inputTypes.js'
+
+export type AdminPermission = boolean | 'row'
 
 export interface EntityUIInfo {
   superKey: string
@@ -18,6 +20,11 @@ export interface EntityUIInfo {
   relations: EntityRelationToManyInfo[]
   defaultOrderBy?: EntityFilter<any>
   color?: string
+  permissions: {
+    insert: AdminPermission
+    update: AdminPermission
+    delete: AdminPermission
+  }
 }
 export interface EntityRelationToManyInfo extends RelationFields {
   key: string
@@ -169,6 +176,23 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
         fields,
         relations,
         defaultOrderBy: metadata.options.defaultOrderBy ?? { id: 'asc' },
+        permissions: {
+          insert: resolveAdminPermission(
+            options.remult,
+            metadata.options.allowApiInsert,
+            'insert',
+          ),
+          update: resolveAdminPermission(
+            options.remult,
+            metadata.options.allowApiUpdate,
+            'update',
+          ),
+          delete: resolveAdminPermission(
+            options.remult,
+            metadata.options.allowApiDelete,
+            'delete',
+          ),
+        },
       })
     }
   }
@@ -177,3 +201,22 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
 }
 
 export type RelationsToOneValues = Record<string, Map<any, any>>
+
+const hasFn = (rule: AllowedForInstance<any>): boolean =>
+  Array.isArray(rule) ? rule.some(hasFn) : typeof rule === 'function'
+
+export function resolveAdminPermission(
+  remult: Remult,
+  rule: AllowedForInstance<any> | undefined,
+  kind: 'insert' | 'update' | 'delete',
+): AdminPermission {
+  if (rule === undefined) return false
+  if (!hasFn(rule)) return remult.isAllowedForInstance(undefined, rule) === true
+  // Only insert can be probed without a row; a rule that needs one throws
+  if (kind !== 'insert') return 'row'
+  try {
+    return remult.isAllowedForInstance(undefined, rule) === true
+  } catch {
+    return 'row'
+  }
+}
