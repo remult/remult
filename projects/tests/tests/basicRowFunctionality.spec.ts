@@ -742,6 +742,21 @@ describe('data api', () => {
     var x = await c.find({ where: { id: 1 } })
     expect(x.length).toBe(0)
   })
+  it('metadata.apiInsertAllowed() follows allowApiInsert', () => {
+    @Entity('ins1', { allowApiInsert: true })
+    class A {
+      @Fields.id()
+      id!: string
+    }
+    @Entity('ins2', { allowApiInsert: false, allowApiUpdate: true })
+    class B {
+      @Fields.id()
+      id!: string
+    }
+    const remult = new Remult()
+    expect(remult.repo(A).metadata.apiInsertAllowed()).toBe(true)
+    expect(remult.repo(B).metadata.apiInsertAllowed()).toBe(false)
+  })
   it('check api defaults', async () => {
     const c = class {
       id = 0

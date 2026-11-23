@@ -24,6 +24,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- `repo.metadata.apiInsertAllowed()` follows `allowApiInsert` (it checked `allowApiUpdate`).
 - `paginator()` and `for await` reach rows with a NULL sort key. On Postgres or DuckDB, set `NullSort` ([#1079](https://github.com/remult/remult/pull/1079) by @jycouet).
 - Knex creates a number with a custom `fieldTypeInDb` `not null default 0`, like the other providers ([#1078](https://github.com/remult/remult/pull/1078) by @jycouet).
 - Mongo writes NULL as `null`, so it sorts lowest. Rows with the old `{ $null: '$null' }` marker still match NULL filters ([#1077](https://github.com/remult/remult/pull/1077) by @jycouet).
