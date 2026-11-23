@@ -148,7 +148,7 @@ admin: {
 
 ### Green-rows bug
 
-Shipped first as a separate small PR on the current Svelte 4 admin, then carried into the rewrite.
+Fixed in the rewrite (same PR). Repro on the current admin first, so the root cause is known and covered by a test.
 
 Suspects (confirm by repro before fixing):
 - `EditableRow.svelte`: `rowFrozzen` snapshot taken once at mount; live query replaces `row` with fresh data but snapshot never updates -> diff -> green.
@@ -165,14 +165,11 @@ My call, refinable during build: dense, calm data-tool aesthetic. System font st
 - Script beats: entity nav + Cmd+K, inline edit flow, drawer edit + new item, filter chips with date between, copy link -> opens same view, ERD, limited user sees fewer entities, drawer-locked mode, read-only / no delete on rows they don't own, dark mode.
 - Recorded with Playwright, 16:9, ~60-90s. Polished cut is a separate task (short-editing tooling) once the admin ships.
 
-## Delivery (my call)
+## Delivery
 
-Published 3.5.0-next.2 bakes in the old admin, so the rewrite reaches users through a later release.
+One PR: admin rewrite + core server changes (permission flags in `buildEntityInfo`, `__row-permissions` route, `entities` hook, `apiInsertAllowed` fix, public API report, docs, changeset). Green-rows bug is solved by the rewrite's change detection (no separate fix on the old admin). Merged only at full parity + spike passed.
 
-1. PR: green-rows fix on the current admin (ships in next prerelease).
-2. PR: core server changes: permission flags in `buildEntityInfo`, `__row-permissions` route, `entities` hook, `apiInsertAllowed` fix, public API report, docs, changeset. Works with the old admin (extra fields ignored).
-3. PR: admin rewrite, on its own branch, merged only at full parity + spike passed.
-4. Video: demo app runs core built from the rewrite branch (local pack / link), "3.5" line. Final re-record against the release that ships it.
+Published 3.5.0-next.2 bakes in the old admin, so the rewrite reaches users through a later release. Video: demo app runs core built from this branch (local pack / link), "3.5" line. Final re-record against the release that ships it.
 
 ## Left to the builder
 
