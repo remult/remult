@@ -1,13 +1,22 @@
-import { defineConfig } from 'vite'
-import { viteSingleFile } from 'vite-plugin-singlefile'
-import { svelte } from '@sveltejs/vite-plugin-svelte'
+import adapter from '@sveltejs/adapter-static'
+import { sveltekit } from '@sveltejs/kit/vite'
 import { visualizer } from 'rollup-plugin-visualizer'
+import { defineConfig } from 'vitest/config'
 
-// https://vitejs.dev/config/
+const REGEX_SEP = /[/\\]/
+
 export default defineConfig({
   plugins: [
-    svelte(),
-    viteSingleFile(),
+    sveltekit({
+      compilerOptions: {
+        runes: ({ filename }) =>
+          filename.split(REGEX_SEP).includes('node_modules') ? undefined : true,
+      },
+      adapter: adapter(),
+      // base path is only known at runtime (rootPath), so routing lives in the hash
+      router: { type: 'hash' },
+      output: { bundleStrategy: 'inline' },
+    }),
     visualizer({
       filename: 'stats.json',
       template: 'raw-data',
@@ -30,11 +39,9 @@ export default defineConfig({
       },
     },
   ],
-
-  define: {
-    __DEV__: process.env.DEV === 'true',
-  },
-  build: {
-    outDir: 'tmp',
+  test: {
+    // a DOM environment makes vitest compile/resolve svelte for the client, where $effect runs
+    environment: 'happy-dom',
+    include: ['src/**/*.spec.ts'],
   },
 })
