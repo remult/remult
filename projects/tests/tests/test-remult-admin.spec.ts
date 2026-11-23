@@ -815,6 +815,53 @@ describe('remult-admin', () => {
       expect((await run('rp3_ext_1'))!['a'].update).toBe(false)
     })
 
+    it('numeric id column', async () => {
+      const remult = mk()
+      @Entity('rp5', { allowApiRead: true, allowApiUpdate: true })
+      class E {
+        @Fields.autoIncrement()
+        id = 0
+        @Fields.string()
+        name = ''
+      }
+      await remult.repo(E).insert([{ name: 'x' }, { name: 'y' }])
+      expect(
+        await getRowPermissions({
+          remult,
+          entities: [E],
+          superKey: 'rp5',
+          ids: ['1', '2'],
+        }),
+      ).toEqual({
+        '1': { update: true, delete: false },
+        '2': { update: true, delete: false },
+      })
+    })
+
+    it('compound id', async () => {
+      const remult = mk()
+      @Entity<E>('rp6', {
+        allowApiRead: true,
+        allowApiUpdate: true,
+        id: { a: true, b: true },
+      })
+      class E {
+        @Fields.number()
+        a = 0
+        @Fields.number()
+        b = 0
+      }
+      await remult.repo(E).insert([{ a: 1, b: 2 }])
+      expect(
+        await getRowPermissions({
+          remult,
+          entities: [E],
+          superKey: 'rp6',
+          ids: ['1,2'],
+        }),
+      ).toEqual({ '1,2': { update: true, delete: false } })
+    })
+
     it('unknown superKey returns undefined', async () => {
       expect(
         await getRowPermissions({

@@ -30,6 +30,7 @@ export {
   SpecificRoute,
   queuedJobInfo,
 } from './remult-api-server.js'
+export type { AdminEditMode, AdminEntityConfig } from './remult-admin.js'
 export { Module } from './module.js'
 export type { ModuleInput } from './module.js'
 export type { ResponseRequiredForSSE } from '../SseSubscriptionServer.js'

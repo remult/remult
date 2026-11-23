@@ -250,8 +250,15 @@ export async function getRowPermissions(o: {
 
   // repo.find does not apply apiPrefilter, rows the API would not return must not be reported
   const prefilter = repo.metadata.options.apiPrefilter
+  const idField = repo.metadata.idMetadata.field
+  // Ids arrive as strings, number/date id columns need their real value; compound ids are parsed by getIdFilter
+  const ids = o.ids.map((id) =>
+    repo.metadata.idMetadata.fields.length === 1
+      ? idField.valueConverter.fromJson(id)
+      : id,
+  )
   const where: EntityFilter<any>[] = [
-    repo.metadata.idMetadata.getIdFilter(...o.ids),
+    repo.metadata.idMetadata.getIdFilter(...ids),
   ]
   if (prefilter) {
     where.push(typeof prefilter === 'function' ? await prefilter() : prefilter)
@@ -259,8 +266,8 @@ export async function getRowPermissions(o: {
   for (const row of await repo.find({ where: { $and: where } })) {
     const ref = repo.getEntityRef(row)
     result[String(repo.metadata.idMetadata.getId(row))] = {
-      update: ref.apiUpdateAllowed,
-      delete: ref.apiDeleteAllowed,
+      update: ref.apiUpdateAllowed === true,
+      delete: ref.apiDeleteAllowed === true,
     }
   }
   return result

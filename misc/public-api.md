@@ -3982,6 +3982,11 @@ export declare function initAsyncHooks(): void
 ## ./server/index.js
 
 ```ts
+export type AdminEditMode = "inline" | "drawer"
+export interface AdminEntityConfig {
+  editMode?: AdminEditMode
+  lockEditMode?: boolean
+}
 export declare function createRemultServer<RequestType>(
   options: RemultServerOptions<RequestType>,
   serverCoreOptions?: ServerCoreOptions<RequestType>,
@@ -4270,7 +4275,6 @@ export interface RemultServerOptions<RequestType> {
 //[ ] SubscriptionServer from TBD is not exported
 //[ ] Allowed from TBD is not exported
 //[ ] EntityMetadata from TBD is not exported
-//[ ] AdminEntityConfig from TBD is not exported
 export interface ResponseRequiredForSSE {
   write(data: string): void
   writeHead(status: number, headers: any): void
