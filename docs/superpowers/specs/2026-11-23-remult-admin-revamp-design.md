@@ -164,8 +164,8 @@ My call, refinable during build: dense, calm data-tool aesthetic. System font st
 ### Video
 
 - Demo app: a small remult 3.5.0-next.2 app (reuse the CRM entities from `src/server`), with two users (admin, limited ops) to show permission-aware UI.
-- Script beats: entity nav + Cmd+K, inline edit flow, drawer edit + new item, filter chips with date between, copy link -> opens same view, ERD, limited user sees fewer entities, drawer-locked mode, read-only / no delete on rows they don't own, dark mode.
-- Recorded with Playwright, 16:9, ~60-90s. Polished cut is a separate task (short-editing tooling) once the admin ships.
+- ~30s, 16:9, Playwright. Key message: **available in prod, following your access.** Same admin, two users, each sees and does only what they're allowed.
+- Beats: admin user: Cmd+K -> entity, inline edit, drawer, date-between filter, copy link (~15s) -> limited user: fewer entities, drawer-locked, no delete on rows they don't own (~12s) -> closing card "Remult Admin - in prod, following your access" (~3s).
 
 ## Delivery
 

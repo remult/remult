@@ -339,6 +339,6 @@ Demo server prerequisite (do in Step 1): `src/server/api.ts` gets two users swit
 **Files:** `tmp/demo/` (gitignored) or the existing demo server; video under `tmp/reports/remult-admin-revamp/`.
 
 - [ ] **Step 1:** Demo runs core built from this branch (`npm run build` root, then link/pack `dist/remult` into the demo) with the two users from Task 10.
-- [ ] **Step 2:** Playwright script `tests/e2e/showcase.spec.ts` (skipped in CI) with `video: 'on'`, 16:9 1920x1080, following spec "Video" beats in order; slowMo so actions read.
+- [ ] **Step 2:** Playwright script `tests/e2e/showcase.spec.ts` (skipped in CI) with `video: 'on'`, 16:9 1920x1080, ~30s, following spec "Video" beats in order (key message: available in prod, following your access); slowMo so actions read; closing card as a final HTML page.
 - [ ] **Step 3:** Review frames; re-run until clean. Output path reported.
 - [ ] **Step 4:** Open the one PR from this branch (body via `jyc-pr` skill, minimal), watch checks until green.
