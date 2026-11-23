@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 - `flags.clientErrorsAsEntityError` (`remult/internals`): client calls reject with an `EntityError` instead of a plain object, so `instanceof Error` works and the error has a stack. Off by default, and on by default in the next major ([#1064](https://github.com/remult/remult/pull/1064) by @AndrewSouthpaw).
 - `NullSort` (`remult/internals`): where NULL sorts, for the whole app ([docs](https://remult.dev/docs/field-types#where-null-sorts), [#1079](https://github.com/remult/remult/pull/1079) by @jycouet).
 - `NotAField<T>`: type a getter as `NotAField<Money>` to keep it out of `where`, `orderBy`, `insert`, `fields` and the other field types ([docs](https://remult.dev/docs/field-types#getters-that-are-not-fields), [#1056](https://github.com/remult/remult/pull/1056) by @AndrewSouthpaw).
+- `allowDefaultRemult_FOR_TESTS_ONLY()` (`remult/async-hooks`): in tests, `remult` outside a request falls back to the default instance instead of throwing ([#1084](https://github.com/remult/remult/pull/1084) by @AndrewSouthpaw).
 
 ### Changed
 

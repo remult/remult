@@ -11,6 +11,7 @@ let x = {
   defaultRemultFactory: undefined as unknown as () => Remult,
   remultFactory: undefined as unknown as () => Remult,
   defaultRemult: undefined as unknown as Remult,
+  allowDefaultRemult: false,
   asyncContext: undefined as unknown as RemultAsyncLocalStorage,
   columnsOfType: new Map<any, columnInfo[]>(),
   allEntities: [] as ClassType<any>[],
