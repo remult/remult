@@ -5,6 +5,7 @@ import type {
   EntityDataProviderGroupByOptions,
 } from '../data-interfaces.js'
 import type { Filter } from '../filter/filter-interfaces.js'
+import type { RelationFieldInfo } from './relationInfoMember.js'
 import type {
   EntityFilter,
   EntityOrderBy,
@@ -23,6 +24,21 @@ export interface RepositoryInternal<entityType> {
     jsonItems: any[],
     loadOptions: LoadOptions<entityType>,
   ): Promise<entityType[]>
+  /** Builds the find options that load the related rows for one row's
+   * relation field — the same options the relation loader uses. Used by
+   * live-query relation tracking (see #712) to build the aggregated where
+   * for the follow-up live query of a relation. */
+  _findOptionsBasedOnRelation(
+    rel: RelationFieldInfo,
+    field: FieldMetadata,
+    moreFindOptions: FindOptions<any> | undefined,
+    row: entityType,
+    otherRepo: Repository<unknown>,
+  ): {
+    findOptions: FindOptions<any>
+    returnNull: boolean
+    returnUndefined: boolean
+  }
   _buildEntityDataProviderFindOptions(
     options: FindOptions<entityType>,
   ): Promise<EntityDataProviderFindOptions>
