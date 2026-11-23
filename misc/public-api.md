@@ -109,14 +109,16 @@ export declare class ArrayEntityDataProvider implements EntityDataProvider {
   insert(data: any[]): Promise<any[]>
 }
 //[ ] CustomArrayFilter from TBD is not exported
-export declare function BackendMethod<type = unknown>(
-  options: BackendMethodOptions<type>,
-): (
-  target: any,
-  context: ClassMethodDecoratorContextStub<type> | string,
-  descriptor?: any,
-) => any
-//[ ] ClassMethodDecoratorContextStub from TBD is not exported
+export declare namespace BackendMethod {
+  /**
+   * Sends every backend method's arguments and return value through this serializer. Set it in a
+   * file that both the frontend and the backend import, or calls break.
+   * @example
+   * import superjson from 'superjson'
+   * BackendMethod.serializer = { args: superjson, result: superjson }
+   */
+  let serializer: BackendMethodSerializer | undefined
+}
 export interface BackendMethodOptions<type> {
   /**Determines when this `BackendMethod` can execute, see: [Allowed](https://remult.dev/docs/allowed.html)  */
   allowed: AllowedForInstance<type>
@@ -137,6 +139,26 @@ export interface BackendMethodOptions<type> {
   /** EXPERIMENTAL: Determines if the user should be blocked while this `BackendMethod` is running*/
   blockUser?: boolean
   paramTypes?: any[] | (() => any[])
+}
+export interface BackendMethodSerializer {
+  args: BackendMethodValueSerializer
+  result: BackendMethodValueSerializer
+}
+export interface BackendMethodSerializerContext {
+  /** The `Remult` making the call, so a serializer can rebuild entities with `remult.repo(...)`. */
+  remult: Remult
+  /** The options passed to `@BackendMethod`, so a serializer can read settings added to them. */
+  options: BackendMethodOptions<unknown>
+}
+export interface BackendMethodValueSerializer {
+  serialize(
+    value: unknown,
+    context: BackendMethodSerializerContext,
+  ): unknown | Promise<unknown>
+  deserialize(
+    value: unknown,
+    context: BackendMethodSerializerContext,
+  ): unknown | Promise<unknown>
 }
 export const CaptionTransformer: {
   transformLabel: (
@@ -174,6 +196,7 @@ export interface ClassFieldDecoratorContextStub<entityType, valueType> {
 export type ClassType<T> = {
   new (...args: any[]): T
 }
+export interface ComparableTypes {}
 export type ComparisonValueFilter<valueType> = ValueFilter<valueType> & {
   /**
    * Represents a 'GREATER THAN' filter condition where the value must be greater than the specified value.
@@ -536,7 +559,12 @@ export declare class EntityError<entityType = unknown>
 }
 export declare type EntityFilter<entityType> = {
   [Properties in keyof Partial<MembersOnly<entityType>>]?:
-    | (Partial<entityType>[Properties] extends number | Date | undefined | null
+    | (Partial<entityType>[Properties] extends
+        | number
+        | Date
+        | ComparableTypes[keyof ComparableTypes]
+        | undefined
+        | null
         ? ComparisonValueFilter<Partial<entityType>[Properties]>
         : Partial<entityType>[Properties] extends string | undefined
           ?
@@ -2691,6 +2719,27 @@ export interface Repository<entityType> {
     id: idType<entityType>,
     options?: FindFirstOptionsBase<entityType>,
   ): Promise<entityType | undefined | null>
+  /** returns the item that matches the id, and throws an `EntityError` with `httpStatusCode` 404 if no item matches
+   * @example
+   * const task = await taskRepo.findIdOrThrow(id)
+   */
+  findIdOrThrow(
+    id: idType<entityType>,
+    options?: FindFirstOptionsBase<entityType>,
+  ): Promise<entityType>
+  /** returns the first item that matches the `where` condition, and throws an `EntityError` with `httpStatusCode` 404 if no item matches
+   * @example
+   * await taskRepo.findFirstOrThrow({ completed: false })
+   */
+  findFirstOrThrow(
+    where?: EntityFilter<entityType>,
+    options?: FindFirstOptions<entityType>,
+  ): Promise<entityType>
+  /** returns the first item that matches the `where` condition, and throws an `EntityError` with `httpStatusCode` 404 if no item matches
+   * @example
+   * await taskRepo.findOneOrThrow({ where: { completed: false } })
+   */
+  findOneOrThrow(options?: FindFirstOptions<entityType>): Promise<entityType>
   /**
      * Performs an aggregation on the repository's entity type based on the specified options.
      *
@@ -4090,6 +4139,22 @@ export interface RemultServerOptions<RequestType> {
   rootPath?: string
   /** The default limit to use for find requests that did not specify a limit */
   defaultGetLimit?: number
+  /** The status for an `Error` thrown without an `httpStatusCode`, like a failed
+   * query or a `TypeError`. Thrown strings, plain objects and `EntityError`s stay 400.
+   *
+   * The client retries reads on a 500 (`flags.error500RetryCount`), so keep that retry
+   * for dev only, where it covers a proxy while the backend restarts.
+   *
+   * @default 400
+   * @example
+   * // server
+   * remultApi({ defaultErrorStatus: 500 })
+   *
+   * // client
+   * import { flags } from 'remult/internals'
+   * flags.error500RetryCount = isDev ? 4 : 0 // isDev: your framework's flag, e.g. import.meta.env.DEV
+   */
+  defaultErrorStatus?: number
   /** When set to true (default) it'll console log each api endpoint that is created */
   logApiEndPoints?: boolean
   /** A subscription server to use for live query and message channels */
@@ -4348,6 +4413,22 @@ export interface RemultServerOptions<RequestType> {
   rootPath?: string
   /** The default limit to use for find requests that did not specify a limit */
   defaultGetLimit?: number
+  /** The status for an `Error` thrown without an `httpStatusCode`, like a failed
+   * query or a `TypeError`. Thrown strings, plain objects and `EntityError`s stay 400.
+   *
+   * The client retries reads on a 500 (`flags.error500RetryCount`), so keep that retry
+   * for dev only, where it covers a proxy while the backend restarts.
+   *
+   * @default 400
+   * @example
+   * // server
+   * remultApi({ defaultErrorStatus: 500 })
+   *
+   * // client
+   * import { flags } from 'remult/internals'
+   * flags.error500RetryCount = isDev ? 4 : 0 // isDev: your framework's flag, e.g. import.meta.env.DEV
+   */
+  defaultErrorStatus?: number
   /** When set to true (default) it'll console log each api endpoint that is created */
   logApiEndPoints?: boolean
   /** A subscription server to use for live query and message channels */
@@ -5159,6 +5240,8 @@ export const flags: {
   liveQueryKeepAliveMs: number
   /** Version poll while SSE is stale */
   liveQueryPollWhenStaleMs: number
+  /** Client calls reject with an `EntityError` instead of a plain object. On by default in the next major. */
+  clientErrorsAsEntityError: boolean
 }
 export declare function getControllerRef<fieldsContainerType>(
   container: fieldsContainerType,
