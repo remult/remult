@@ -24,8 +24,11 @@ export function getHeader(
   }
 
   const customHeaders = (LSCtx.settings.customHeaders ?? '').split('\n').reduce((acc, line) => {
-    const [key, value] = line.split(':').map(part => part.trim())
-    return { ...acc, [key]: value }
+    // Only the first colon separates the name from the value
+    const i = line.indexOf(':')
+    const key = line.slice(0, i).trim()
+    if (i === -1 || !key) return acc
+    return { ...acc, [key]: line.slice(i + 1).trim() }
   }, {})
 
   return {
