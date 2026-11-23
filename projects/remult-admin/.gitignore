@@ -30,3 +30,5 @@ stats.json
 stats.html
 .svelte-kit
 build
+test-results
+playwright-report

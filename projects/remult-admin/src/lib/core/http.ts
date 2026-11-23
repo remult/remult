@@ -55,6 +55,7 @@ function entityKeyOf(url: string, apiUrl?: string) {
 export function createHttpClient(o: {
   getHeaders: () => Record<string, string>
   onForbidden: (entityKey: string) => void
+  onUnauthorized?: () => void
   dedupeMs?: number
   apiUrl?: string
 }): typeof fetch {
@@ -66,7 +67,9 @@ export function createHttpClient(o: {
       ...init,
       headers: { ...toRecord(init?.headers), ...o.getHeaders() },
     })
-    if (res.status === 401 || res.status === 403)
+    // a 401 is about the token, not the entity: only fall back to Forbidden without a handler
+    if (res.status === 401 && o.onUnauthorized) o.onUnauthorized()
+    else if (res.status === 401 || res.status === 403)
       o.onForbidden(entityKeyOf(urlOf(input), o.apiUrl))
     return res
   }

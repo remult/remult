@@ -137,6 +137,16 @@ describe('createHttpClient', () => {
     expect(onForbidden).toHaveBeenCalledWith('tasks')
   })
 
+  it('401 goes to onUnauthorized when given, not onForbidden', async () => {
+    fetchMock.mockImplementation(async () => new Response('', { status: 401 }))
+    const onForbidden = vi.fn()
+    const onUnauthorized = vi.fn()
+    const http = createHttpClient({ getHeaders: () => ({}), onForbidden, onUnauthorized })
+    await http('/api/tasks')
+    expect(onUnauthorized).toHaveBeenCalledOnce()
+    expect(onForbidden).not.toHaveBeenCalled()
+  })
+
   it('does not keep failed responses in the cache', async () => {
     fetchMock.mockImplementationOnce(async () => new Response('', { status: 403 }))
     const http = client()

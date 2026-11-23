@@ -1,3 +1,4 @@
+import type { UserInfo } from '../../../core/index.js'
 import { remultApi } from '../../../core/remult-express'
 import { AccountManager } from './shared/AccountManagers/AccountManager.entity.js'
 import { AccountManagerExtra } from './shared/AccountManagers/AccountManagerExtra.entity.js'
@@ -10,6 +11,19 @@ import { Deal, DealContact } from './shared/Deals/Deal.entity.js'
 import { NoNo } from './shared/NoNo.js'
 import { Story } from './shared/Story.js'
 import { Task } from './shared/Task.js'
+
+// demo users: the bearer token is the user
+export const users: Record<string, UserInfo> = {
+  admin: { id: 'admin', name: 'Admin', roles: ['admin'] },
+  ops: { id: 'ops', name: 'Ops' },
+}
+
+export function bearerOf(req: { headers?: Record<string, unknown> }) {
+  const h = req.headers?.['authorization']
+  return typeof h === 'string' && h.startsWith('Bearer ') ? h.slice(7) : ''
+}
+
+const hiddenForOps: unknown[] = [NoNo, Story, AccountManagerExtra]
 
 export const entities = [
   Company,
@@ -37,11 +51,9 @@ export const api = remultApi({
   //   you should use http://localhost:5173/api3/admin.
   // rootPath: '/api3',
   entities,
-  getUser: async () => {
-    return {
-      id: '1',
-      name: 'JYC',
-    }
+  getUser: async (req) => {
+    const token = bearerOf(req)
+    return Object.hasOwn(users, token) ? users[token] : undefined
   },
   admin: {
     allow: true,
@@ -49,6 +61,12 @@ export const api = remultApi({
       })</title>
 <link href="https://remult.dev/favicon.png" rel="icon" type="image/png">`,
     requireAuthToken: true,
+    entities: (entity, remult) => {
+      if (remult.isAllowed('admin')) return true
+      if (hiddenForOps.includes(entity.entityType)) return false
+      if (entity.key === 'contacts') return { editMode: 'drawer', lockEditMode: true }
+      return true
+    },
     // disableLiveQuery: true,
   },
 })

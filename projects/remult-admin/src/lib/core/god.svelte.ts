@@ -70,15 +70,8 @@ function headers(init?: HeadersInit) {
   return buildHeaders({ ...session, ...settings, readLocalStorage }, init)
 }
 
-function setupApi() {
-  remult.apiClient.url = apiUrl()
-  remult.apiClient.httpClient = createHttpClient({
-    apiUrl: apiUrl(),
-    getHeaders: () => headers(),
-    onForbidden: (key) => {
-      if (!session.forbiddenEntities.includes(key)) session.forbiddenEntities.push(key)
-    },
-  })
+export function hasToken() {
+  return !!headers().authorization
 }
 
 class God {
@@ -86,22 +79,50 @@ class God {
   tables: TableInfo[] = $state.raw([])
   visibleTables: TableInfo[] = $derived(this.tables.filter((t) => t.hidden === false))
   loaded = $state(false)
+  loading = $state(false)
   error: string | undefined = $state()
+  /** Set by any 401; the shell asks for a token. */
+  unauthorized = $state(false)
+  userName: string | undefined = $state()
+
+  #setupApi() {
+    remult.apiClient.url = apiUrl()
+    remult.apiClient.httpClient = createHttpClient({
+      apiUrl: apiUrl(),
+      getHeaders: () => headers(),
+      onForbidden: (key) => {
+        if (!session.forbiddenEntities.includes(key)) session.forbiddenEntities.push(key)
+      },
+      onUnauthorized: () => (this.unauthorized = true),
+    })
+  }
 
   async reload() {
     this.error = undefined
+    this.unauthorized = false
+    this.loading = true
+    // forbidden is per user: the new token gets a fresh verdict
+    session.forbiddenEntities = []
     try {
-      setupApi()
-      await remult.initUser()
+      this.#setupApi()
+      const user = await remult.initUser()
+      this.userName = user?.name
       const res = await fetch(`${apiUrl()}/admin/__entities-metadata`, {
         headers: headers(),
       })
+      if (res.status === 401) this.unauthorized = true
       if (!res.ok) throw new Error(`${res.status} ${res.statusText}`.trim())
       this.tables = buildTables(await res.json())
     } catch (err) {
-      this.error = err instanceof Error ? err.message : String(err)
+      this.tables = []
+      this.error = this.unauthorized
+        ? 'The server rejected this token.'
+        : err instanceof Error
+          ? err.message
+          : String(err)
     } finally {
       this.loaded = true
+      this.loading = false
     }
   }
 

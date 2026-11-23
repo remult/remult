@@ -15,6 +15,7 @@ export type Settings = {
   editMode: Record<string, AdminEditMode>
   schemaPositions: Record<string, { x: number; y: number }>
   lastLocation: string
+  navCollapsed: boolean
 }
 
 export type Session = { bearerAuth: string; forbiddenEntities: string[] }
@@ -32,6 +33,7 @@ const settingsDefaults = (): Settings => ({
   editMode: {},
   schemaPositions: {},
   lastLocation: '/',
+  navCollapsed: false,
 })
 
 const sessionDefaults = (): Session => ({ bearerAuth: '', forbiddenEntities: [] })

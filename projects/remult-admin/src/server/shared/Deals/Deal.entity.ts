@@ -4,7 +4,9 @@ import {
   Entity,
   Fields,
   Relations,
+  type Remult,
   Validators,
+  getEntityRef,
   remult,
   repo,
 } from '../../../../../core/index.js'
@@ -12,9 +14,20 @@ import { AccountManager } from '../AccountManagers/AccountManager.entity'
 import { Company } from '../Companies/Company.entity'
 import { Contact } from '../Contacts/Contact.entity'
 
-@Entity('deals', {
+// demo: user 'ops' owns the deals of account manager Raphaelle Medhurst
+export const OPS_ACCOUNT_MANAGER_ID = 'db2751a2-5a29-4820-84b6-8d4a378bf463'
+
+const ownsDeal = (deal: Deal | undefined, r: Remult | undefined) =>
+  !!r?.isAllowed('admin') ||
+  (r?.user?.id === 'ops' &&
+    !!deal &&
+    getEntityRef(deal).fields.accountManager.getId() === OPS_ACCOUNT_MANAGER_ID)
+
+@Entity<Deal>('deals', {
   // allowApiCrud: Allow.authenticated,
   allowApiCrud: true,
+  allowApiUpdate: ownsDeal,
+  allowApiDelete: ownsDeal,
 })
 export class Deal {
   @Fields.id()

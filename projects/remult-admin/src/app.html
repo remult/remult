@@ -4,6 +4,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!--PLACE_HERE_HEAD-->
+    <script>
+      // apply the saved theme before first paint (key mirrors settings.svelte.ts)
+      try {
+        var t = JSON.parse(localStorage.getItem('RemultAdmin_2026_11') || '{}').theme
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t
+      } catch (e) {}
+    </script>
     %sveltekit.head%
   </head>
   <body>
