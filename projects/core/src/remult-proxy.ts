@@ -244,11 +244,11 @@ export class RemultProxy implements Remult {
           .remultFactory()
           .repo(...args)
           .insert(args2, args3),
-      liveQuery: (...args2) =>
+      liveQuery: (options?: any) =>
         self
           .remultFactory()
           .repo(...args)
-          .liveQuery(...args2),
+          .liveQuery(options),
       get metadata() {
         return remultStatic.remultFactory().repo(...args).metadata
       },

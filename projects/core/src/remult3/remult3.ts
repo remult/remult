@@ -526,6 +526,9 @@ export interface Repository<entityType> {
    *
    * @see {@link LiveQuery}
    */
+  liveQuery<const include extends MembersToInclude<entityType>>(
+    options: FindOptions<entityType> & { include: include },
+  ): LiveQuery<IncludeResult<entityType, include>>
   liveQuery(options?: FindOptions<entityType>): LiveQuery<entityType>
   /** returns the first item that matchers the `where` condition
    * @example
@@ -797,7 +800,7 @@ export interface Repository<entityType> {
     >
   }
     ? QueryResult<
-        entityType,
+        QueryEntity<entityType, Options>,
         GroupByResult<
           entityType,
           never,
@@ -808,7 +811,7 @@ export interface Repository<entityType> {
           NonNullable<Options['aggregate']['distinctCount']>
         >
       >
-    : QueryResult<entityType>
+    : QueryResult<QueryEntity<entityType, Options>>
 
   /** Returns a count of the items matching the criteria.
    * @see [EntityFilter](http://remult.dev/docs/entityFilter.html)
@@ -1628,8 +1631,8 @@ type LoadedKeys<entityType, include> = {
 /**
  * Type-level settings, turned on through module augmentation.
  *
- * `typedInclude: true` makes `find`, `findFirst`, `findOne`, `findId` and their `OrThrow` versions return {@link Loaded}
- * when called with a literal `include`. It's off by default because a narrowed result is no
+ * `typedInclude: true` makes `find`, `findFirst`, `findOne`, `findId`, their `OrThrow` versions,
+ * `query` and `liveQuery` return {@link Loaded} when called with a literal `include`. It's off by default because a narrowed result is no
  * longer assignable from a plain entity, e.g. reassigning the variable from `insert`.
  * @example
  * // remult-types.d.ts
@@ -1646,6 +1649,12 @@ type IncludeResult<entityType, include> = RemultTypeConfig extends {
   typedInclude: true
 }
   ? Loaded<entityType, include>
+  : entityType
+
+type QueryEntity<entityType, options> = options extends {
+  include: infer include
+}
+  ? IncludeResult<entityType, include>
   : entityType
 
 /**

@@ -8,6 +8,8 @@ import {
   type Loaded,
   type MembersToInclude,
   type ClassType,
+  type LiveQuery,
+  type QueryResult,
 } from '../../core'
 
 @Entity('company')
@@ -122,6 +124,39 @@ describe('test include types', () => {
       .findOneOrThrow({ where: { id: 1 }, include: { tasks: true } })
     expectTypeOf(one.tasks).toEqualTypeOf<Task[]>()
     expect(one.tasks.map((t) => t.title)).toEqual(['task1'])
+  })
+  it('query results type an included relation as loaded', async () => {
+    const query = remult.repo(Task).query({ include: { category: true } })
+    const page = await query.getPage()
+    expectTypeOf(page[0].category).toEqualTypeOf<Category>()
+    expect(page[0].category.name).toBe('cat1')
+    const paginator = await query.paginator()
+    expectTypeOf(paginator.items[0].category).toEqualTypeOf<Category>()
+    for await (const task of query) {
+      expectTypeOf(task.category).toEqualTypeOf<Category>()
+      expect(task.category.name).toBe('cat1')
+    }
+  })
+  it('query with aggregate types an included relation as loaded', async () => {
+    const paginator = await remult
+      .repo(Task)
+      .query({ include: { category: true }, aggregate: { sum: ['id'] } })
+      .paginator()
+    expectTypeOf(paginator.items[0].category).toEqualTypeOf<Category>()
+    expectTypeOf(paginator.aggregates.id.sum).toEqualTypeOf<number>()
+    expect(paginator.aggregates.id.sum).toBe(101)
+  })
+  it('query without include keeps the entity type', async () => {
+    expectTypeOf(remult.repo(Task).query()).toEqualTypeOf<QueryResult<Task>>()
+    expectTypeOf(remult.repo(Task).query({ pageSize: 10 })).toEqualTypeOf<
+      QueryResult<Task>
+    >()
+  })
+  it('liveQuery types an included relation as loaded', () => {
+    expectTypeOf(
+      remult.repo(Task).liveQuery({ include: { category: true } }),
+    ).toEqualTypeOf<LiveQuery<Loaded<Task, { readonly category: true }>>>()
+    expectTypeOf(remult.repo(Task).liveQuery()).toEqualTypeOf<LiveQuery<Task>>()
   })
   it('nullable relation stays nullable', async () => {
     const categories = await remult
