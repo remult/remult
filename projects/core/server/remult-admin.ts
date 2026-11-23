@@ -6,10 +6,7 @@ import { Filter } from '../src/filter/filter-interfaces.js'
 import type { ClassType } from '../classType.js'
 import type { AllowedForInstance, Remult } from '../src/context.js'
 import { getValueList } from '../src/remult3/RepositoryImplementation.js'
-import type {
-  EntityFilter,
-  EntityMetadata,
-} from '../src/remult3/remult3.js'
+import type { EntityFilter, EntityMetadata } from '../src/remult3/remult3.js'
 import { InputTypes } from '../inputTypes.js'
 
 export type AdminPermission = boolean | 'row'
@@ -219,6 +216,54 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
 /** First occurrence of a key is the key itself, later ones get `_ext_n`. */
 function adminSuperKey(key: string, nbOfPrevious: number) {
   return nbOfPrevious > 0 ? key + '_ext_' + nbOfPrevious : key
+}
+
+function findAdminEntity(
+  entities: ClassType<any>[],
+  remult: Remult,
+  superKey: string,
+) {
+  const seen: Record<string, number> = {}
+  for (const entity of entities) {
+    const metadata = remult.repo(entity).metadata
+    if (!metadata.apiReadAllowed) continue
+    const nb = seen[metadata.key] ?? 0
+    seen[metadata.key] = nb + 1
+    if (adminSuperKey(metadata.key, nb) === superKey) return entity
+  }
+}
+
+export const ADMIN_ROW_PERMISSIONS_MAX_IDS = 200
+
+/** Undefined when superKey is unknown. Ids not found (or hidden by apiPrefilter) are omitted. */
+export async function getRowPermissions(o: {
+  remult: Remult
+  entities: ClassType<any>[]
+  superKey: string
+  ids: string[]
+}): Promise<Record<string, { update: boolean; delete: boolean }> | undefined> {
+  const entity = findAdminEntity(o.entities, o.remult, o.superKey)
+  if (!entity) return undefined
+  const repo = o.remult.repo(entity)
+  const result: Record<string, { update: boolean; delete: boolean }> = {}
+  if (o.ids.length === 0) return result
+
+  // repo.find does not apply apiPrefilter, rows the API would not return must not be reported
+  const prefilter = repo.metadata.options.apiPrefilter
+  const where: EntityFilter<any>[] = [
+    repo.metadata.idMetadata.getIdFilter(...o.ids),
+  ]
+  if (prefilter) {
+    where.push(typeof prefilter === 'function' ? await prefilter() : prefilter)
+  }
+  for (const row of await repo.find({ where: { $and: where } })) {
+    const ref = repo.getEntityRef(row)
+    result[String(repo.metadata.idMetadata.getId(row))] = {
+      update: ref.apiUpdateAllowed,
+      delete: ref.apiDeleteAllowed,
+    }
+  }
+  return result
 }
 
 export type RelationsToOneValues = Record<string, Map<any, any>>

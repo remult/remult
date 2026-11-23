@@ -40,6 +40,27 @@ export const api = remultApi({
 })
 ```
 
+### Choosing which entities to show
+
+`entities` is called for each entity with its metadata and the request's `remult`. Return `false` to hide it, `true` for the defaults, or an object to override them (`editMode`: `'inline'` by default or `'drawer'`, `lockEditMode`: hide the edit mode switch).
+
+```ts
+admin: {
+  allow: Allow.authenticated,
+  entities: (entity, remult) => {
+    if (remult.isAllowed('admin')) return true
+    if (!['tasks', 'contacts'].includes(entity.key)) return false
+    return { editMode: 'drawer', lockEditMode: true }
+  },
+}
+```
+
+This only filters the UI, it is not security. Hidden entities stay reachable through the API and as relations of visible entities. Use `allowApi*` to restrict access.
+
+### Permission-aware UI
+
+The admin UI follows your `allowApiInsert`, `allowApiUpdate` and `allowApiDelete` rules: actions the current user can't perform are hidden. Rules that depend on the row (a function) are checked per row, for the rows on screen, with the same `apiPrefilter` as the API.
+
 ## Accessing and Using the Admin UI
 
 Navigate to `/api/admin` to access the Admin UI. Here, you can perform CRUD operations on your entities, view their relationships via the Diagram entry, and ensure secure management with the same validations and authorizations as your application.

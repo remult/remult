@@ -1,8 +1,12 @@
-import { buildEntityInfo } from '../../../projects/core/server/remult-admin'
+import {
+  buildEntityInfo,
+  getRowPermissions,
+} from '../../../projects/core/server/remult-admin'
 import remultAdminHtml from '../../../projects/core/server/remult-admin-html'
 import { describe, expect, it } from 'vitest'
 import { Entity, Fields, Relations, repo } from '../../core'
 import { Remult } from '../../core/src/context'
+import { InMemoryDataProvider } from '../../core/src/data-providers/in-memory-database'
 import { InputTypes } from '../../core/inputTypes.js'
 import { createId } from '@paralleldrive/cuid2'
 
@@ -628,8 +632,8 @@ describe('remult-admin', () => {
     it('array rule containing a function is row level', () => {
       @Entity('p3d', {
         allowApiRead: true,
-        allowApiUpdate: ['nobody', () => false],
-        allowApiDelete: ['nobody', () => false],
+        allowApiUpdate: ['nobody', () => false] as any,
+        allowApiDelete: ['nobody', () => false] as any,
       })
       class E {
         @Fields.id()
@@ -735,6 +739,120 @@ describe('remult-admin', () => {
       const hook = (_e: any, r: Remult) => r.isAllowed('admin')
       expect(info(hook, remult).every((e) => !e.hidden)).toBe(true)
       expect(info(hook).every((e) => e.hidden)).toBe(true)
+    })
+  })
+
+  describe('getRowPermissions', () => {
+    const mk = () => new Remult(new InMemoryDataProvider())
+
+    it('row level update rule', async () => {
+      const remult = mk()
+      remult.user = { id: 'u1', name: 'u1' }
+      @Entity('rp1', {
+        allowApiRead: true,
+        allowApiDelete: true,
+        allowApiUpdate: (t: any) => t.owner === remult.user?.id,
+      })
+      class E {
+        @Fields.string()
+        id = ''
+        @Fields.string()
+        owner = ''
+      }
+      await remult.repo(E).insert([
+        { id: 'a', owner: 'u1' },
+        { id: 'b', owner: 'u2' },
+      ])
+      expect(
+        await getRowPermissions({
+          remult,
+          entities: [E],
+          superKey: 'rp1',
+          ids: ['a', 'b', 'nope'],
+        }),
+      ).toEqual({
+        a: { update: true, delete: true },
+        b: { update: false, delete: true },
+      })
+    })
+
+    it('role rule without role', async () => {
+      const remult = mk()
+      @Entity('rp2', { allowApiRead: true, allowApiCrud: 'admin' })
+      class E {
+        @Fields.string()
+        id = ''
+      }
+      await remult.repo(E).insert([{ id: 'a' }])
+      expect(
+        await getRowPermissions({
+          remult,
+          entities: [E],
+          superKey: 'rp2',
+          ids: ['a'],
+        }),
+      ).toEqual({ a: { update: false, delete: false } })
+    })
+
+    it('_ext_ superKey resolves to the extended class', async () => {
+      const remult = mk()
+      @Entity('rp3', { allowApiRead: true, allowApiUpdate: true })
+      class Base {
+        @Fields.string()
+        id = ''
+      }
+      @Entity('rp3', { allowApiRead: true, allowApiUpdate: false })
+      class Ext extends Base {}
+      await remult.repo(Base).insert([{ id: 'a' }])
+      const run = (superKey: string) =>
+        getRowPermissions({
+          remult,
+          entities: [Base, Ext],
+          superKey,
+          ids: ['a'],
+        })
+      expect((await run('rp3'))!['a'].update).toBe(true)
+      expect((await run('rp3_ext_1'))!['a'].update).toBe(false)
+    })
+
+    it('unknown superKey returns undefined', async () => {
+      expect(
+        await getRowPermissions({
+          remult: mk(),
+          entities: [],
+          superKey: 'x',
+          ids: [],
+        }),
+      ).toBeUndefined()
+    })
+
+    it('apiPrefilter hides rows', async () => {
+      const remult = mk()
+      @Entity('rp4', {
+        allowApiRead: true,
+        allowApiCrud: true,
+        apiPrefilter: { owner: 'u1' } as any,
+      })
+      class E {
+        @Fields.string()
+        id = ''
+        @Fields.string()
+        owner = ''
+      }
+      await remult.repo(E).insert([
+        { id: 'a', owner: 'u1' },
+        { id: 'b', owner: 'u2' },
+      ])
+      expect(
+        Object.keys(
+          (await getRowPermissions({
+            remult,
+            entities: [E],
+            superKey: 'rp4',
+            ids: ['a', 'b'],
+          }))!,
+        ),
+      ).toEqual(['a'])
     })
   })
 
