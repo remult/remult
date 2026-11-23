@@ -55,6 +55,8 @@ Picked 1. Starts with a spike (below) to retire its risks.
 - Relations: to-many relations expand under a row as tabbed nested tables, scoped by parent relation.
 - Settings: rows per page, confirm delete, diagram layout, caption/key display, bearer token (session storage), custom headers, live query toggle, reset settings. `requireAuthToken` prompts for a token before loading.
 - Extended entities (same key registered twice, `_ext_` superKey).
+- Http: bearer token from session or from a named localStorage key (`keyForBearerAuth`), custom headers, 2s GET dedupe cache, 403 -> entity marked Forbidden.
+- Last visited location restored on `#/`.
 
 ## Design
 
@@ -167,7 +169,7 @@ My call, refinable during build: dense, calm data-tool aesthetic. System font st
 
 ## Delivery
 
-One PR: admin rewrite + core server changes (permission flags in `buildEntityInfo`, `__row-permissions` route, `entities` hook, `apiInsertAllowed` fix, public API report, docs, changeset). Green-rows bug is solved by the rewrite's change detection (no separate fix on the old admin). Merged only at full parity + spike passed.
+One PR: admin rewrite + core server changes (permission flags in `buildEntityInfo`, `__row-permissions` route, `entities` hook, `apiInsertAllowed` fix, public API report, docs, CHANGELOG entry). Green-rows bug is solved by the rewrite's change detection (no separate fix on the old admin). Merged only at full parity + spike passed.
 
 Published 3.5.0-next.2 bakes in the old admin, so the rewrite reaches users through a later release. Video: demo app runs core built from this branch (local pack / link), "3.5" line. Final re-record against the release that ships it.
 
