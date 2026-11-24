@@ -40,7 +40,7 @@ test('ops: no roles, deals prefiltered and editable per row', async ({
     .filter({
       has: page.getByRole('link', { name: 'Deals', exact: true }),
     })
-  await expect(home.getByText('Prefiltered')).toBeVisible()
+  await expect(home.getByRole('cell').last()).toHaveText('Yes')
 
   const p = await openPanel(page, 'Ops')
   await expect(p.getByTestId('access-name')).toHaveText('Ops')
@@ -49,10 +49,10 @@ test('ops: no roles, deals prefiltered and editable per row', async ({
   const deals = p.getByRole('row').filter({
     has: page.getByRole('link', { name: 'Deals', exact: true }),
   })
-  await expect(deals.getByText('Prefiltered')).toBeVisible()
   const cells = deals.getByRole('cell')
   await expect(cells.nth(0)).toHaveText('Yes')
   await expect(cells.nth(2)).toHaveText('Per row')
+  await expect(cells.nth(4)).toHaveText('Yes')
   if (SHOT) await p.screenshot({ path: SHOT })
 
   await deals.getByRole('link', { name: 'Deals', exact: true }).click()

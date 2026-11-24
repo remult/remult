@@ -1,13 +1,14 @@
 <script lang="ts">
   import { accessLabel, type AccessState } from '../core/access.js'
 
-  let { state }: { state: AccessState } = $props()
+  let { state, hint }: { state: AccessState; hint?: string } = $props()
 </script>
 
 <span
   class="mark"
   data-state={state}
-  title={state === 'row' ? 'The server decides for each row' : undefined}
+  title={hint ??
+    (state === 'row' ? 'The server decides for each row' : undefined)}
   >{accessLabel(state)}</span
 >
 

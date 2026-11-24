@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { accessState } from '#lib/core/access.js'
+  import { accessState, PREFILTER_HINT } from '#lib/core/access.js'
   import { god, type TableInfo } from '#lib/core/god.svelte.js'
   import { session, settings } from '#lib/core/settings.svelte.js'
   import AccessMark from '#lib/shell/AccessMark.svelte'
   import Icon from '#lib/shell/Icon.svelte'
-  import PrefilterBadge from '#lib/shell/PrefilterBadge.svelte'
   import { entityHref, modKey, shell } from '#lib/shell/shell.svelte.js'
 
   const label = (t: TableInfo) => (settings.displayCaption ? t.caption : t.key)
@@ -41,6 +40,7 @@
           <th scope="col">Create</th>
           <th scope="col">Edit</th>
           <th scope="col">Delete</th>
+          <th scope="col" title={PREFILTER_HINT}>Prefilter</th>
         </tr>
       </thead>
       <tbody>
@@ -60,9 +60,6 @@
                   <Icon name="lock" size={12} /> Forbidden
                 </span>
               {/if}
-              {#if t.apiPrefilter}
-                <span class="prefilter"><PrefilterBadge /></span>
-              {/if}
               {#if t.editModeLocked}
                 <span class="badge"
                   >{t.editMode === 'drawer'
@@ -77,6 +74,12 @@
             <td><AccessMark state={accessState(t.permissions.insert)} /></td>
             <td><AccessMark state={accessState(t.permissions.update)} /></td>
             <td><AccessMark state={accessState(t.permissions.delete)} /></td>
+            <td
+              ><AccessMark
+                state={t.apiPrefilter ? 'yes' : 'no'}
+                hint={t.apiPrefilter ? PREFILTER_HINT : undefined}
+              /></td
+            >
           </tr>
         {/each}
       </tbody>
@@ -171,9 +174,6 @@
     font-size: var(--text-xs);
     line-height: 18px;
     vertical-align: 1px;
-  }
-  .prefilter {
-    margin-inline-start: 8px;
   }
   .empty {
     display: flex;

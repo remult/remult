@@ -7,13 +7,17 @@
     DialogDescription,
     DialogTitle,
   } from '@ui-sdk/svelte/dialog'
-  import { accessRow, userExtras, userRoles } from '../core/access.js'
+  import {
+    accessRow,
+    PREFILTER_HINT,
+    userExtras,
+    userRoles,
+  } from '../core/access.js'
   import { god } from '../core/god.svelte.js'
   import { session, settings } from '../core/settings.svelte.js'
   import AccessMark from './AccessMark.svelte'
   import Avatar from './Avatar.svelte'
   import Icon from './Icon.svelte'
-  import PrefilterBadge from './PrefilterBadge.svelte'
   import { entityHref, shell } from './shell.svelte.js'
 
   const user = $derived(god.user)
@@ -117,6 +121,7 @@
                 {#each columns as [key, text] (key)}
                   <th scope="col">{text}</th>
                 {/each}
+                <th scope="col" title={PREFILTER_HINT}>Prefilter</th>
               </tr>
             </thead>
             <tbody>
@@ -131,12 +136,17 @@
                         <span class="hue-dot"></span>
                         <span class="caption">{label(r)}</span>
                       </a>
-                      {#if r.prefilter}<PrefilterBadge />{/if}
                     </span>
                   </th>
                   {#each columns as [key] (key)}
                     <td><AccessMark state={r[key]} /></td>
                   {/each}
+                  <td
+                    ><AccessMark
+                      state={r.prefilter ? 'yes' : 'no'}
+                      hint={r.prefilter ? PREFILTER_HINT : undefined}
+                    /></td
+                  >
                 </tr>
               {/each}
             </tbody>
@@ -146,9 +156,7 @@
               <AccessMark state="row" />: the server decides for each row.
             </li>
             {#if rows.some((r) => r.prefilter)}
-              <li>
-                <PrefilterBadge />: the server narrows the rows you can see.
-              </li>
+              <li>Prefilter: the server narrows the rows you can see.</li>
             {/if}
           </ul>
         {:else}
