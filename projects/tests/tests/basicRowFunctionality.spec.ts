@@ -2278,6 +2278,61 @@ describe('test http retry for writes', () => {
     expect(isReadPost('/api/tasks?__action=getSomethingElse')).toBe(false)
   })
 })
+
+describe('test http retry through an external http provider', () => {
+  const axios500 = {
+    isAxiosError: true,
+    message: 'Request failed with status code 500',
+    response: { status: 500, data: { message: 'boom' } },
+  }
+  const angular500 = {
+    status: 500,
+    message: 'Http failure response for /api/tasks: 500 Internal Server Error',
+    error: { message: 'boom' },
+  }
+  const failOnceWith = (error: any, calls: string[]) => {
+    const send = async (url: string): Promise<any> => {
+      calls.push(url)
+      if (calls.length == 1) throw error
+      return 7
+    }
+    return new HttpProviderBridgeToRestDataProviderHttpProvider({
+      get: send,
+      post: send,
+      put: send,
+      delete: send,
+    })
+  }
+
+  it.each([
+    ['axios', axios500],
+    ['Angular HttpClient', angular500],
+  ])('resends a GET after a 500 from %s', async (_name, error) => {
+    const calls: string[] = []
+    expect(await failOnceWith(error, calls).get('/api/tasks')).toBe(7)
+    expect(calls.length).toBe(2)
+  })
+  it.each([
+    ['axios', axios500],
+    ['Angular HttpClient', angular500],
+  ])('resends a find sent as a POST after a 500 from %s', async (_name, error) => {
+    const calls: string[] = []
+    expect(
+      await failOnceWith(error, calls).post('/api/tasks?__action=get', {}),
+    ).toBe(7)
+    expect(calls.length).toBe(2)
+  })
+  it.each([
+    ['axios', axios500],
+    ['Angular HttpClient', angular500],
+  ])('does not resend an insert after a 500 from %s', async (_name, error) => {
+    const calls: string[] = []
+    await expect(
+      failOnceWith(error, calls).post('/api/tasks', {}),
+    ).rejects.toMatchObject({ httpStatusCode: 500 })
+    expect(calls).toEqual(['/api/tasks'])
+  })
+})
 describe('test toPromise', () => {
   it('handles rxjs style', async () => {
     const r = await toPromise({

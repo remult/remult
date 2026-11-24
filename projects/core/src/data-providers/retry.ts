@@ -7,8 +7,11 @@ const isUnreachable = (err: any) =>
 	err.message?.includes('http proxy error')
 
 // The server may have run the request before failing, so only reads are safe to send again.
+// The fetch client puts the status on `status`. The axios and Angular bridge puts it on `httpStatusCode`.
 const isServerFailure = (err: any) =>
-	err.message?.startsWith('Gateway Timeout') || err.status == 500
+	err.message?.startsWith('Gateway Timeout') ||
+	err.status == 500 ||
+	err.httpStatusCode == 500
 
 export async function retry<T>(
 	what: () => Promise<T>,
