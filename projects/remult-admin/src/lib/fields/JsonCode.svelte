@@ -49,6 +49,8 @@
   }
 
   function onkeydown(e: KeyboardEvent) {
+    // Enter or Tab may confirm an IME composition: leave those to the browser
+    if (e.isComposing) return
     const mod = e.ctrlKey || e.metaKey || e.altKey
     if (e.key === 'Tab' && !e.shiftKey && !mod) {
       e.preventDefault()

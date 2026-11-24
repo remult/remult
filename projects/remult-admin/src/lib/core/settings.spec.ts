@@ -101,4 +101,14 @@ describe('settings', () => {
     expect(settings.numberOfRows).toBe(25)
     expect(settings.editMode).toEqual({})
   })
+
+  it('arrangeSchema switches the layout and drops moved positions', async () => {
+    vi.stubGlobal('localStorage', memoryStorage())
+    vi.stubGlobal('sessionStorage', memoryStorage())
+    const { settings, arrangeSchema } = await load()
+    settings.schemaPositions = { tasks: { x: 1, y: 2 } }
+    arrangeSchema('line')
+    expect(settings.diagramLayout).toBe('line')
+    expect(settings.schemaPositions).toEqual({})
+  })
 })

@@ -92,6 +92,20 @@ describe('layoutEntities', () => {
     expect(x('grid-dfs')).toEqual(['a', 'b', 'd', 'c'])
   })
 
+  it('two relations to the same entity place it once', () => {
+    // a -> b twice, a -> c, d: b must not take two grid slots
+    const twice = [
+      table('a', { fields: [field({ key: 'id' }), toOne('b1', 'b'), toOne('b2', 'b'), toOne('c', 'c')] }),
+      table('b'),
+      table('c'),
+      table('d'),
+    ]
+    const once = [table('a', { fields: [field({ key: 'id' }), toOne('b1', 'b'), field({ key: 'x' }), toOne('c', 'c')] }), ...twice.slice(1)]
+    for (const algo of ['grid-bfs', 'grid-dfs', 'line'] as const) {
+      expect(pos(layoutEntities(twice, algo, {}))).toEqual(pos(layoutEntities(once, algo, {})))
+    }
+  })
+
   it('edges leave and enter on the sides facing each other', () => {
     const r = layoutEntities(tables, 'line', { a: { x: 0, y: 0 }, b: { x: 500, y: 0 }, c: { x: 100, y: 300 } })
     const e = Object.fromEntries(r.edges.map((x) => [x.id, [x.sourceHandle, x.targetHandle]]))

@@ -4,7 +4,7 @@
   import { Background, BackgroundVariant, Controls, MiniMap, SvelteFlow, type EdgeMarker, type NodeTypes } from '@xyflow/svelte'
   import { untrack } from 'svelte'
   import { god } from '#lib/core/god.svelte.js'
-  import { settings } from '#lib/core/settings.svelte.js'
+  import { arrangeSchema, settings } from '#lib/core/settings.svelte.js'
   import EntityNodeView from '#lib/schema/EntityNode.svelte'
   import { edgesFor, layoutEntities, type DiagramLayout, type EntityNode, type XY } from '#lib/schema/layout.js'
   import Icon from '#lib/shell/Icon.svelte'
@@ -25,10 +25,16 @@
     nodes = layoutEntities(god.visibleTables, settings.diagramLayout, settings.schemaPositions).nodes
   }
 
+  let laidOut = false
+  // also follows the Settings dialog, which can change the layout over this page
   $effect(() => {
     void god.visibleTables
     void settings.diagramLayout
-    untrack(relayout)
+    untrack(() => {
+      relayout()
+      if (laidOut) version++
+      laidOut = true
+    })
   })
 
   const edges = $derived.by(() => {
@@ -40,14 +46,6 @@
       return { ...e, class: `${e.class} active`, markerEnd }
     })
   })
-
-  function pick(layout: DiagramLayout) {
-    // picking a layout means arranging everything with it
-    settings.schemaPositions = {}
-    settings.diagramLayout = layout
-    relayout()
-    version++
-  }
 
   function reset() {
     settings.schemaPositions = {}
@@ -75,7 +73,7 @@
             name="schema-layout"
             value={l.value}
             checked={settings.diagramLayout === l.value}
-            onchange={() => pick(l.value)}
+            onchange={() => arrangeSchema(l.value)}
           />
           {l.label}
         </label>

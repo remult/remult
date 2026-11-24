@@ -82,3 +82,21 @@ test('a dragged node keeps its place across reload, Reset layout puts it back', 
   await expect(page.getByRole('button', { name: 'Reset layout' })).toBeDisabled()
   expect(await translate(page, 'tags')).toEqual(before)
 })
+
+test('picking a layout arranges every node with it, moved ones too', async ({ page }) => {
+  await signInAs(page, 'admin')
+  await page.goto('/#/schema')
+  await expect(nodes(page).first()).toBeVisible()
+  const box = (await node(page, 'tags').locator('.row').first().boundingBox())!
+  await page.mouse.move(box.x + 10, box.y + 10)
+  await page.mouse.down()
+  await page.mouse.move(box.x + 60, box.y + 200, { steps: 8 })
+  await page.mouse.up()
+  await expect(page.getByRole('button', { name: 'Reset layout' })).toBeEnabled()
+
+  await page.getByRole('radiogroup', { name: 'Layout' }).getByText('Line').click()
+  await expect(page.getByRole('button', { name: 'Reset layout' })).toBeDisabled()
+  await expect(node(page, 'tags')).toBeVisible()
+  const ys = await nodes(page).evaluateAll((els) => els.map((el) => (el as HTMLElement).style.transform.split(', ')[1]))
+  expect(new Set(ys)).toEqual(new Set(['0px)']))
+})

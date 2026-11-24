@@ -9,7 +9,7 @@
   } from '@ui-sdk/svelte/dialog'
   import { untrack } from 'svelte'
   import { god } from '../core/god.svelte.js'
-  import { resetSettings, session, settings, type Settings } from '../core/settings.svelte.js'
+  import { arrangeSchema, resetSettings, session, settings, type Settings } from '../core/settings.svelte.js'
   import Icon from './Icon.svelte'
   import { shell } from './shell.svelte.js'
   import { toast } from './Toasts.svelte'
@@ -190,7 +190,11 @@
         </label>
         <label class="row">
           <span class="label">Schema layout</span>
-          <select class="input select" bind:value={settings.diagramLayout}>
+          <select
+            class="input select"
+            value={settings.diagramLayout}
+            onchange={(e) => arrangeSchema(e.currentTarget.value as Settings['diagramLayout'])}
+          >
             <option value="grid-dfs">Grid, depth first</option>
             <option value="grid-bfs">Grid, breadth first</option>
             <option value="line">Line</option>

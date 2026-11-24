@@ -61,6 +61,12 @@ export function resetSettings(): void {
   Object.assign(settings, settingsDefaults())
 }
 
+/** Picking a layout arranges every entity with it, so moved positions go. */
+export function arrangeSchema(layout: Settings['diagramLayout']): void {
+  settings.schemaPositions = {}
+  settings.diagramLayout = layout
+}
+
 $effect.root(() => {
   // stringify reads every property through the proxy, so nested changes re-run the effect
   $effect(() => write(() => localStorage, JSON.stringify(settings)))

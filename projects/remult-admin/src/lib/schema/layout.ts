@@ -24,7 +24,6 @@ function neighbours(t: TableInfo) {
   ]
 }
 
-
 // entity key -> its first table: relations name keys, nodes are per superKey
 function indexByKey(tables: TableInfo[]) {
   const byKey = new Map<string, TableInfo>()
@@ -37,10 +36,8 @@ function ordered(tables: TableInfo[], algo: DiagramLayout) {
   const byKey = indexByKey(tables)
   const seen = new Set<string>()
   const out: TableInfo[] = []
-  const next = (t: TableInfo) =>
-    neighbours(t)
-      .map((k) => byKey.get(k))
-      .filter((n): n is TableInfo => !!n && !seen.has(n.superKey))
+  // may repeat an entity (two relations to it): callers check `seen` per step
+  const next = (t: TableInfo) => neighbours(t).flatMap((k) => byKey.get(k) ?? [])
   const dfs = (t: TableInfo) => {
     seen.add(t.superKey)
     out.push(t)
@@ -53,6 +50,7 @@ function ordered(tables: TableInfo[], algo: DiagramLayout) {
       const t = queue.shift()!
       out.push(t)
       for (const n of next(t)) {
+        if (seen.has(n.superKey)) continue
         seen.add(n.superKey)
         queue.push(n)
       }
