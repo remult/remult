@@ -1,5 +1,5 @@
 ---
-llm: "Built-in /api/admin CRUD UI with entity diagram, gated by allow and configurable via the admin option."
+llm: 'Built-in /api/admin CRUD UI with entity diagram, gated by allow and configurable via the admin option.'
 ---
 
 # Admin UI
@@ -61,6 +61,10 @@ This only filters the UI, it is not security. Hidden entities stay reachable thr
 
 The admin UI follows your `allowApiInsert`, `allowApiUpdate` and `allowApiDelete` rules: actions the current user can't perform are hidden. Rules that depend on the row (a function) are checked per row, for the rows on screen, with the same `apiPrefilter` as the API.
 
+An entity whose `apiPrefilter` narrows the rows for the current user shows a **Prefiltered** badge. A prefilter that returns `{}` for this user (an admin, say) shows none.
+
+**Your access**, at the bottom of the side nav, shows the signed in user (name, id, roles) and what they can read, create, edit and delete in each entity.
+
 ## Accessing and Using the Admin UI
 
 Navigate to `/api/admin`. Every request goes through your API, so the admin uses the same validations and authorizations as your application, for the signed in user.
@@ -69,7 +73,7 @@ Navigate to `/api/admin`. Every request goes through your API, so the admin uses
 
 - **Entities**: the side nav lists your entities (filter with `/`). `Ctrl+K` (`⌘K` on macOS) jumps to an entity, the schema or the settings.
 - **Table**: sort, paging, row count and live updates (live query). An entity the user can't read shows as Forbidden.
-- **Edit inline or in a drawer**: edit cells in the table and save each row (`Ctrl+Enter`, add `Shift` for all rows, `Esc` to cancel), or open a row in a side drawer. Switch per entity, or set it with the `entities` hook.
+- **Edit inline or in a drawer**: edit cells in the table and save each row (`Ctrl+Enter`, add `Shift` for all rows, `Esc` to cancel), or open a row in a side drawer. Edited cells are marked with their previous value, a bar counts the edited rows with `Save all` and `Cancel all`, and a saved or reverted row flashes. Switch per entity, or set it with the `entities` hook.
 - **Filters in the URL**: filter by text, number, date range, value list or relation. Filters, sort and page live in the URL, so `Copy link` shares the exact view.
 - **Relations**: to-one fields show the related row's caption and are edited with a search. To-many relations open under a row as tabs of nested tables, and a new row there is prefilled with its parent.
 - **Permission-aware**: actions the user can't perform are hidden, per entity and per row (see [Permission-aware UI](#permission-aware-ui)).

@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 
 - New admin UI: inline or drawer editing, shareable filters in the URL, permission-aware (actions follow `allowApiInsert`, `allowApiUpdate` and `allowApiDelete`, row level rules are checked per row) ([docs](https://remult.dev/docs/admin-ui)).
 - `admin.entities` hook: hide entities from the admin UI or set their edit mode ([docs](https://remult.dev/docs/admin-ui#choosing-which-entities-to-show)).
+- Admin UI shows the signed in user's access (roles, and what they can do per entity) and marks entities whose `apiPrefilter` narrows their rows ([docs](https://remult.dev/docs/admin-ui#permission-aware-ui)).
 - `remultApi({ defaultErrorStatus: 500 })`: status of an `Error` thrown without an `httpStatusCode`, 400 by default ([docs](https://remult.dev/docs/ref_remultserveroptions#defaulterrorstatus), [#1094](https://github.com/remult/remult/pull/1094) by @AndrewSouthpaw).
 - `flags.clientErrorsAsEntityError` (`remult/internals`): client calls reject with an `EntityError` instead of a plain object, so `instanceof Error` works and the error has a stack. Off by default, and on by default in the next major ([#1064](https://github.com/remult/remult/pull/1064) by @AndrewSouthpaw).
 - `NullSort` (`remult/internals`): where NULL sorts, for the whole app ([docs](https://remult.dev/docs/field-types#where-null-sorts), [#1079](https://github.com/remult/remult/pull/1079) by @jycouet).
