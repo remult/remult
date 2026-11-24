@@ -1,82 +1,107 @@
-<script lang="ts">
-  import type { FieldUIInfo } from '../../../../core/server/remult-admin'
-  import Icon from '../shell/Icon.svelte'
-  import { display } from './format.js'
-
-  let { field, value, caption }: { field: FieldUIInfo; value: unknown; caption?: unknown } = $props()
-
-  const d = $derived(display(field, value, caption))
+<script lang="ts" module>
+  let seq = 0
 </script>
 
-<td class="cell" data-kind={d.kind}>
-  {#if d.kind === 'empty'}
-    <span class="empty">{d.text}</span>
-  {:else if d.kind === 'boolean'}
-    {#if d.value}
-      <span class="bool" title="true"><Icon name="check" size={14} stroke={2} /><span class="sr-only">true</span></span>
-    {:else}
-      <span class="bool off" title="false">false</span>
-    {/if}
-  {:else if d.kind === 'color'}
-    <span class="color"><span class="swatch" style:background={d.text}></span>{d.text}</span>
-  {:else if d.kind === 'relation'}
-    <span class="text" class:missing={d.missing} title={d.title}>{d.text}</span>
-  {:else}
-    <span class="text" title={d.title}>{d.text}</span>
+<script lang="ts">
+  import type { FieldUIInfo } from '../../../../core/server/remult-admin'
+  import { kindOf } from '../fields/field-kind.js'
+  import FieldEditor from '../fields/FieldEditor.svelte'
+
+  let {
+    field,
+    value = $bindable(),
+    caption,
+    editable,
+    busy = false,
+    dirty = false,
+    error,
+    onedit,
+  }: {
+    field: FieldUIInfo
+    value: unknown
+    caption?: unknown
+    editable: boolean
+    busy?: boolean
+    dirty?: boolean
+    error?: string
+    onedit?: () => void
+  } = $props()
+
+  const errorId = `cell-error-${++seq}`
+  const kind = $derived(kindOf(field))
+  const live = $derived(editable && !field.readOnly)
+</script>
+
+<td
+  class="cell"
+  data-kind={kind}
+  data-editable={live ? '' : undefined}
+  data-dirty={dirty ? '' : undefined}
+  data-invalid={error ? '' : undefined}
+>
+  <FieldEditor
+    {field}
+    bind:value
+    readonly={!editable}
+    variant="cell"
+    {caption}
+    {busy}
+    invalid={!!error}
+    describedby={error ? errorId : undefined}
+    {onedit}
+  />
+  {#if error}
+    <span class="error" id={errorId}>{error}</span>
   {/if}
 </td>
 
 <style>
   .cell {
+    position: relative;
     max-width: 320px;
+    min-width: 64px;
     height: var(--row-h);
-    padding: 0 12px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    padding: 0;
     white-space: nowrap;
   }
-  .cell[data-kind='number'] {
-    text-align: end;
+  .cell[data-editable] {
+    padding: 0 1px;
   }
-  .cell[data-kind='json'] {
-    font-family: var(--mono);
-    font-size: var(--text-sm);
-    color: var(--text-muted);
+  /* editors have no text to size the column: give each kind a usable width */
+  .cell[data-editable] {
+    min-width: 160px;
   }
-  .text {
+  .cell[data-editable]:is([data-kind='number'], [data-kind='boolean']) {
+    min-width: 96px;
+  }
+  .cell[data-editable]:is([data-kind='enum'], [data-kind='date'], [data-kind='color'], [data-kind='json']) {
+    min-width: 136px;
+  }
+  .cell[data-editable][data-kind='datetime'] {
+    min-width: 200px;
+  }
+  .cell[data-dirty] {
+    background: color-mix(in oklch, var(--accent) 9%, transparent);
+  }
+  .cell[data-invalid] {
+    background: var(--danger-soft);
+    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--danger) 60%, transparent);
+  }
+  .error {
+    position: absolute;
+    top: calc(100% - 2px);
+    inset-inline-start: 4px;
+    z-index: 2;
+    max-width: 280px;
+    padding: 2px 6px;
     overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .missing {
-    color: var(--text-faint);
-    font-family: var(--mono);
-    font-size: var(--text-sm);
-  }
-  .empty {
-    color: var(--text-faint);
-    font-family: var(--mono);
+    border-radius: var(--radius-sm);
+    background: var(--danger);
+    color: var(--bg-raised);
     font-size: var(--text-xs);
-  }
-  .bool {
-    display: inline-flex;
-    vertical-align: middle;
-    color: var(--success);
-  }
-  .bool.off {
-    color: var(--text-faint);
-    font-size: var(--text-sm);
-  }
-  .color {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-family: var(--mono);
-    font-size: var(--text-sm);
-  }
-  .swatch {
-    width: 12px;
-    height: 12px;
-    border-radius: 3px;
-    box-shadow: inset 0 0 0 1px oklch(0 0 0 / 0.1);
+    font-weight: 500;
+    line-height: 16px;
+    text-overflow: ellipsis;
+    pointer-events: none;
   }
 </style>

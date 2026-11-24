@@ -1,12 +1,16 @@
 import type { EntityFilter, EntityOrderBy } from '../../../../core/index.js'
 import type { FieldUIInfo } from '../../../../core/server/remult-admin'
 import { god, type TableInfo } from '../core/god.svelte.js'
+import { valueKey } from './format.js'
 import { RowDraft } from './row-draft.svelte.js'
 
 type Values = Record<string, any>
 type Verdict = { update: boolean; delete: boolean }
 
-export type TableRow = { id: string; item: any; draft: RowDraft<Values> }
+/** `item` is the server entity; undefined on a row not inserted yet. */
+export type TableRow = { id: string; item: any; draft: RowDraft<Values>; isNew?: boolean }
+
+export type SaveResult = { ok: true } | { ok: false; message?: string }
 
 export type LoadRequest = {
   where: EntityFilter<any>
@@ -32,7 +36,29 @@ export function errorMessage(err: unknown): string {
   return typeof err === 'string' ? err : JSON.stringify(err)
 }
 
-/** One entity's rows: find or live query, count, relation captions and per row permissions. */
+/** Validation messages keyed by the edited key (valFieldKey for relations); undefined when none maps to a field. */
+export function fieldErrors(err: unknown, fields: FieldUIInfo[]): Record<string, string> | undefined {
+  const ms = err && typeof err === 'object' && 'modelState' in err ? err.modelState : undefined
+  if (!ms || typeof ms !== 'object') return undefined
+  const out: Record<string, string> = {}
+  for (const f of fields) {
+    const m = (ms as Record<string, unknown>)[f.valFieldKey] ?? (ms as Record<string, unknown>)[f.key]
+    if (m) out[valueKey(f)] = String(m)
+  }
+  return Object.keys(out).length ? out : undefined
+}
+
+/** Plain `key: value` pairs of a parent filter, to start a new child row from. */
+export function prefillFrom(where: EntityFilter<any> | undefined): Values {
+  if (!where || typeof where !== 'object') return {}
+  return Object.fromEntries(
+    Object.entries(where).filter(
+      ([k, v]) => !k.startsWith('$') && ['string', 'number', 'boolean'].includes(typeof v),
+    ),
+  )
+}
+
+/** One entity's rows: find or live query, count, relation captions, per row permissions and saves. */
 export class TableData {
   rows: TableRow[] = $state.raw([])
   total: number | undefined = $state()
@@ -42,12 +68,20 @@ export class TableData {
   error: string | undefined = $state()
   captions: Record<string, Map<unknown, unknown>> = $state.raw({})
   verdicts: Record<string, Verdict> = $state.raw({})
+  /** Rows typed in but not inserted yet, shown above the page. */
+  newRows: TableRow[] = $state.raw([])
+  /** Per row id, per edited key: the server's validation message. */
+  errors: Record<string, Record<string, string>> = $state({})
+  saving: Record<string, boolean> = $state({})
 
   #table: TableInfo
   #deps: TableDataDeps
   #drafts = new Map<string, RowDraft<Values>>()
   // every load bumps it: results of an older load (or a disposed table) are dropped
   #gen = 0
+  // live ticks share a generation: only the latest verdict request may answer
+  #verdictSeq = 0
+  #newSeq = 0
   #unsub: (() => void) | undefined
   #request: LoadRequest | undefined
 
@@ -63,9 +97,11 @@ export class TableData {
   load(request: LoadRequest) {
     this.#stop()
     const gen = ++this.#gen
+    // a refresh or another page keeps known verdicts, so rows don't flicker to locked
+    if (this.#request && JSON.stringify(this.#request.where) !== JSON.stringify(request.where))
+      this.verdicts = {}
     this.#request = request
     this.loading = true
-    this.verdicts = {}
     const { repo } = this.#table
     const options = {
       where: request.where,
@@ -108,6 +144,70 @@ export class TableData {
     return (update !== 'row' && del !== 'row') || id in this.verdicts
   }
 
+  /** Rows not inserted yet, then edited rows. */
+  dirtyRows(): TableRow[] {
+    return [...this.newRows, ...this.rows.filter((r) => r.draft.dirty)]
+  }
+
+  find(id: string): TableRow | undefined {
+    return this.newRows.find((r) => r.id === id) ?? this.rows.find((r) => r.id === id)
+  }
+
+  addNew(prefill: Values = {}): TableRow {
+    const values = Object.fromEntries(this.#keys().map((k) => [k, prefill[k]]))
+    const draft = new RowDraft(values, this.#table.fields)
+    const row: TableRow = { id: `new:${++this.#newSeq}`, item: undefined, draft, isNew: true }
+    this.newRows = [row, ...this.newRows]
+    return row
+  }
+
+  cancel(row: TableRow) {
+    delete this.errors[row.id]
+    if (row.isNew) this.newRows = this.newRows.filter((r) => r !== row)
+    else row.draft.reset()
+  }
+
+  clearError(row: TableRow, key: string) {
+    if (this.errors[row.id]?.[key]) delete this.errors[row.id][key]
+  }
+
+  /** Update sends only the changed keys; insert sends every value typed in. */
+  async save(row: TableRow): Promise<SaveResult> {
+    const { repo, fields } = this.#table
+    if (this.saving[row.id]) return { ok: true }
+    delete this.errors[row.id]
+    this.saving[row.id] = true
+    try {
+      if (row.isNew) {
+        const writable = new Set(fields.filter((f) => !f.readOnly).map(valueKey))
+        const values = Object.fromEntries(
+          Object.entries($state.snapshot(row.draft.values)).filter(([k, v]) => v !== undefined && writable.has(k)),
+        )
+        await repo.insert(values)
+        this.newRows = this.newRows.filter((r) => r !== row)
+        this.refresh()
+      } else {
+        const changes = row.draft.changes()
+        if (!Object.keys(changes).length) return { ok: true }
+        // by id, not the entity: a failed save must not leave edits on the row's item
+        const saved = await repo.update(repo.metadata.idMetadata.getId(row.item), changes)
+        // editors are locked while saving, so dropping the user's values loses nothing
+        row.draft.rebase(this.#valuesOf(saved))
+        row.draft.reset()
+      }
+      return { ok: true }
+    } catch (err) {
+      const errors = fieldErrors(err, fields)
+      if (errors) {
+        this.errors[row.id] = errors
+        return { ok: false }
+      }
+      return { ok: false, message: errorMessage(err) }
+    } finally {
+      delete this.saving[row.id]
+    }
+  }
+
   async delete(row: TableRow) {
     await this.#table.repo.delete(row.item)
     this.refresh()
@@ -125,14 +225,21 @@ export class TableData {
     this.loaded = true
   }
 
+  #keys() {
+    return this.#table.repo.metadata.fields.toArray().map((f) => f.key)
+  }
+
+  #valuesOf(item: any): Values {
+    return Object.fromEntries(this.#keys().map((k) => [k, item[k]]))
+  }
+
   #apply(gen: number, items: any[]) {
     if (gen !== this.#gen) return
     const { repo, fields } = this.#table
-    const keys = repo.metadata.fields.toArray().map((f) => f.key)
     const drafts = new Map<string, RowDraft<Values>>()
     const rows = items.map((item) => {
       const id = String(repo.metadata.idMetadata.getId(item))
-      const values = Object.fromEntries(keys.map((k) => [k, item[k]]))
+      const values = this.#valuesOf(item)
       let draft = this.#drafts.get(id)
       if (draft) draft.rebase(values)
       else draft = new RowDraft(values, fields)
@@ -177,9 +284,10 @@ export class TableData {
   async #loadVerdicts(gen: number, ids: string[]) {
     const { update, delete: del } = this.#table.permissions
     if ((update !== 'row' && del !== 'row') || !ids.length) return
+    const seq = ++this.#verdictSeq
     try {
       const verdicts = await this.#deps.rowPermissions(this.#table.superKey, ids)
-      if (gen !== this.#gen) return
+      if (gen !== this.#gen || seq !== this.#verdictSeq) return
       // ids the server did not report stay read-only
       this.verdicts = Object.fromEntries(
         ids.map((id) => [id, verdicts[id] ?? { update: false, delete: false }]),

@@ -29,10 +29,18 @@ export function buildTables(infos: EntityUIInfo[]): TableInfo[] {
   return [...infos]
     .sort((a, b) => a.caption.localeCompare(b.caption))
     .map((info, i) => {
+      // JSON drops undefined and value lists may come as plain strings: restore what FieldUIInfo promises
+      const fields = info.fields.map((f) => ({
+        ...f,
+        values: (f.values ?? []).map((v) => (typeof v === 'object' ? v : { id: v, caption: String(v) })),
+        inputType: f.inputType ?? '',
+      }))
       class C {}
-      for (const f of info.fields) {
+      for (const f of fields) {
         const proto = C.prototype as any
-        switch (f.type) {
+        // a string field would turn numeric value list ids into strings
+        const type = typeof f.values[0]?.id === 'number' ? 'number' : f.type
+        switch (type) {
           case 'json':
             Fields.json()(proto, f.key)
             break
@@ -54,8 +62,6 @@ export function buildTables(infos: EntityUIInfo[]): TableInfo[] {
         allowApiUpdate: allowed(info.permissions.update),
         allowApiDelete: allowed(info.permissions.delete),
       })(C)
-      // JSON drops undefined: restore what FieldUIInfo promises
-      const fields = info.fields.map((f) => ({ ...f, values: f.values ?? [], inputType: f.inputType ?? '' }))
       return { ...info, fields, color: colors[i], repo: remult.repo(C) }
     })
 }

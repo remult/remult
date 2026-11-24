@@ -29,7 +29,10 @@ async function columnTexts(page: Page, caption: string) {
   const headers = await page.locator('thead th').allInnerTexts()
   const i = headers.findIndex((h) => h.trim() === caption)
   expect(i).toBeGreaterThan(0)
-  return page.locator(`tbody tr td:nth-child(${i + 1})`).allInnerTexts()
+  // inline mode: a cell shows its value in an editor, not as text
+  return page
+    .locator(`tbody tr td:nth-child(${i + 1})`)
+    .evaluateAll((tds) => tds.map((td) => (td.querySelector('input') as HTMLInputElement | null)?.value ?? (td as HTMLElement).innerText.trim()))
 }
 
 async function api(page: Page, path: string, token = 'admin') {

@@ -1,30 +1,34 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
   import { page } from '$app/state'
-  import { onDestroy, untrack } from 'svelte'
+  import { onDestroy, tick, untrack } from 'svelte'
   import type { EntityFilter } from '../../../../core/index.js'
-  import type { FieldUIInfo } from '../../../../core/server/remult-admin'
+  import type { AdminEditMode, FieldUIInfo } from '../../../../core/server/remult-admin'
   import type { TableInfo } from '../core/god.svelte.js'
   import { session, settings } from '../core/settings.svelte.js'
   import { chipsToWhere, type FilterChip, type TableQuery } from '../query/filter-model.js'
   import { parseQuery, serializeQuery } from '../query/url-state.js'
   import Icon, { type IconName } from '../shell/Icon.svelte'
   import { toast } from '../shell/Toasts.svelte'
-  import { valueKey } from './format.js'
+  import { orderByFor } from './order.js'
   import Row from './Row.svelte'
-  import { errorMessage, TableData, type LoadRequest, type TableRow } from './table-data.svelte.js'
+  import { errorMessage, prefillFrom, TableData, type LoadRequest, type TableRow } from './table-data.svelte.js'
 
   let {
     table,
     parentWhere,
     urlBound = false,
     oncreate,
+    onopenrow,
   }: {
     /** Fixed for the component's life: key the parent on it to switch entity. */
     table: TableInfo
     parentWhere?: EntityFilter<any>
     urlBound?: boolean
+    /** Drawer mode "New". */
     oncreate?: () => void
+    /** Drawer mode: open this row. */
+    onopenrow?: (row: TableRow) => void
   } = $props()
 
   // svelte-ignore state_referenced_locally
@@ -62,18 +66,27 @@
   })
 
   const known = $derived(new Set(table.repo.metadata.fields.toArray().map((f) => f.key)))
-  const idOrder = $derived(Object.fromEntries(Object.keys(table.ids).map((k) => [k, 'asc' as const])))
   const byKey = $derived(new Map(table.fields.map((f) => [f.key, f])))
 
-  const orderBy = $derived.by(() => {
-    if (query.sort) {
-      const f = byKey.get(query.sort.field)
-      // ids break ties, so a row never shows on two pages
-      if (f) return { [valueKey(f)]: query.sort.dir, ...idOrder }
-    }
-    const fromServer = Object.entries(table.defaultOrderBy ?? {}).filter(([k]) => known.has(k))
-    return fromServer.length ? { ...Object.fromEntries(fromServer), ...idOrder } : idOrder
-  })
+  const orderBy = $derived(
+    orderByFor(query.sort, {
+      fields: table.fields,
+      ids: table.ids,
+      defaultOrderBy: table.defaultOrderBy as Record<string, unknown> | undefined,
+      known,
+    }),
+  )
+
+  const editMode: AdminEditMode = $derived(
+    table.editModeLocked ? table.editMode : (settings.editMode[table.superKey] ?? table.editMode),
+  )
+  const showModeSwitch = $derived(
+    urlBound && !table.editModeLocked && (table.permissions.update !== false || table.permissions.insert !== false),
+  )
+  const modes: { value: AdminEditMode; label: string; title: string }[] = [
+    { value: 'inline', label: 'Inline', title: 'Edit in the table' },
+    { value: 'drawer', label: 'Drawer', title: 'Edit one row at a time in a side panel' },
+  ]
 
   const live = $derived(!window.optionsFromServer?.disableLiveQuery && settings.disableLiveQuery !== true)
 
@@ -158,6 +171,68 @@
     }
   }
 
+  let section: HTMLElement
+
+  async function addRow() {
+    if (editMode === 'drawer') {
+      oncreate?.()
+      return
+    }
+    const row = data.addNew(prefillFrom(parentWhere))
+    await tick()
+    section.querySelector<HTMLElement>(`tr[data-row="${row.id}"] [data-cell-focus]`)?.focus()
+  }
+
+  async function saveRows(rows: TableRow[]) {
+    const results = await Promise.all(rows.map(async (row) => ({ row, r: await data.save(row) })))
+    for (const { r } of results) if (!r.ok && r.message) toast.error(`Save failed: ${r.message}`)
+    const added = results.filter(({ row, r }) => r.ok && row.isNew).length
+    const saved = results.filter(({ r }) => r.ok).length
+    if (added) toast.success(added === 1 ? 'Row added' : `${added} rows added`)
+    else if (saved > 1) toast.success(`${saved} rows saved`)
+  }
+
+  function rowOf(target: EventTarget | null) {
+    const id = (target as HTMLElement | null)?.closest<HTMLElement>('tr[data-row]')?.dataset.row
+    return id === undefined ? undefined : data.find(id)
+  }
+
+  function onkeydown(e: KeyboardEvent) {
+    const target = e.target as HTMLElement
+    // a dialog or a nested table above us owns its keys
+    if (e.defaultPrevented || target.closest('[role="dialog"]')) return
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'Enter' || e.key === 'Escape')) {
+      const one = rowOf(target)
+      const rows = e.shiftKey ? data.dirtyRows() : one && (one.isNew || one.draft.dirty) ? [one] : []
+      if (!rows.length) return
+      e.preventDefault()
+      if (e.key === 'Enter') saveRows(rows)
+      else for (const r of rows) data.cancel(r)
+      return
+    }
+    if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey)
+      moveVertical(e, target)
+  }
+
+  // same column, next row that has an editor there
+  function moveVertical(e: KeyboardEvent, target: HTMLElement) {
+    if (!target.matches('[data-cell-focus]')) return
+    const td = target.closest('td')
+    const tr = td?.parentElement as HTMLTableRowElement | null
+    if (!td || !tr) return
+    const i = [...tr.cells].indexOf(td as HTMLTableCellElement)
+    let next = (e.key === 'ArrowDown' ? tr.nextElementSibling : tr.previousElementSibling) as HTMLTableRowElement | null
+    while (next) {
+      const el = next.cells[i]?.querySelector<HTMLElement>('[data-cell-focus]')
+      if (el) {
+        e.preventDefault()
+        el.focus()
+        return
+      }
+      next = (e.key === 'ArrowDown' ? next.nextElementSibling : next.previousElementSibling) as HTMLTableRowElement | null
+    }
+  }
+
   async function deleteRow(row: TableRow) {
     try {
       await data.delete(row)
@@ -173,13 +248,15 @@
 
 {#snippet newButton()}
   {#if canInsert}
-    <button class="btn" data-variant="primary" type="button" onclick={() => oncreate?.()}>
+    <button class="btn" data-variant="primary" type="button" onclick={addRow}>
       <Icon name="plus" size={14} stroke={2} /> New
     </button>
   {/if}
 {/snippet}
 
-<section class="table" class:nested={!urlBound} style:--hue={table.color}>
+<!-- keyboard shortcuts for the rows inside; the editors stay the focus targets -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<section class="table" class:nested={!urlBound} style:--hue={table.color} bind:this={section} {onkeydown}>
   <header class="bar">
     {#if urlBound}
       <h1><span class="hue-dot"></span>{label(table)}</h1>
@@ -194,6 +271,23 @@
     {/if}
 
     <div class="spacer"></div>
+
+    {#if showModeSwitch}
+      <div class="segmented" role="radiogroup" aria-label="Edit mode">
+        {#each modes as m (m.value)}
+          <label class="seg" title={m.title} data-checked={editMode === m.value ? '' : undefined}>
+            <input
+              type="radio"
+              name={`edit-mode-${table.superKey}`}
+              value={m.value}
+              checked={editMode === m.value}
+              onchange={() => (settings.editMode[table.superKey] = m.value)}
+            />
+            {m.label}
+          </label>
+        {/each}
+      </div>
+    {/if}
 
     {#if data.loaded && !data.error}
       <span class="range" aria-live="polite">
@@ -301,22 +395,29 @@
               </tr>
             {/each}
           {:else}
-            {#each data.rows as row (row.id)}
+            {#each [...data.newRows, ...data.rows] as row (row.id)}
               <Row
                 {row}
                 fields={table.fields}
                 captions={data.captions}
-                canUpdate={data.can('update', row.id)}
-                canDelete={data.can('delete', row.id)}
-                resolved={data.resolved(row.id)}
+                canUpdate={!row.isNew && data.can('update', row.id)}
+                canDelete={!row.isNew && data.can('delete', row.id)}
+                resolved={row.isNew || data.resolved(row.id)}
+                editable={editMode === 'inline'}
+                busy={!!data.saving[row.id]}
+                errors={data.errors[row.id]}
                 ondelete={deleteRow}
+                onsave={(r) => saveRows([r])}
+                oncancel={(r) => data.cancel(r)}
+                onedit={(r, k) => data.clearError(r, k)}
+                onopen={editMode === 'drawer' ? onopenrow : undefined}
               />
             {/each}
           {/if}
         </tbody>
       </table>
 
-      {#if data.loaded && !data.rows.length}
+      {#if data.loaded && !data.rows.length && !data.newRows.length}
         <div class="state empty">
           <span class="state-icon"><Icon name="table" size={20} /></span>
           <h2>No rows</h2>
@@ -606,6 +707,49 @@
     color: var(--danger);
     background: var(--danger-soft);
     box-shadow: none;
+  }
+  .segmented {
+    display: inline-flex;
+    padding: 2px;
+    border-radius: 7px;
+    background: var(--bg-inset);
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+  .seg {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
+    padding: 0 9px;
+    border-radius: 5px;
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+      background-color 120ms var(--ease-out),
+      color 120ms var(--ease-out);
+  }
+  .seg:hover {
+    color: var(--text);
+  }
+  .seg[data-checked] {
+    background: var(--bg-raised);
+    color: var(--text);
+    box-shadow:
+      0 0 0 1px var(--border),
+      0 1px 2px oklch(0 0 0 / 0.08);
+  }
+  .seg input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .seg:has(input:focus-visible) {
+    outline: 2px solid var(--ring);
+    outline-offset: 1px;
   }
   .state-actions {
     display: flex;
