@@ -14,7 +14,9 @@ import {
   type RemultServerImplementation,
 } from './remult-api-server.js'
 import { remultStatic } from '../src/remult-static.js'
-import { RemultAsyncLocalStorage } from '../src/context.js'
+import { RemultAsyncLocalStorage, type ApiClient } from '../src/context.js'
+import type { ActionInterface } from '../src/server-action.js'
+import { serverActionField } from '../src/server-action-info.js'
 import { initDataProvider } from './initDataProvider.js'
 
 export function TestApiDataProvider(
@@ -26,6 +28,9 @@ export function TestApiDataProvider(
     return new InMemoryDataProvider()
   })
 
+  // Creating the server core marks the process as a server, which would make backend methods
+  // skip the API. The test plays the client, so it keeps the flag it had.
+  const wasRunningOnServer = remultStatic.actionInfo.runningOnServer
   const server = createRemultServerCore<GenericRequestInfo & { body?: any }>(
     { ...options, dataProvider: dp },
     {
@@ -37,6 +42,18 @@ export function TestApiDataProvider(
       ignoreAsyncStorage: true,
     },
   ) as RemultServerImplementation<GenericRequestInfo & { body?: any }>
+  remultStatic.actionInfo.runningOnServer = wasRunningOnServer
+
+  const registeredActions = new Set<ActionInterface>()
+  const registerNewActions = () => {
+    for (const method of remultStatic.actionInfo.allActions) {
+      const action: ActionInterface | undefined = method[serverActionField]
+      if (action && !registeredActions.has(action)) {
+        registeredActions.add(action)
+        server.__addActionForTesting(action)
+      }
+    }
+  }
 
   const lock = new AsyncLock()
   async function handleOnServer(req: GenericRequestInfo & { body?: any }) {
@@ -46,6 +63,7 @@ export function TestApiDataProvider(
           await (await dp).ensureSchema?.(newEntities)
           newEntities = []
         }
+        registerNewActions()
         var result = await server.handle(req)
         if ((result?.statusCode ?? 200) >= 400) {
           throw { ...result?.data, status: result?.statusCode ?? 500 }
@@ -59,33 +77,35 @@ export function TestApiDataProvider(
 
   const registeredEntities = new Set<string>()
   let newEntities: EntityMetadata[] = []
-  return new RestDataProvider(
-    () => ({
-      httpClient: {
-        get: (url) =>
-          handleOnServer({
-            url: url,
-            method: 'GET',
-          }),
-        put: (url, body) =>
-          handleOnServer({
-            method: 'PUT',
-            url: url,
-            body: body,
-          }),
-        post: (url, body) =>
-          handleOnServer({
-            method: 'POST',
-            url: url,
-            body,
-          }),
-        delete: (url) =>
-          handleOnServer({
-            method: 'DELETE',
-            url: url,
-          }),
-      },
-    }),
+  const apiClient: ApiClient = {
+    url: '/api',
+    httpClient: {
+      get: (url) =>
+        handleOnServer({
+          url: url,
+          method: 'GET',
+        }),
+      put: (url, body) =>
+        handleOnServer({
+          method: 'PUT',
+          url: url,
+          body: body,
+        }),
+      post: (url, body) =>
+        handleOnServer({
+          method: 'POST',
+          url: url,
+          body,
+        }),
+      delete: (url) =>
+        handleOnServer({
+          method: 'DELETE',
+          url: url,
+        }),
+    },
+  }
+  const dataProvider = new RestDataProvider(
+    () => apiClient,
     (entity) => {
       if (!registeredEntities.has(entity.key)) {
         registeredEntities.add(entity.key)
@@ -94,6 +114,8 @@ export function TestApiDataProvider(
       }
     },
   )
+  // Backend methods post through the remult.apiClient, which points at a real server. This sends them here instead.
+  return Object.assign(dataProvider, { __apiClientForTesting: apiClient })
 }
 export class AsyncLock {
   static enabled = true
