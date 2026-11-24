@@ -11,6 +11,7 @@ const REGEX_PAGE_2 = /_page=2/
 const REGEX_RANGE_26_50 = /^26 - 50 of \d+$/
 const REGEX_RANGE_1_25 = /^1 - 25 of \d+$/
 const REGEX_STAGE_WON = /stage=won/
+const REGEX_CHIP = /^Filter: /
 
 async function signInAs(page: Page, token: string, options?: { disableLiveQuery: boolean }) {
   await page.addInitScript(
@@ -83,17 +84,17 @@ test('page 2 from the URL loads rows 26-50, and reload keeps sort and page', asy
 test('back button restores the previous filter', async ({ page }) => {
   await signInAs(page, 'admin')
   await page.goto('/#/entity/deals?stage=won')
-  await expect(page.getByLabel('Filters')).toContainText('Stage is won')
+  await expect(page.getByLabel('Filters')).toContainText('Stage is "won"')
   await expect.poll(async () => new Set(await columnTexts(page, 'Stage'))).toEqual(new Set(['won']))
 
-  await page.getByLabel('Filters').getByRole('button', { name: 'Clear filters' }).click()
+  await page.getByLabel('Filters').getByRole('button', { name: 'Clear all' }).click()
   await expect(page).not.toHaveURL(REGEX_STAGE_WON)
-  await expect(page.getByLabel('Filters')).toHaveCount(0)
+  await expect(page.getByLabel('Filters').getByRole('button', { name: REGEX_CHIP })).toHaveCount(0)
   await expect.poll(async () => new Set(await columnTexts(page, 'Stage')).size).toBeGreaterThan(1)
 
   await page.goBack()
   await expect(page).toHaveURL(REGEX_STAGE_WON)
-  await expect(page.getByLabel('Filters')).toContainText('Stage is won')
+  await expect(page.getByLabel('Filters')).toContainText('Stage is "won"')
   await expect.poll(async () => new Set(await columnTexts(page, 'Stage'))).toEqual(new Set(['won']))
 })
 

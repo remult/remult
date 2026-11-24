@@ -2,14 +2,13 @@ import { remult } from '../../../../core/src/remult-proxy'
 import type {
   AdminPermission,
   EntityUIInfo,
-  FieldRelationToOneInfo,
   FieldUIInfo,
 } from '../../../../core/server/remult-admin'
 import type { FindOptions, Repository } from '../../../../core/src/remult3/remult3'
 import { Fields } from '../../../../core/src/remult3/Fields'
 import { Entity } from '../../../../core/src/remult3/entity'
 import { buildHeaders, createHttpClient } from './http.js'
-import { relationCaptions } from './relation-captions.js'
+import { captionOf, relationCaptions, targetKeyOf } from './relation-captions.js'
 import { session, settings } from './settings.svelte.js'
 
 export type TableInfo = EntityUIInfo & { repo: Repository<any> }
@@ -146,20 +145,27 @@ class God {
     return this.tables.find((t) => t.key === k)
   }
 
-  async getItemsForSelect(relation: FieldRelationToOneInfo, search: string | undefined) {
+  /** Text keys a relation caption can fall back to, in the target's field order. */
+  #captionKeys(t: TableInfo) {
+    return t.fields
+      .filter((f) => f.type === 'string' && !t.ids[f.key] && !f.relationToOne && !f.values.length)
+      .map((f) => f.key)
+  }
+
+  /** First 11 targets by caption (one more than shown tells "there is more") and the total matching `search`. */
+  async getItemsForSelect(field: FieldUIInfo, search: string | undefined) {
+    const relation = field.relationToOne!
     const t = this.byKey(relation.entityKey)
     if (!t) return { items: [], $count: 0 }
     const where = search ? { [relation.captionField]: { $contains: search } } : undefined
+    const key = targetKeyOf(relation, field.valFieldKey)!
+    const fallback = this.#captionKeys(t)
     const [items, count] = await Promise.all([
       t.repo.find({ limit: 11, orderBy: { [relation.captionField]: 'asc' }, where }),
       t.repo.count(where),
     ])
     return {
-      items: items.map((x) => ({
-        // TODO: support multi-field relations (relation.fields has them all)
-        id: x[Object.keys(relation.fields)[0]],
-        caption: x[relation.captionField],
-      })),
+      items: items.map((x) => ({ id: x[key], caption: captionOf(x, relation.captionField, fallback) })),
       $count: count,
     }
   }
@@ -168,10 +174,9 @@ class God {
     const rel = field.relationToOne!
     const t = this.byKey(rel.entityKey)
     if (!t) return 'Forbidden - ' + value
-    const [item] = await t.repo.find({ where: { [Object.keys(rel.fields)[0]]: value } })
+    const [item] = await t.repo.find({ where: { [targetKeyOf(rel, field.valFieldKey)!]: value } })
     if (!item) return value !== undefined ? 'not found - ' + value : '-'
-    if (!item[rel.captionField]) return `Can't display ${rel.captionField} - ${value}`
-    return item[rel.captionField]
+    return captionOf(item, rel.captionField, this.#captionKeys(t)) ?? `Can't display ${rel.captionField} - ${value}`
   }
 
   async displayValueForEach(field: FieldUIInfo, values: any[]) {
@@ -198,7 +203,17 @@ class God {
           }
 
     const items = await t.repo.find({ ...o, limit: present.length })
-    return { [k]: relationCaptions(rel, k, items) }
+    return { [k]: relationCaptions(rel, k, items, this.#captionKeys(t)) }
+  }
+
+  /** Captions of a few relation values, like the ids a filter chip holds. */
+  async captionsFor(field: FieldUIInfo, ids: unknown[]) {
+    const k = field.valFieldKey
+    const res = await this.displayValueForEach(
+      field,
+      ids.map((id) => ({ [k]: id })),
+    )
+    return res[k]
   }
 
   /** Per row update/delete verdicts, for entities whose rules depend on the row. */

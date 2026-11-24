@@ -2,6 +2,7 @@
   import { goto } from '$app/navigation'
   import { page } from '$app/state'
   import { onDestroy, tick, untrack } from 'svelte'
+  import { SvelteSet } from 'svelte/reactivity'
   import type { EntityFilter } from '../../../../core/index.js'
   import type { AdminEditMode, FieldUIInfo } from '../../../../core/server/remult-admin'
   import type { TableInfo } from '../core/god.svelte.js'
@@ -11,6 +12,8 @@
   import Icon, { type IconName } from '../shell/Icon.svelte'
   import { toast } from '../shell/Toasts.svelte'
   import { orderByFor } from './order.js'
+  import FilterBar from './FilterBar.svelte'
+  import RelationTabs from './RelationTabs.svelte'
   import Row from './Row.svelte'
   import RowDrawer from './RowDrawer.svelte'
   import { errorMessage, prefillFrom, TableData, type LoadRequest, type TableRow } from './table-data.svelte.js'
@@ -132,29 +135,8 @@
   const typeName = (f: FieldUIInfo) =>
     f.relationToOne ? 'relation' : f.values.length ? 'value list' : f.type
 
-  const OPS: Record<FilterChip['op'], string> = {
-    eq: 'is',
-    ne: 'is not',
-    contains: 'contains',
-    startsWith: 'starts with',
-    gt: 'after',
-    gte: '>=',
-    lt: 'before',
-    lte: '<=',
-    between: 'between',
-    in: 'is any of',
-    nin: 'is none of',
-    empty: 'is empty',
-    notEmpty: 'is not empty',
-  }
-
-  function chipText(c: FilterChip) {
-    const f = byKey.get(c.field)
-    const name = f ? label(f) : c.field
-    const op = f?.type === 'number' && (c.op === 'gt' || c.op === 'lt') ? (c.op === 'gt' ? '>' : '<') : OPS[c.op]
-    if (c.op === 'empty' || c.op === 'notEmpty') return `${name} ${op}`
-    const v = Array.isArray(c.value) ? c.value.join(', ') : String(c.value)
-    return c.op === 'between' ? `${name} ${op} ${v} and ${String(c.value2)}` : `${name} ${op} ${v}`
+  function setFilters(filters: FilterChip[]) {
+    setQuery({ ...query, filters, page: 1 })
   }
 
   async function copyLink() {
@@ -196,7 +178,7 @@
   function onkeydown(e: KeyboardEvent) {
     const target = e.target as HTMLElement
     // a dialog or a nested table above us owns its keys
-    if (e.defaultPrevented || target.closest('[role="dialog"]')) return
+    if (e.defaultPrevented || target.closest('[role="dialog"]') || target.closest('section.table') !== section) return
     const mod = e.ctrlKey || e.metaKey
     // plain Esc too: Windows keeps Ctrl+Esc for itself; an open list closes first
     const cancel = e.key === 'Escape' && !e.altKey && !target.closest('[role="listbox"], [aria-expanded="true"]')
@@ -254,6 +236,17 @@
     } catch (err) {
       toast.error(`Delete failed: ${errorMessage(err)}`)
     }
+  }
+
+  const expandable = $derived(table.relations.length > 0)
+  // row ids whose related rows show; local to this table, like its query
+  const expanded = new SvelteSet<string>()
+  let viewWidth = $state(0)
+  const columns = $derived(table.fields.length + 2 + (expandable ? 1 : 0))
+
+  function toggle(row: TableRow) {
+    if (expanded.has(row.id)) expanded.delete(row.id)
+    else expanded.add(row.id)
   }
 
   const skeletonRows = $derived(Math.min(settings.numberOfRows, 12))
@@ -346,19 +339,9 @@
     {@render newButton()}
   </header>
 
-  {#if query.filters.length}
-    <div class="filters" aria-label="Filters">
-      <Icon name="filter" size={13} />
-      {#each query.filters as c, i (i)}
-        <span class="chip">{chipText(c)}</span>
-      {/each}
-      <button class="link" type="button" onclick={() => setQuery({ ...query, filters: [], page: 1 })}>
-        Clear filters
-      </button>
-    </div>
-  {/if}
+  <FilterBar fields={table.fields} filters={query.filters} pageCaptions={data.captions} onchange={setFilters} />
 
-  <div class="scroll" aria-busy={data.loading}>
+  <div class="scroll" aria-busy={data.loading} bind:clientWidth={viewWidth}>
     {#if data.error}
       <div class="state" role="alert">
         <span class="state-icon danger"><Icon name={forbidden ? 'lock' : 'alert'} size={20} /></span>
@@ -372,6 +355,7 @@
       <table class="grid" data-loading={data.loaded && data.loading ? '' : undefined}>
         <thead>
           <tr>
+            {#if expandable}<th class="expand"><span class="sr-only">Related rows</span></th>{/if}
             <th class="gutter"><span class="sr-only">Row status</span></th>
             {#each table.fields as f (f.key)}
               {@const dir = query.sort?.field === f.key ? query.sort.dir : undefined}
@@ -401,6 +385,7 @@
           {#if !data.loaded}
             {#each { length: skeletonRows }, i (i)}
               <tr class="skeleton">
+                {#if expandable}<td class="gutter"></td>{/if}
                 <td class="gutter"></td>
                 {#each table.fields as f, j (f.key)}
                   <td><span style:--w="{40 + ((i * 7 + j * 13) % 50)}%"></span></td>
@@ -426,7 +411,19 @@
                 onedit={(r, k) => data.clearError(r, k)}
                 onopen={(r) => drawer?.edit(r)}
                 active={drawer?.openId() === row.id}
+                {expandable}
+                expanded={expanded.has(row.id)}
+                ontoggle={toggle}
               />
+              {#if expandable && !row.isNew && expanded.has(row.id)}
+                <tr class="related">
+                  <td colspan={columns}>
+                    <div class="related-inner" style:width={viewWidth ? `${viewWidth}px` : undefined}>
+                      <RelationTabs relations={table.relations} values={row.item} label={row.id} />
+                    </div>
+                  </td>
+                </tr>
+              {/if}
             {/each}
           {/if}
         </tbody>
@@ -439,7 +436,7 @@
           {#if query.filters.length}
             <p>Nothing matches these filters.</p>
             <div class="state-actions">
-              <button class="btn" type="button" onclick={() => setQuery({ ...query, filters: [], page: 1 })}>
+              <button class="btn" type="button" onclick={() => setFilters([])}>
                 Clear filters
               </button>
               {@render newButton()}
@@ -539,33 +536,6 @@
   .pager {
     display: flex;
   }
-  .filters {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 6px;
-    padding: 6px 16px 6px 20px;
-    border-bottom: 1px solid var(--border);
-    color: var(--text-faint);
-  }
-  .chip {
-    padding: 0 8px;
-    border-radius: 10px;
-    background: var(--accent-soft);
-    color: var(--text);
-    font-size: var(--text-sm);
-    line-height: 20px;
-  }
-  .link {
-    border: 0;
-    padding: 0 4px;
-    background: none;
-    color: var(--accent);
-    font-size: var(--text-sm);
-    cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-  }
   .scroll {
     flex: 1;
     min-height: 0;
@@ -594,6 +564,18 @@
     text-align: start;
     font-weight: 500;
     white-space: nowrap;
+  }
+  th.expand {
+    width: 24px;
+    min-width: 24px;
+  }
+  .related > td {
+    padding: 0;
+  }
+  /* the table scrolls sideways: the nested panel stays in view */
+  .related-inner {
+    position: sticky;
+    left: 0;
   }
   th.gutter {
     width: 28px;

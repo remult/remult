@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { FieldUIInfo } from '../../../../core/server/remult-admin'
   import { settings } from '../core/settings.svelte.js'
+  import { captions } from '../relations/caption-cache.svelte.js'
   import Icon from '../shell/Icon.svelte'
   import Display from './Display.svelte'
   import EnumField from './EnumField.svelte'
@@ -49,6 +50,19 @@
 
   const empty = $derived(value === undefined || value === null || value === '')
 
+  const filled = (x: unknown) => x !== undefined && x !== null && x !== ''
+  // the page's batch caption first; a value it doesn't cover (just picked, or a missed batch) is looked up
+  const relationCaption = $derived(
+    kind !== 'relation' || filled(caption) || empty ? caption : captions.get(field, value),
+  )
+  $effect(() => {
+    if (kind !== 'relation' || empty || filled(relationCaption)) return
+    const v = value
+    // the table's batch usually answers first: only ask for what it leaves out
+    const t = setTimeout(() => captions.request(field, v), 400)
+    return () => clearTimeout(t)
+  })
+
   function set(v: unknown) {
     if (busy) return
     value = v
@@ -67,10 +81,10 @@
 <div class="editor" data-variant={variant} data-kind={kind} data-readonly={ro ? '' : undefined}>
   {#if ro}
     <div class="ro" {id}>
-      <Display {field} {value} {caption} />
+      <Display {field} {value} caption={relationCaption} />
     </div>
   {:else if kind === 'relation'}
-    <RelationField {field} {caption} {...sub} />
+    <RelationField {field} caption={relationCaption} {...sub} />
   {:else if kind === 'json'}
     <JsonField {...sub} inline={variant === 'form'} {onerror} />
   {:else if kind === 'enum'}

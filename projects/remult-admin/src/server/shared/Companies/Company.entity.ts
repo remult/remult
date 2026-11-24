@@ -3,6 +3,7 @@ import { AccountManager } from '../AccountManagers/AccountManager.entity'
 import { CompanySize } from './CompanySize'
 import { Contact } from '../Contacts/Contact.entity'
 import { Deal } from '../Deals/Deal.entity'
+import { Story } from '../Story'
 
 @Entity<Company>('companies', {
   // allowApiCrud: Allow.authenticated,
@@ -57,4 +58,6 @@ export class Company {
   contactsWithNewsletter?: Contact[]
   @Relations.toMany(() => Deal)
   deals?: Deal[]
+  @Relations.toMany<Company, Story>(() => Story, 'companyId')
+  stories?: Story[]
 }

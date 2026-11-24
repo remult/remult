@@ -25,6 +25,9 @@
     onedit,
     onopen,
     active = false,
+    expandable = false,
+    expanded = false,
+    ontoggle,
   }: {
     row: TableRow
     fields: FieldUIInfo[]
@@ -44,6 +47,10 @@
     onopen?: (row: TableRow) => void
     /** Its drawer is open. */
     active?: boolean
+    /** The entity has to-many relations: the row can show them below. */
+    expandable?: boolean
+    expanded?: boolean
+    ontoggle?: (row: TableRow) => void
   } = $props()
 
   let armed = $state(false)
@@ -100,11 +107,28 @@
   data-readonly={isNew || canUpdate ? undefined : ''}
   data-clickable={clickable ? '' : undefined}
   data-active={active ? '' : undefined}
+  data-expanded={expanded ? '' : undefined}
   aria-busy={deleting || busy || undefined}
   tabindex={openable ? (clickable ? 0 : -1) : undefined}
   {onclick}
   {onkeydown}
 >
+  {#if expandable}
+    <td class="expand">
+      {#if !isNew}
+        <button
+          class="chevron"
+          type="button"
+          aria-expanded={expanded}
+          aria-label={expanded ? 'Hide related rows' : 'Show related rows'}
+          title={expanded ? 'Hide related rows' : 'Show related rows'}
+          onclick={() => ontoggle?.(row)}
+        >
+          <Icon name="chevron-right" size={13} stroke={2} />
+        </button>
+      {/if}
+    </td>
+  {/if}
   <td class="gutter">
     {#if openable}
       <button
@@ -207,8 +231,50 @@
   .row:focus-visible {
     outline-offset: -2px;
   }
+  .row[data-expanded] > :global(td) {
+    background: var(--bg-inset);
+  }
   .row[data-active] > :global(td) {
     background: color-mix(in oklch, var(--accent) 7%, var(--bg));
+  }
+  .expand {
+    width: 24px;
+    min-width: 24px;
+    padding: 0 0 0 6px;
+  }
+  .chevron {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-faint);
+    cursor: pointer;
+    transition-property: color, background-color;
+    transition-duration: 120ms;
+    transition-timing-function: var(--ease-out);
+  }
+  .chevron::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+  }
+  .chevron :global(svg) {
+    transition: rotate 160ms var(--ease-out);
+  }
+  .chevron[aria-expanded='true'] {
+    color: var(--text);
+  }
+  .chevron[aria-expanded='true'] :global(svg) {
+    rotate: 90deg;
+  }
+  .chevron:hover {
+    background: var(--bg-active);
+    color: var(--text);
   }
   .gutter {
     position: relative;
