@@ -269,11 +269,8 @@
     color: var(--text);
   }
   .item[aria-current='page'] {
-    background: color-mix(
-      in oklch,
-      oklch(var(--hue-l) var(--hue-c) var(--hue, 262)) 14%,
-      var(--bg-nav)
-    );
+    /* alpha, not color-mix: mixing with a neutral drags the hue toward its own */
+    background: oklch(var(--hue-l) var(--hue-c) var(--hue, 262) / 0.14);
     color: var(--text);
     font-weight: 550;
   }
@@ -281,12 +278,7 @@
     --hue: 262;
   }
   .item[aria-current='page'] .hue-dot {
-    box-shadow: 0 0 0 3px
-      color-mix(
-        in oklch,
-        oklch(var(--hue-l) var(--hue-c) var(--hue)) 30%,
-        transparent
-      );
+    box-shadow: 0 0 0 3px oklch(var(--hue-l) var(--hue-c) var(--hue) / 0.3);
   }
   .text {
     flex: 1;

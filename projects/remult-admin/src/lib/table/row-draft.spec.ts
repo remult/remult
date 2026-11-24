@@ -46,6 +46,15 @@ describe('RowDraft', () => {
     expect(d.isDirty('name')).toBe(true)
   })
 
+  it('saved follows the server, not the edits', () => {
+    const d = new RowDraft(server(), fields)
+    d.values.name = 'mine'
+    expect(d.saved.name).toBe('a')
+    d.rebase({ ...server(), id: 2 })
+    expect(d.saved.id).toBe(2)
+    expect(d.saved.name).toBe('a')
+  })
+
   it('missing field is not dirty, editor writing undefined does not dirty', () => {
     const { status: _s, ...rest } = server()
     const d = new RowDraft(rest as any, fields)

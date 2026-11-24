@@ -22,6 +22,7 @@
     type XY,
   } from '#lib/schema/layout.js'
   import Icon from '#lib/shell/Icon.svelte'
+  import { shell } from '#lib/shell/shell.svelte.js'
 
   const nodeTypes: NodeTypes = { entity: EntityNodeView }
   const layouts: { value: DiagramLayout; label: string; title: string }[] = [
@@ -164,15 +165,18 @@
         >
           <Background variant={BackgroundVariant.Dots} gap={16} size={1.25} />
           <Controls showLock={false} />
-          <MiniMap
-            pannable
-            zoomable
-            width={168}
-            height={112}
-            nodeColor={(n) =>
-              `oklch(var(--hue-l) var(--hue-c) ${(n as EntityNode).data.color})`}
-            nodeBorderRadius={6}
-          />
+          <!-- on a phone the map would cover half the diagram -->
+          {#if !shell.narrow.current}
+            <MiniMap
+              pannable
+              zoomable
+              width={168}
+              height={112}
+              nodeColor={(n) =>
+                `oklch(var(--hue-l) var(--hue-c) ${(n as EntityNode).data.color})`}
+              nodeBorderRadius={6}
+            />
+          {/if}
         </SvelteFlow>
       {/key}
     {/if}

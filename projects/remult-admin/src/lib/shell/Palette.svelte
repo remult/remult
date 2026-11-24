@@ -192,6 +192,11 @@
     height: 48px;
     border-bottom: 1px solid var(--border);
     color: var(--text-muted);
+    transition: box-shadow 120ms var(--ease-out);
+  }
+  /* the input drops its own outline: the search row carries the focus ring */
+  .palette-search:has(:global(.palette-input:focus-visible)) {
+    box-shadow: inset 0 -2px 0 var(--accent);
   }
   :global(.palette-input) {
     flex: 1;

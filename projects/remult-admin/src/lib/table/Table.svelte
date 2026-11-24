@@ -546,7 +546,7 @@
                     >
                       <RelationTabs
                         relations={table.relations}
-                        values={row.item}
+                        values={row.draft.saved}
                         label={row.id}
                       />
                     </div>

@@ -95,7 +95,7 @@
   const canSave = $derived(
     canEdit && !busy && !unparsed && (isNew || !!row?.draft.dirty),
   )
-  // a new row can't set what only the server fills (ids, createdAt...)
+  // allowApiUpdate gates API inserts too, so a readOnly field can't be set on create either
   const fields = $derived(
     isNew ? table.fields.filter((f) => !f.readOnly) : table.fields,
   )
@@ -307,6 +307,7 @@
           <span class="hint" aria-hidden="true"
             ><kbd>{modKey}</kbd><kbd>Enter</kbd></span
           >
+          <!-- Cancel is an explicit discard: no confirm, unlike Esc or the close button -->
           <button
             class="btn"
             type="button"

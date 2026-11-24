@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 
 const KEY = 'RemultAdmin_2026_11'
+const REGEX_TASKS_URL = /#\/entity\/tasks$/
 
 async function signInAs(page: Page, token: string) {
   await page.addInitScript(
@@ -42,7 +43,7 @@ test('Cmd/Ctrl+K opens an entity', async ({ page }) => {
   await search.fill('tasks')
   await page.keyboard.press('Enter')
 
-  await expect(page).toHaveURL(/#\/entity\/tasks$/)
+  await expect(page).toHaveURL(REGEX_TASKS_URL)
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Tasks')
   await expect(
     navList(page).getByRole('link', { name: 'Tasks' }),
@@ -140,7 +141,7 @@ test('Home restores the last location when the app opens on it', async ({
   await page.goto('/#/entity/tasks')
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Tasks')
   await page.goto('/#/')
-  await expect(page).toHaveURL(/#\/entity\/tasks$/)
+  await expect(page).toHaveURL(REGEX_TASKS_URL)
 
   await navList(page).getByRole('link', { name: 'Deals' }).click()
   await page.getByRole('link', { name: 'Home' }).click()

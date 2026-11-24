@@ -63,8 +63,13 @@
       confirmReset = true
       return
     }
+    const connection = () =>
+      settings.keyForBearerAuth + '\n' + settings.customHeaders
+    const before = connection()
     resetSettings()
     syncDrafts()
+    // entities were loaded with the old token source and headers
+    if (connection() !== before) god.reload()
     toast.success('Settings reset to defaults')
   }
 

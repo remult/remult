@@ -46,6 +46,11 @@ export class RowDraft<T extends Record<string, any>> {
     this.values = clone(server)
   }
 
+  /** The server values, without the user's edits. */
+  get saved(): T {
+    return this.#baseline
+  }
+
   get dirty(): boolean {
     return this.#dirty
   }

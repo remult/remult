@@ -119,7 +119,7 @@
   data-active={active ? '' : undefined}
   data-expanded={expanded ? '' : undefined}
   aria-busy={deleting || busy || undefined}
-  tabindex={openable ? (clickable ? 0 : -1) : undefined}
+  tabindex={openable ? 0 : undefined}
   {onclick}
   {onkeydown}
 >
@@ -141,12 +141,13 @@
   {/if}
   <td class="gutter">
     {#if openable}
+      <!-- the row is the tab stop (Enter opens), not one more per row -->
       <button
         class="open"
         type="button"
-        tabindex={clickable ? -1 : 0}
+        tabindex="-1"
         aria-label="Open row"
-        title="Open row (Enter)"
+        title={editable ? 'Open row' : 'Open row (Enter)'}
         onclick={() => onopen?.(row)}
       >
         <Icon name="arrow-up-right" size={13} stroke={2} />
@@ -283,7 +284,11 @@
     transition-duration: 120ms;
     transition-timing-function: var(--ease-out);
   }
-  .chevron::before {
+  /* hit areas fill the 28px row; taller would overlap the next row's */
+  .chevron::before,
+  .open::before,
+  .pending .btn::before,
+  .delete::before {
     content: '';
     position: absolute;
     inset: -4px;
@@ -333,11 +338,6 @@
     transition-property: opacity, scale, color;
     transition-duration: 120ms;
     transition-timing-function: var(--ease-out);
-  }
-  .open::before {
-    content: '';
-    position: absolute;
-    inset: -4px;
   }
   .open:hover {
     color: var(--accent);
@@ -400,6 +400,7 @@
     gap: 2px;
   }
   .pending .btn {
+    position: relative;
     height: 22px;
     font-size: var(--text-sm);
   }
@@ -410,7 +411,14 @@
   .pending .btn[data-icon] {
     width: 22px;
   }
+  .pending .btn::before {
+    inset: -3px 0;
+  }
+  .delete::before {
+    inset: -2px;
+  }
   .delete {
+    position: relative;
     height: 24px;
     opacity: 0;
     transition-property: opacity, background-color, color, scale;
