@@ -27,4 +27,9 @@ describe('select result without typedSelect', () => {
     if (!task) task = await remult.repo(Task).insert({ id: 102, title: 'b' })
     expect(task.title).toBe('b')
   })
+  it('getEntityRef and relations take the entity type', () => {
+    const repo = remult.repo(Task)
+    expectTypeOf(repo.getEntityRef).parameter(0).toEqualTypeOf<Task>()
+    expectTypeOf(repo.relations).parameter(0).toEqualTypeOf<Task>()
+  })
 })

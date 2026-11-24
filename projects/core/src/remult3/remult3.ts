@@ -993,7 +993,7 @@ export interface Repository<entityType> {
   fromJson(data: any[], isNew?: boolean): entityType[]
   fromJson(data: any, isNew?: boolean): entityType
   /** returns an `entityRef` for an item returned by `create`, `find` etc... */
-  getEntityRef(item: Partial<MembersOnly<entityType>>): EntityRef<entityType>
+  getEntityRef(item: EntityRefItem<entityType>): EntityRef<entityType>
   /** Provides information about the fields of the Repository's entity
    * @example
    * console.log(repo.fields.title.label) // displays the label of a specific field
@@ -1005,9 +1005,7 @@ export interface Repository<entityType> {
    */
   metadata: EntityMetadata<entityType>
   addEventListener(listener: entityEventListener<entityType>): Unsubscribe
-  relations(
-    item: Partial<MembersOnly<entityType>>,
-  ): RepositoryRelations<entityType>
+  relations(item: EntityRefItem<entityType>): RepositoryRelations<entityType>
 }
 /**
  * The `LiveQuery` interface represents a live query that allows subscribing to changes in the query results.
@@ -1761,6 +1759,13 @@ type SelectedIfOn<entityType, select, include> = RemultTypeConfig extends {
   typedSelect: true
 }
   ? SelectedMembers<entityType, select, include>
+  : entityType
+
+// A selected row is missing the members `select` left out, so it only fits a partial entity.
+type EntityRefItem<entityType> = RemultTypeConfig extends {
+  typedSelect: true
+}
+  ? Partial<MembersOnly<entityType>>
   : entityType
 
 type SelectResult<entityType, select, include> = IncludeResult<
