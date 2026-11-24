@@ -7,6 +7,8 @@
   import { valueKey } from './format.js'
   import type { TableRow } from './table-data.svelte.js'
 
+  const INTERACTIVE = 'button, a, input, textarea, select, [role="combobox"], [contenteditable]'
+
   let {
     row,
     fields,
@@ -22,6 +24,7 @@
     oncancel,
     onedit,
     onopen,
+    active = false,
   }: {
     row: TableRow
     fields: FieldUIInfo[]
@@ -37,8 +40,10 @@
     onsave: (row: TableRow) => void
     oncancel: (row: TableRow) => void
     onedit: (row: TableRow, key: string) => void
-    /** Drawer mode: opens the row in the drawer. */
+    /** Opens the row in the drawer. */
     onopen?: (row: TableRow) => void
+    /** Its drawer is open. */
+    active?: boolean
   } = $props()
 
   let armed = $state(false)
@@ -49,6 +54,24 @@
   const dirty = $derived(isNew || row.draft.dirty)
   const canEdit = $derived(editable && (isNew || canUpdate))
   const invalid = $derived(!!errors && Object.keys(errors).length > 0)
+  const openable = $derived(!!onopen && !isNew)
+  // drawer mode: the whole row is the way in
+  const clickable = $derived(openable && !editable)
+
+  function onclick(e: MouseEvent) {
+    if (!clickable) return
+    // a control in the row, or a text selection, keeps the click
+    if ((e.target as HTMLElement).closest(INTERACTIVE) || getSelection()?.toString()) return
+    onopen?.(row)
+  }
+
+  function onkeydown(e: KeyboardEvent) {
+    // only the row itself: Space and Enter inside an editor are the editor's
+    if (!openable || e.target !== e.currentTarget || (e.key !== 'Enter' && e.key !== ' ')) return
+    if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return
+    e.preventDefault()
+    onopen?.(row)
+  }
 
   async function onDelete() {
     if (settings.confirmDelete && !armed) {
@@ -68,15 +91,33 @@
   }
 </script>
 
+<!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
 <tr
   class="row"
   data-row={row.id}
   data-dirty={dirty ? '' : undefined}
   data-new={isNew ? '' : undefined}
   data-readonly={isNew || canUpdate ? undefined : ''}
+  data-clickable={clickable ? '' : undefined}
+  data-active={active ? '' : undefined}
   aria-busy={deleting || busy || undefined}
+  tabindex={openable ? (clickable ? 0 : -1) : undefined}
+  {onclick}
+  {onkeydown}
 >
   <td class="gutter">
+    {#if openable}
+      <button
+        class="open"
+        type="button"
+        tabindex={clickable ? -1 : 0}
+        aria-label="Open row"
+        title="Open row (Enter)"
+        onclick={() => onopen?.(row)}
+      >
+        <Icon name="arrow-up-right" size={13} stroke={2} />
+      </button>
+    {/if}
     {#if isNew}
       <span class="mark new" title="New row, not saved yet"><Icon name="plus" size={12} stroke={2} /><span class="sr-only">New row</span></span>
     {:else if dirty}
@@ -127,11 +168,6 @@
         </button>
       </div>
     {:else}
-      {#if onopen && !isNew}
-        <button class="btn open" data-variant="ghost" data-icon type="button" aria-label="Open row" title="Open row" onclick={() => onopen(row)}>
-          <Icon name="panel-open" size={14} />
-        </button>
-      {/if}
       {#if canDelete && !isNew}
       <button
         class="btn delete"
@@ -165,9 +201,76 @@
   .row[aria-busy='true'] {
     opacity: 0.6;
   }
+  .row[data-clickable] {
+    cursor: pointer;
+  }
+  .row:focus-visible {
+    outline-offset: -2px;
+  }
+  .row[data-active] > :global(td) {
+    background: color-mix(in oklch, var(--accent) 7%, var(--bg));
+  }
   .gutter {
+    position: relative;
     width: 28px;
+    /* the open button floats: without it the column collapses on wide tables */
+    min-width: 28px;
     padding: 0 0 0 10px;
+  }
+  /* the way into the drawer shows where the row's status sits */
+  .open {
+    position: absolute;
+    z-index: 1;
+    inset-block: 0;
+    left: 4px;
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    margin-block: auto;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: var(--bg-raised);
+    box-shadow:
+      0 0 0 1px var(--border),
+      0 1px 2px oklch(0 0 0 / 0.06);
+    color: var(--text-muted);
+    cursor: pointer;
+    opacity: 0;
+    scale: 0.9;
+    transition-property: opacity, scale, color;
+    transition-duration: 120ms;
+    transition-timing-function: var(--ease-out);
+  }
+  .open::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+  }
+  .open:hover {
+    color: var(--accent);
+  }
+  .open:active {
+    scale: 0.96;
+  }
+  .row:is(:hover, :focus-visible, [data-active]) .open,
+  .open:focus-visible {
+    opacity: 1;
+    scale: 1;
+  }
+  .row:is(:hover, :focus-visible, [data-active]) .gutter > :not(.open),
+  .gutter:has(.open:focus-visible) > :not(.open) {
+    opacity: 0;
+  }
+  @media (hover: none) {
+    .open {
+      opacity: 1;
+      scale: 1;
+    }
+    .gutter > :not(.open) {
+      display: none;
+    }
   }
   .lock,
   .mark {
@@ -215,10 +318,6 @@
   }
   .pending .btn[data-icon] {
     width: 22px;
-  }
-  .open {
-    width: 24px;
-    height: 24px;
   }
   .delete {
     height: 24px;

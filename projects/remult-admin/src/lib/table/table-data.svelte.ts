@@ -154,11 +154,16 @@ export class TableData {
   }
 
   addNew(prefill: Values = {}): TableRow {
-    const values = Object.fromEntries(this.#keys().map((k) => [k, prefill[k]]))
-    const draft = new RowDraft(values, this.#table.fields)
-    const row: TableRow = { id: `new:${++this.#newSeq}`, item: undefined, draft, isNew: true }
+    const row = this.draftNew(prefill)
     this.newRows = [row, ...this.newRows]
     return row
+  }
+
+  /** A new row kept off the table (the drawer's create form); `save` inserts it like any new row. */
+  draftNew(prefill: Values = {}): TableRow {
+    const values = Object.fromEntries(this.#keys().map((k) => [k, prefill[k]]))
+    const draft = new RowDraft(values, this.#table.fields)
+    return { id: `new:${++this.#newSeq}`, item: undefined, draft, isNew: true }
   }
 
   cancel(row: TableRow) {

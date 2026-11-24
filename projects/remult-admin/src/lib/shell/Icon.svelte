@@ -45,6 +45,7 @@
       '<path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><path d="M8 12h8"/>',
     filter: '<path d="M22 3H2l8 9.46V19l4 2v-8.54z"/>',
     'chevron-down': '<path d="m6 9 6 6 6-6"/>',
+    'arrow-up-right': '<path d="M7 7h10v10"/><path d="M7 17 17 7"/>',
     expand: '<path d="M15 3h6v6"/><path d="m21 3-7 7"/><path d="m3 21 7-7"/><path d="M9 21H3v-6"/>',
   } as const
 

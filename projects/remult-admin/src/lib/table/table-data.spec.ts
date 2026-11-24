@@ -249,6 +249,19 @@ describe('TableData', () => {
     expect(find).toHaveBeenCalledTimes(2)
   })
 
+  it('inserts a drawer draft without listing it in the table', async () => {
+    const insert = vi.fn(async (v: any) => ({ id: 'n', ...v }))
+    const data = new TableData(fakeTable({ find: async () => [], insert }))
+    data.load(req())
+    await tick()
+    const row = data.draftNew({ companyId: 'c1' })
+    expect(data.newRows).toEqual([])
+    expect(data.dirtyRows()).toEqual([])
+    row.draft.values.name = 'drawer'
+    expect(await data.save(row)).toEqual({ ok: true })
+    expect(insert).toHaveBeenCalledWith({ companyId: 'c1', name: 'drawer' })
+  })
+
   it('cancel resets an edit and drops a new row', async () => {
     const data = new TableData(fakeTable({ find: async () => [{ id: 'a', name: 'b' }] }))
     data.load(req())

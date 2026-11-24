@@ -12,23 +12,18 @@
   import { toast } from '../shell/Toasts.svelte'
   import { orderByFor } from './order.js'
   import Row from './Row.svelte'
+  import RowDrawer from './RowDrawer.svelte'
   import { errorMessage, prefillFrom, TableData, type LoadRequest, type TableRow } from './table-data.svelte.js'
 
   let {
     table,
     parentWhere,
     urlBound = false,
-    oncreate,
-    onopenrow,
   }: {
     /** Fixed for the component's life: key the parent on it to switch entity. */
     table: TableInfo
     parentWhere?: EntityFilter<any>
     urlBound?: boolean
-    /** Drawer mode "New". */
-    oncreate?: () => void
-    /** Drawer mode: open this row. */
-    onopenrow?: (row: TableRow) => void
   } = $props()
 
   // svelte-ignore state_referenced_locally
@@ -172,10 +167,11 @@
   }
 
   let section: HTMLElement
+  let drawer: RowDrawer | undefined = $state()
 
   async function addRow() {
     if (editMode === 'drawer') {
-      oncreate?.()
+      drawer?.create(prefillFrom(parentWhere))
       return
     }
     const row = data.addNew(prefillFrom(parentWhere))
@@ -213,8 +209,20 @@
       else for (const r of rows) data.cancel(r)
       return
     }
-    if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey)
-      moveVertical(e, target)
+    if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
+      if (target.matches('tr[data-row]')) moveRow(e, target)
+      else moveVertical(e, target)
+    }
+  }
+
+  // a focused row (drawer mode) steps to the next focusable row
+  function moveRow(e: KeyboardEvent, tr: HTMLElement) {
+    let next = (e.key === 'ArrowDown' ? tr.nextElementSibling : tr.previousElementSibling) as HTMLElement | null
+    while (next && !next.matches('tr[tabindex]'))
+      next = (e.key === 'ArrowDown' ? next.nextElementSibling : next.previousElementSibling) as HTMLElement | null
+    if (!next) return
+    e.preventDefault()
+    next.focus()
   }
 
   // these use the arrow keys themselves: step a number, a date part, or move in a list
@@ -416,7 +424,8 @@
                 onsave={(r) => saveRows([r])}
                 oncancel={(r) => data.cancel(r)}
                 onedit={(r, k) => data.clearError(r, k)}
-                onopen={editMode === 'drawer' ? onopenrow : undefined}
+                onopen={(r) => drawer?.edit(r)}
+                active={drawer?.openId() === row.id}
               />
             {/each}
           {/if}
@@ -446,6 +455,7 @@
       {/if}
     {/if}
   </div>
+  <RowDrawer bind:this={drawer} {table} {data} />
 </section>
 
 <style>
@@ -587,6 +597,7 @@
   }
   th.gutter {
     width: 28px;
+    min-width: 28px;
   }
   th.actions {
     right: 0;

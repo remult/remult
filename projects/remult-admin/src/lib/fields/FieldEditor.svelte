@@ -20,6 +20,7 @@
     describedby,
     id,
     onedit,
+    onerror,
   }: {
     field: FieldUIInfo
     /** Never written until the user edits: mounting an editor must not dirty a row. */
@@ -35,6 +36,8 @@
     /** Set when an outside label names the control (form). */
     id?: string
     onedit?: () => void
+    /** Form JSON: the text does not parse (undefined once it does). */
+    onerror?: (message: string | undefined) => void
   } = $props()
 
   const kind = $derived(kindOf(field))
@@ -69,7 +72,7 @@
   {:else if kind === 'relation'}
     <RelationField {field} {caption} {...sub} />
   {:else if kind === 'json'}
-    <JsonField {...sub} />
+    <JsonField {...sub} inline={variant === 'form'} {onerror} />
   {:else if kind === 'enum'}
     <EnumField {field} {...sub} />
   {:else if kind === 'boolean'}
@@ -200,6 +203,10 @@
   }
   .num {
     text-align: end;
+  }
+  /* a form reads top to bottom: numbers line up with the other fields */
+  [data-variant='form'] .num {
+    text-align: start;
   }
   .num::-webkit-inner-spin-button {
     display: none;
