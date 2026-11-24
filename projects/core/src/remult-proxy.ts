@@ -175,11 +175,11 @@ export class RemultProxy implements Remult {
           .remultFactory()
           .repo(...args)
           .updateMany(...args2),
-      find: (...args2) =>
+      find: (options?: any) =>
         self
           .remultFactory()
           .repo(...args)
-          .find(...args2),
+          .find(options),
       groupBy: (...args2) =>
         self
           .remultFactory()
@@ -193,36 +193,36 @@ export class RemultProxy implements Remult {
           //@ts-ignore
           .aggregate(...args2) as any,
 
-      findFirst: (...args2) =>
+      findFirst: (where?: any, options?: any) =>
         self
           .remultFactory()
           .repo(...args)
-          .findFirst(...args2),
-      findOne: (...args2) =>
+          .findFirst(where, options),
+      findOne: (options?: any) =>
         self
           .remultFactory()
           .repo(...args)
-          .findOne(...args2),
-      findId: (a, b) =>
+          .findOne(options),
+      findId: (a: any, b?: any) =>
         self
           .remultFactory()
           .repo(...args)
           .findId(a as any, b),
-      findIdOrThrow: (a, b) =>
+      findIdOrThrow: (a: any, b?: any) =>
         self
           .remultFactory()
           .repo(...args)
           .findIdOrThrow(a as any, b),
-      findFirstOrThrow: (...args2) =>
+      findFirstOrThrow: (where?: any, options?: any) =>
         self
           .remultFactory()
           .repo(...args)
-          .findFirstOrThrow(...args2),
-      findOneOrThrow: (...args2) =>
+          .findFirstOrThrow(where, options),
+      findOneOrThrow: (options?: any) =>
         self
           .remultFactory()
           .repo(...args)
-          .findOneOrThrow(...args2),
+          .findOneOrThrow(options),
       //@ts-ignore
       toJson: (json: any) =>
         self
@@ -244,11 +244,11 @@ export class RemultProxy implements Remult {
           .remultFactory()
           .repo(...args)
           .insert(args2, args3),
-      liveQuery: (...args2) =>
+      liveQuery: (options?: any) =>
         self
           .remultFactory()
           .repo(...args)
-          .liveQuery(...args2),
+          .liveQuery(options),
       get metadata() {
         return remultStatic.remultFactory().repo(...args).metadata
       },
