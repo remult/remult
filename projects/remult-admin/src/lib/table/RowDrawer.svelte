@@ -106,7 +106,8 @@
     const result = await data.save(r)
     if (!result.ok && result.busy) return
     if (result.ok) {
-      toast.success(r.isNew ? 'Row added' : 'Row saved')
+      // a saved row flashes in the table, a new one may land off this page
+      if (r.isNew) toast.success('Row added')
       open = false
     } else if (result.message) toast.error(`Save failed: ${result.message}`)
     else body?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()

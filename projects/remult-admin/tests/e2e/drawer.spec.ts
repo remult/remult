@@ -122,7 +122,7 @@ test('edit and save updates the table row', async ({ page }) => {
     await d.getByRole('button', { name: 'Save' }).click()
 
     await expect(d).toHaveCount(0)
-    await expect(toasts(page).getByText('Row saved')).toBeVisible()
+    await expect(rows(page).first()).toHaveAttribute('data-flash', 'saved')
     await expect(
       rows(page).first().getByRole('textbox', { name: 'Title' }),
     ).toHaveValue(`${prefix}-edited`)

@@ -19,9 +19,10 @@
   import Icon from './Icon.svelte'
 </script>
 
+<!-- centred: the drawer footer and the pending bar sit in the corners -->
 <ToastRegion
   side="bottom"
-  align="end"
+  align="center"
   maxVisible={4}
   aria-label="Notifications"
 >
