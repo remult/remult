@@ -107,6 +107,7 @@ test('a validation error shows on the cell and clears on edit', async ({ page })
     const cell = rows(page).first().locator('td[data-invalid]')
     await expect(cell).toHaveCount(1)
     await expect(cell).toContainText(REGEX_EMPTY)
+    await expect(cell.getByText(REGEX_EMPTY)).toBeVisible()
     await expect(titleInput(page)).toHaveAttribute('aria-invalid', 'true')
     await expect(rows(page).first()).toHaveAttribute('data-dirty', '')
 
@@ -131,6 +132,54 @@ test('arrow down moves to the same column on the next row', async ({ page }) => 
     await expect(titleInput(page, 1)).toBeFocused()
     await page.keyboard.press('ArrowUp')
     await expect(titleInput(page, 0)).toBeFocused()
+
+    // date, date time and number inputs keep their own arrow keys
+    const due = rows(page).nth(0).getByRole('textbox', { name: 'Due Date', exact: true })
+    for (const el of [rows(page).nth(0).getByLabel('Reminde Me On', { exact: true }), due]) {
+      await el.focus()
+      await page.keyboard.press('ArrowDown')
+      await expect(el).toBeFocused()
+    }
+    await page.keyboard.press('Escape')
+  } finally {
+    await cleanup(page, prefix)
+  }
+})
+
+test('a half typed date or date time keeps its other parts', async ({ page }) => {
+  const prefix = `e2e-inline-partial-${Date.now()}`
+  await signInAs(page, 'admin')
+  await createTask(page, prefix)
+  try {
+    await page.goto(`/#/entity/tasks?title.startsWith=${prefix}`)
+    await expect(rows(page)).toHaveCount(1)
+    const row = rows(page).first()
+
+    const due = row.getByLabel('Due Date', { exact: true })
+    const remind = row.getByLabel('Reminde Me On', { exact: true })
+    await due.fill('2026-12-02T10:30')
+    await remind.fill('2026-12-01')
+    await page.keyboard.press('ControlOrMeta+Enter')
+    await expect(row).not.toHaveAttribute('data-dirty')
+
+    // en-US segments: month first; a cleared month is a half typed value, not null
+    await due.focus()
+    await page.keyboard.press('Backspace')
+    await expect(row).not.toHaveAttribute('data-dirty')
+    await page.keyboard.type('01')
+    await expect(due).toHaveValue('2026-01-02T10:30')
+
+    await remind.focus()
+    await page.keyboard.press('Backspace')
+    await expect(row.locator('td[data-dirty]')).toHaveCount(1)
+    await page.keyboard.type('03')
+    await expect(remind).toHaveValue('2026-03-01')
+    await expect(row.locator('td[data-dirty]')).toHaveCount(2)
+
+    // Esc alone cancels the focused row (Windows keeps Ctrl+Esc for itself)
+    await expect(row).toHaveAttribute('data-dirty', '')
+    await page.keyboard.press('Escape')
+    await expect(row).not.toHaveAttribute('data-dirty')
   } finally {
     await cleanup(page, prefix)
   }
@@ -198,5 +247,32 @@ test('JSON opens in a dialog, Apply marks the row, invalid JSON blocks Apply', a
   await expect(row.getByRole('button', { name: 'Edit Items (JSON)' })).toContainText('[{"id":7}]')
   await row.getByRole('button', { name: 'Edit Items (JSON)' }).focus()
   await page.keyboard.press('ControlOrMeta+Escape')
+  await expect(row).not.toHaveAttribute('data-dirty')
+})
+
+test('a number keeps its arrow keys, Esc closes an open list before it cancels the row', async ({ page }) => {
+  await signInAs(page, 'admin')
+  await page.goto('/#/entity/deals')
+  await expect(rows(page).first()).toBeVisible()
+  const amount = rows(page).first().getByRole('spinbutton', { name: 'Amount' })
+  await amount.focus()
+  await page.keyboard.press('ArrowDown')
+  await expect(amount).toBeFocused()
+  await page.keyboard.press('Escape')
+  await expect(page.locator('tbody tr[data-dirty]')).toHaveCount(0)
+
+  await page.goto('/#/entity/companies')
+  await expect(rows(page).first()).toBeVisible()
+  const row = rows(page).first()
+  const size = row.getByRole('combobox', { name: 'Size' })
+  await size.click()
+  await page.getByRole('option').nth(4).click()
+  await expect(row).toHaveAttribute('data-dirty', '')
+  await size.click()
+  await expect(page.getByRole('listbox')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('listbox')).toBeHidden()
+  await expect(row).toHaveAttribute('data-dirty', '')
+  await page.keyboard.press('Escape')
   await expect(row).not.toHaveAttribute('data-dirty')
 })

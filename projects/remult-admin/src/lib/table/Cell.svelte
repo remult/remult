@@ -6,6 +6,7 @@
   import type { FieldUIInfo } from '../../../../core/server/remult-admin'
   import { kindOf } from '../fields/field-kind.js'
   import FieldEditor from '../fields/FieldEditor.svelte'
+  import Icon from '../shell/Icon.svelte'
 
   let {
     field,
@@ -51,6 +52,7 @@
     {onedit}
   />
   {#if error}
+    <span class="error-icon" title={error} aria-hidden="true"><Icon name="alert" size={13} /></span>
     <span class="error" id={errorId}>{error}</span>
   {/if}
 </td>
@@ -87,7 +89,24 @@
     background: var(--danger-soft);
     box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--danger) 60%, transparent);
   }
+  .cell[data-invalid] :global(.editor) {
+    padding-inline-end: 20px;
+  }
+  .error-icon {
+    position: absolute;
+    top: 50%;
+    inset-inline-end: 5px;
+    display: flex;
+    translate: 0 -50%;
+    color: var(--danger);
+  }
+  /* the message is a tooltip: it only covers the next row while you look at this cell */
   .error {
+    visibility: hidden;
+    opacity: 0;
+    transition:
+      opacity 120ms var(--ease-out),
+      visibility 0s linear 120ms;
     position: absolute;
     top: calc(100% - 2px);
     inset-inline-start: 4px;
@@ -103,5 +122,12 @@
     line-height: 16px;
     text-overflow: ellipsis;
     pointer-events: none;
+  }
+  .cell:is(:hover, :focus-within) .error {
+    visibility: visible;
+    opacity: 1;
+    transition:
+      opacity 120ms var(--ease-out),
+      visibility 0s;
   }
 </style>

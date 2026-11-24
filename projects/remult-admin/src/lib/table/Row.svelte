@@ -119,7 +119,7 @@
           data-icon
           type="button"
           aria-label={isNew ? 'Discard new row' : 'Cancel changes'}
-          title={`${isNew ? 'Discard' : 'Cancel'} (${modKey}+Esc, +Shift for all)`}
+          title={`${isNew ? 'Discard' : 'Cancel'} (Esc, Shift+Esc for all)`}
           disabled={busy}
           onclick={() => oncancel(row)}
         >

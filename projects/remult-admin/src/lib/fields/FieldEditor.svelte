@@ -99,28 +99,22 @@
       data-cell-focus
       bind:value={() => (value ?? null) as number | null, (v) => set(v ?? null)}
     />
-  {:else if kind === 'date'}
+  {:else if kind === 'date' || kind === 'datetime'}
     <input
       {...a11y}
       class="ctl"
-      type="date"
+      type={kind === 'date' ? 'date' : 'datetime-local'}
       readonly={busy}
       data-empty={empty ? '' : undefined}
       data-cell-focus
-      bind:value={() => (value ?? '') as string, (v) => set(v || null)}
-    />
-  {:else if kind === 'datetime'}
-    <input
-      {...a11y}
-      class="ctl"
-      type="datetime-local"
-      readonly={busy}
-      data-empty={empty ? '' : undefined}
-      data-cell-focus
-      value={toLocalInput(value)}
+      value={kind === 'date' ? String(value ?? '') : toLocalInput(value)}
       oninput={(e) => {
+        const el = e.currentTarget
+        // a half typed value reads as '': keep the stored one until it is complete
+        if (el.validity.badInput) return
+        if (kind === 'date') set(el.value || null)
         // same minute as shown: keep the stored instant (and its seconds)
-        if (e.currentTarget.value !== toLocalInput(value)) set(fromLocalInput(e.currentTarget.value))
+        else if (el.value !== toLocalInput(value)) set(fromLocalInput(el.value))
       }}
     />
   {:else if kind === 'color'}

@@ -201,7 +201,10 @@
     const target = e.target as HTMLElement
     // a dialog or a nested table above us owns its keys
     if (e.defaultPrevented || target.closest('[role="dialog"]')) return
-    if ((e.ctrlKey || e.metaKey) && (e.key === 'Enter' || e.key === 'Escape')) {
+    const mod = e.ctrlKey || e.metaKey
+    // plain Esc too: Windows keeps Ctrl+Esc for itself; an open list closes first
+    const cancel = e.key === 'Escape' && !e.altKey && !target.closest('[role="listbox"], [aria-expanded="true"]')
+    if ((mod && e.key === 'Enter') || cancel) {
       const one = rowOf(target)
       const rows = e.shiftKey ? data.dirtyRows() : one && (one.isNew || one.draft.dirty) ? [one] : []
       if (!rows.length) return
@@ -214,9 +217,12 @@
       moveVertical(e, target)
   }
 
+  // these use the arrow keys themselves: step a number, a date part, or move in a list
+  const OWN_ARROWS = 'input[type="number"], input[type="date"], input[type="datetime-local"], [role="combobox"]'
+
   // same column, next row that has an editor there
   function moveVertical(e: KeyboardEvent, target: HTMLElement) {
-    if (!target.matches('[data-cell-focus]')) return
+    if (!target.matches('[data-cell-focus]') || target.matches(OWN_ARROWS)) return
     const td = target.closest('td')
     const tr = td?.parentElement as HTMLTableRowElement | null
     if (!td || !tr) return

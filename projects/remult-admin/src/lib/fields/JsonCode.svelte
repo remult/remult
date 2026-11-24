@@ -1,11 +1,22 @@
 <script lang="ts">
   import { json } from '@codemirror/lang-json'
+  import { HighlightStyle, syntaxHighlighting } from '@codemirror/language'
+  import { tags as t } from '@lezer/highlight'
   import { EditorView, minimalSetup } from 'codemirror'
   import { untrack } from 'svelte'
 
   let { doc, onchange }: { doc: string; onchange: (text: string) => void } = $props()
 
   let host: HTMLDivElement
+
+  // theme tokens, so light and dark both read (the default style is tuned for white only)
+  const highlight = HighlightStyle.define([
+    { tag: t.propertyName, color: 'var(--accent)' },
+    { tag: t.string, color: 'var(--success)' },
+    { tag: t.number, color: 'var(--warning)' },
+    { tag: [t.bool, t.null], color: 'var(--danger)' },
+    { tag: [t.brace, t.squareBracket, t.separator, t.punctuation], color: 'var(--text-muted)' },
+  ])
 
   $effect(() => {
     // static imports: the admin ships as one file anyway, and they tree-shake (basicSetup stays out)
@@ -14,6 +25,7 @@
       parent: host,
       extensions: [
         minimalSetup,
+        syntaxHighlighting(highlight),
         json(),
         EditorView.lineWrapping,
         EditorView.updateListener.of((u) => {
