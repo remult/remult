@@ -86,6 +86,27 @@ export function aggregateTest(
     })
     expect(results[0].date.max.getFullYear()).toBe(2021)
   })
+  it('avg, min and max are null when there is no value', async () => {
+    @Entity('testAggregateNoValues', { allowApiCrud: true })
+    class testAggregateNoValues {
+      @Fields.integer()
+      id = 0
+      @Fields.number({ allowNull: true })
+      price: number | null = null
+    }
+    const r = await createEntity(testAggregateNoValues)
+    await r.insert([{ id: 1, price: null }])
+    for (const where of [{}, { id: 2 }]) {
+      const result = await r.aggregate({
+        sum: ['price'],
+        avg: ['price'],
+        min: ['price'],
+        max: ['price'],
+        where,
+      })
+      expect(result.price).toEqual({ sum: 0, avg: null, min: null, max: null })
+    }
+  })
   async function repo() {
     const cat = await createEntity(Category)
     const c = await cat.insert([

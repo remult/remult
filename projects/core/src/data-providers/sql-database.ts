@@ -1071,7 +1071,9 @@ export async function buildGroupBySql(
         const turnToNumber =
           x.valueType === Number || operator == 'distinctCount'
         processResultRow.push((sqlResult, theResult) => {
-          if (turnToNumber) sqlResult = Number(sqlResult)
+          // AVG, MIN and MAX are NULL when there is no value; keep it instead of turning it into 0
+          if (turnToNumber && !(sqlResult == null && operator !== 'sum'))
+            sqlResult = Number(sqlResult)
           if (operator === 'max' || operator === 'min')
             sqlResult = fromDbColumn(x, sqlResult, jsonColumnStorage)
           theResult[x.key] = { ...theResult[x.key], [operator]: sqlResult }
