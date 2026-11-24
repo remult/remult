@@ -5,12 +5,15 @@
   import { settings } from '../core/settings.svelte.js'
   import Icon, { type IconName } from '../shell/Icon.svelte'
   import PrefilterBadge from '../shell/PrefilterBadge.svelte'
-  import type { EntityNode } from './layout.js'
+  import { shownFields, type EntityNode } from './layout.js'
 
   let { data, selected }: NodeProps<EntityNode> = $props()
 
   // undefined for a moment after a reload drops the entity, until the page lays out again
   const table = $derived(god.bySuperKey(data.superKey))
+  const shown = $derived(
+    table ? shownFields(table, data.compact) : { fields: [], more: 0 },
+  )
   const name = (x: { caption: string; key: string }) =>
     settings.displayCaption ? x.caption : x.key
 
@@ -71,7 +74,7 @@
       <span class="go"><Icon name="arrow-up-right" size={13} /></span>
     </a>
     <ul class="rows">
-      {#each table.fields as f (f.key)}
+      {#each shown.fields as f (f.key)}
         <li
           class="row"
           data-id={table.ids[f.key] ? '' : undefined}
@@ -115,6 +118,14 @@
           />
         </li>
       {/each}
+      {#if shown.more}
+        <li class="row more">
+          <span class="icon"></span>
+          <span class="name"
+            >+{shown.more} {shown.more === 1 ? 'field' : 'fields'}</span
+          >
+        </li>
+      {/if}
     </ul>
   </div>
 {/if}
@@ -203,6 +214,10 @@
   .icon {
     display: flex;
     color: var(--text-faint);
+  }
+  .row.more .name {
+    color: var(--text-faint);
+    font-size: var(--text-xs);
   }
   .row[data-id] .icon {
     color: var(--warning);

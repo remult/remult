@@ -269,6 +269,7 @@
             onchange={(e) =>
               arrangeSchema(e.currentTarget.value as Settings['diagramLayout'])}
           >
+            <option value="layered">Layered</option>
             <option value="grid-dfs">Grid, depth first</option>
             <option value="grid-bfs">Grid, breadth first</option>
             <option value="line">Line</option>

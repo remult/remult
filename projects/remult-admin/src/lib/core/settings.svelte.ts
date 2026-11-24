@@ -7,7 +7,9 @@ export type Settings = {
   displayCaption: boolean
   numberOfRows: number
   confirmDelete: boolean
-  diagramLayout: 'grid-bfs' | 'grid-dfs' | 'line'
+  diagramLayout: 'layered' | 'grid-bfs' | 'grid-dfs' | 'line'
+  /** Schema nodes list every field, or only ids and relations. */
+  schemaAllFields: boolean
   keyForBearerAuth: string
   disableLiveQuery: boolean | undefined
   customHeaders: string
@@ -25,7 +27,8 @@ const settingsDefaults = (): Settings => ({
   displayCaption: true,
   numberOfRows: 25,
   confirmDelete: true,
-  diagramLayout: 'grid-dfs',
+  diagramLayout: 'layered',
+  schemaAllFields: false,
   keyForBearerAuth: '',
   disableLiveQuery: undefined,
   customHeaders: '',

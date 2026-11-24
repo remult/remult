@@ -139,3 +139,16 @@ test('picking a layout arranges every node with it, moved ones too', async ({
   )
   expect(new Set(ys)).toEqual(new Set(['0px)']))
 })
+
+test('layered nodes list ids and relations, All fields lists the rest', async ({
+  page,
+}) => {
+  await signInAs(page, 'admin')
+  await page.goto('/#/schema')
+  const deals = node(page, 'deals')
+  await expect(deals.locator('.row.more')).toHaveText('+10 fields')
+  await expect(deals.locator('.row', { hasText: 'Amount' })).toHaveCount(0)
+  await page.getByLabel('All fields').check()
+  await expect(deals.locator('.row', { hasText: 'Amount' })).toHaveCount(1)
+  await expect(deals.locator('.row.more')).toHaveCount(0)
+})

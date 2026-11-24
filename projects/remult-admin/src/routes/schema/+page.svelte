@@ -8,12 +8,14 @@
     MiniMap,
     SvelteFlow,
     type EdgeMarker,
+    type EdgeTypes,
     type NodeTypes,
   } from '@xyflow/svelte'
   import { untrack } from 'svelte'
   import { god } from '#lib/core/god.svelte.js'
   import { arrangeSchema, settings } from '#lib/core/settings.svelte.js'
   import EntityNodeView from '#lib/schema/EntityNode.svelte'
+  import RoutedEdge from '#lib/schema/RoutedEdge.svelte'
   import {
     edgesFor,
     layoutEntities,
@@ -25,7 +27,13 @@
   import { shell } from '#lib/shell/shell.svelte.js'
 
   const nodeTypes: NodeTypes = { entity: EntityNodeView }
+  const edgeTypes: EdgeTypes = { routed: RoutedEdge }
   const layouts: { value: DiagramLayout; label: string; title: string }[] = [
+    {
+      value: 'layered',
+      label: 'Layered',
+      title: 'Parents left, children right, fewest crossings',
+    },
     {
       value: 'grid-dfs',
       label: 'Grid',
@@ -40,16 +48,20 @@
   ]
 
   let nodes: EntityNode[] = $state.raw([])
+  let routed: ReturnType<typeof layoutEntities>['routed'] = $state.raw()
   let hovered: string | undefined = $state()
   // a new flow fits the view again
   let version = $state(0)
 
   function relayout() {
-    nodes = layoutEntities(
+    const l = layoutEntities(
       god.visibleTables,
       settings.diagramLayout,
       settings.schemaPositions,
-    ).nodes
+      settings.diagramLayout === 'layered' && !settings.schemaAllFields,
+    )
+    nodes = l.nodes
+    routed = l.routed
   }
 
   let laidOut = false
@@ -57,6 +69,7 @@
   $effect(() => {
     void god.visibleTables
     void settings.diagramLayout
+    void settings.schemaAllFields
     untrack(() => {
       relayout()
       if (laidOut) version++
@@ -67,7 +80,7 @@
   const edges = $derived.by(() => {
     const positions: Record<string, XY> = {}
     for (const n of nodes) positions[n.id] = n.position
-    return edgesFor(god.visibleTables, positions).map((e) => {
+    return edgesFor(god.visibleTables, positions, routed).map((e) => {
       if (!hovered || (e.source !== hovered && e.target !== hovered)) return e
       const markerEnd = {
         ...(e.markerEnd as EdgeMarker),
@@ -120,6 +133,12 @@
         </label>
       {/each}
     </div>
+    {#if settings.diagramLayout === 'layered'}
+      <label class="check" title="List every field, not only ids and relations">
+        <input type="checkbox" bind:checked={settings.schemaAllFields} />
+        All fields
+      </label>
+    {/if}
     <button
       class="btn"
       type="button"
@@ -143,6 +162,7 @@
           bind:nodes
           {edges}
           {nodeTypes}
+          {edgeTypes}
           fitView
           fitViewOptions={{ padding: 40, maxZoom: 1 }}
           minZoom={0.1}
@@ -223,6 +243,15 @@
     border-radius: 7px;
     background: var(--bg-inset);
     box-shadow: inset 0 0 0 1px var(--border);
+  }
+  .check {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 6px;
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+    cursor: pointer;
   }
   .seg {
     position: relative;

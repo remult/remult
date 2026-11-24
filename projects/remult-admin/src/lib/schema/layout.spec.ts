@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { TableInfo } from '../core/god.svelte.js'
 import { field } from '../query/fixtures.js'
-import { edgesFor, layoutEntities } from './layout.js'
+import { edgesFor, layered, layoutEntities, NODE_WIDTH } from './layout.js'
 
 function table(key: string, p: Partial<TableInfo> = {}): TableInfo {
   return {
@@ -67,7 +67,6 @@ describe('layoutEntities', () => {
     expect(r.edges.map((e) => [e.source, e.target, e.id])).toEqual([
       ['a', 'b', 'a.b'],
       ['b', 'c', 'b.c'],
-      ['b', 'a', 'b.as'],
     ])
   })
 
@@ -160,7 +159,8 @@ describe('layoutEntities', () => {
     )
     expect(e['a.b']).toEqual(['b-r', 'in-l'])
     expect(e['b.c']).toEqual(['c-l', 'in-r'])
-    expect(e['b.as']).toEqual(['as-l', 'in-r'])
+    // the to-one a.b already draws it
+    expect(e['b.as']).toBeUndefined()
   })
 
   it('a self relation loops on the right, edges follow moved nodes', () => {
@@ -181,5 +181,66 @@ describe('layoutEntities', () => {
       sourceHandle: 'b-l',
       targetHandle: 'in-r',
     })
+  })
+})
+
+describe('layered', () => {
+  // c is the root, b points to c, a to b and c (a long link over b's column), x alone
+  const graph = [
+    table('a', {
+      fields: [field({ key: 'id' }), toOne('b', 'b'), toOne('c', 'c')],
+    }),
+    table('b', { fields: [field({ key: 'id' }), toOne('c', 'c')] }),
+    table('c', { relations: [toMany('bs', 'b')] }),
+    table('x'),
+  ]
+  const boxes = (l: ReturnType<typeof layered>) =>
+    Object.entries(l.positions).map(([k, p]) => ({ k, ...p, w: NODE_WIDTH }))
+
+  it('puts parents left of their children', () => {
+    const { positions: p } = layered(graph)
+    expect(p.c.x).toBeLessThan(p.b.x)
+    expect(p.b.x).toBeLessThan(p.a.x)
+  })
+
+  it('routes a long link through the column it crosses, clear of its nodes', () => {
+    const l = layered(graph)
+    const via = l.routes['a.c']
+    expect(via).toHaveLength(2)
+    const b = l.positions.b
+    // the lane runs over b's column, above or below b
+    expect(via[0].x).toBe(b.x + NODE_WIDTH)
+    expect(via[1].x).toBe(b.x)
+    const inB = (y: number) => y > b.y && y < b.y + 100
+    expect(via.some((v) => inB(v.y))).toBe(false)
+  })
+
+  it('no two nodes overlap, entities without links go under a column', () => {
+    const l = layered(graph)
+    const bs = boxes(l)
+    for (const a of bs)
+      for (const b of bs) {
+        if (a.k >= b.k || a.x !== b.x) continue
+        expect(Math.abs(a.y - b.y)).toBeGreaterThan(40)
+      }
+    const col = Object.entries(l.positions).find(
+      ([k, p]) => k !== 'x' && p.x === l.positions.x.x,
+    )!
+    expect(l.positions.x.y).toBeGreaterThan(col[1].y)
+  })
+
+  it('is deterministic', () => {
+    expect(layered(graph)).toEqual(layered(graph))
+  })
+
+  it('draws one edge per relationship, the to-one side', () => {
+    const r = layoutEntities(graph, 'layered', {})
+    expect(r.edges.map((e) => e.id).sort()).toEqual(['a.b', 'a.c', 'b.c'])
+    expect(r.edges.find((e) => e.id === 'a.c')?.data?.via).toHaveLength(2)
+  })
+
+  it('a moved node drops the routes of its edges', () => {
+    const r = layoutEntities(graph, 'layered', { a: { x: 5000, y: 0 } })
+    expect(r.edges.find((e) => e.id === 'a.c')?.data?.via).toBeUndefined()
   })
 })
