@@ -6,7 +6,7 @@ export function targetKeyOf(rel: Pick<FieldRelationToOneInfo, 'fields'>, valFiel
   return (entries.find(([, source]) => source === valFieldKey) ?? entries[0])?.[0]
 }
 
-const filled = (v: unknown) => v !== undefined && v !== null && v !== ''
+export const filled = (v: unknown) => v !== undefined && v !== null && v !== ''
 
 /** The caption field, else the first other filled key: the server can hide the caption field on some rows. */
 export function captionOf(item: Record<string, any>, captionField: string, fallbackKeys: string[] = []): unknown {

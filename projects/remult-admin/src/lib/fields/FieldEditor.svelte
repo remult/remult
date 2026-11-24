@@ -1,6 +1,12 @@
+<script lang="ts" module>
+  /** Ms to let the table's batch answer before looking one caption up. */
+  const CAPTION_LOOKUP_DELAY_MS = 400
+</script>
+
 <script lang="ts">
   import type { FieldUIInfo } from '../../../../core/server/remult-admin'
   import { settings } from '../core/settings.svelte.js'
+  import { filled } from '../core/relation-captions.js'
   import { captions } from '../relations/caption-cache.svelte.js'
   import Icon from '../shell/Icon.svelte'
   import Display from './Display.svelte'
@@ -50,7 +56,6 @@
 
   const empty = $derived(value === undefined || value === null || value === '')
 
-  const filled = (x: unknown) => x !== undefined && x !== null && x !== ''
   // the page's batch caption first; a value it doesn't cover (just picked, or a missed batch) is looked up
   const relationCaption = $derived(
     kind !== 'relation' || filled(caption) || empty ? caption : captions.get(field, value),
@@ -59,7 +64,7 @@
     if (kind !== 'relation' || empty || filled(relationCaption)) return
     const v = value
     // the table's batch usually answers first: only ask for what it leaves out
-    const t = setTimeout(() => captions.request(field, v), 400)
+    const t = setTimeout(() => captions.request(field, v), CAPTION_LOOKUP_DELAY_MS)
     return () => clearTimeout(t)
   })
 

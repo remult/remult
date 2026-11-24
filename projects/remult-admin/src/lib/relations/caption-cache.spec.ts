@@ -40,3 +40,19 @@ describe('CaptionCache', () => {
     expect(cache.get(am, '1')).toBeUndefined()
   })
 })
+
+describe('CaptionCache on a non-id target field', () => {
+  // contacts.company: the row holds companyId, matched on Company.companyId ('id:' + id), not Company.id
+  const company = field({
+    key: 'company',
+    valFieldKey: 'companyId',
+    relationToOne: { entityKey: 'companies', fields: { companyId: 'companyId' }, captionField: 'name' } as any,
+  })
+  it('stores and finds captions by the row value', async () => {
+    const load = vi.fn(async (_f, ids: unknown[]) => new Map(ids.map((id) => [id, 'Acme'])))
+    const cache = new CaptionCache(load)
+    cache.request(company, 'id:c1')
+    await vi.waitFor(() => expect(cache.get(company, 'id:c1')).toBe('Acme'))
+    expect(load.mock.calls[0][1]).toEqual(['id:c1'])
+  })
+})

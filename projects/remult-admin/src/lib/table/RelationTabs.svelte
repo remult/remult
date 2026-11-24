@@ -1,10 +1,10 @@
 <script lang="ts">
   import { tick } from 'svelte'
-  import type { EntityFilter } from '../../../../core/index.js'
   import type { EntityRelationToManyInfo } from '../../../../core/server/remult-admin'
   import { Filter } from '../../../../core/src/filter/filter-interfaces.js'
   import { god, type TableInfo } from '../core/god.svelte.js'
   import { settings } from '../core/settings.svelte.js'
+  import { relationWhere } from '../relations/relation-where.js'
   import Table from './Table.svelte'
 
   let {
@@ -26,17 +26,15 @@
   // svelte-ignore state_referenced_locally
   let tab = $state(relations[0]?.key ?? '')
 
-  function whereFor(rel: EntityRelationToManyInfo, t: TableInfo): EntityFilter<any> {
-    const own = Object.fromEntries(Object.entries(rel.fields).map(([k, v]) => [k, values[v]]))
-    const extra = rel.where ? Filter.entityFilterFromJson(t.repo.metadata, rel.where) : {}
-    // the relation's own keys win: a child row always belongs to this parent
-    return { ...extra, ...own }
+  function whereFor(rel: EntityRelationToManyInfo, t: TableInfo) {
+    return relationWhere(rel, values, (json) => Filter.entityFilterFromJson(t.repo.metadata, json))
   }
 
   const name = (x: { caption: string; key: string }) => (settings.displayCaption ? x.caption : x.key)
 
   const uid = $props.id()
   const current = $derived(targets.find((x) => x.rel.key === tab) ?? targets[0])
+  const where = $derived(current?.table ? whereFor(current.rel, current.table) : undefined)
   let list: HTMLElement | undefined = $state()
 
   // a hand rolled tab list: the ui-sdk one costs more bytes than this panel is worth
@@ -79,10 +77,12 @@
   </div>
   {#if current}
     <div class="rel-panel" role="tabpanel" id={`${uid}-panel`} aria-labelledby={`${uid}-${current.rel.key}`}>
-      {#if current.table}
-        {#key current}
-          <Table table={current.table} parentWhere={whereFor(current.rel, current.table)} />
+      {#if current.table && where}
+        {#key current.rel.key}
+          <Table table={current.table} parentWhere={where} />
         {/key}
+      {:else if current.table}
+        <p class="missing">No {name(current.rel)}: this row has nothing to match them on.</p>
       {:else}
         <p class="missing">{name(current.rel)} is not available to you.</p>
       {/if}

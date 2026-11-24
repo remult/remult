@@ -8,7 +8,7 @@
     SelectValue,
   } from '@ui-sdk/svelte/select'
   import type { FieldUIInfo } from '../../../../core/server/remult-admin'
-  import { choiceOf, isComplete, opChoices } from '../query/filter-labels.js'
+  import { choiceOf, isComplete, isDate as isDateField, isNumber as isNumberField, opChoices } from '../query/filter-labels.js'
   import type { FilterChip } from '../query/filter-model.js'
   import Icon from '../shell/Icon.svelte'
   import FilterDate from './FilterDate.svelte'
@@ -41,8 +41,8 @@
   let value2: unknown = $state(chip?.value2)
 
   const choice = $derived(choices.find((c) => c.id === choiceId) ?? choices[0])
-  const isDate = $derived(field.type === 'date' && !field.values.length && !field.relationToOne)
-  const isNumber = $derived(field.type === 'number' && !field.values.length && !field.relationToOne)
+  const isDate = $derived(isDateField(field))
+  const isNumber = $derived(isNumberField(field))
   const list = $derived(Array.isArray(value) ? value : [])
 
   const draft: FilterChip = $derived.by(() => {

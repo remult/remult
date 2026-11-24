@@ -139,6 +139,8 @@ test('relation chip by search shows the caption, also from a fresh link', async 
   await expect(chips(page).first()).not.toContainText(BASHIRIAN)
   const expected = await count(page, 'contacts', { 'companyId.in': JSON.stringify([BASHIRIAN]) })
   await expectTotal(page, expected)
+  // the relation targets Company.companyId ('id:' + id), not Company.id: the cell still shows the name
+  await expect(rows(page).first().getByRole('button', { name: 'Company: Bashirian LLC' })).toBeVisible()
 
   // a reload knows only the id: the caption is looked up
   await page.reload()

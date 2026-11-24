@@ -9,8 +9,9 @@ export type OpChoice = { id: string; op: FilterOp; label: string; arity: Arity; 
 
 const REGEX_YMD_PARTS = /^(\d{4})-(\d{2})-(\d{2})$/
 
-const isDate = (f: FieldUIInfo) => f.type === 'date' && !f.values.length && !f.relationToOne
-const isNumber = (f: FieldUIInfo) => f.type === 'number' && !f.values.length && !f.relationToOne
+/** A plain date field (not a value list or relation stored as a date). */
+export const isDate = (f: FieldUIInfo) => f.type === 'date' && !f.values.length && !f.relationToOne
+export const isNumber = (f: FieldUIInfo) => f.type === 'number' && !f.values.length && !f.relationToOne
 
 function label(f: FieldUIInfo, op: FilterOp): string {
   if (op === 'in') return 'is any of'
