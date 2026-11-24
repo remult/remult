@@ -583,6 +583,16 @@ export interface Repository<entityType> {
     options?: FindFirstOptions<entityType>,
   ): Promise<entityType | undefined>
   /** returns the items that matches the id. If id is undefined | null, returns null */
+  findId<
+    const select extends EntitySelectFields<entityType>,
+    const include extends MembersToInclude<entityType> = {},
+  >(
+    id: idType<entityType>,
+    options: FindFirstOptionsBase<entityType> & {
+      select: select
+      include?: include
+    },
+  ): Promise<SelectResult<entityType, select, include> | undefined | null>
   findId<const include extends MembersToInclude<entityType>>(
     id: idType<entityType>,
     options: FindFirstOptionsBase<entityType> & { include: include },
@@ -595,6 +605,16 @@ export interface Repository<entityType> {
    * @example
    * const task = await taskRepo.findIdOrThrow(id)
    */
+  findIdOrThrow<
+    const select extends EntitySelectFields<entityType>,
+    const include extends MembersToInclude<entityType> = {},
+  >(
+    id: idType<entityType>,
+    options: FindFirstOptionsBase<entityType> & {
+      select: select
+      include?: include
+    },
+  ): Promise<SelectResult<entityType, select, include>>
   findIdOrThrow<const include extends MembersToInclude<entityType>>(
     id: idType<entityType>,
     options: FindFirstOptionsBase<entityType> & { include: include },
@@ -607,6 +627,16 @@ export interface Repository<entityType> {
    * @example
    * await taskRepo.findFirstOrThrow({ completed: false })
    */
+  findFirstOrThrow<
+    const select extends EntitySelectFields<entityType>,
+    const include extends MembersToInclude<entityType> = {},
+  >(
+    where: EntityFilter<entityType> | undefined,
+    options: FindFirstOptions<entityType> & {
+      select: select
+      include?: include
+    },
+  ): Promise<SelectResult<entityType, select, include>>
   findFirstOrThrow<const include extends MembersToInclude<entityType>>(
     where: EntityFilter<entityType> | undefined,
     options: FindFirstOptions<entityType> & { include: include },
@@ -619,6 +649,15 @@ export interface Repository<entityType> {
    * @example
    * await taskRepo.findOneOrThrow({ where: { completed: false } })
    */
+  findOneOrThrow<
+    const select extends EntitySelectFields<entityType>,
+    const include extends MembersToInclude<entityType> = {},
+  >(
+    options: FindFirstOptions<entityType> & {
+      select: select
+      include?: include
+    },
+  ): Promise<SelectResult<entityType, select, include>>
   findOneOrThrow<const include extends MembersToInclude<entityType>>(
     options: FindFirstOptions<entityType> & { include: include },
   ): Promise<IncludeResult<entityType, include>>
@@ -1681,8 +1720,9 @@ type LoadedKeys<entityType, include> = {
  * default because a narrowed result is no longer assignable from a plain entity, e.g. reassigning
  * the variable from `insert`.
  *
- * `typedSelect: true` makes `find`, `findFirst` and `findOne` return {@link Selected} when called
- * with a literal `select`, and narrows a `select` inside an `include` too. It's off by default
+ * `typedSelect: true` makes `find`, `findFirst`, `findOne`, `findId` and their `OrThrow` versions
+ * return {@link Selected} when called with a literal `select`, and narrows a `select` inside an
+ * `include` too. It's off by default
  * because a selected row is no longer assignable to the entity type.
  * @example
  * // remult-types.d.ts

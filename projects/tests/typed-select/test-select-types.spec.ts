@@ -78,6 +78,21 @@ describe('test select types', () => {
       Omit<Task, 'id' | 'completed' | 'categoryId' | 'category'>
     >()
   })
+  it('findId and the OrThrow finders drop the members select leaves out', async () => {
+    const repo = remult.repo(Task)
+    const select = { title: true } as const
+    type Row = Omit<Task, 'id' | 'completed' | 'categoryId' | 'category'>
+    const byId = await repo.findId(101, { select })
+    expectTypeOf(byId).toEqualTypeOf<Row | undefined | null>()
+    expect(byId!.title).toBe('task1')
+    expectTypeOf(await repo.findIdOrThrow(101, { select })).toEqualTypeOf<Row>()
+    expectTypeOf(
+      await repo.findFirstOrThrow({}, { select }),
+    ).toEqualTypeOf<Row>()
+    const one = await repo.findOneOrThrow({ select })
+    expectTypeOf(one).toEqualTypeOf<Row>()
+    expect(one.title).toBe('task1')
+  })
   it('widened select keeps the entity type', async () => {
     const select: EntitySelectFields<Task> = { title: true }
     expectTypeOf(await remult.repo(Task).find({ select })).toEqualTypeOf<
