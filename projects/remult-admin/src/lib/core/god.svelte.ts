@@ -9,9 +9,13 @@ import type { FindOptions, Repository } from '../../../../core/src/remult3/remul
 import { Fields } from '../../../../core/src/remult3/Fields'
 import { Entity } from '../../../../core/src/remult3/entity'
 import { buildHeaders, createHttpClient } from './http.js'
+import { relationCaptions } from './relation-captions.js'
 import { session, settings } from './settings.svelte.js'
 
 export type TableInfo = EntityUIInfo & { repo: Repository<any> }
+
+// server cap per request (ADMIN_ROW_PERMISSIONS_MAX_IDS)
+const ROW_PERMISSIONS_MAX_IDS = 200
 
 function hues(count: number) {
   return Array.from({ length: count }, (_, i) => String((i * 360) / count))
@@ -50,7 +54,9 @@ export function buildTables(infos: EntityUIInfo[]): TableInfo[] {
         allowApiUpdate: allowed(info.permissions.update),
         allowApiDelete: allowed(info.permissions.delete),
       })(C)
-      return { ...info, color: colors[i], repo: remult.repo(C) }
+      // JSON drops undefined: restore what FieldUIInfo promises
+      const fields = info.fields.map((f) => ({ ...f, values: f.values ?? [], inputType: f.inputType ?? '' }))
+      return { ...info, fields, color: colors[i], repo: remult.repo(C) }
     })
 }
 
@@ -169,13 +175,15 @@ class God {
     if (!t)
       return { [k]: new Map(values.map((x) => [x[k], `Forbidden (${x[k]})`])) }
 
+    const present = values.filter((x) => x[k] !== undefined && x[k] !== null && x[k] !== '')
+    if (!present.length) return { [k]: new Map() }
     const keys = Object.keys(rel.fields)
     const o: FindOptions<any> =
       keys.length === 1
-        ? { where: { [keys[0]]: values.map((x) => x[k]) } }
+        ? { where: { [keys[0]]: [...new Set(present.map((x) => x[k]))] } }
         : {
             where: {
-              $or: values.map((x) => ({
+              $or: present.map((x) => ({
                 $and: Object.entries(rel.fields).map(([key, value]) => ({
                   [key]: x[value],
                 })),
@@ -183,10 +191,23 @@ class God {
             },
           }
 
-    const items = await t.repo.find(o)
-    if (!items || items.length === 0)
-      return { [k]: new Map(values.map((x) => [x[k], `not found (${x[k]})`])) }
-    return { [k]: new Map(items.map((item) => [item.id, item[rel.captionField]])) }
+    const items = await t.repo.find({ ...o, limit: present.length })
+    return { [k]: relationCaptions(rel, k, items) }
+  }
+
+  /** Per row update/delete verdicts, for entities whose rules depend on the row. */
+  async rowPermissions(superKey: string, ids: string[]) {
+    const out: Record<string, { update: boolean; delete: boolean }> = {}
+    for (let i = 0; i < ids.length; i += ROW_PERMISSIONS_MAX_IDS) {
+      const res = await fetch(`${apiUrl()}/admin/__row-permissions`, {
+        method: 'POST',
+        headers: headers({ 'content-type': 'application/json' }),
+        body: JSON.stringify({ superKey, ids: ids.slice(i, i + ROW_PERMISSIONS_MAX_IDS) }),
+      })
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`.trim())
+      Object.assign(out, await res.json())
+    }
+    return out
   }
 }
 
