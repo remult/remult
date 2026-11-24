@@ -8,7 +8,9 @@
 
 :root {
   color-scheme: light;
-  --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
   --mono: ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace;
 
   --text-xs: 11px;
@@ -49,7 +51,9 @@
   --warning: oklch(0.52 0.12 65);
   --hue-l: 0.62;
   --hue-c: 0.15;
-  --shadow-pop: 0 1px 2px oklch(0.2 0.02 260 / 0.06), 0 8px 24px -4px oklch(0.2 0.02 260 / 0.14),
+  --shadow-pop:
+    0 1px 2px oklch(0.2 0.02 260 / 0.06),
+    0 8px 24px -4px oklch(0.2 0.02 260 / 0.14),
     0 24px 48px -12px oklch(0.2 0.02 260 / 0.18);
   --scrim: oklch(0.2 0.02 260 / 0.28);
 }
@@ -78,7 +82,8 @@
     --warning: oklch(0.8 0.13 80);
     --hue-l: 0.72;
     --hue-c: 0.13;
-    --shadow-pop: 0 1px 2px oklch(0 0 0 / 0.3), 0 12px 32px -6px oklch(0 0 0 / 0.5);
+    --shadow-pop:
+      0 1px 2px oklch(0 0 0 / 0.3), 0 12px 32px -6px oklch(0 0 0 / 0.5);
     --scrim: oklch(0 0 0 / 0.5);
   }
 }
@@ -106,7 +111,8 @@
   --warning: oklch(0.8 0.13 80);
   --hue-l: 0.72;
   --hue-c: 0.13;
-  --shadow-pop: 0 1px 2px oklch(0 0 0 / 0.3), 0 12px 32px -6px oklch(0 0 0 / 0.5);
+  --shadow-pop:
+    0 1px 2px oklch(0 0 0 / 0.3), 0 12px 32px -6px oklch(0 0 0 / 0.5);
   --scrim: oklch(0 0 0 / 0.5);
 }
 

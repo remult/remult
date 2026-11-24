@@ -1,9 +1,17 @@
 <script lang="ts">
-  import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from '@ui-sdk/svelte/popover'
+  import {
+    Popover,
+    PopoverContent,
+    PopoverTitle,
+    PopoverTrigger,
+  } from '@ui-sdk/svelte/popover'
   import { tick } from 'svelte'
   import type { FieldUIInfo } from '../../../../core/server/remult-admin'
   import { settings } from '../core/settings.svelte.js'
-  import { operatorsFor, type FilterChip as Chip } from '../query/filter-model.js'
+  import {
+    operatorsFor,
+    type FilterChip as Chip,
+  } from '../query/filter-model.js'
   import { upsertChip } from '../query/filter-labels.js'
   import { captions } from '../relations/caption-cache.svelte.js'
   import Icon, { type IconName } from '../shell/Icon.svelte'
@@ -23,12 +31,14 @@
     onchange: (filters: Chip[]) => void
   } = $props()
 
-  const label = (f: FieldUIInfo) => (settings.displayCaption ? f.caption : f.key)
+  const label = (f: FieldUIInfo) =>
+    settings.displayCaption ? f.caption : f.key
   const byKey = $derived(new Map(fields.map((f) => [f.key, f])))
   const filterable = $derived(fields.filter((f) => operatorsFor(f).length > 0))
 
   function captionOf(f: FieldUIInfo) {
-    return (id: unknown) => pageCaptions[f.valFieldKey]?.get(id) ?? captions.get(f, id)
+    return (id: unknown) =>
+      pageCaptions[f.valFieldKey]?.get(id) ?? captions.get(f, id)
   }
 
   // a chip from a shared link names ids this page may not show: look their captions up
@@ -36,7 +46,9 @@
     for (const c of filters) {
       const f = byKey.get(c.field)
       if (!f?.relationToOne || !Array.isArray(c.value)) continue
-      for (const id of c.value) if (pageCaptions[f.valFieldKey]?.get(id) === undefined) captions.request(f, id)
+      for (const id of c.value)
+        if (pageCaptions[f.valFieldKey]?.get(id) === undefined)
+          captions.request(f, id)
     }
   })
 
@@ -85,9 +97,11 @@
     const all = [...root.querySelectorAll<HTMLElement>('[data-field-option]')]
     const i = all.indexOf(document.activeElement as HTMLElement)
     e.preventDefault()
-    const next = e.key === 'ArrowDown' ? all[i + 1] : i <= 0 ? undefined : all[i - 1]
+    const next =
+      e.key === 'ArrowDown' ? all[i + 1] : i <= 0 ? undefined : all[i - 1]
     if (next) next.focus()
-    else if (e.key === 'ArrowUp') root.querySelector<HTMLElement>('input')?.focus()
+    else if (e.key === 'ArrowUp')
+      root.querySelector<HTMLElement>('input')?.focus()
   }
 </script>
 
@@ -119,10 +133,20 @@
     }
   >
     <PopoverTrigger class="add" aria-label="Add filter">
-      <Icon name={filters.length ? 'plus' : 'filter'} size={13} stroke={filters.length ? 2 : 1.75} />
+      <Icon
+        name={filters.length ? 'plus' : 'filter'}
+        size={13}
+        stroke={filters.length ? 2 : 1.75}
+      />
       {filters.length ? 'Add' : 'Filter'}
     </PopoverTrigger>
-    <PopoverContent class="filter-pop" align="start" sideOffset={6} collisionPadding={12} initialFocus="[data-autofocus]">
+    <PopoverContent
+      class="filter-pop"
+      align="start"
+      sideOffset={6}
+      collisionPadding={12}
+      initialFocus="[data-autofocus]"
+    >
       <div bind:this={body}>
         {#if picked}
           <PopoverTitle class="sr-only">Filter on {label(picked)}</PopoverTitle>
@@ -160,7 +184,12 @@
             </label>
             <div class="field-list">
               {#each shown as f (f.key)}
-                <button class="field-option" type="button" data-field-option onclick={() => choose(f)}>
+                <button
+                  class="field-option"
+                  type="button"
+                  data-field-option
+                  onclick={() => choose(f)}
+                >
                   <Icon name={typeIcon(f)} size={13} />
                   <span>{label(f)}</span>
                 </button>
@@ -175,7 +204,9 @@
   </Popover>
 
   {#if filters.length}
-    <button class="clear" type="button" onclick={() => onchange([])}>Clear all</button>
+    <button class="clear" type="button" onclick={() => onchange([])}
+      >Clear all</button
+    >
   {/if}
 </div>
 

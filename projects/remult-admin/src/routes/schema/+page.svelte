@@ -1,18 +1,40 @@
 <script lang="ts">
   import '@xyflow/svelte/dist/style.css'
   import { goto } from '$app/navigation'
-  import { Background, BackgroundVariant, Controls, MiniMap, SvelteFlow, type EdgeMarker, type NodeTypes } from '@xyflow/svelte'
+  import {
+    Background,
+    BackgroundVariant,
+    Controls,
+    MiniMap,
+    SvelteFlow,
+    type EdgeMarker,
+    type NodeTypes,
+  } from '@xyflow/svelte'
   import { untrack } from 'svelte'
   import { god } from '#lib/core/god.svelte.js'
   import { arrangeSchema, settings } from '#lib/core/settings.svelte.js'
   import EntityNodeView from '#lib/schema/EntityNode.svelte'
-  import { edgesFor, layoutEntities, type DiagramLayout, type EntityNode, type XY } from '#lib/schema/layout.js'
+  import {
+    edgesFor,
+    layoutEntities,
+    type DiagramLayout,
+    type EntityNode,
+    type XY,
+  } from '#lib/schema/layout.js'
   import Icon from '#lib/shell/Icon.svelte'
 
   const nodeTypes: NodeTypes = { entity: EntityNodeView }
   const layouts: { value: DiagramLayout; label: string; title: string }[] = [
-    { value: 'grid-dfs', label: 'Grid', title: 'Grid, related entities in depth-first order' },
-    { value: 'grid-bfs', label: 'Grid (wide)', title: 'Grid, related entities in breadth-first order' },
+    {
+      value: 'grid-dfs',
+      label: 'Grid',
+      title: 'Grid, related entities in depth-first order',
+    },
+    {
+      value: 'grid-bfs',
+      label: 'Grid (wide)',
+      title: 'Grid, related entities in breadth-first order',
+    },
     { value: 'line', label: 'Line', title: 'One row' },
   ]
 
@@ -22,7 +44,11 @@
   let version = $state(0)
 
   function relayout() {
-    nodes = layoutEntities(god.visibleTables, settings.diagramLayout, settings.schemaPositions).nodes
+    nodes = layoutEntities(
+      god.visibleTables,
+      settings.diagramLayout,
+      settings.schemaPositions,
+    ).nodes
   }
 
   let laidOut = false
@@ -42,7 +68,10 @@
     for (const n of nodes) positions[n.id] = n.position
     return edgesFor(god.visibleTables, positions).map((e) => {
       if (!hovered || (e.source !== hovered && e.target !== hovered)) return e
-      const markerEnd = { ...(e.markerEnd as EdgeMarker), color: 'var(--accent)' }
+      const markerEnd = {
+        ...(e.markerEnd as EdgeMarker),
+        color: 'var(--accent)',
+      }
       return { ...e, class: `${e.class} active`, markerEnd }
     })
   })
@@ -54,7 +83,11 @@
   }
 
   function save(moved: EntityNode[]) {
-    for (const n of moved) settings.schemaPositions[n.id] = { x: Math.round(n.position.x), y: Math.round(n.position.y) }
+    for (const n of moved)
+      settings.schemaPositions[n.id] = {
+        x: Math.round(n.position.x),
+        y: Math.round(n.position.y),
+      }
   }
 
   const hasSaved = $derived(Object.keys(settings.schemaPositions).length > 0)
@@ -63,11 +96,18 @@
 <section class="schema">
   <header class="bar">
     <h1><Icon name="schema" size={16} />Schema</h1>
-    <span class="count">{god.visibleTables.length} {god.visibleTables.length === 1 ? 'entity' : 'entities'}</span>
+    <span class="count"
+      >{god.visibleTables.length}
+      {god.visibleTables.length === 1 ? 'entity' : 'entities'}</span
+    >
     <div class="spacer"></div>
     <div class="segmented" role="radiogroup" aria-label="Layout">
       {#each layouts as l (l.value)}
-        <label class="seg" title={l.title} data-checked={settings.diagramLayout === l.value ? '' : undefined}>
+        <label
+          class="seg"
+          title={l.title}
+          data-checked={settings.diagramLayout === l.value ? '' : undefined}
+        >
           <input
             type="radio"
             name="schema-layout"
@@ -79,7 +119,13 @@
         </label>
       {/each}
     </div>
-    <button class="btn" type="button" disabled={!hasSaved} title="Forget moved positions" onclick={reset}>
+    <button
+      class="btn"
+      type="button"
+      disabled={!hasSaved}
+      title="Forget moved positions"
+      onclick={reset}
+    >
       <Icon name="refresh" size={14} /> Reset layout
     </button>
   </header>
@@ -123,7 +169,8 @@
             zoomable
             width={168}
             height={112}
-            nodeColor={(n) => `oklch(var(--hue-l) var(--hue-c) ${(n as EntityNode).data.color})`}
+            nodeColor={(n) =>
+              `oklch(var(--hue-l) var(--hue-c) ${(n as EntityNode).data.color})`}
             nodeBorderRadius={6}
           />
         </SvelteFlow>
@@ -237,19 +284,28 @@
   /* xyflow on our tokens: one set, so dark mode follows the app theme */
   .canvas :global(.svelte-flow) {
     --xy-background-color: var(--bg-inset);
-    --xy-background-pattern-color: color-mix(in oklch, var(--text-faint) 45%, transparent);
+    --xy-background-pattern-color: color-mix(
+      in oklch,
+      var(--text-faint) 45%,
+      transparent
+    );
     --xy-edge-stroke: color-mix(in oklch, var(--text-faint) 70%, transparent);
     --xy-edge-stroke-width: 1.5;
     --xy-node-border-radius: var(--radius-lg);
     --xy-minimap-background-color: var(--bg-raised);
-    --xy-minimap-mask-background-color: color-mix(in oklch, var(--bg-inset) 70%, transparent);
+    --xy-minimap-mask-background-color: color-mix(
+      in oklch,
+      var(--bg-inset) 70%,
+      transparent
+    );
     --xy-minimap-mask-stroke-color: var(--border-strong);
     --xy-controls-button-background-color: var(--bg-raised);
     --xy-controls-button-background-color-hover: var(--bg-hover);
     --xy-controls-button-color: var(--text-muted);
     --xy-controls-button-color-hover: var(--text);
     --xy-controls-button-border-color: var(--border);
-    --xy-controls-box-shadow: 0 0 0 1px var(--border), 0 2px 6px -2px oklch(0.2 0.02 260 / 0.12);
+    --xy-controls-box-shadow:
+      0 0 0 1px var(--border), 0 2px 6px -2px oklch(0.2 0.02 260 / 0.12);
     --xy-attribution-background-color: transparent;
     color: var(--text);
     font-family: var(--font);

@@ -8,7 +8,13 @@
     SelectValue,
   } from '@ui-sdk/svelte/select'
   import type { FieldUIInfo } from '../../../../core/server/remult-admin'
-  import { choiceOf, isComplete, isDate as isDateField, isNumber as isNumberField, opChoices } from '../query/filter-labels.js'
+  import {
+    choiceOf,
+    isComplete,
+    isDate as isDateField,
+    isNumber as isNumberField,
+    opChoices,
+  } from '../query/filter-labels.js'
   import type { FilterChip } from '../query/filter-model.js'
   import Icon from '../shell/Icon.svelte'
   import FilterDate from './FilterDate.svelte'
@@ -62,7 +68,8 @@
     const next = choices.find((c) => c.id === id)
     if (!next) return
     // a list and a single value don't convert into each other
-    if ((next.arity === 'list') !== (choice.arity === 'list')) value = next.arity === 'list' ? [] : undefined
+    if ((next.arity === 'list') !== (choice.arity === 'list'))
+      value = next.arity === 'list' ? [] : undefined
     choiceId = id
   }
 
@@ -102,7 +109,13 @@
   </div>
 
   {#if choice.arity === 'list'}
-    <ValueChecklist {field} value={list} {label} {captionOf} onchange={(v) => (value = v)} />
+    <ValueChecklist
+      {field}
+      value={list}
+      {label}
+      {captionOf}
+      onchange={(v) => (value = v)}
+    />
   {:else if choice.arity !== 0 && isDate}
     {#key choice.arity}
       <FilterDate
@@ -148,7 +161,8 @@
       placeholder={isNumber ? 'Number' : 'Text'}
       data-autofocus
       value={value ?? ''}
-      oninput={(e) => (value = isNumber ? num(e.currentTarget.value) : e.currentTarget.value)}
+      oninput={(e) =>
+        (value = isNumber ? num(e.currentTarget.value) : e.currentTarget.value)}
     />
   {/if}
 
@@ -158,7 +172,12 @@
         <Icon name="trash" size={13} /> Remove
       </button>
     {/if}
-    <button class="btn apply" data-variant="primary" type="submit" disabled={!ready}>
+    <button
+      class="btn apply"
+      data-variant="primary"
+      type="submit"
+      disabled={!ready}
+    >
       Apply
     </button>
   </div>

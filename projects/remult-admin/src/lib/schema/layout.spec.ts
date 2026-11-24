@@ -23,7 +23,14 @@ function table(key: string, p: Partial<TableInfo> = {}): TableInfo {
 const toOne = (key: string, entityKey: string) =>
   field({
     key,
-    relationToOne: { entityKey, fields: { id: `${key}Id` }, compoundIdField: undefined, idField: 'id', captionField: 'name', allowNull: false },
+    relationToOne: {
+      entityKey,
+      fields: { id: `${key}Id` },
+      compoundIdField: undefined,
+      idField: 'id',
+      captionField: 'name',
+      allowNull: false,
+    },
   })
 
 const toMany = (key: string, entityKey: string) => ({
@@ -36,14 +43,20 @@ const toMany = (key: string, entityKey: string) => ({
 
 // a -> b -> c, d alone, e hidden (a points to it too)
 const tables = [
-  table('a', { fields: [field({ key: 'id' }), toOne('b', 'b'), toOne('e', 'e')] }),
+  table('a', {
+    fields: [field({ key: 'id' }), toOne('b', 'b'), toOne('e', 'e')],
+  }),
   table('d'),
-  table('b', { fields: [field({ key: 'id' }), toOne('c', 'c')], relations: [toMany('as', 'a')] }),
+  table('b', {
+    fields: [field({ key: 'id' }), toOne('c', 'c')],
+    relations: [toMany('as', 'a')],
+  }),
   table('c'),
   table('e', { hidden: true }),
 ]
 
-const pos = (r: ReturnType<typeof layoutEntities>) => Object.fromEntries(r.nodes.map((n) => [n.id, n.position]))
+const pos = (r: ReturnType<typeof layoutEntities>) =>
+  Object.fromEntries(r.nodes.map((n) => [n.id, n.position]))
 
 describe('layoutEntities', () => {
   it('only visible entities become nodes, and edges only join visible ones', () => {
@@ -64,11 +77,17 @@ describe('layoutEntities', () => {
 
   it('unsaved entities get the same positions each time, per layout', () => {
     for (const algo of ['grid-bfs', 'grid-dfs', 'line'] as const) {
-      expect(pos(layoutEntities(tables, algo, {}))).toEqual(pos(layoutEntities(tables, algo, {})))
+      expect(pos(layoutEntities(tables, algo, {}))).toEqual(
+        pos(layoutEntities(tables, algo, {})),
+      )
     }
     // line: related ones first, then the next group, all on one row
     const line = pos(layoutEntities(tables, 'line', {}))
-    expect([line.a.x < line.b.x, line.b.x < line.c.x, line.c.x < line.d.x]).toEqual([true, true, true])
+    expect([
+      line.a.x < line.b.x,
+      line.b.x < line.c.x,
+      line.c.x < line.d.x,
+    ]).toEqual([true, true, true])
     expect(new Set(Object.values(line).map((p) => p.y))).toEqual(new Set([0]))
     // grid: 4 visible -> 3 columns, shortest column takes the next one
     const grid = pos(layoutEntities(tables, 'grid-bfs', {}))
@@ -79,14 +98,18 @@ describe('layoutEntities', () => {
   it('bfs and dfs order related entities differently', () => {
     // a -> b, a -> c, b -> d: bfs a b c d, dfs a b d c
     const t = [
-      table('a', { fields: [field({ key: 'id' }), toOne('b', 'b'), toOne('c', 'c')] }),
+      table('a', {
+        fields: [field({ key: 'id' }), toOne('b', 'b'), toOne('c', 'c')],
+      }),
       table('b', { fields: [field({ key: 'id' }), toOne('d', 'd')] }),
       table('c'),
       table('d'),
     ]
     const x = (algo: 'grid-bfs' | 'grid-dfs') => {
       const p = pos(layoutEntities(t, algo, {}))
-      return Object.keys(p).sort((k1, k2) => p[k1].x - p[k2].x || p[k1].y - p[k2].y)
+      return Object.keys(p).sort(
+        (k1, k2) => p[k1].x - p[k2].x || p[k1].y - p[k2].y,
+      )
     }
     expect(x('grid-bfs')).toEqual(['a', 'b', 'c', 'd'])
     expect(x('grid-dfs')).toEqual(['a', 'b', 'd', 'c'])
@@ -95,29 +118,67 @@ describe('layoutEntities', () => {
   it('two relations to the same entity place it once', () => {
     // a -> b twice, a -> c, d: b must not take two grid slots
     const twice = [
-      table('a', { fields: [field({ key: 'id' }), toOne('b1', 'b'), toOne('b2', 'b'), toOne('c', 'c')] }),
+      table('a', {
+        fields: [
+          field({ key: 'id' }),
+          toOne('b1', 'b'),
+          toOne('b2', 'b'),
+          toOne('c', 'c'),
+        ],
+      }),
       table('b'),
       table('c'),
       table('d'),
     ]
-    const once = [table('a', { fields: [field({ key: 'id' }), toOne('b1', 'b'), field({ key: 'x' }), toOne('c', 'c')] }), ...twice.slice(1)]
+    const once = [
+      table('a', {
+        fields: [
+          field({ key: 'id' }),
+          toOne('b1', 'b'),
+          field({ key: 'x' }),
+          toOne('c', 'c'),
+        ],
+      }),
+      ...twice.slice(1),
+    ]
     for (const algo of ['grid-bfs', 'grid-dfs', 'line'] as const) {
-      expect(pos(layoutEntities(twice, algo, {}))).toEqual(pos(layoutEntities(once, algo, {})))
+      expect(pos(layoutEntities(twice, algo, {}))).toEqual(
+        pos(layoutEntities(once, algo, {})),
+      )
     }
   })
 
   it('edges leave and enter on the sides facing each other', () => {
-    const r = layoutEntities(tables, 'line', { a: { x: 0, y: 0 }, b: { x: 500, y: 0 }, c: { x: 100, y: 300 } })
-    const e = Object.fromEntries(r.edges.map((x) => [x.id, [x.sourceHandle, x.targetHandle]]))
+    const r = layoutEntities(tables, 'line', {
+      a: { x: 0, y: 0 },
+      b: { x: 500, y: 0 },
+      c: { x: 100, y: 300 },
+    })
+    const e = Object.fromEntries(
+      r.edges.map((x) => [x.id, [x.sourceHandle, x.targetHandle]]),
+    )
     expect(e['a.b']).toEqual(['b-r', 'in-l'])
     expect(e['b.c']).toEqual(['c-l', 'in-r'])
     expect(e['b.as']).toEqual(['as-l', 'in-r'])
   })
 
   it('a self relation loops on the right, edges follow moved nodes', () => {
-    const self = [table('t', { fields: [field({ key: 'id' }), toOne('parent', 't')] })]
-    expect(layoutEntities(self, 'grid-bfs', {}).edges[0]).toMatchObject({ sourceHandle: 'parent-r', targetHandle: 'in-r' })
-    const moved = edgesFor(tables.slice(0, 4), { a: { x: 900, y: 0 }, b: { x: 0, y: 0 }, c: { x: 0, y: 0 }, d: { x: 0, y: 0 } })
-    expect(moved.find((x) => x.id === 'a.b')).toMatchObject({ sourceHandle: 'b-l', targetHandle: 'in-r' })
+    const self = [
+      table('t', { fields: [field({ key: 'id' }), toOne('parent', 't')] }),
+    ]
+    expect(layoutEntities(self, 'grid-bfs', {}).edges[0]).toMatchObject({
+      sourceHandle: 'parent-r',
+      targetHandle: 'in-r',
+    })
+    const moved = edgesFor(tables.slice(0, 4), {
+      a: { x: 900, y: 0 },
+      b: { x: 0, y: 0 },
+      c: { x: 0, y: 0 },
+      d: { x: 0, y: 0 },
+    })
+    expect(moved.find((x) => x.id === 'a.b')).toMatchObject({
+      sourceHandle: 'b-l',
+      targetHandle: 'in-r',
+    })
   })
 })

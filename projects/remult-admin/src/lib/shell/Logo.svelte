@@ -1,4 +1,10 @@
-<svg width="18" height="18" viewBox="0 0 191 192" fill="currentColor" aria-hidden="true">
+<svg
+  width="18"
+  height="18"
+  viewBox="0 0 191 192"
+  fill="currentColor"
+  aria-hidden="true"
+>
   <path
     d="M14.197 191.286V108.318H0.200439V83.729H14.197V0.760742H71.326V21.4669H62.8995C53.616 21.4669 41.0477 29.5192 40.4764 45.0488V144.985C40.4764 164.684 56.1868 170.292 63.1851 170.292H71.326V190.998H14.0542L14.197 191.286Z"
   />

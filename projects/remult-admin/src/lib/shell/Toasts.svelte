@@ -10,16 +10,30 @@
 </script>
 
 <script lang="ts">
-  import { Toast, ToastClose, ToastRegion, ToastTitle } from '@ui-sdk/svelte/toast'
+  import {
+    Toast,
+    ToastClose,
+    ToastRegion,
+    ToastTitle,
+  } from '@ui-sdk/svelte/toast'
   import Icon from './Icon.svelte'
 </script>
 
-<ToastRegion side="bottom" align="end" maxVisible={4} aria-label="Notifications">
+<ToastRegion
+  side="bottom"
+  align="end"
+  maxVisible={4}
+  aria-label="Notifications"
+>
   {#snippet children(item)}
     <Toast class="toast">
       <span class="toast-icon" data-type={item.type}>
         <Icon
-          name={item.type === 'error' ? 'error' : item.type === 'success' ? 'success' : 'info'}
+          name={item.type === 'error'
+            ? 'error'
+            : item.type === 'success'
+              ? 'success'
+              : 'info'}
           size={16}
         />
       </span>
@@ -61,7 +75,8 @@
     box-shadow:
       0 0 0 1px var(--border),
       var(--shadow-pop);
-    translate: var(--toast-swipe-x, 0px) calc(var(--y) + var(--toast-swipe-y, 0px));
+    translate: var(--toast-swipe-x, 0px)
+      calc(var(--y) + var(--toast-swipe-y, 0px));
     scale: calc(1 - var(--toast-index) * 0.04);
     transition-property: translate, scale, opacity, height;
     transition-duration: 300ms;
@@ -82,7 +97,9 @@
     --y: 12px;
     opacity: 0;
   }
-  :global(.toast:is([data-starting-style]:not([data-front]), [data-ending-style])) {
+  :global(
+    .toast:is([data-starting-style]:not([data-front]), [data-ending-style])
+  ) {
     opacity: 0;
   }
   :global(.toast[data-ending-style]) {
@@ -122,7 +139,9 @@
     background: transparent;
     color: var(--text-faint);
     cursor: pointer;
-    transition: color 120ms var(--ease-out), background-color 120ms var(--ease-out);
+    transition:
+      color 120ms var(--ease-out),
+      background-color 120ms var(--ease-out);
   }
   :global(.toast-close:hover) {
     color: var(--text);

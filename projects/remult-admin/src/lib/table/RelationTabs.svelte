@@ -21,20 +21,28 @@
 
   // hidden entities still answer here: look in every table, not only the visible ones
   const targets = $derived(
-    relations.map((rel) => ({ rel, table: god.tables.find((t) => t.key === rel.entityKey) })),
+    relations.map((rel) => ({
+      rel,
+      table: god.tables.find((t) => t.key === rel.entityKey),
+    })),
   )
   // svelte-ignore state_referenced_locally
   let tab = $state(relations[0]?.key ?? '')
 
   function whereFor(rel: EntityRelationToManyInfo, t: TableInfo) {
-    return relationWhere(rel, values, (json) => Filter.entityFilterFromJson(t.repo.metadata, json))
+    return relationWhere(rel, values, (json) =>
+      Filter.entityFilterFromJson(t.repo.metadata, json),
+    )
   }
 
-  const name = (x: { caption: string; key: string }) => (settings.displayCaption ? x.caption : x.key)
+  const name = (x: { caption: string; key: string }) =>
+    settings.displayCaption ? x.caption : x.key
 
   const uid = $props.id()
   const current = $derived(targets.find((x) => x.rel.key === tab) ?? targets[0])
-  const where = $derived(current?.table ? whereFor(current.rel, current.table) : undefined)
+  const where = $derived(
+    current?.table ? whereFor(current.rel, current.table) : undefined,
+  )
   let list: HTMLElement | undefined = $state()
 
   // a hand rolled tab list: the ui-sdk one costs more bytes than this panel is worth
@@ -42,11 +50,19 @@
     const i = targets.findIndex((x) => x.rel.key === current?.rel.key)
     const last = targets.length - 1
     const next =
-      e.key === 'ArrowRight' ? (i === last ? 0 : i + 1)
-      : e.key === 'ArrowLeft' ? (i === 0 ? last : i - 1)
-      : e.key === 'Home' ? 0
-      : e.key === 'End' ? last
-      : undefined
+      e.key === 'ArrowRight'
+        ? i === last
+          ? 0
+          : i + 1
+        : e.key === 'ArrowLeft'
+          ? i === 0
+            ? last
+            : i - 1
+          : e.key === 'Home'
+            ? 0
+            : e.key === 'End'
+              ? last
+              : undefined
     if (next === undefined) return
     e.preventDefault()
     tab = targets[next].rel.key
@@ -56,7 +72,14 @@
 </script>
 
 <div class="relations">
-  <div class="rel-tabs" role="tablist" aria-label={`Related to ${label}`} tabindex="-1" bind:this={list} {onkeydown}>
+  <div
+    class="rel-tabs"
+    role="tablist"
+    aria-label={`Related to ${label}`}
+    tabindex="-1"
+    bind:this={list}
+    {onkeydown}
+  >
     {#each targets as { rel, table } (rel.key)}
       {@const selected = rel.key === current?.rel.key}
       <button
@@ -76,13 +99,20 @@
     {/each}
   </div>
   {#if current}
-    <div class="rel-panel" role="tabpanel" id={`${uid}-panel`} aria-labelledby={`${uid}-${current.rel.key}`}>
+    <div
+      class="rel-panel"
+      role="tabpanel"
+      id={`${uid}-panel`}
+      aria-labelledby={`${uid}-${current.rel.key}`}
+    >
       {#if current.table && where}
         {#key current.rel.key}
           <Table table={current.table} parentWhere={where} />
         {/key}
       {:else if current.table}
-        <p class="missing">No {name(current.rel)}: this row has nothing to match them on.</p>
+        <p class="missing">
+          No {name(current.rel)}: this row has nothing to match them on.
+        </p>
       {:else}
         <p class="missing">{name(current.rel)} is not available to you.</p>
       {/if}

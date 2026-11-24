@@ -26,7 +26,9 @@ describe('buildTables', () => {
         field({ key: 'gender', values: ['male', 'female'] as any }),
       ]),
     ])
-    expect(t.repo.metadata.fields.find('size').valueConverter.fromJson!(1)).toBe(1)
+    expect(
+      t.repo.metadata.fields.find('size').valueConverter.fromJson!(1),
+    ).toBe(1)
     expect(t.fields.find((f) => f.key === 'gender')!.values).toEqual([
       { id: 'male', caption: 'male' },
       { id: 'female', caption: 'female' },

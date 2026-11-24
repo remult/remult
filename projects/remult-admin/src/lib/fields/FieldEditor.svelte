@@ -51,20 +51,29 @@
   const ro = $derived(readonly || field.readOnly)
   const label = $derived(settings.displayCaption ? field.caption : field.key)
   const clearable = $derived(
-    !ro && field.allowNull && kind !== 'relation' && value !== null && value !== undefined,
+    !ro &&
+      field.allowNull &&
+      kind !== 'relation' &&
+      value !== null &&
+      value !== undefined,
   )
 
   const empty = $derived(value === undefined || value === null || value === '')
 
   // the page's batch caption first; a value it doesn't cover (just picked, or a missed batch) is looked up
   const relationCaption = $derived(
-    kind !== 'relation' || filled(caption) || empty ? caption : captions.get(field, value),
+    kind !== 'relation' || filled(caption) || empty
+      ? caption
+      : captions.get(field, value),
   )
   $effect(() => {
     if (kind !== 'relation' || empty || filled(relationCaption)) return
     const v = value
     // the table's batch usually answers first: only ask for what it leaves out
-    const t = setTimeout(() => captions.request(field, v), CAPTION_LOOKUP_DELAY_MS)
+    const t = setTimeout(
+      () => captions.request(field, v),
+      CAPTION_LOOKUP_DELAY_MS,
+    )
     return () => clearTimeout(t)
   })
 
@@ -83,7 +92,12 @@
   const sub = $derived({ value, label, busy, invalid, describedby, id, set })
 </script>
 
-<div class="editor" data-variant={variant} data-kind={kind} data-readonly={ro ? '' : undefined}>
+<div
+  class="editor"
+  data-variant={variant}
+  data-kind={kind}
+  data-readonly={ro ? '' : undefined}
+>
   {#if ro}
     <div class="ro" {id}>
       <Display {field} {value} caption={relationCaption} />
@@ -103,7 +117,9 @@
         role="switch"
         data-cell-focus
         checked={value === true}
-        bind:indeterminate={() => value === null || value === undefined, () => {}}
+        bind:indeterminate={
+          () => value === null || value === undefined, () => {}
+        }
         onchange={(e) => {
           if (busy) e.currentTarget.checked = value === true
           else set(e.currentTarget.checked)
@@ -150,7 +166,9 @@
         value={typeof value === 'string' && value ? value : '#000000'}
         oninput={(e) => set(e.currentTarget.value)}
       />
-      <span class="hex" class:null={value === null}>{value ?? ''}{value === null ? 'null' : ''}</span>
+      <span class="hex" class:null={value === null}
+        >{value ?? ''}{value === null ? 'null' : ''}</span
+      >
     </span>
   {:else}
     <TextField {...sub} />

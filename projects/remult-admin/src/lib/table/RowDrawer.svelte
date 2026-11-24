@@ -3,7 +3,8 @@
 
   // the key is worth showing only when the caption doesn't already spell it
   const spells = (caption: string, key: string) =>
-    caption.replace(REGEX_SEPARATORS, '').toLowerCase() === key.replace(REGEX_SEPARATORS, '').toLowerCase()
+    caption.replace(REGEX_SEPARATORS, '').toLowerCase() ===
+    key.replace(REGEX_SEPARATORS, '').toLowerCase()
 </script>
 
 <script lang="ts">
@@ -17,7 +18,13 @@
     createConfirm,
   } from '@ui-sdk/svelte/alert-dialog'
   import type { DialogContentState } from '@ui-sdk/svelte/dialog'
-  import { Drawer, DrawerBackdrop, DrawerContent, DrawerDescription, DrawerTitle } from '@ui-sdk/svelte/drawer'
+  import {
+    Drawer,
+    DrawerBackdrop,
+    DrawerContent,
+    DrawerDescription,
+    DrawerTitle,
+  } from '@ui-sdk/svelte/drawer'
   import type { TableInfo } from '../core/god.svelte.js'
   import { settings } from '../core/settings.svelte.js'
   import FieldEditor from '../fields/FieldEditor.svelte'
@@ -25,7 +32,11 @@
   import { modKey } from '../shell/shell.svelte.js'
   import { toast } from '../shell/Toasts.svelte'
   import { valueKey } from './format.js'
-  import { errorMessage, type TableData, type TableRow } from './table-data.svelte.js'
+  import {
+    errorMessage,
+    type TableData,
+    type TableRow,
+  } from './table-data.svelte.js'
 
   let { table, data }: { table: TableInfo; data: TableData } = $props()
 
@@ -61,12 +72,19 @@
     open = true
   }
 
-  const label = (x: { caption: string; key: string }) => (settings.displayCaption ? x.caption : x.key)
+  const label = (x: { caption: string; key: string }) =>
+    settings.displayCaption ? x.caption : x.key
 
   // a live update hands the table a new row object with the same draft: follow it for the fresh item
-  const row = $derived(held && !held.isNew ? (data.find(held.id) ?? held) : held)
+  const row = $derived(
+    held && !held.isNew ? (data.find(held.id) ?? held) : held,
+  )
   const isNew = $derived(!!row?.isNew)
-  const id = $derived(row && !isNew ? String(table.repo.metadata.idMetadata.getId(row.item)) : undefined)
+  const id = $derived(
+    row && !isNew
+      ? String(table.repo.metadata.idMetadata.getId(row.item))
+      : undefined,
+  )
   const canEdit = $derived(!!row && (isNew || data.can('update', row.id)))
   const canDelete = $derived(!!row && !isNew && data.can('delete', row.id))
   const pending = $derived(!!row && !isNew && !data.resolved(row.id))
@@ -74,9 +92,13 @@
   const errors = $derived(row ? data.errors[row.id] : undefined)
   const unparsed = $derived(Object.values(parseErrors).some(Boolean))
   const unsaved = $derived(!!row && (row.draft.dirty || unparsed))
-  const canSave = $derived(canEdit && !busy && !unparsed && (isNew || !!row?.draft.dirty))
+  const canSave = $derived(
+    canEdit && !busy && !unparsed && (isNew || !!row?.draft.dirty),
+  )
   // a new row can't set what only the server fills (ids, createdAt...)
-  const fields = $derived(isNew ? table.fields.filter((f) => !f.readOnly) : table.fields)
+  const fields = $derived(
+    isNew ? table.fields.filter((f) => !f.readOnly) : table.fields,
+  )
 
   async function save() {
     if (!row || !canSave) return
@@ -140,7 +162,11 @@
   }
 
   function focusFirst() {
-    return body?.querySelector<HTMLElement>('[data-cell-focus], .cm-content') ?? closeButton ?? null
+    return (
+      body?.querySelector<HTMLElement>('[data-cell-focus], .cm-content') ??
+      closeButton ??
+      null
+    )
   }
 </script>
 
@@ -154,7 +180,12 @@
   }}
 >
   <DrawerBackdrop class="drawer-scrim" />
-  <DrawerContent class="row-drawer" style={`--hue: ${table.color}`} initialFocus={focusFirst} {onkeydown}>
+  <DrawerContent
+    class="row-drawer"
+    style={`--hue: ${table.color}`}
+    initialFocus={focusFirst}
+    {onkeydown}
+  >
     {#if row}
       <header class="head">
         <span class="mark" aria-hidden="true"></span>
@@ -177,13 +208,16 @@
                 <code>{id}</code>
                 <span class="id-icon" aria-hidden="true">
                   <span class="copy"><Icon name="copy" size={12} /></span>
-                  <span class="done"><Icon name="check" size={12} stroke={2} /></span>
+                  <span class="done"
+                    ><Icon name="check" size={12} stroke={2} /></span
+                  >
                 </span>
               </button>
               {#if pending}
                 <span class="tag">Checking access</span>
               {:else if !canEdit}
-                <span class="tag"><Icon name="lock" size={11} /> Read only</span>
+                <span class="tag"><Icon name="lock" size={11} /> Read only</span
+                >
               {:else if unsaved}
                 <span class="tag edited"><span class="dot"></span> Edited</span>
               {/if}
@@ -210,21 +244,35 @@
           {@const error = errors?.[k] ?? parseErrors[k]}
           {@const ctl = `drawer-${table.superKey}-${k}`}
           {@const dirty = !isNew && row.draft.isDirty(k)}
-          <div class="field" data-dirty={dirty ? '' : undefined} data-invalid={error ? '' : undefined}>
+          <div
+            class="field"
+            data-dirty={dirty ? '' : undefined}
+            data-invalid={error ? '' : undefined}
+          >
             <div class="label-row">
               <label class="label" for={ctl}>
-                {#if table.ids[f.key]}<span class="key" title="Id"><Icon name="key" size={11} /></span>{/if}
+                {#if table.ids[f.key]}<span class="key" title="Id"
+                    ><Icon name="key" size={11} /></span
+                  >{/if}
                 {label(f)}
               </label>
-              {#if dirty}<span class="edited-dot" title="Edited"><span class="sr-only">Edited</span></span>{/if}
-              {#if settings.displayCaption && !spells(f.caption, f.key)}<code class="field-key">{f.key}</code>{/if}
+              {#if dirty}<span class="edited-dot" title="Edited"
+                  ><span class="sr-only">Edited</span></span
+                >{/if}
+              {#if settings.displayCaption && !spells(f.caption, f.key)}<code
+                  class="field-key">{f.key}</code
+                >{/if}
             </div>
             <FieldEditor
               field={f}
-              bind:value={() => row.draft.values[k], (v) => (row.draft.values[k] = v)}
+              bind:value={
+                () => row.draft.values[k], (v) => (row.draft.values[k] = v)
+              }
               readonly={!canEdit}
               variant="form"
-              caption={f.relationToOne ? data.captions[f.valFieldKey]?.get(row.draft.values[k]) : undefined}
+              caption={f.relationToOne
+                ? data.captions[f.valFieldKey]?.get(row.draft.values[k])
+                : undefined}
               {busy}
               invalid={!!error}
               describedby={error ? `${ctl}-error` : undefined}
@@ -233,7 +281,9 @@
               onerror={(m) => (parseErrors[k] = m)}
             />
             {#if error}
-              <p class="error" id={`${ctl}-error`}><Icon name="alert" size={12} />{error}</p>
+              <p class="error" id={`${ctl}-error`}>
+                <Icon name="alert" size={12} />{error}
+              </p>
             {/if}
           </div>
         {/each}
@@ -241,19 +291,45 @@
 
       <footer class="foot">
         {#if canDelete}
-          <button class="btn delete" data-variant="danger" type="button" aria-label="Delete row" disabled={deleting || busy} onclick={remove}>
+          <button
+            class="btn delete"
+            data-variant="danger"
+            type="button"
+            aria-label="Delete row"
+            disabled={deleting || busy}
+            onclick={remove}
+          >
             <Icon name="trash" size={14} />Delete
           </button>
         {/if}
         <span class="spacer"></span>
         {#if canEdit}
-          <span class="hint" aria-hidden="true"><kbd>{modKey}</kbd><kbd>Enter</kbd></span>
-          <button class="btn" type="button" disabled={busy} onclick={unsaved ? discard : requestClose}>Cancel</button>
-          <button class="btn" data-variant="primary" type="button" disabled={!canSave} aria-busy={busy || undefined} onclick={save}>
-            {#if busy}Saving...{:else}<Icon name="check" size={14} stroke={2} />{isNew ? 'Create' : 'Save'}{/if}
+          <span class="hint" aria-hidden="true"
+            ><kbd>{modKey}</kbd><kbd>Enter</kbd></span
+          >
+          <button
+            class="btn"
+            type="button"
+            disabled={busy}
+            onclick={unsaved ? discard : requestClose}>Cancel</button
+          >
+          <button
+            class="btn"
+            data-variant="primary"
+            type="button"
+            disabled={!canSave}
+            aria-busy={busy || undefined}
+            onclick={save}
+          >
+            {#if busy}Saving...{:else}<Icon
+                name="check"
+                size={14}
+                stroke={2}
+              />{isNew ? 'Create' : 'Save'}{/if}
           </button>
         {:else}
-          <button class="btn" type="button" onclick={requestClose}>Close</button>
+          <button class="btn" type="button" onclick={requestClose}>Close</button
+          >
         {/if}
       </footer>
 
@@ -262,15 +338,25 @@
         <AlertDialogContent class="confirm">
           {#snippet children(state: DialogContentState<Question>)}
             {@const del = state.payload?.kind === 'delete'}
-            <AlertDialogTitle class="confirm-title">{del ? 'Delete this row?' : 'Discard your changes?'}</AlertDialogTitle>
+            <AlertDialogTitle class="confirm-title"
+              >{del
+                ? 'Delete this row?'
+                : 'Discard your changes?'}</AlertDialogTitle
+            >
             <AlertDialogDescription class="confirm-desc">
               {del
                 ? `It is removed from ${label(table)} for everyone. This can't be undone.`
                 : 'The edits in this row are not saved. Closing drops them.'}
             </AlertDialogDescription>
             <div class="confirm-actions">
-              <AlertDialogClose class="btn">{del ? 'Cancel' : 'Keep editing'}</AlertDialogClose>
-              <AlertDialogClose class="btn" data-variant={del ? 'danger-solid' : 'primary'} value="confirm">
+              <AlertDialogClose class="btn"
+                >{del ? 'Cancel' : 'Keep editing'}</AlertDialogClose
+              >
+              <AlertDialogClose
+                class="btn"
+                data-variant={del ? 'danger-solid' : 'primary'}
+                value="confirm"
+              >
                 {del ? 'Delete' : 'Discard'}
               </AlertDialogClose>
             </div>
@@ -327,7 +413,8 @@
     margin-top: 6px;
     border-radius: 50%;
     background: oklch(var(--hue-l) var(--hue-c) var(--hue, 262));
-    box-shadow: 0 0 0 4px oklch(var(--hue-l) var(--hue-c) var(--hue, 262) / 0.16);
+    box-shadow: 0 0 0 4px
+      oklch(var(--hue-l) var(--hue-c) var(--hue, 262) / 0.16);
   }
   .titles {
     display: flex;

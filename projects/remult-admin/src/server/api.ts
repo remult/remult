@@ -57,14 +57,16 @@ export const api = remultApi({
   },
   admin: {
     allow: true,
-    customHtmlHead: (r) => `<title>Dev Admin (${r.user?.name ?? 'Anonymous'
-      })</title>
+    customHtmlHead: (r) => `<title>Dev Admin (${
+      r.user?.name ?? 'Anonymous'
+    })</title>
 <link href="https://remult.dev/favicon.png" rel="icon" type="image/png">`,
     requireAuthToken: true,
     entities: (entity, remult) => {
       if (remult.isAllowed('admin')) return true
       if (hiddenForOps.includes(entity.entityType)) return false
-      if (entity.key === 'contacts') return { editMode: 'drawer', lockEditMode: true }
+      if (entity.key === 'contacts')
+        return { editMode: 'drawer', lockEditMode: true }
       return true
     },
     // disableLiveQuery: true,

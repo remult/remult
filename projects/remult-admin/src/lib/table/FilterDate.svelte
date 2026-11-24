@@ -1,6 +1,7 @@
 <script lang="ts" module>
   const pad = (n: number) => String(n).padStart(2, '0')
-  const ymd = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+  const ymd = (d: Date) =>
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 
   function presets(): { label: string; value: [string, string] }[] {
     const now = new Date()
@@ -10,8 +11,14 @@
     return [
       { label: 'Last 7 days', value: [back(6), ymd(now)] },
       { label: 'Last 30 days', value: [back(29), ymd(now)] },
-      { label: 'This month', value: [ymd(new Date(y, m, 1)), ymd(new Date(y, m + 1, 0))] },
-      { label: 'Last month', value: [ymd(new Date(y, m - 1, 1)), ymd(new Date(y, m, 0))] },
+      {
+        label: 'This month',
+        value: [ymd(new Date(y, m, 1)), ymd(new Date(y, m + 1, 0))],
+      },
+      {
+        label: 'Last month',
+        value: [ymd(new Date(y, m - 1, 1)), ymd(new Date(y, m, 0))],
+      },
     ]
   }
 </script>
@@ -51,7 +58,11 @@
   let anchor: HTMLElement | undefined = $state()
   const str = (v: unknown) => (typeof v === 'string' && v ? v : null)
   const current = $derived(
-    range ? (str(value) && str(value2) ? [str(value)!, str(value2)!] : null) : str(value),
+    range
+      ? str(value) && str(value2)
+        ? [str(value)!, str(value2)!]
+        : null
+      : str(value),
   ) as [string, string] | string | null
 </script>
 
@@ -64,16 +75,32 @@
   }}
 >
   <div class="date-field" bind:this={anchor}>
-    <DatePickerInput class="date-input" aria-label={range ? `${label} from` : label} placeholder={range ? 'From' : 'Date'} data-autofocus />
+    <DatePickerInput
+      class="date-input"
+      aria-label={range ? `${label} from` : label}
+      placeholder={range ? 'From' : 'Date'}
+      data-autofocus
+    />
     {#if range}
       <span class="dash" aria-hidden="true">-</span>
-      <DatePickerInput end class="date-input" aria-label={`${label} to`} placeholder="To" />
+      <DatePickerInput
+        end
+        class="date-input"
+        aria-label={`${label} to`}
+        placeholder="To"
+      />
     {/if}
     <DatePickerTrigger class="date-trigger" aria-label="Open calendar">
       <Icon name="calendar" size={14} />
     </DatePickerTrigger>
   </div>
-  <DatePickerContent class="calendar-pop" {anchor} align="start" sideOffset={6} collisionPadding={12}>
+  <DatePickerContent
+    class="calendar-pop"
+    {anchor}
+    align="start"
+    sideOffset={6}
+    collisionPadding={12}
+  >
     <div class="cal-head">
       <CalendarPrevious class="cal-step" aria-label="Previous month">
         <Icon name="chevron-left" size={14} />
@@ -98,7 +125,9 @@
     {#if range}
       <div class="presets">
         {#each presets() as p (p.label)}
-          <DatePickerPreset value={p.value} class="preset">{p.label}</DatePickerPreset>
+          <DatePickerPreset value={p.value} class="preset"
+            >{p.label}</DatePickerPreset
+          >
         {/each}
       </div>
     {/if}

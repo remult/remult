@@ -4,17 +4,28 @@ import { CaptionCache } from './caption-cache.svelte.js'
 
 const am = field({
   key: 'accountManager',
-  relationToOne: { entityKey: 'accountManagers', fields: { id: 'accountManager' }, captionField: 'firstName' } as any,
+  relationToOne: {
+    entityKey: 'accountManagers',
+    fields: { id: 'accountManager' },
+    captionField: 'firstName',
+  } as any,
 })
 const am2 = field({
   key: 'owner',
   valFieldKey: 'ownerId',
-  relationToOne: { entityKey: 'accountManagers', fields: { id: 'ownerId' }, captionField: 'firstName' } as any,
+  relationToOne: {
+    entityKey: 'accountManagers',
+    fields: { id: 'ownerId' },
+    captionField: 'firstName',
+  } as any,
 })
 
 describe('CaptionCache', () => {
   it('batches requests per relation and asks once', async () => {
-    const load = vi.fn(async (_f, ids: unknown[]) => new Map(ids.map((id) => [id, `name ${id}`])))
+    const load = vi.fn(
+      async (_f, ids: unknown[]) =>
+        new Map(ids.map((id) => [id, `name ${id}`])),
+    )
     const cache = new CaptionCache(load)
     cache.request(am, 'a')
     cache.request(am, 'b')
@@ -46,10 +57,16 @@ describe('CaptionCache on a non-id target field', () => {
   const company = field({
     key: 'company',
     valFieldKey: 'companyId',
-    relationToOne: { entityKey: 'companies', fields: { companyId: 'companyId' }, captionField: 'name' } as any,
+    relationToOne: {
+      entityKey: 'companies',
+      fields: { companyId: 'companyId' },
+      captionField: 'name',
+    } as any,
   })
   it('stores and finds captions by the row value', async () => {
-    const load = vi.fn(async (_f, ids: unknown[]) => new Map(ids.map((id) => [id, 'Acme'])))
+    const load = vi.fn(
+      async (_f, ids: unknown[]) => new Map(ids.map((id) => [id, 'Acme'])),
+    )
     const cache = new CaptionCache(load)
     cache.request(company, 'id:c1')
     await vi.waitFor(() => expect(cache.get(company, 'id:c1')).toBe('Acme'))

@@ -36,7 +36,10 @@ const settingsDefaults = (): Settings => ({
   navCollapsed: false,
 })
 
-const sessionDefaults = (): Session => ({ bearerAuth: '', forbiddenEntities: [] })
+const sessionDefaults = (): Session => ({
+  bearerAuth: '',
+  forbiddenEntities: [],
+})
 
 // storage can be missing (tests), blocked (privacy mode) or full: never let it break the app
 function read<T extends object>(storage: () => Storage, defaults: T): T {
@@ -54,8 +57,12 @@ function write(storage: () => Storage, json: string) {
   } catch {}
 }
 
-export const settings: Settings = $state(read(() => localStorage, settingsDefaults()))
-export const session: Session = $state(read(() => sessionStorage, sessionDefaults()))
+export const settings: Settings = $state(
+  read(() => localStorage, settingsDefaults()),
+)
+export const session: Session = $state(
+  read(() => sessionStorage, sessionDefaults()),
+)
 
 export function resetSettings(): void {
   Object.assign(settings, settingsDefaults())

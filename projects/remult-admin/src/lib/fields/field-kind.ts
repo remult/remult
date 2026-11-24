@@ -11,7 +11,8 @@ export type FieldKind =
   | 'color'
   | 'text'
 
-const REGEX_ISO_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/
+const REGEX_ISO_TIMESTAMP =
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/
 
 export function kindOf(f: FieldUIInfo): FieldKind {
   if (f.relationToOne) return 'relation'
@@ -24,7 +25,8 @@ export function kindOf(f: FieldUIInfo): FieldKind {
   return 'text'
 }
 
-export const isIsoTimestamp = (v: unknown) => typeof v === 'string' && REGEX_ISO_TIMESTAMP.test(v)
+export const isIsoTimestamp = (v: unknown) =>
+  typeof v === 'string' && REGEX_ISO_TIMESTAMP.test(v)
 
 const pad = (n: number) => String(n).padStart(2, '0')
 

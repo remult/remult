@@ -20,4 +20,7 @@ export function entityHref(superKey: string) {
   return `#/entity/${superKey}`
 }
 
-export const modKey = typeof navigator !== 'undefined' && REGEX_APPLE.test(navigator.platform) ? '⌘' : 'Ctrl'
+export const modKey =
+  typeof navigator !== 'undefined' && REGEX_APPLE.test(navigator.platform)
+    ? '⌘'
+    : 'Ctrl'

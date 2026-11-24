@@ -10,7 +10,8 @@
 
   // undefined for a moment after a reload drops the entity, until the page lays out again
   const table = $derived(god.bySuperKey(data.superKey))
-  const name = (x: { caption: string; key: string }) => (settings.displayCaption ? x.caption : x.key)
+  const name = (x: { caption: string; key: string }) =>
+    settings.displayCaption ? x.caption : x.key
 
   function typeIcon(f: FieldUIInfo): IconName {
     if (table?.ids[f.key]) return 'key'
@@ -40,23 +41,56 @@
 </script>
 
 {#if table}
-  <div class="node" data-selected={selected ? '' : undefined} style:--hue={table.color}>
-    <Handle type="target" position={Position.Left} id="in-l" isConnectable={false} />
-    <Handle type="target" position={Position.Right} id="in-r" isConnectable={false} />
-    <a class="head" href={`#/entity/${table.superKey}`} draggable="false" title={`Open ${name(table)}`}>
+  <div
+    class="node"
+    data-selected={selected ? '' : undefined}
+    style:--hue={table.color}
+  >
+    <Handle
+      type="target"
+      position={Position.Left}
+      id="in-l"
+      isConnectable={false}
+    />
+    <Handle
+      type="target"
+      position={Position.Right}
+      id="in-r"
+      isConnectable={false}
+    />
+    <a
+      class="head"
+      href={`#/entity/${table.superKey}`}
+      draggable="false"
+      title={`Open ${name(table)}`}
+    >
       <span class="hue-dot"></span>
       <span class="caption">{name(table)}</span>
       <span class="go"><Icon name="arrow-up-right" size={13} /></span>
     </a>
     <ul class="rows">
       {#each table.fields as f (f.key)}
-        <li class="row" data-id={table.ids[f.key] ? '' : undefined} data-relation={f.relationToOne ? '' : undefined}>
+        <li
+          class="row"
+          data-id={table.ids[f.key] ? '' : undefined}
+          data-relation={f.relationToOne ? '' : undefined}
+        >
           <span class="icon"><Icon name={typeIcon(f)} size={13} /></span>
           <span class="name">{name(f)}</span>
           <span class="type">{typeName(f)}</span>
           {#if f.relationToOne}
-            <Handle type="source" position={Position.Left} id={`${f.key}-l`} isConnectable={false} />
-            <Handle type="source" position={Position.Right} id={`${f.key}-r`} isConnectable={false} />
+            <Handle
+              type="source"
+              position={Position.Left}
+              id={`${f.key}-l`}
+              isConnectable={false}
+            />
+            <Handle
+              type="source"
+              position={Position.Right}
+              id={`${f.key}-r`}
+              isConnectable={false}
+            />
           {/if}
         </li>
       {/each}
@@ -65,8 +99,18 @@
           <span class="icon"><Icon name="list" size={13} /></span>
           <span class="name">{name(r)}</span>
           <span class="type">{manyName(r.entityKey)}[]</span>
-          <Handle type="source" position={Position.Left} id={`${r.key}-l`} isConnectable={false} />
-          <Handle type="source" position={Position.Right} id={`${r.key}-r`} isConnectable={false} />
+          <Handle
+            type="source"
+            position={Position.Left}
+            id={`${r.key}-l`}
+            isConnectable={false}
+          />
+          <Handle
+            type="source"
+            position={Position.Right}
+            id={`${r.key}-r`}
+            isConnectable={false}
+          />
         </li>
       {/each}
     </ul>

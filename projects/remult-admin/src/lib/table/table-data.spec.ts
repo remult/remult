@@ -2,7 +2,12 @@ import { describe, expect, it, vi } from 'vitest'
 import type { TableInfo } from '../core/god.svelte.js'
 import { field } from '../query/fixtures.js'
 import { orderByFor } from './order.js'
-import { fieldErrors, prefillFrom, TableData, type LoadRequest } from './table-data.svelte.js'
+import {
+  fieldErrors,
+  prefillFrom,
+  TableData,
+  type LoadRequest,
+} from './table-data.svelte.js'
 
 type Verdicts = Record<string, { update: boolean; delete: boolean }>
 
@@ -25,7 +30,11 @@ function fakeTable(o: {
     field({ key: 'id', readOnly: true }),
     field({ key: 'name' }),
     field({ key: 'note' }),
-    field({ key: 'company', valFieldKey: 'companyId', relationToOne: {} as any }),
+    field({
+      key: 'company',
+      valFieldKey: 'companyId',
+      relationToOne: {} as any,
+    }),
     field({ key: 'companyId' }),
   ]
   return {
@@ -65,7 +74,10 @@ describe('TableData', () => {
   it('drops a find that resolves after a newer load', async () => {
     const first = deferred<any[]>()
     const second = deferred<any[]>()
-    const find = vi.fn().mockReturnValueOnce(first.promise).mockReturnValueOnce(second.promise)
+    const find = vi
+      .fn()
+      .mockReturnValueOnce(first.promise)
+      .mockReturnValueOnce(second.promise)
     const data = new TableData(fakeTable({ find }))
     data.load(req({ page: 1 }))
     data.load(req({ page: 2 }))
@@ -110,7 +122,8 @@ describe('TableData', () => {
   })
 
   it("keeps 'row' permissions closed until the server answers", async () => {
-    const answer = deferred<Record<string, { update: boolean; delete: boolean }>>()
+    const answer =
+      deferred<Record<string, { update: boolean; delete: boolean }>>()
     const rowPermissions = vi.fn(() => answer.promise)
     const data = new TableData(
       fakeTable({
@@ -124,7 +137,10 @@ describe('TableData', () => {
     expect(rowPermissions).toHaveBeenCalledWith('things', ['a', 'b', 'c'])
     expect(data.can('delete', 'a')).toBe(false)
     expect(data.resolved('a')).toBe(false)
-    answer.resolve({ a: { update: true, delete: true }, b: { update: false, delete: false } })
+    answer.resolve({
+      a: { update: true, delete: true },
+      b: { update: false, delete: false },
+    })
     await tick()
     expect(data.can('delete', 'a')).toBe(true)
     expect(data.can('update', 'b')).toBe(false)
@@ -135,7 +151,10 @@ describe('TableData', () => {
   it('skips the permissions route when no flag is per row', async () => {
     const rowPermissions = vi.fn()
     const data = new TableData(
-      fakeTable({ find: async () => [{ id: 'a' }], permissions: { delete: false } }),
+      fakeTable({
+        find: async () => [{ id: 'a' }],
+        permissions: { delete: false },
+      }),
       { rowPermissions },
     )
     data.load(req())
@@ -146,13 +165,19 @@ describe('TableData', () => {
   })
 
   it('keeps row verdicts across a refresh, and drops them when the filter changes', async () => {
-    const answers: { promise: Promise<Verdicts>; resolve: (v: Verdicts) => void }[] = []
+    const answers: {
+      promise: Promise<Verdicts>
+      resolve: (v: Verdicts) => void
+    }[] = []
     const rowPermissions = vi.fn(() => {
       answers.push(deferred<Verdicts>())
       return answers.at(-1)!.promise
     })
     const data = new TableData(
-      fakeTable({ find: async () => [{ id: 'a' }], permissions: { update: 'row', delete: 'row' } }),
+      fakeTable({
+        find: async () => [{ id: 'a' }],
+        permissions: { update: 'row', delete: 'row' },
+      }),
       { rowPermissions },
     )
     data.load(req())
@@ -181,10 +206,16 @@ describe('TableData', () => {
     })
     const first = deferred<Verdicts>()
     const second = deferred<Verdicts>()
-    const rowPermissions = vi.fn().mockReturnValueOnce(first.promise).mockReturnValueOnce(second.promise)
-    const data = new TableData(fakeTable({ liveQuery, permissions: { update: 'row', delete: 'row' } }), {
-      rowPermissions,
-    })
+    const rowPermissions = vi
+      .fn()
+      .mockReturnValueOnce(first.promise)
+      .mockReturnValueOnce(second.promise)
+    const data = new TableData(
+      fakeTable({ liveQuery, permissions: { update: 'row', delete: 'row' } }),
+      {
+        rowPermissions,
+      },
+    )
     data.load(req({ live: true }))
     push([{ id: 'a' }])
     push([{ id: 'a' }])
@@ -197,8 +228,18 @@ describe('TableData', () => {
   })
 
   it('updates only the changed keys and comes back clean', async () => {
-    const update = vi.fn(async (_id: unknown, changes: any) => ({ id: 'a', name: 'b', note: 'n', ...changes }))
-    const data = new TableData(fakeTable({ find: async () => [{ id: 'a', name: 'b', note: 'n' }], update }))
+    const update = vi.fn(async (_id: unknown, changes: any) => ({
+      id: 'a',
+      name: 'b',
+      note: 'n',
+      ...changes,
+    }))
+    const data = new TableData(
+      fakeTable({
+        find: async () => [{ id: 'a', name: 'b', note: 'n' }],
+        update,
+      }),
+    )
     data.load(req())
     await tick()
     const row = data.rows[0]
@@ -214,15 +255,23 @@ describe('TableData', () => {
   it('maps modelState to the edited key, and other errors to a message', async () => {
     const update = vi
       .fn()
-      .mockRejectedValueOnce({ message: 'invalid', modelState: { name: 'Should not be empty', company: 'Required' } })
+      .mockRejectedValueOnce({
+        message: 'invalid',
+        modelState: { name: 'Should not be empty', company: 'Required' },
+      })
       .mockRejectedValueOnce({ message: 'Network down' })
-    const data = new TableData(fakeTable({ find: async () => [{ id: 'a', name: 'b' }], update }))
+    const data = new TableData(
+      fakeTable({ find: async () => [{ id: 'a', name: 'b' }], update }),
+    )
     data.load(req())
     await tick()
     const row = data.rows[0]
     row.draft.values.name = ''
     expect(await data.save(row)).toEqual({ ok: false })
-    expect(data.errors.a).toEqual({ name: 'Should not be empty', companyId: 'Required' })
+    expect(data.errors.a).toEqual({
+      name: 'Should not be empty',
+      companyId: 'Required',
+    })
     expect(row.draft.dirty).toBe(true)
 
     data.clearError(row, 'name')
@@ -263,7 +312,9 @@ describe('TableData', () => {
   })
 
   it('cancel resets an edit and drops a new row', async () => {
-    const data = new TableData(fakeTable({ find: async () => [{ id: 'a', name: 'b' }] }))
+    const data = new TableData(
+      fakeTable({ find: async () => [{ id: 'a', name: 'b' }] }),
+    )
     data.load(req())
     await tick()
     data.rows[0].draft.values.name = 'x'
@@ -277,29 +328,59 @@ describe('TableData', () => {
 
 describe('fieldErrors', () => {
   it('is undefined when no message maps to a field', () => {
-    expect(fieldErrors({ message: 'x', modelState: { other: 'y' } }, [field({ key: 'a' })])).toBeUndefined()
+    expect(
+      fieldErrors({ message: 'x', modelState: { other: 'y' } }, [
+        field({ key: 'a' }),
+      ]),
+    ).toBeUndefined()
     expect(fieldErrors(new Error('x'), [field({ key: 'a' })])).toBeUndefined()
   })
 })
 
 describe('prefillFrom', () => {
   it('keeps plain values of the parent filter', () => {
-    expect(prefillFrom({ contactId: 'c1', n: 2, $and: [{ a: 1 }], tags: { $in: ['x'] } })).toEqual({ contactId: 'c1', n: 2 })
+    expect(
+      prefillFrom({
+        contactId: 'c1',
+        n: 2,
+        $and: [{ a: 1 }],
+        tags: { $in: ['x'] },
+      }),
+    ).toEqual({ contactId: 'c1', n: 2 })
     expect(prefillFrom(undefined)).toEqual({})
   })
 })
 
 describe('orderByFor', () => {
-  const fields = [field({ key: 'id' }), field({ key: 'name' }), field({ key: 'calc' })]
-  const base = { fields, ids: { id: true as const }, known: new Set(['id', 'name']) }
+  const fields = [
+    field({ key: 'id' }),
+    field({ key: 'name' }),
+    field({ key: 'calc' }),
+  ]
+  const base = {
+    fields,
+    ids: { id: true as const },
+    known: new Set(['id', 'name']),
+  }
 
   it('sorts by the URL field, ids breaking ties', () => {
-    expect(orderByFor({ field: 'name', dir: 'desc' }, base)).toEqual({ name: 'desc', id: 'asc' })
+    expect(orderByFor({ field: 'name', dir: 'desc' }, base)).toEqual({
+      name: 'desc',
+      id: 'asc',
+    })
   })
 
   it('falls back to the default order when the URL field is not sortable', () => {
-    const withDefault = { ...base, defaultOrderBy: { name: 'asc', gone: 'desc' } }
-    expect(orderByFor({ field: 'calc', dir: 'asc' }, withDefault)).toEqual({ name: 'asc', id: 'asc' })
-    expect(orderByFor({ field: 'nope', dir: 'asc' }, base)).toEqual({ id: 'asc' })
+    const withDefault = {
+      ...base,
+      defaultOrderBy: { name: 'asc', gone: 'desc' },
+    }
+    expect(orderByFor({ field: 'calc', dir: 'asc' }, withDefault)).toEqual({
+      name: 'asc',
+      id: 'asc',
+    })
+    expect(orderByFor({ field: 'nope', dir: 'asc' }, base)).toEqual({
+      id: 'asc',
+    })
   })
 })

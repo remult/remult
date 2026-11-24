@@ -4,10 +4,17 @@
   import { onDestroy, tick, untrack } from 'svelte'
   import { SvelteSet } from 'svelte/reactivity'
   import type { EntityFilter } from '../../../../core/index.js'
-  import type { AdminEditMode, FieldUIInfo } from '../../../../core/server/remult-admin'
+  import type {
+    AdminEditMode,
+    FieldUIInfo,
+  } from '../../../../core/server/remult-admin'
   import type { TableInfo } from '../core/god.svelte.js'
   import { session, settings } from '../core/settings.svelte.js'
-  import { chipsToWhere, type FilterChip, type TableQuery } from '../query/filter-model.js'
+  import {
+    chipsToWhere,
+    type FilterChip,
+    type TableQuery,
+  } from '../query/filter-model.js'
   import { parseQuery, serializeQuery } from '../query/url-state.js'
   import Icon, { type IconName } from '../shell/Icon.svelte'
   import { toast } from '../shell/Toasts.svelte'
@@ -16,7 +23,13 @@
   import RelationTabs from './RelationTabs.svelte'
   import Row from './Row.svelte'
   import RowDrawer from './RowDrawer.svelte'
-  import { errorMessage, prefillFrom, TableData, type LoadRequest, type TableRow } from './table-data.svelte.js'
+  import {
+    errorMessage,
+    prefillFrom,
+    TableData,
+    type LoadRequest,
+    type TableRow,
+  } from './table-data.svelte.js'
 
   let {
     table,
@@ -34,7 +47,8 @@
   onDestroy(() => data.dispose())
 
   const path = $derived(`#/entity/${table.superKey}`)
-  const label = (x: { caption: string; key: string }) => (settings.displayCaption ? x.caption : x.key)
+  const label = (x: { caption: string; key: string }) =>
+    settings.displayCaption ? x.caption : x.key
 
   let localQuery: TableQuery = $state({ filters: [], page: 1 })
   // the page outlives a navigation away by a tick: only read the URL while it is ours
@@ -43,7 +57,9 @@
       ? new URLSearchParams(page.url.hash.split('?')[1] ?? '')
       : undefined,
   )
-  const query: TableQuery = $derived(urlParams ? parseQuery(urlParams, table.fields) : localQuery)
+  const query: TableQuery = $derived(
+    urlParams ? parseQuery(urlParams, table.fields) : localQuery,
+  )
 
   function hrefFor(q: TableQuery) {
     const qs = serializeQuery(q, table.fields).toString()
@@ -63,30 +79,46 @@
       untrack(() => goto(hrefFor(query), { replace: true, reset: false }))
   })
 
-  const known = $derived(new Set(table.repo.metadata.fields.toArray().map((f) => f.key)))
+  const known = $derived(
+    new Set(table.repo.metadata.fields.toArray().map((f) => f.key)),
+  )
   const byKey = $derived(new Map(table.fields.map((f) => [f.key, f])))
 
   const orderBy = $derived(
     orderByFor(query.sort, {
       fields: table.fields,
       ids: table.ids,
-      defaultOrderBy: table.defaultOrderBy as Record<string, unknown> | undefined,
+      defaultOrderBy: table.defaultOrderBy as
+        | Record<string, unknown>
+        | undefined,
       known,
     }),
   )
 
   const editMode: AdminEditMode = $derived(
-    table.editModeLocked ? table.editMode : (settings.editMode[table.superKey] ?? table.editMode),
+    table.editModeLocked
+      ? table.editMode
+      : (settings.editMode[table.superKey] ?? table.editMode),
   )
   const showModeSwitch = $derived(
-    urlBound && !table.editModeLocked && (table.permissions.update !== false || table.permissions.insert !== false),
+    urlBound &&
+      !table.editModeLocked &&
+      (table.permissions.update !== false ||
+        table.permissions.insert !== false),
   )
   const modes: { value: AdminEditMode; label: string; title: string }[] = [
     { value: 'inline', label: 'Inline', title: 'Edit in the table' },
-    { value: 'drawer', label: 'Drawer', title: 'Edit one row at a time in a side panel' },
+    {
+      value: 'drawer',
+      label: 'Drawer',
+      title: 'Edit one row at a time in a side panel',
+    },
   ]
 
-  const live = $derived(!window.optionsFromServer?.disableLiveQuery && settings.disableLiveQuery !== true)
+  const live = $derived(
+    !window.optionsFromServer?.disableLiveQuery &&
+      settings.disableLiveQuery !== true,
+  )
 
   const request: LoadRequest = $derived.by(() => {
     const where = chipsToWhere(query.filters, table.fields)
@@ -109,7 +141,11 @@
   const forbidden = $derived(session.forbiddenEntities.includes(table.key))
   const from = $derived((query.page - 1) * settings.numberOfRows + 1)
   const to = $derived(from + data.rows.length - 1)
-  const isLast = $derived(data.total === undefined ? data.rows.length < settings.numberOfRows : to >= data.total)
+  const isLast = $derived(
+    data.total === undefined
+      ? data.rows.length < settings.numberOfRows
+      : to >= data.total,
+  )
 
   function toggleSort(f: FieldUIInfo) {
     const cur = query.sort?.field === f.key ? query.sort.dir : undefined
@@ -158,12 +194,17 @@
     }
     const row = data.addNew(prefillFrom(parentWhere))
     await tick()
-    section.querySelector<HTMLElement>(`tr[data-row="${row.id}"] [data-cell-focus]`)?.focus()
+    section
+      .querySelector<HTMLElement>(`tr[data-row="${row.id}"] [data-cell-focus]`)
+      ?.focus()
   }
 
   async function saveRows(rows: TableRow[]) {
-    const results = await Promise.all(rows.map(async (row) => ({ row, r: await data.save(row) })))
-    for (const { r } of results) if (!r.ok && r.message) toast.error(`Save failed: ${r.message}`)
+    const results = await Promise.all(
+      rows.map(async (row) => ({ row, r: await data.save(row) })),
+    )
+    for (const { r } of results)
+      if (!r.ok && r.message) toast.error(`Save failed: ${r.message}`)
     const added = results.filter(({ row, r }) => r.ok && row.isNew).length
     const saved = results.filter(({ r }) => r.ok).length
     if (added) toast.success(added === 1 ? 'Row added' : `${added} rows added`)
@@ -171,27 +212,47 @@
   }
 
   function rowOf(target: EventTarget | null) {
-    const id = (target as HTMLElement | null)?.closest<HTMLElement>('tr[data-row]')?.dataset.row
+    const id = (target as HTMLElement | null)?.closest<HTMLElement>(
+      'tr[data-row]',
+    )?.dataset.row
     return id === undefined ? undefined : data.find(id)
   }
 
   function onkeydown(e: KeyboardEvent) {
     const target = e.target as HTMLElement
     // a dialog or a nested table above us owns its keys
-    if (e.defaultPrevented || target.closest('[role="dialog"]') || target.closest('section.table') !== section) return
+    if (
+      e.defaultPrevented ||
+      target.closest('[role="dialog"]') ||
+      target.closest('section.table') !== section
+    )
+      return
     const mod = e.ctrlKey || e.metaKey
     // plain Esc too: Windows keeps Ctrl+Esc for itself; an open list closes first
-    const cancel = e.key === 'Escape' && !e.altKey && !target.closest('[role="listbox"], [aria-expanded="true"]')
+    const cancel =
+      e.key === 'Escape' &&
+      !e.altKey &&
+      !target.closest('[role="listbox"], [aria-expanded="true"]')
     if ((mod && e.key === 'Enter') || cancel) {
       const one = rowOf(target)
-      const rows = e.shiftKey ? data.dirtyRows() : one && (one.isNew || one.draft.dirty) ? [one] : []
+      const rows = e.shiftKey
+        ? data.dirtyRows()
+        : one && (one.isNew || one.draft.dirty)
+          ? [one]
+          : []
       if (!rows.length) return
       e.preventDefault()
       if (e.key === 'Enter') saveRows(rows)
       else for (const r of rows) data.cancel(r)
       return
     }
-    if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
+    if (
+      (e.key === 'ArrowUp' || e.key === 'ArrowDown') &&
+      !e.altKey &&
+      !e.ctrlKey &&
+      !e.metaKey &&
+      !e.shiftKey
+    ) {
       if (target.matches('tr[data-row]')) moveRow(e, target)
       else moveVertical(e, target)
     }
@@ -199,25 +260,35 @@
 
   // a focused row (drawer mode) steps to the next focusable row
   function moveRow(e: KeyboardEvent, tr: HTMLElement) {
-    let next = (e.key === 'ArrowDown' ? tr.nextElementSibling : tr.previousElementSibling) as HTMLElement | null
+    let next = (
+      e.key === 'ArrowDown' ? tr.nextElementSibling : tr.previousElementSibling
+    ) as HTMLElement | null
     while (next && !next.matches('tr[tabindex]'))
-      next = (e.key === 'ArrowDown' ? next.nextElementSibling : next.previousElementSibling) as HTMLElement | null
+      next = (
+        e.key === 'ArrowDown'
+          ? next.nextElementSibling
+          : next.previousElementSibling
+      ) as HTMLElement | null
     if (!next) return
     e.preventDefault()
     next.focus()
   }
 
   // these use the arrow keys themselves: step a number, a date part, or move in a list
-  const OWN_ARROWS = 'input[type="number"], input[type="date"], input[type="datetime-local"], [role="combobox"]'
+  const OWN_ARROWS =
+    'input[type="number"], input[type="date"], input[type="datetime-local"], [role="combobox"]'
 
   // same column, next row that has an editor there
   function moveVertical(e: KeyboardEvent, target: HTMLElement) {
-    if (!target.matches('[data-cell-focus]') || target.matches(OWN_ARROWS)) return
+    if (!target.matches('[data-cell-focus]') || target.matches(OWN_ARROWS))
+      return
     const td = target.closest('td')
     const tr = td?.parentElement as HTMLTableRowElement | null
     if (!td || !tr) return
     const i = [...tr.cells].indexOf(td as HTMLTableCellElement)
-    let next = (e.key === 'ArrowDown' ? tr.nextElementSibling : tr.previousElementSibling) as HTMLTableRowElement | null
+    let next = (
+      e.key === 'ArrowDown' ? tr.nextElementSibling : tr.previousElementSibling
+    ) as HTMLTableRowElement | null
     while (next) {
       const el = next.cells[i]?.querySelector<HTMLElement>('[data-cell-focus]')
       if (el) {
@@ -225,7 +296,11 @@
         el.focus()
         return
       }
-      next = (e.key === 'ArrowDown' ? next.nextElementSibling : next.previousElementSibling) as HTMLTableRowElement | null
+      next = (
+        e.key === 'ArrowDown'
+          ? next.nextElementSibling
+          : next.previousElementSibling
+      ) as HTMLTableRowElement | null
     }
   }
 
@@ -263,7 +338,13 @@
 
 <!-- keyboard shortcuts for the rows inside; the editors stay the focus targets -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<section class="table" class:nested={!urlBound} style:--hue={table.color} bind:this={section} {onkeydown}>
+<section
+  class="table"
+  class:nested={!urlBound}
+  style:--hue={table.color}
+  bind:this={section}
+  {onkeydown}
+>
   <header class="bar">
     {#if urlBound}
       <h1><span class="hue-dot"></span>{label(table)}</h1>
@@ -271,7 +352,9 @@
     {#if forbidden}
       <span class="badge danger"><Icon name="lock" size={12} /> Forbidden</span>
     {:else if table.permissions.update === false}
-      <span class="badge" title="Rows of this entity can't be edited"><Icon name="lock" size={12} /> Read only</span>
+      <span class="badge" title="Rows of this entity can't be edited"
+        ><Icon name="lock" size={12} /> Read only</span
+      >
     {/if}
     {#if live && data.loaded && !data.error}
       <span class="live" title="Rows update as the data changes">Live</span>
@@ -282,7 +365,11 @@
     {#if showModeSwitch}
       <div class="segmented" role="radiogroup" aria-label="Edit mode">
         {#each modes as m (m.value)}
-          <label class="seg" title={m.title} data-checked={editMode === m.value ? '' : undefined}>
+          <label
+            class="seg"
+            title={m.title}
+            data-checked={editMode === m.value ? '' : undefined}
+          >
             <input
               type="radio"
               name={`edit-mode-${table.superKey}`}
@@ -339,29 +426,54 @@
     {@render newButton()}
   </header>
 
-  <FilterBar fields={table.fields} filters={query.filters} pageCaptions={data.captions} onchange={setFilters} />
+  <FilterBar
+    fields={table.fields}
+    filters={query.filters}
+    pageCaptions={data.captions}
+    onchange={setFilters}
+  />
 
   <div class="scroll" aria-busy={data.loading} bind:clientWidth={viewWidth}>
     {#if data.error}
       <div class="state" role="alert">
-        <span class="state-icon danger"><Icon name={forbidden ? 'lock' : 'alert'} size={20} /></span>
-        <h2>{forbidden ? `You can't read ${label(table)}` : `Could not load ${label(table)}`}</h2>
+        <span class="state-icon danger"
+          ><Icon name={forbidden ? 'lock' : 'alert'} size={20} /></span
+        >
+        <h2>
+          {forbidden
+            ? `You can't read ${label(table)}`
+            : `Could not load ${label(table)}`}
+        </h2>
         <pre>{data.error}</pre>
         <button class="btn" type="button" onclick={() => data.load(request)}>
           <Icon name="refresh" size={14} /> Retry
         </button>
       </div>
     {:else}
-      <table class="grid" data-loading={data.loaded && data.loading ? '' : undefined}>
+      <table
+        class="grid"
+        data-loading={data.loaded && data.loading ? '' : undefined}
+      >
         <thead>
           <tr>
-            {#if expandable}<th class="expand"><span class="sr-only">Related rows</span></th>{/if}
+            {#if expandable}<th class="expand"
+                ><span class="sr-only">Related rows</span></th
+              >{/if}
             <th class="gutter"><span class="sr-only">Row status</span></th>
             {#each table.fields as f (f.key)}
-              {@const dir = query.sort?.field === f.key ? query.sort.dir : undefined}
+              {@const dir =
+                query.sort?.field === f.key ? query.sort.dir : undefined}
               <th
-                aria-sort={dir === 'asc' ? 'ascending' : dir === 'desc' ? 'descending' : undefined}
-                data-num={f.type === 'number' && !f.values.length && !f.relationToOne ? '' : undefined}
+                aria-sort={dir === 'asc'
+                  ? 'ascending'
+                  : dir === 'desc'
+                    ? 'descending'
+                    : undefined}
+                data-num={f.type === 'number' &&
+                !f.values.length &&
+                !f.relationToOne
+                  ? ''
+                  : undefined}
               >
                 <button
                   type="button"
@@ -369,12 +481,19 @@
                   title={`${label(f)} (${typeName(f)}). Sort`}
                   onclick={() => toggleSort(f)}
                 >
-                  {#if table.ids[f.key]}<span class="key" title="Id"><Icon name="key" size={12} /></span>{/if}
+                  {#if table.ids[f.key]}<span class="key" title="Id"
+                      ><Icon name="key" size={12} /></span
+                    >{/if}
                   <span class="name">{label(f)}</span>
                   <span class="sort" data-dir={dir}>
-                    <Icon name={dir === 'asc' ? 'arrow-up' : 'arrow-down'} size={12} stroke={2} />
+                    <Icon
+                      name={dir === 'asc' ? 'arrow-up' : 'arrow-down'}
+                      size={12}
+                      stroke={2}
+                    />
                   </span>
-                  <span class="type"><Icon name={typeIcon(f)} size={12} /></span>
+                  <span class="type"><Icon name={typeIcon(f)} size={12} /></span
+                  >
                 </button>
               </th>
             {/each}
@@ -388,7 +507,10 @@
                 {#if expandable}<td class="gutter"></td>{/if}
                 <td class="gutter"></td>
                 {#each table.fields as f, j (f.key)}
-                  <td><span style:--w="{40 + ((i * 7 + j * 13) % 50)}%"></span></td>
+                  <td
+                    ><span style:--w="{40 + ((i * 7 + j * 13) % 50)}%"
+                    ></span></td
+                  >
                 {/each}
                 <td class="actions"></td>
               </tr>
@@ -418,8 +540,15 @@
               {#if expandable && !row.isNew && expanded.has(row.id)}
                 <tr class="related">
                   <td colspan={columns}>
-                    <div class="related-inner" style:width={viewWidth ? `${viewWidth}px` : undefined}>
-                      <RelationTabs relations={table.relations} values={row.item} label={row.id} />
+                    <div
+                      class="related-inner"
+                      style:width={viewWidth ? `${viewWidth}px` : undefined}
+                    >
+                      <RelationTabs
+                        relations={table.relations}
+                        values={row.item}
+                        label={row.id}
+                      />
                     </div>
                   </td>
                 </tr>
@@ -443,7 +572,12 @@
             </div>
           {:else if query.page > 1}
             <p>Page {query.page} is past the last row.</p>
-            <button class="btn" type="button" onclick={() => setQuery({ ...query, page: 1 })}>Go to first page</button>
+            <button
+              class="btn"
+              type="button"
+              onclick={() => setQuery({ ...query, page: 1 })}
+              >Go to first page</button
+            >
           {:else}
             <p>{label(table)} has no rows yet.</p>
             {@render newButton()}
@@ -600,7 +734,9 @@
     font-weight: 550;
     text-align: start;
     cursor: pointer;
-    transition: color 100ms var(--ease-out), background-color 100ms var(--ease-out);
+    transition:
+      color 100ms var(--ease-out),
+      background-color 100ms var(--ease-out);
   }
   .head:hover {
     background: var(--bg-hover);

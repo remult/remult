@@ -1,4 +1,5 @@
-const REGEX_TOKEN = /("(?:[^"\\\n]|\\.)*"?)(?=\s*:)|("(?:[^"\\\n]|\\.)*"?)|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|\b(true|false|null)\b|([{}[\],:])/g
+const REGEX_TOKEN =
+  /("(?:[^"\\\n]|\\.)*"?)(?=\s*:)|("(?:[^"\\\n]|\\.)*"?)|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|\b(true|false|null)\b|([{}[\],:])/g
 const REGEX_HTML = /[&<>]/g
 const REGEX_NUMBER = /-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/y
 const REGEX_HEX4 = /[0-9a-fA-F]{4}/y
@@ -7,9 +8,15 @@ const REGEX_LINE_INDENT = /^[ \t]*/
 const REGEX_OPENER = /[[{]\s*$/
 
 const ESCAPES = '"\\/bfnrtu'
-const ENTITIES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;' }
+const ENTITIES: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+}
 
-export type ParsedJson = { ok: true; v: unknown } | { ok: false; error: string; pos: number; line: number; col: number }
+export type ParsedJson =
+  | { ok: true; v: unknown }
+  | { ok: false; error: string; pos: number; line: number; col: number }
 
 class JsonError extends Error {
   constructor(
@@ -29,24 +36,30 @@ function scan(text: string) {
     i = REGEX_WS.lastIndex
   }
   const unexpected = () =>
-    new JsonError(i >= text.length ? 'Unexpected end of JSON' : `Unexpected '${text[i]}'`, i)
+    new JsonError(
+      i >= text.length ? 'Unexpected end of JSON' : `Unexpected '${text[i]}'`,
+      i,
+    )
 
   const string = () => {
     const start = i++
     for (;;) {
       const c = text[i]
-      if (c === undefined || c === '\n') throw new JsonError('Unterminated string', start)
+      if (c === undefined || c === '\n')
+        throw new JsonError('Unterminated string', start)
       if (c === '"') return void i++
       if (c === '\\') {
         const e = text[i + 1]
-        if (e === undefined || !ESCAPES.includes(e)) throw new JsonError('Bad escape', i)
+        if (e === undefined || !ESCAPES.includes(e))
+          throw new JsonError('Bad escape', i)
         if (e === 'u') {
           REGEX_HEX4.lastIndex = i + 2
           if (!REGEX_HEX4.test(text)) throw new JsonError('Bad escape', i)
           i += 4
         }
         i += 2
-      } else if (c.charCodeAt(0) < 0x20) throw new JsonError('Control character in string', i)
+      } else if (c.charCodeAt(0) < 0x20)
+        throw new JsonError('Control character in string', i)
       else i++
     }
   }
@@ -61,16 +74,25 @@ function scan(text: string) {
       if (text[i] === '}') return void i++
       for (;;) {
         ws()
-        if (text[i] !== '"') throw i >= text.length ? unexpected() : new JsonError('Expected a quoted key', i)
+        if (text[i] !== '"')
+          throw i >= text.length
+            ? unexpected()
+            : new JsonError('Expected a quoted key', i)
         string()
         ws()
-        if (text[i] !== ':') throw i >= text.length ? unexpected() : new JsonError("Expected ':'", i)
+        if (text[i] !== ':')
+          throw i >= text.length
+            ? unexpected()
+            : new JsonError("Expected ':'", i)
         i++
         value()
         ws()
         if (text[i] === ',') i++
         else if (text[i] === '}') return void i++
-        else throw i >= text.length ? unexpected() : new JsonError("Expected ',' or '}'", i)
+        else
+          throw i >= text.length
+            ? unexpected()
+            : new JsonError("Expected ',' or '}'", i)
       }
     }
     if (c === '[') {
@@ -82,7 +104,10 @@ function scan(text: string) {
         ws()
         if (text[i] === ',') i++
         else if (text[i] === ']') return void i++
-        else throw i >= text.length ? unexpected() : new JsonError("Expected ',' or ']'", i)
+        else
+          throw i >= text.length
+            ? unexpected()
+            : new JsonError("Expected ',' or ']'", i)
       }
     }
     for (const lit of ['true', 'false', 'null']) {
@@ -121,7 +146,13 @@ export function parseJson(text: string): ParsedJson {
       }
     }
     const { line, col } = lineCol(text, pos)
-    return { ok: false, error: `${message} (line ${line}, col ${col})`, pos, line, col }
+    return {
+      ok: false,
+      error: `${message} (line ${line}, col ${col})`,
+      pos,
+      line,
+      col,
+    }
   }
 }
 
@@ -132,7 +163,9 @@ function tokens(text: string) {
   let last = 0
   for (const m of text.matchAll(REGEX_TOKEN)) {
     const cls = m[1] ? 'k' : m[2] ? 's' : m[3] ? 'n' : m[4] ? 'b' : 'p'
-    out += escape(text.slice(last, m.index)) + `<i class="${cls}">${escape(m[0])}</i>`
+    out +=
+      escape(text.slice(last, m.index)) +
+      `<i class="${cls}">${escape(m[0])}</i>`
     last = m.index + m[0].length
   }
   return out + escape(text.slice(last))

@@ -9,7 +9,13 @@
   } from '@ui-sdk/svelte/dialog'
   import { untrack } from 'svelte'
   import { god } from '../core/god.svelte.js'
-  import { arrangeSchema, resetSettings, session, settings, type Settings } from '../core/settings.svelte.js'
+  import {
+    arrangeSchema,
+    resetSettings,
+    session,
+    settings,
+    type Settings,
+  } from '../core/settings.svelte.js'
   import Icon from './Icon.svelte'
   import { shell } from './shell.svelte.js'
   import { toast } from './Toasts.svelte'
@@ -74,20 +80,36 @@
     { value: 'off', label: 'Off' },
   ]
   const getLiveQuery = () =>
-    settings.disableLiveQuery === undefined ? 'server' : settings.disableLiveQuery ? 'off' : 'on'
+    settings.disableLiveQuery === undefined
+      ? 'server'
+      : settings.disableLiveQuery
+        ? 'off'
+        : 'on'
   const setLiveQuery = (v: string) =>
     (settings.disableLiveQuery = v === 'server' ? undefined : v === 'off')
 </script>
 
 <Dialog bind:open={shell.settingsOpen}>
   <DialogBackdrop class="scrim" />
-  <DialogContent class="settings" initialFocus={shell.tokenRequired || god.unauthorized ? '#token' : undefined}>
+  <DialogContent
+    class="settings"
+    initialFocus={shell.tokenRequired || god.unauthorized
+      ? '#token'
+      : undefined}
+  >
     <header class="head">
       <div>
         <DialogTitle class="title">Settings</DialogTitle>
-        <DialogDescription class="desc">Saved in this browser. The token lasts for this tab only.</DialogDescription>
+        <DialogDescription class="desc"
+          >Saved in this browser. The token lasts for this tab only.</DialogDescription
+        >
       </div>
-      <DialogClose class="btn" data-variant="ghost" data-icon aria-label="Close settings">
+      <DialogClose
+        class="btn"
+        data-variant="ghost"
+        data-icon
+        aria-label="Close settings"
+      >
         <Icon name="x" />
       </DialogClose>
     </header>
@@ -101,7 +123,9 @@
             The server rejected this token. Check it and connect again.
           </p>
         {:else if shell.tokenRequired}
-          <p class="note">This admin needs an access token before it can load your entities.</p>
+          <p class="note">
+            This admin needs an access token before it can load your entities.
+          </p>
         {/if}
         <label class="field">
           <span class="label">Access token</span>
@@ -114,7 +138,9 @@
             placeholder="Paste a bearer token"
             bind:value={token}
           />
-          <span class="hint">Sent as <code>Authorization: Bearer ...</code></span>
+          <span class="hint"
+            >Sent as <code>Authorization: Bearer ...</code></span
+          >
         </label>
         <label class="field">
           <span class="label">Or read the token from localStorage key</span>
@@ -128,12 +154,22 @@
         </label>
         <label class="field">
           <span class="label">Custom headers</span>
-          <textarea class="input" rows="2" spellcheck="false" placeholder="x-tenant: acme" bind:value={customHeaders}
+          <textarea
+            class="input"
+            rows="2"
+            spellcheck="false"
+            placeholder="x-tenant: acme"
+            bind:value={customHeaders}
           ></textarea>
           <span class="hint">One <code>name: value</code> per line.</span>
         </label>
         <div class="actions">
-          <button class="btn" data-variant="primary" type="submit" disabled={connecting}>
+          <button
+            class="btn"
+            data-variant="primary"
+            type="submit"
+            disabled={connecting}
+          >
             {connecting ? 'Connecting...' : 'Connect'}
           </button>
         </div>
@@ -143,10 +179,22 @@
         <h3>Display</h3>
         <div class="row">
           <span class="label" id="theme-label">Theme</span>
-          <div class="segmented" role="radiogroup" aria-labelledby="theme-label">
+          <div
+            class="segmented"
+            role="radiogroup"
+            aria-labelledby="theme-label"
+          >
             {#each themes as t (t.value)}
-              <label class="seg" data-checked={settings.theme === t.value ? '' : undefined}>
-                <input type="radio" name="theme" value={t.value} bind:group={settings.theme} />
+              <label
+                class="seg"
+                data-checked={settings.theme === t.value ? '' : undefined}
+              >
+                <input
+                  type="radio"
+                  name="theme"
+                  value={t.value}
+                  bind:group={settings.theme}
+                />
                 {t.label}
               </label>
             {/each}
@@ -154,13 +202,33 @@
         </div>
         <div class="row">
           <span class="label" id="names-label">Show names as</span>
-          <div class="segmented" role="radiogroup" aria-labelledby="names-label">
-            <label class="seg" data-checked={settings.displayCaption ? '' : undefined}>
-              <input type="radio" name="names" value={true} bind:group={settings.displayCaption} />
+          <div
+            class="segmented"
+            role="radiogroup"
+            aria-labelledby="names-label"
+          >
+            <label
+              class="seg"
+              data-checked={settings.displayCaption ? '' : undefined}
+            >
+              <input
+                type="radio"
+                name="names"
+                value={true}
+                bind:group={settings.displayCaption}
+              />
               Caption
             </label>
-            <label class="seg" data-checked={!settings.displayCaption ? '' : undefined}>
-              <input type="radio" name="names" value={false} bind:group={settings.displayCaption} />
+            <label
+              class="seg"
+              data-checked={!settings.displayCaption ? '' : undefined}
+            >
+              <input
+                type="radio"
+                name="names"
+                value={false}
+                bind:group={settings.displayCaption}
+              />
               Key
             </label>
           </div>
@@ -193,7 +261,8 @@
           <select
             class="input select"
             value={settings.diagramLayout}
-            onchange={(e) => arrangeSchema(e.currentTarget.value as Settings['diagramLayout'])}
+            onchange={(e) =>
+              arrangeSchema(e.currentTarget.value as Settings['diagramLayout'])}
           >
             <option value="grid-dfs">Grid, depth first</option>
             <option value="grid-bfs">Grid, breadth first</option>
@@ -202,7 +271,12 @@
         </label>
         <label class="row">
           <span class="label">Confirm before delete</span>
-          <input class="switch" type="checkbox" role="switch" bind:checked={settings.confirmDelete} />
+          <input
+            class="switch"
+            type="checkbox"
+            role="switch"
+            bind:checked={settings.confirmDelete}
+          />
         </label>
       </section>
     </div>

@@ -7,22 +7,29 @@
 
   const label = (t: TableInfo) => (settings.displayCaption ? t.caption : t.key)
 
-  const perm = (p: AdminPermission) => (p === 'row' ? 'Per row' : p ? 'Yes' : 'No')
-  const permState = (p: AdminPermission) => (p === 'row' ? 'row' : p ? 'yes' : 'no')
+  const perm = (p: AdminPermission) =>
+    p === 'row' ? 'Per row' : p ? 'Yes' : 'No'
+  const permState = (p: AdminPermission) =>
+    p === 'row' ? 'row' : p ? 'yes' : 'no'
 </script>
 
 <div class="page">
   <header class="head">
     <h1>Entities</h1>
     <p>
-      {god.visibleTables.length} available to you. Press <kbd>{modKey}</kbd> <kbd>K</kbd> to jump to one.
+      {god.visibleTables.length} available to you. Press <kbd>{modKey}</kbd>
+      <kbd>K</kbd> to jump to one.
     </p>
   </header>
 
   {#if god.visibleTables.length === 0}
     <div class="empty">
       <p>No entity is shown to this user.</p>
-      <button class="btn" type="button" onclick={() => (shell.settingsOpen = true)}>
+      <button
+        class="btn"
+        type="button"
+        onclick={() => (shell.settingsOpen = true)}
+      >
         <Icon name="settings" size={14} /> Change token
       </button>
     </div>
@@ -49,20 +56,39 @@
                 {label(t)}
               </a>
               {#if forbidden}
-                <span class="badge" title="The server refused to read this entity">
+                <span
+                  class="badge"
+                  title="The server refused to read this entity"
+                >
                   <Icon name="lock" size={12} /> Forbidden
                 </span>
               {/if}
               {#if t.editModeLocked}
-                <span class="badge">{t.editMode === 'drawer' ? 'Drawer only' : 'Inline only'}</span>
+                <span class="badge"
+                  >{t.editMode === 'drawer'
+                    ? 'Drawer only'
+                    : 'Inline only'}</span
+                >
               {/if}
             </th>
             <td class="mono hide-sm">{t.key}</td>
             <td class="num">{t.fields.length}</td>
             <td class="num hide-sm">{t.relations.length}</td>
-            <td><span class="perm" data-state={permState(t.permissions.insert)}>{perm(t.permissions.insert)}</span></td>
-            <td><span class="perm" data-state={permState(t.permissions.update)}>{perm(t.permissions.update)}</span></td>
-            <td><span class="perm" data-state={permState(t.permissions.delete)}>{perm(t.permissions.delete)}</span></td>
+            <td
+              ><span class="perm" data-state={permState(t.permissions.insert)}
+                >{perm(t.permissions.insert)}</span
+              ></td
+            >
+            <td
+              ><span class="perm" data-state={permState(t.permissions.update)}
+                >{perm(t.permissions.update)}</span
+              ></td
+            >
+            <td
+              ><span class="perm" data-state={permState(t.permissions.delete)}
+                >{perm(t.permissions.delete)}</span
+              ></td
+            >
           </tr>
         {/each}
       </tbody>

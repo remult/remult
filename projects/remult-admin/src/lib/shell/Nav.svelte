@@ -19,18 +19,28 @@
     return god.visibleTables.filter((t) => label(t).toLowerCase().includes(q))
   })
 
-  const activeKey = $derived(page.route.id === '/entity/[key]' ? page.params.key : undefined)
+  const activeKey = $derived(
+    page.route.id === '/entity/[key]' ? page.params.key : undefined,
+  )
   const onSchema = $derived(page.route.id === '/schema')
 
   function isTyping(el: EventTarget | null) {
     return (
       el instanceof HTMLElement &&
-      (el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName))
+      (el.isContentEditable ||
+        ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName))
     )
   }
 
   function onkeydown(e: KeyboardEvent) {
-    if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey || isTyping(e.target)) return
+    if (
+      e.key !== '/' ||
+      e.metaKey ||
+      e.ctrlKey ||
+      e.altKey ||
+      isTyping(e.target)
+    )
+      return
     if (collapsed || !filterInput) return
     e.preventDefault()
     filterInput.focus()
@@ -117,7 +127,9 @@
             <span class="hue-dot"></span>
             <span class="text wide">{label(t)}</span>
             {#if forbidden}
-              <span class="wide lock" title="Forbidden"><Icon name="lock" size={13} /></span>
+              <span class="wide lock" title="Forbidden"
+                ><Icon name="lock" size={13} /></span
+              >
             {/if}
           </a>
         </li>
@@ -125,7 +137,11 @@
         {#if god.loaded && settings.search}
           <li class="empty wide">
             No entity matches "{settings.search}".
-            <button class="link" type="button" onclick={() => (settings.search = '')}>Clear</button>
+            <button
+              class="link"
+              type="button"
+              onclick={() => (settings.search = '')}>Clear</button
+            >
           </li>
         {/if}
       {/each}
@@ -137,7 +153,7 @@
       class="item"
       href="#/schema"
       aria-current={onSchema ? 'page' : undefined}
-      aria-label='Schema'
+      aria-label="Schema"
       title={collapsed ? 'Schema' : undefined}
     >
       <Icon name="schema" size={15} />
@@ -146,7 +162,7 @@
     <button
       class="item"
       type="button"
-      aria-label='Settings'
+      aria-label="Settings"
       title={collapsed ? 'Settings' : undefined}
       onclick={() => (shell.settingsOpen = true)}
     >
@@ -253,7 +269,11 @@
     color: var(--text);
   }
   .item[aria-current='page'] {
-    background: color-mix(in oklch, oklch(var(--hue-l) var(--hue-c) var(--hue, 262)) 14%, var(--bg-nav));
+    background: color-mix(
+      in oklch,
+      oklch(var(--hue-l) var(--hue-c) var(--hue, 262)) 14%,
+      var(--bg-nav)
+    );
     color: var(--text);
     font-weight: 550;
   }
@@ -261,7 +281,12 @@
     --hue: 262;
   }
   .item[aria-current='page'] .hue-dot {
-    box-shadow: 0 0 0 3px color-mix(in oklch, oklch(var(--hue-l) var(--hue-c) var(--hue)) 30%, transparent);
+    box-shadow: 0 0 0 3px
+      color-mix(
+        in oklch,
+        oklch(var(--hue-l) var(--hue-c) var(--hue)) 30%,
+        transparent
+      );
   }
   .text {
     flex: 1;

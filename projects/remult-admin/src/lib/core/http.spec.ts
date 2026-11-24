@@ -79,7 +79,10 @@ describe('createHttpClient', () => {
   })
 
   const client = (onForbidden = vi.fn()) =>
-    createHttpClient({ getHeaders: () => ({ authorization: 'Bearer t' }), onForbidden })
+    createHttpClient({
+      getHeaders: () => ({ authorization: 'Bearer t' }),
+      onForbidden,
+    })
 
   it('dedupes two GETs on the same url within 2s', async () => {
     const http = client()
@@ -121,7 +124,9 @@ describe('createHttpClient', () => {
 
   it('sends headers from getHeaders merged with init headers', async () => {
     const http = client()
-    await http('/api/tasks', { headers: { 'content-type': 'application/json' } })
+    await http('/api/tasks', {
+      headers: { 'content-type': 'application/json' },
+    })
     const init = fetchMock.mock.calls[0][1] as RequestInit
     expect(init.headers).toEqual({
       'content-type': 'application/json',
@@ -129,26 +134,35 @@ describe('createHttpClient', () => {
     })
   })
 
-  it.each([401, 403])('%s on /api/tasks calls onForbidden("tasks")', async (status) => {
-    fetchMock.mockImplementation(async () => new Response('', { status }))
-    const onForbidden = vi.fn()
-    const http = client(onForbidden)
-    await http('/api/tasks')
-    expect(onForbidden).toHaveBeenCalledWith('tasks')
-  })
+  it.each([401, 403])(
+    '%s on /api/tasks calls onForbidden("tasks")',
+    async (status) => {
+      fetchMock.mockImplementation(async () => new Response('', { status }))
+      const onForbidden = vi.fn()
+      const http = client(onForbidden)
+      await http('/api/tasks')
+      expect(onForbidden).toHaveBeenCalledWith('tasks')
+    },
+  )
 
   it('401 goes to onUnauthorized when given, not onForbidden', async () => {
     fetchMock.mockImplementation(async () => new Response('', { status: 401 }))
     const onForbidden = vi.fn()
     const onUnauthorized = vi.fn()
-    const http = createHttpClient({ getHeaders: () => ({}), onForbidden, onUnauthorized })
+    const http = createHttpClient({
+      getHeaders: () => ({}),
+      onForbidden,
+      onUnauthorized,
+    })
     await http('/api/tasks')
     expect(onUnauthorized).toHaveBeenCalledOnce()
     expect(onForbidden).not.toHaveBeenCalled()
   })
 
   it('does not keep failed responses in the cache', async () => {
-    fetchMock.mockImplementationOnce(async () => new Response('', { status: 403 }))
+    fetchMock.mockImplementationOnce(
+      async () => new Response('', { status: 403 }),
+    )
     const http = client()
     await http('/api/tasks')
     await http('/api/tasks')

@@ -27,9 +27,13 @@
   let open = $state(false)
   let text = $state('')
 
-  const str = $derived(value === undefined || value === null ? '' : String(value))
+  const str = $derived(
+    value === undefined || value === null ? '' : String(value),
+  )
   // a timestamp is long but never worth a text dialog
-  const long = $derived(!isIsoTimestamp(str) && (overflowing || str.includes('\n')))
+  const long = $derived(
+    !isIsoTimestamp(str) && (overflowing || str.includes('\n')),
+  )
 
   $effect(() => {
     const el = input
@@ -69,15 +73,32 @@
     bind:value={() => str, (v) => set(v)}
   />
   {#if long}
-    <button class="expand" type="button" aria-label={`Edit ${label} in a larger box`} title="Edit in a larger box" onclick={expand}>
+    <button
+      class="expand"
+      type="button"
+      aria-label={`Edit ${label} in a larger box`}
+      title="Edit in a larger box"
+      onclick={expand}
+    >
       <Icon name="expand" size={12} />
     </button>
   {/if}
 </div>
 
 {#if mounted}
-  <EditorDialog bind:open title={label} initialFocus="textarea" onapply={() => text !== str && set(text)}>
-    <textarea class="input long" rows="12" spellcheck="false" aria-label={label} bind:value={text}></textarea>
+  <EditorDialog
+    bind:open
+    title={label}
+    initialFocus="textarea"
+    onapply={() => text !== str && set(text)}
+  >
+    <textarea
+      class="input long"
+      rows="12"
+      spellcheck="false"
+      aria-label={label}
+      bind:value={text}
+    ></textarea>
   </EditorDialog>
 {/if}
 

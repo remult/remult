@@ -31,7 +31,8 @@
   function onAction(value: string) {
     if (value.startsWith('entity:')) goto(entityHref(value.slice(7)))
     else if (value === 'schema') goto('#/schema')
-    else if (value === 'settings') afterClose = () => (shell.settingsOpen = true)
+    else if (value === 'settings')
+      afterClose = () => (shell.settingsOpen = true)
     shell.paletteOpen = false
   }
 </script>
@@ -92,7 +93,9 @@
               <span class="hue-dot" style:--hue={t.color}></span>
               <CommandItemText class="palette-text" />
               {#if session.forbiddenEntities.includes(t.key)}
-                <span class="palette-meta"><Icon name="lock" size={13} /> Forbidden</span>
+                <span class="palette-meta"
+                  ><Icon name="lock" size={13} /> Forbidden</span
+                >
               {:else if settings.displayCaption && t.caption !== t.key}
                 <span class="palette-meta mono">{t.key}</span>
               {/if}
@@ -101,7 +104,12 @@
         </CommandGroup>
         <CommandGroup>
           <CommandGroupLabel class="palette-group">Go to</CommandGroupLabel>
-          <CommandItem value="schema" label="Schema" keywords={['diagram', 'erd']} class="palette-item">
+          <CommandItem
+            value="schema"
+            label="Schema"
+            keywords={['diagram', 'erd']}
+            class="palette-item"
+          >
             <Icon name="schema" size={15} />
             <CommandItemText class="palette-text" />
           </CommandItem>

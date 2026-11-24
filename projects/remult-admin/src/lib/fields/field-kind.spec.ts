@@ -1,16 +1,35 @@
 import { describe, expect, it } from 'vitest'
 import { field } from '../query/fixtures.js'
-import { fromLocalInput, isIsoTimestamp, kindOf, toLocalInput } from './field-kind.js'
+import {
+  fromLocalInput,
+  isIsoTimestamp,
+  kindOf,
+  toLocalInput,
+} from './field-kind.js'
 
 describe('kindOf', () => {
   it('picks one editor per field shape', () => {
-    expect(kindOf(field({ key: 'a', relationToOne: {} as any, type: 'string' }))).toBe('relation')
+    expect(
+      kindOf(field({ key: 'a', relationToOne: {} as any, type: 'string' })),
+    ).toBe('relation')
     expect(kindOf(field({ key: 'a', type: 'json' }))).toBe('json')
-    expect(kindOf(field({ key: 'a', type: 'number', values: [{ id: 1, caption: 'one' }] }))).toBe('enum')
+    expect(
+      kindOf(
+        field({
+          key: 'a',
+          type: 'number',
+          values: [{ id: 1, caption: 'one' }],
+        }),
+      ),
+    ).toBe('enum')
     expect(kindOf(field({ key: 'a', type: 'boolean' }))).toBe('boolean')
     expect(kindOf(field({ key: 'a', type: 'number' }))).toBe('number')
-    expect(kindOf(field({ key: 'a', type: 'date', inputType: 'date' }))).toBe('date')
-    expect(kindOf(field({ key: 'a', type: 'date', inputType: '' }))).toBe('datetime')
+    expect(kindOf(field({ key: 'a', type: 'date', inputType: 'date' }))).toBe(
+      'date',
+    )
+    expect(kindOf(field({ key: 'a', type: 'date', inputType: '' }))).toBe(
+      'datetime',
+    )
     expect(kindOf(field({ key: 'a', inputType: 'color' }))).toBe('color')
     expect(kindOf(field({ key: 'a' }))).toBe('text')
   })

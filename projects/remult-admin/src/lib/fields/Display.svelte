@@ -3,7 +3,11 @@
   import Icon from '../shell/Icon.svelte'
   import { display } from '../table/format.js'
 
-  let { field, value, caption }: { field: FieldUIInfo; value: unknown; caption?: unknown } = $props()
+  let {
+    field,
+    value,
+    caption,
+  }: { field: FieldUIInfo; value: unknown; caption?: unknown } = $props()
 
   const d = $derived(display(field, value, caption))
 </script>
@@ -12,16 +16,24 @@
   <span class="empty">{d.text}</span>
 {:else if d.kind === 'boolean'}
   {#if d.value}
-    <span class="bool" title="true"><Icon name="check" size={14} stroke={2} /><span class="sr-only">true</span></span>
+    <span class="bool" title="true"
+      ><Icon name="check" size={14} stroke={2} /><span class="sr-only"
+        >true</span
+      ></span
+    >
   {:else}
     <span class="bool off" title="false">false</span>
   {/if}
 {:else if d.kind === 'color'}
-  <span class="color"><span class="swatch" style:background={d.text}></span>{d.text}</span>
+  <span class="color"
+    ><span class="swatch" style:background={d.text}></span>{d.text}</span
+  >
 {:else if d.kind === 'relation'}
   <span class="text" class:missing={d.missing} title={d.title}>{d.text}</span>
 {:else}
-  <span class="text" class:mono={d.kind === 'json'} title={d.title}>{d.text}</span>
+  <span class="text" class:mono={d.kind === 'json'} title={d.title}
+    >{d.text}</span
+  >
 {/if}
 
 <style>

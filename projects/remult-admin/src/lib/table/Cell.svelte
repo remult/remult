@@ -52,7 +52,9 @@
     {onedit}
   />
   {#if error}
-    <span class="error-icon" title={error} aria-hidden="true"><Icon name="alert" size={13} /></span>
+    <span class="error-icon" title={error} aria-hidden="true"
+      ><Icon name="alert" size={13} /></span
+    >
     <span class="error" id={errorId}>{error}</span>
   {/if}
 </td>
@@ -76,7 +78,12 @@
   .cell[data-editable]:is([data-kind='number'], [data-kind='boolean']) {
     min-width: 96px;
   }
-  .cell[data-editable]:is([data-kind='enum'], [data-kind='date'], [data-kind='color'], [data-kind='json']) {
+  .cell[data-editable]:is(
+      [data-kind='enum'],
+      [data-kind='date'],
+      [data-kind='color'],
+      [data-kind='json']
+    ) {
     min-width: 136px;
   }
   .cell[data-editable][data-kind='datetime'] {
@@ -87,7 +94,8 @@
   }
   .cell[data-invalid] {
     background: var(--danger-soft);
-    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--danger) 60%, transparent);
+    box-shadow: inset 0 0 0 1px
+      color-mix(in oklch, var(--danger) 60%, transparent);
   }
   .cell[data-invalid] :global(.editor) {
     padding-inline-end: 20px;

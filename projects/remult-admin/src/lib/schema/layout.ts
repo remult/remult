@@ -14,12 +14,15 @@ const ROW_H = 26
 const COLUMN_GAP = 96
 const ROW_GAP = 56
 
-const nodeHeight = (t: TableInfo) => HEADER_H + (t.fields.length + t.relations.length) * ROW_H + 8
+const nodeHeight = (t: TableInfo) =>
+  HEADER_H + (t.fields.length + t.relations.length) * ROW_H + 8
 
 /** Entity keys this table points to, to-one first, in field order. */
 function neighbours(t: TableInfo) {
   return [
-    ...t.fields.flatMap((f) => (f.relationToOne ? [f.relationToOne.entityKey] : [])),
+    ...t.fields.flatMap((f) =>
+      f.relationToOne ? [f.relationToOne.entityKey] : [],
+    ),
     ...t.relations.map((r) => r.entityKey),
   ]
 }
@@ -37,7 +40,8 @@ function ordered(tables: TableInfo[], algo: DiagramLayout) {
   const seen = new Set<string>()
   const out: TableInfo[] = []
   // may repeat an entity (two relations to it): callers check `seen` per step
-  const next = (t: TableInfo) => neighbours(t).flatMap((k) => byKey.get(k) ?? [])
+  const next = (t: TableInfo) =>
+    neighbours(t).flatMap((k) => byKey.get(k) ?? [])
   const dfs = (t: TableInfo) => {
     seen.add(t.superKey)
     out.push(t)
@@ -64,9 +68,15 @@ function ordered(tables: TableInfo[], algo: DiagramLayout) {
   return out
 }
 
-function place(tables: TableInfo[], algo: DiagramLayout, saved: Record<string, XY>) {
+function place(
+  tables: TableInfo[],
+  algo: DiagramLayout,
+  saved: Record<string, XY>,
+) {
   const positions: Record<string, XY> = {}
-  const columns = Array<number>(Math.max(1, Math.ceil(Math.sqrt(tables.length * 2)))).fill(0)
+  const columns = Array<number>(
+    Math.max(1, Math.ceil(Math.sqrt(tables.length * 2))),
+  ).fill(0)
   let index = 0
   for (const t of ordered(tables, algo)) {
     const s = saved[t.superKey]
@@ -80,7 +90,10 @@ function place(tables: TableInfo[], algo: DiagramLayout, saved: Record<string, X
     }
     // masonry: the shortest column takes the next entity
     const col = columns.indexOf(Math.min(...columns))
-    positions[t.superKey] = { x: col * (NODE_WIDTH + COLUMN_GAP), y: columns[col] }
+    positions[t.superKey] = {
+      x: col * (NODE_WIDTH + COLUMN_GAP),
+      y: columns[col],
+    }
     columns[col] += nodeHeight(t) + ROW_GAP
   }
   return positions
@@ -93,10 +106,18 @@ function sides(from: XY, to: XY, self: boolean) {
 }
 
 /** Edges between the given entities, from the relation row to the target's header, sides from `positions` (by superKey). */
-export function edgesFor(tables: TableInfo[], positions: Record<string, XY>): Edge[] {
+export function edgesFor(
+  tables: TableInfo[],
+  positions: Record<string, XY>,
+): Edge[] {
   const byKey = indexByKey(tables)
   const edges: Edge[] = []
-  const add = (t: TableInfo, row: string, targetKey: string, kind: 'one' | 'many') => {
+  const add = (
+    t: TableInfo,
+    row: string,
+    targetKey: string,
+    kind: 'one' | 'many',
+  ) => {
     const target = byKey.get(targetKey)?.superKey
     const from = positions[t.superKey]
     const to = target && positions[target]
@@ -109,11 +130,17 @@ export function edgesFor(tables: TableInfo[], positions: Record<string, XY>): Ed
       sourceHandle: `${row}-${s.out}`,
       targetHandle: `in-${s.in}`,
       class: `rel to-${kind}`,
-      markerEnd: { type: 'arrowclosed' as MarkerType.ArrowClosed, width: 14, height: 14, color: 'var(--xy-edge-stroke)' },
+      markerEnd: {
+        type: 'arrowclosed' as MarkerType.ArrowClosed,
+        width: 14,
+        height: 14,
+        color: 'var(--xy-edge-stroke)',
+      },
     })
   }
   for (const t of tables) {
-    for (const f of t.fields) if (f.relationToOne) add(t, f.key, f.relationToOne.entityKey, 'one')
+    for (const f of t.fields)
+      if (f.relationToOne) add(t, f.key, f.relationToOne.entityKey, 'one')
     for (const r of t.relations) add(t, r.key, r.entityKey, 'many')
   }
   return edges

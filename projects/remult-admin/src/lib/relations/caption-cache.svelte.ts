@@ -3,7 +3,10 @@ import type { FieldUIInfo } from '../../../../core/server/remult-admin'
 import { god } from '../core/god.svelte.js'
 import { targetKeyOf } from '../core/relation-captions.js'
 
-type Load = (field: FieldUIInfo, ids: unknown[]) => Promise<Map<unknown, unknown>>
+type Load = (
+  field: FieldUIInfo,
+  ids: unknown[],
+) => Promise<Map<unknown, unknown>>
 
 /** Relation captions outside a table page (a filter chip, a value just picked); lookups batch per relation. */
 export class CaptionCache {
@@ -65,4 +68,6 @@ export class CaptionCache {
   }
 }
 
-export const captions = new CaptionCache((field, ids) => god.captionsFor(field, ids))
+export const captions = new CaptionCache((field, ids) =>
+  god.captionsFor(field, ids),
+)

@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { captionOf, relationCaptions, targetKeyOf } from './relation-captions.js'
+import {
+  captionOf,
+  relationCaptions,
+  targetKeyOf,
+} from './relation-captions.js'
 
-const rel = (fields: Record<string, string>) => ({ fields, captionField: 'name' })
+const rel = (fields: Record<string, string>) => ({
+  fields,
+  captionField: 'name',
+})
 
 describe('relationCaptions', () => {
   it('keys by the id field of the target', () => {
@@ -28,8 +35,19 @@ describe('relationCaptions', () => {
 
 describe('captionOf', () => {
   it('falls back to the next filled key when the caption field is hidden', () => {
-    expect(captionOf({ id: '1', lastName: 'Mills' }, 'firstName', ['firstName', 'lastName'])).toBe('Mills')
-    expect(captionOf({ id: '1', firstName: 'Lauren', lastName: 'Mills' }, 'firstName', ['lastName'])).toBe('Lauren')
+    expect(
+      captionOf({ id: '1', lastName: 'Mills' }, 'firstName', [
+        'firstName',
+        'lastName',
+      ]),
+    ).toBe('Mills')
+    expect(
+      captionOf(
+        { id: '1', firstName: 'Lauren', lastName: 'Mills' },
+        'firstName',
+        ['lastName'],
+      ),
+    ).toBe('Lauren')
     expect(captionOf({ id: '1' }, 'firstName', ['lastName'])).toBeUndefined()
   })
 })

@@ -29,7 +29,8 @@
     onerror?: (message: string | undefined) => void
   } = $props()
 
-  const format = (v: unknown) => (v === undefined || v === null ? '' : JSON.stringify(v, null, 2))
+  const format = (v: unknown) =>
+    v === undefined || v === null ? '' : JSON.stringify(v, null, 2)
   const stamp = (v: unknown) => JSON.stringify(v ?? null)
 
   let mounted = $state(false)
@@ -70,7 +71,8 @@
 
   function apply() {
     if (!parsed.ok) return
-    if (JSON.stringify(parsed.v) !== JSON.stringify(value ?? null)) set(parsed.v)
+    if (JSON.stringify(parsed.v) !== JSON.stringify(value ?? null))
+      set(parsed.v)
   }
 
   function typed(t: string) {
@@ -85,9 +87,20 @@
 
 {#if inline}
   <div class="inline">
-    {#if value === null && !text}<span class="null-hint" aria-hidden="true">null</span>{/if}
+    {#if value === null && !text}<span class="null-hint" aria-hidden="true"
+        >null</span
+      >{/if}
     {#key opens}
-      <JsonCode doc={text} {label} {id} fit invalid={invalid || !parsed.ok} {errorAt} {describedby} onchange={typed} />
+      <JsonCode
+        doc={text}
+        {label}
+        {id}
+        fit
+        invalid={invalid || !parsed.ok}
+        {errorAt}
+        {describedby}
+        onchange={typed}
+      />
     {/key}
   </div>
 {:else}
@@ -101,15 +114,30 @@
     data-cell-focus
     onclick={edit}
   >
-    <span class="preview" class:null={value === null}>{value === null ? 'null' : preview}</span>
+    <span class="preview" class:null={value === null}
+      >{value === null ? 'null' : preview}</span
+    >
     <Icon name="braces" size={12} />
   </button>
 {/if}
 
 {#if mounted}
-  <EditorDialog bind:open title={label} wide initialFocus="textarea" error={parsed.ok ? undefined : parsed.error} onapply={apply}>
+  <EditorDialog
+    bind:open
+    title={label}
+    wide
+    initialFocus="textarea"
+    error={parsed.ok ? undefined : parsed.error}
+    onapply={apply}
+  >
     {#key opens}
-      <JsonCode doc={text} {label} invalid={!parsed.ok} {errorAt} onchange={(t) => (text = t)} />
+      <JsonCode
+        doc={text}
+        {label}
+        invalid={!parsed.ok}
+        {errorAt}
+        onchange={(t) => (text = t)}
+      />
     {/key}
   </EditorDialog>
 {/if}

@@ -8,7 +8,12 @@ type Values = Record<string, any>
 type Verdict = { update: boolean; delete: boolean }
 
 /** `item` is the server entity; undefined on a row not inserted yet. */
-export type TableRow = { id: string; item: any; draft: RowDraft<Values>; isNew?: boolean }
+export type TableRow = {
+  id: string
+  item: any
+  draft: RowDraft<Values>
+  isNew?: boolean
+}
 
 export type SaveResult = { ok: true } | { ok: false; message?: string }
 
@@ -21,8 +26,14 @@ export type LoadRequest = {
 }
 
 export type TableDataDeps = {
-  captions: (field: FieldUIInfo, rows: Values[]) => Promise<Record<string, Map<unknown, unknown>>>
-  rowPermissions: (superKey: string, ids: string[]) => Promise<Record<string, Verdict>>
+  captions: (
+    field: FieldUIInfo,
+    rows: Values[],
+  ) => Promise<Record<string, Map<unknown, unknown>>>
+  rowPermissions: (
+    superKey: string,
+    ids: string[],
+  ) => Promise<Record<string, Verdict>>
 }
 
 const defaultDeps: TableDataDeps = {
@@ -32,17 +43,26 @@ const defaultDeps: TableDataDeps = {
 
 export function errorMessage(err: unknown): string {
   if (err instanceof Error) return err.message
-  if (err && typeof err === 'object' && 'message' in err) return String(err.message)
+  if (err && typeof err === 'object' && 'message' in err)
+    return String(err.message)
   return typeof err === 'string' ? err : JSON.stringify(err)
 }
 
 /** Validation messages keyed by the edited key (valFieldKey for relations); undefined when none maps to a field. */
-export function fieldErrors(err: unknown, fields: FieldUIInfo[]): Record<string, string> | undefined {
-  const ms = err && typeof err === 'object' && 'modelState' in err ? err.modelState : undefined
+export function fieldErrors(
+  err: unknown,
+  fields: FieldUIInfo[],
+): Record<string, string> | undefined {
+  const ms =
+    err && typeof err === 'object' && 'modelState' in err
+      ? err.modelState
+      : undefined
   if (!ms || typeof ms !== 'object') return undefined
   const out: Record<string, string> = {}
   for (const f of fields) {
-    const m = (ms as Record<string, unknown>)[f.valFieldKey] ?? (ms as Record<string, unknown>)[f.key]
+    const m =
+      (ms as Record<string, unknown>)[f.valFieldKey] ??
+      (ms as Record<string, unknown>)[f.key]
     if (m) out[valueKey(f)] = String(m)
   }
   return Object.keys(out).length ? out : undefined
@@ -53,7 +73,9 @@ export function prefillFrom(where: EntityFilter<any> | undefined): Values {
   if (!where || typeof where !== 'object') return {}
   return Object.fromEntries(
     Object.entries(where).filter(
-      ([k, v]) => !k.startsWith('$') && ['string', 'number', 'boolean'].includes(typeof v),
+      ([k, v]) =>
+        !k.startsWith('$') &&
+        ['string', 'number', 'boolean'].includes(typeof v),
     ),
   )
 }
@@ -98,7 +120,10 @@ export class TableData {
     this.#stop()
     const gen = ++this.#gen
     // a refresh or another page keeps known verdicts, so rows don't flicker to locked
-    if (this.#request && JSON.stringify(this.#request.where) !== JSON.stringify(request.where))
+    if (
+      this.#request &&
+      JSON.stringify(this.#request.where) !== JSON.stringify(request.where)
+    )
       this.verdicts = {}
     this.#request = request
     this.loading = true
@@ -150,7 +175,10 @@ export class TableData {
   }
 
   find(id: string): TableRow | undefined {
-    return this.newRows.find((r) => r.id === id) ?? this.rows.find((r) => r.id === id)
+    return (
+      this.newRows.find((r) => r.id === id) ??
+      this.rows.find((r) => r.id === id)
+    )
   }
 
   addNew(prefill: Values = {}): TableRow {
@@ -184,9 +212,13 @@ export class TableData {
     this.saving[row.id] = true
     try {
       if (row.isNew) {
-        const writable = new Set(fields.filter((f) => !f.readOnly).map(valueKey))
+        const writable = new Set(
+          fields.filter((f) => !f.readOnly).map(valueKey),
+        )
         const values = Object.fromEntries(
-          Object.entries($state.snapshot(row.draft.values)).filter(([k, v]) => v !== undefined && writable.has(k)),
+          Object.entries($state.snapshot(row.draft.values)).filter(
+            ([k, v]) => v !== undefined && writable.has(k),
+          ),
         )
         await repo.insert(values)
         this.newRows = this.newRows.filter((r) => r !== row)
@@ -195,7 +227,10 @@ export class TableData {
         const changes = row.draft.changes()
         if (!Object.keys(changes).length) return { ok: true }
         // by id, not the entity: a failed save must not leave edits on the row's item
-        const saved = await repo.update(repo.metadata.idMetadata.getId(row.item), changes)
+        const saved = await repo.update(
+          repo.metadata.idMetadata.getId(row.item),
+          changes,
+        )
         // editors are locked while saving, so dropping the user's values loses nothing
         row.draft.rebase(this.#valuesOf(saved))
         row.draft.reset()
@@ -259,7 +294,10 @@ export class TableData {
     const values = rows.map((r) => r.draft.values)
     void this.#count(gen)
     void this.#loadCaptions(gen, values)
-    void this.#loadVerdicts(gen, rows.map((r) => r.id))
+    void this.#loadVerdicts(
+      gen,
+      rows.map((r) => r.id),
+    )
   }
 
   async #count(gen: number) {
@@ -275,13 +313,16 @@ export class TableData {
   async #loadCaptions(gen: number, values: Values[]) {
     const relations = this.#table.fields.filter((f) => f.relationToOne)
     if (!relations.length || !values.length) return
-    const results = await Promise.allSettled(relations.map((f) => this.#deps.captions(f, values)))
+    const results = await Promise.allSettled(
+      relations.map((f) => this.#deps.captions(f, values)),
+    )
     if (gen !== this.#gen) return
     const next = { ...this.captions }
     for (const r of results) {
       if (r.status !== 'fulfilled') continue
       // merge, so captions of rows still on screen don't flash back to raw ids
-      for (const [k, map] of Object.entries(r.value)) next[k] = new Map([...(next[k] ?? []), ...map])
+      for (const [k, map] of Object.entries(r.value))
+        next[k] = new Map([...(next[k] ?? []), ...map])
     }
     this.captions = next
   }
@@ -291,7 +332,10 @@ export class TableData {
     if ((update !== 'row' && del !== 'row') || !ids.length) return
     const seq = ++this.#verdictSeq
     try {
-      const verdicts = await this.#deps.rowPermissions(this.#table.superKey, ids)
+      const verdicts = await this.#deps.rowPermissions(
+        this.#table.superKey,
+        ids,
+      )
       if (gen !== this.#gen || seq !== this.#verdictSeq) return
       // ids the server did not report stay read-only
       this.verdicts = Object.fromEntries(

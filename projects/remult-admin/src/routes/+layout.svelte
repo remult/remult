@@ -48,20 +48,36 @@
         <span class="state-icon"><Icon name="key" size={20} /></span>
         <h1>Sign in to continue</h1>
         <p>This admin needs an access token to load your entities.</p>
-        <button class="btn" data-variant="primary" type="button" onclick={() => (shell.settingsOpen = true)}>
+        <button
+          class="btn"
+          data-variant="primary"
+          type="button"
+          onclick={() => (shell.settingsOpen = true)}
+        >
           Enter token
         </button>
       </div>
     {:else if god.error}
       <div class="state" role="alert">
         <span class="state-icon danger"><Icon name="alert" size={20} /></span>
-        <h1>{god.unauthorized ? 'Access denied' : 'Could not load entities'}</h1>
+        <h1>
+          {god.unauthorized ? 'Access denied' : 'Could not load entities'}
+        </h1>
         <p>{god.error}</p>
         <div class="state-actions">
-          <button class="btn" type="button" onclick={() => (shell.settingsOpen = true)}>
+          <button
+            class="btn"
+            type="button"
+            onclick={() => (shell.settingsOpen = true)}
+          >
             Open settings
           </button>
-          <button class="btn" data-variant="primary" type="button" onclick={() => god.reload()}>
+          <button
+            class="btn"
+            data-variant="primary"
+            type="button"
+            onclick={() => god.reload()}
+          >
             <Icon name="refresh" size={14} /> Retry
           </button>
         </div>

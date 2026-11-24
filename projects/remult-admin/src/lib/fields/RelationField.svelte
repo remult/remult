@@ -50,10 +50,22 @@
 
   const nullable = $derived(field.allowNull || !!field.relationToOne?.allowNull)
   const empty = $derived(value === undefined || value === null || value === '')
-  const known = $derived(caption !== undefined && caption !== null && caption !== '')
-  const text = $derived(empty ? (value === null ? 'null' : '') : known ? String(caption) : String(value))
+  const known = $derived(
+    caption !== undefined && caption !== null && caption !== '',
+  )
+  const text = $derived(
+    empty
+      ? value === null
+        ? 'null'
+        : ''
+      : known
+        ? String(caption)
+        : String(value),
+  )
   const selected = $derived(empty ? null : value)
-  const more = $derived(search.count !== undefined && search.count > search.items.length)
+  const more = $derived(
+    search.count !== undefined && search.count > search.items.length,
+  )
   const key = (v: unknown) => `${typeof v}:${String(v)}`
 </script>
 
@@ -96,15 +108,27 @@
         title={empty ? undefined : String(value)}
         data-cell-focus
       >
-        <span class="caption" class:missing={!empty && !known} class:empty>{text}</span>
+        <span class="caption" class:missing={!empty && !known} class:empty
+          >{text}</span
+        >
         <Icon name="chevron-down" size={12} />
       </button>
     {/snippet}
   </ComboboxTrigger>
-  <ComboboxContent anchor={button} class="select-popup relation-popup" sideOffset={4} align="start">
+  <ComboboxContent
+    anchor={button}
+    class="select-popup relation-popup"
+    sideOffset={4}
+    align="start"
+  >
     <div class="search">
       <Icon name="search" size={14} />
-      <ComboboxInput class="search-input" aria-label={`Search ${label}`} placeholder="Search..." autofocus />
+      <ComboboxInput
+        class="search-input"
+        aria-label={`Search ${label}`}
+        placeholder="Search..."
+        autofocus
+      />
     </div>
     <ComboboxList class="relation-list" aria-busy={search.loading || undefined}>
       {#if nullable}
@@ -114,8 +138,14 @@
         </ComboboxItem>
       {/if}
       {#each search.items as item (key(item.id))}
-        <ComboboxItem value={item.id} label={String(item.caption ?? item.id)} class="select-item">
-          <span class="select-label" class:missing={item.caption === undefined}>{item.caption ?? item.id}</span>
+        <ComboboxItem
+          value={item.id}
+          label={String(item.caption ?? item.id)}
+          class="select-item"
+        >
+          <span class="select-label" class:missing={item.caption === undefined}
+            >{item.caption ?? item.id}</span
+          >
           <ComboboxItemIndicator class="select-check">
             <Icon name="check" size={14} stroke={2} />
           </ComboboxItemIndicator>

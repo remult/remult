@@ -4,11 +4,18 @@ import type {
   EntityUIInfo,
   FieldUIInfo,
 } from '../../../../core/server/remult-admin'
-import type { FindOptions, Repository } from '../../../../core/src/remult3/remult3'
+import type {
+  FindOptions,
+  Repository,
+} from '../../../../core/src/remult3/remult3'
 import { Fields } from '../../../../core/src/remult3/Fields'
 import { Entity } from '../../../../core/src/remult3/entity'
 import { buildHeaders, createHttpClient } from './http.js'
-import { captionOf, relationCaptions, targetKeyOf } from './relation-captions.js'
+import {
+  captionOf,
+  relationCaptions,
+  targetKeyOf,
+} from './relation-captions.js'
 import { session, settings } from './settings.svelte.js'
 
 export type TableInfo = EntityUIInfo & { repo: Repository<any> }
@@ -31,7 +38,9 @@ export function buildTables(infos: EntityUIInfo[]): TableInfo[] {
       // JSON drops undefined and value lists may come as plain strings: restore what FieldUIInfo promises
       const fields = info.fields.map((f) => ({
         ...f,
-        values: (f.values ?? []).map((v) => (typeof v === 'object' ? v : { id: v, caption: String(v) })),
+        values: (f.values ?? []).map((v) =>
+          typeof v === 'object' ? v : { id: v, caption: String(v) },
+        ),
         inputType: f.inputType ?? '',
       }))
       class C {}
@@ -88,7 +97,9 @@ export function hasToken() {
 class God {
   // raw: repos are class instances and infos are replaced wholesale on reload
   tables: TableInfo[] = $state.raw([])
-  visibleTables: TableInfo[] = $derived(this.tables.filter((t) => t.hidden === false))
+  visibleTables: TableInfo[] = $derived(
+    this.tables.filter((t) => t.hidden === false),
+  )
   loaded = $state(false)
   loading = $state(false)
   error: string | undefined = $state()
@@ -102,7 +113,8 @@ class God {
       apiUrl: apiUrl(),
       getHeaders: () => headers(),
       onForbidden: (key) => {
-        if (!session.forbiddenEntities.includes(key)) session.forbiddenEntities.push(key)
+        if (!session.forbiddenEntities.includes(key))
+          session.forbiddenEntities.push(key)
       },
       onUnauthorized: () => (this.unauthorized = true),
     })
@@ -148,7 +160,13 @@ class God {
   /** Text keys a relation caption can fall back to, in the target's field order. */
   #captionKeys(t: TableInfo) {
     return t.fields
-      .filter((f) => f.type === 'string' && !t.ids[f.key] && !f.relationToOne && !f.values.length)
+      .filter(
+        (f) =>
+          f.type === 'string' &&
+          !t.ids[f.key] &&
+          !f.relationToOne &&
+          !f.values.length,
+      )
       .map((f) => f.key)
   }
 
@@ -157,15 +175,24 @@ class God {
     const relation = field.relationToOne!
     const t = this.byKey(relation.entityKey)
     if (!t) return { items: [], $count: 0 }
-    const where = search ? { [relation.captionField]: { $contains: search } } : undefined
+    const where = search
+      ? { [relation.captionField]: { $contains: search } }
+      : undefined
     const key = targetKeyOf(relation, field.valFieldKey)!
     const fallback = this.#captionKeys(t)
     const [items, count] = await Promise.all([
-      t.repo.find({ limit: 11, orderBy: { [relation.captionField]: 'asc' }, where }),
+      t.repo.find({
+        limit: 11,
+        orderBy: { [relation.captionField]: 'asc' },
+        where,
+      }),
       t.repo.count(where),
     ])
     return {
-      items: items.map((x) => ({ id: x[key], caption: captionOf(x, relation.captionField, fallback) })),
+      items: items.map((x) => ({
+        id: x[key],
+        caption: captionOf(x, relation.captionField, fallback),
+      })),
       $count: count,
     }
   }
@@ -174,9 +201,14 @@ class God {
     const rel = field.relationToOne!
     const t = this.byKey(rel.entityKey)
     if (!t) return 'Forbidden - ' + value
-    const [item] = await t.repo.find({ where: { [targetKeyOf(rel, field.valFieldKey)!]: value } })
+    const [item] = await t.repo.find({
+      where: { [targetKeyOf(rel, field.valFieldKey)!]: value },
+    })
     if (!item) return value !== undefined ? 'not found - ' + value : '-'
-    return captionOf(item, rel.captionField, this.#captionKeys(t)) ?? `Can't display ${rel.captionField} - ${value}`
+    return (
+      captionOf(item, rel.captionField, this.#captionKeys(t)) ??
+      `Can't display ${rel.captionField} - ${value}`
+    )
   }
 
   async displayValueForEach(field: FieldUIInfo, values: any[]) {
@@ -186,7 +218,9 @@ class God {
     if (!t)
       return { [k]: new Map(values.map((x) => [x[k], `Forbidden (${x[k]})`])) }
 
-    const present = values.filter((x) => x[k] !== undefined && x[k] !== null && x[k] !== '')
+    const present = values.filter(
+      (x) => x[k] !== undefined && x[k] !== null && x[k] !== '',
+    )
     if (!present.length) return { [k]: new Map() }
     const keys = Object.keys(rel.fields)
     const o: FindOptions<any> =
@@ -223,7 +257,10 @@ class God {
       const res = await fetch(`${apiUrl()}/admin/__row-permissions`, {
         method: 'POST',
         headers: headers({ 'content-type': 'application/json' }),
-        body: JSON.stringify({ superKey, ids: ids.slice(i, i + ROW_PERMISSIONS_MAX_IDS) }),
+        body: JSON.stringify({
+          superKey,
+          ids: ids.slice(i, i + ROW_PERMISSIONS_MAX_IDS),
+        }),
       })
       if (!res.ok) throw new Error(`${res.status} ${res.statusText}`.trim())
       Object.assign(out, await res.json())

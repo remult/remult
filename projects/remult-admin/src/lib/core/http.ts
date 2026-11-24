@@ -45,8 +45,13 @@ function entityKeyOf(url: string, apiUrl?: string) {
   const path = new URL(url, 'http://local').pathname
   const segments = path.split('/').filter(Boolean)
   if (apiUrl) {
-    const base = new URL(apiUrl, 'http://local').pathname.split('/').filter(Boolean)
-    if (base.every((s, i) => segments[i] === s) && segments.length > base.length)
+    const base = new URL(apiUrl, 'http://local').pathname
+      .split('/')
+      .filter(Boolean)
+    if (
+      base.every((s, i) => segments[i] === s) &&
+      segments.length > base.length
+    )
       return segments[base.length]
   }
   return segments.at(-1) ?? ''

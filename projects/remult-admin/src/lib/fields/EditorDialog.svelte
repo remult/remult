@@ -1,5 +1,11 @@
 <script lang="ts">
-  import { Dialog, DialogBackdrop, DialogClose, DialogContent, DialogTitle } from '@ui-sdk/svelte/dialog'
+  import {
+    Dialog,
+    DialogBackdrop,
+    DialogClose,
+    DialogContent,
+    DialogTitle,
+  } from '@ui-sdk/svelte/dialog'
   import type { Snippet } from 'svelte'
   import Icon from '../shell/Icon.svelte'
   import { modKey } from '../shell/shell.svelte.js'
@@ -43,10 +49,20 @@
 
 <Dialog bind:open>
   <DialogBackdrop class="scrim" />
-  <DialogContent class="editor-dialog" data-wide={wide ? '' : undefined} {initialFocus} {onkeydown}>
+  <DialogContent
+    class="editor-dialog"
+    data-wide={wide ? '' : undefined}
+    {initialFocus}
+    {onkeydown}
+  >
     <header class="head">
       <DialogTitle class="title">{title}</DialogTitle>
-      <DialogClose class="btn" data-variant="ghost" data-icon aria-label="Close">
+      <DialogClose
+        class="btn"
+        data-variant="ghost"
+        data-icon
+        aria-label="Close"
+      >
         <Icon name="x" />
       </DialogClose>
     </header>
@@ -59,7 +75,13 @@
       </span>
       <span class="hint"><kbd>{modKey}</kbd> <kbd>Enter</kbd></span>
       <DialogClose class="btn">Cancel</DialogClose>
-      <button class="btn" data-variant="primary" type="button" disabled={!canApply || !!error} onclick={apply}>
+      <button
+        class="btn"
+        data-variant="primary"
+        type="button"
+        disabled={!canApply || !!error}
+        onclick={apply}
+      >
         Apply
       </button>
     </footer>

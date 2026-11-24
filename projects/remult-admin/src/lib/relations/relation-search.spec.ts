@@ -4,7 +4,11 @@ import { RelationSearch } from './relation-search.svelte.js'
 
 const company = field({
   key: 'company',
-  relationToOne: { entityKey: 'companies', fields: { id: 'company' }, captionField: 'name' } as any,
+  relationToOne: {
+    entityKey: 'companies',
+    fields: { id: 'company' },
+    captionField: 'name',
+  } as any,
 })
 
 describe('RelationSearch', () => {
@@ -37,6 +41,8 @@ describe('RelationSearch', () => {
     const load = vi.fn(async () => ({ items: [], $count: 0 }))
     const s = new RelationSearch(company, load)
     s.search('  ')
-    await vi.waitFor(() => expect(load).toHaveBeenCalledWith(company, undefined))
+    await vi.waitFor(() =>
+      expect(load).toHaveBeenCalledWith(company, undefined),
+    )
   })
 })

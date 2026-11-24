@@ -1,5 +1,10 @@
 <script lang="ts">
-  import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from '@ui-sdk/svelte/popover'
+  import {
+    Popover,
+    PopoverContent,
+    PopoverTitle,
+    PopoverTrigger,
+  } from '@ui-sdk/svelte/popover'
   import type { FieldUIInfo } from '../../../../core/server/remult-admin'
   import { choiceOf, valueText } from '../query/filter-labels.js'
   import type { FilterChip } from '../query/filter-model.js'
@@ -30,12 +35,22 @@
 
 <span class="chip" data-open={open ? '' : undefined}>
   <Popover bind:open>
-    <PopoverTrigger class="chip-main" title={summary} aria-label={`Filter: ${summary}. Edit`}>
+    <PopoverTrigger
+      class="chip-main"
+      title={summary}
+      aria-label={`Filter: ${summary}. Edit`}
+    >
       <span class="name">{label}</span>
       <span class="op">{op}</span>
       {#if text !== undefined}<span class="value">{text}</span>{/if}
     </PopoverTrigger>
-    <PopoverContent class="filter-pop" align="start" sideOffset={6} collisionPadding={12} initialFocus="[data-autofocus]">
+    <PopoverContent
+      class="filter-pop"
+      align="start"
+      sideOffset={6}
+      collisionPadding={12}
+      initialFocus="[data-autofocus]"
+    >
       <PopoverTitle class="sr-only">Edit filter on {label}</PopoverTitle>
       <FilterEditor
         {field}
@@ -53,7 +68,13 @@
       />
     </PopoverContent>
   </Popover>
-  <button class="chip-x" type="button" aria-label={`Remove filter: ${summary}`} title="Remove filter" onclick={onremove}>
+  <button
+    class="chip-x"
+    type="button"
+    aria-label={`Remove filter: ${summary}`}
+    title="Remove filter"
+    onclick={onremove}
+  >
     <Icon name="x" size={12} stroke={2} />
   </button>
 </span>
@@ -66,7 +87,8 @@
     max-width: 100%;
     border-radius: var(--radius);
     background: var(--accent-soft);
-    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--accent) 22%, transparent);
+    box-shadow: inset 0 0 0 1px
+      color-mix(in oklch, var(--accent) 22%, transparent);
     font-size: var(--text-sm);
     animation: chip-in 160ms var(--ease-out);
   }

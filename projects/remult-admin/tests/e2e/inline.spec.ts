@@ -7,29 +7,39 @@ const REGEX_EMPTY = /empty/i
 
 async function signInAs(page: Page, token: string) {
   await page.addInitScript(
-    ([key, token]) => sessionStorage.setItem(key, JSON.stringify({ bearerAuth: token })),
+    ([key, token]) =>
+      sessionStorage.setItem(key, JSON.stringify({ bearerAuth: token })),
     [KEY, token],
   )
 }
 
 const rows = (page: Page) => page.locator('tbody tr:not(.skeleton)')
-const titleInput = (page: Page, i = 0) => rows(page).nth(i).getByRole('textbox', { name: 'Title' })
+const titleInput = (page: Page, i = 0) =>
+  rows(page).nth(i).getByRole('textbox', { name: 'Title' })
 const auth = { authorization: 'Bearer admin' }
 
 async function createTask(page: Page, title: string) {
-  const res = await page.request.post('/api/tasks', { headers: auth, data: { title } })
+  const res = await page.request.post('/api/tasks', {
+    headers: auth,
+    data: { title },
+  })
   expect(res.ok()).toBe(true)
   return (await res.json()) as { id: number; title: string }
 }
 
 async function tasksTitled(page: Page, prefix: string) {
-  const res = await page.request.get(`/api/tasks?title.startsWith=${encodeURIComponent(prefix)}`, { headers: auth })
+  const res = await page.request.get(
+    `/api/tasks?title.startsWith=${encodeURIComponent(prefix)}`,
+    { headers: auth },
+  )
   expect(res.ok()).toBe(true)
   return (await res.json()) as { id: number; title: string }[]
 }
 
 // any write re-serializes the whole json file: put the touched files back as they were
-const DB_FILES = ['tasks.json', 'contacts.json'].map((f) => join(process.cwd(), 'db', f))
+const DB_FILES = ['tasks.json', 'contacts.json'].map((f) =>
+  join(process.cwd(), 'db', f),
+)
 const saved = new Map<string, string>()
 test.beforeAll(() => {
   for (const f of DB_FILES) saved.set(f, readFileSync(f, 'utf8'))
@@ -39,7 +49,8 @@ test.afterAll(() => {
 })
 
 async function cleanup(page: Page, prefix: string) {
-  for (const t of await tasksTitled(page, prefix)) await page.request.delete(`/api/tasks/${t.id}`, { headers: auth })
+  for (const t of await tasksTitled(page, prefix))
+    await page.request.delete(`/api/tasks/${t.id}`, { headers: auth })
 }
 
 test('no row is dirty on arrival', async ({ page }) => {
@@ -54,7 +65,9 @@ test('no row is dirty on arrival', async ({ page }) => {
   }
 })
 
-test('a select with no value stays clean (green rows regression)', async ({ page }) => {
+test('a select with no value stays clean (green rows regression)', async ({
+  page,
+}) => {
   await signInAs(page, 'admin')
   // the server can't store a null status, the file can: the API then omits the field
   const file = DB_FILES[1]
@@ -81,7 +94,9 @@ test('edit then Ctrl+Enter saves, Ctrl+Esc reverts', async ({ page }) => {
     await expect(rows(page).first()).toHaveAttribute('data-dirty', '')
     await page.keyboard.press('ControlOrMeta+Enter')
     await expect(rows(page).first()).not.toHaveAttribute('data-dirty')
-    await expect.poll(async () => (await tasksTitled(page, prefix))[0]?.title).toBe(`${prefix}-edited`)
+    await expect
+      .poll(async () => (await tasksTitled(page, prefix))[0]?.title)
+      .toBe(`${prefix}-edited`)
 
     await titleInput(page).fill(`${prefix}-not-kept`)
     await expect(rows(page).first()).toHaveAttribute('data-dirty', '')
@@ -94,7 +109,9 @@ test('edit then Ctrl+Enter saves, Ctrl+Esc reverts', async ({ page }) => {
   }
 })
 
-test('a validation error shows on the cell and clears on edit', async ({ page }) => {
+test('a validation error shows on the cell and clears on edit', async ({
+  page,
+}) => {
   const prefix = `e2e-inline-invalid-${Date.now()}`
   await signInAs(page, 'admin')
   await createTask(page, prefix)
@@ -119,13 +136,17 @@ test('a validation error shows on the cell and clears on edit', async ({ page })
   }
 })
 
-test('arrow down moves to the same column on the next row', async ({ page }) => {
+test('arrow down moves to the same column on the next row', async ({
+  page,
+}) => {
   const prefix = `e2e-inline-arrow-${Date.now()}`
   await signInAs(page, 'admin')
   await createTask(page, `${prefix}-a`)
   await createTask(page, `${prefix}-b`)
   try {
-    await page.goto(`/#/entity/tasks?title.startsWith=${prefix}&_sort=title&_order=asc`)
+    await page.goto(
+      `/#/entity/tasks?title.startsWith=${prefix}&_sort=title&_order=asc`,
+    )
     await expect(rows(page)).toHaveCount(2)
     await titleInput(page, 0).focus()
     await page.keyboard.press('ArrowDown')
@@ -134,8 +155,13 @@ test('arrow down moves to the same column on the next row', async ({ page }) => 
     await expect(titleInput(page, 0)).toBeFocused()
 
     // date, date time and number inputs keep their own arrow keys
-    const due = rows(page).nth(0).getByRole('textbox', { name: 'Due Date', exact: true })
-    for (const el of [rows(page).nth(0).getByLabel('Reminde Me On', { exact: true }), due]) {
+    const due = rows(page)
+      .nth(0)
+      .getByRole('textbox', { name: 'Due Date', exact: true })
+    for (const el of [
+      rows(page).nth(0).getByLabel('Reminde Me On', { exact: true }),
+      due,
+    ]) {
       await el.focus()
       await page.keyboard.press('ArrowDown')
       await expect(el).toBeFocused()
@@ -146,7 +172,9 @@ test('arrow down moves to the same column on the next row', async ({ page }) => 
   }
 })
 
-test('a half typed date or date time keeps its other parts', async ({ page }) => {
+test('a half typed date or date time keeps its other parts', async ({
+  page,
+}) => {
   const prefix = `e2e-inline-partial-${Date.now()}`
   await signInAs(page, 'admin')
   await createTask(page, prefix)
@@ -197,7 +225,9 @@ test('New adds a row that inserts on save', async ({ page }) => {
     await expect(fresh.getByRole('textbox', { name: 'Title' })).toBeFocused()
     await page.keyboard.type(prefix)
     await fresh.getByRole('button', { name: 'Add' }).click()
-    await expect(page.getByRole('region', { name: 'Notifications' })).toContainText('Row added')
+    await expect(
+      page.getByRole('region', { name: 'Notifications' }),
+    ).toContainText('Row added')
     await expect(page.locator('tbody tr[data-new]')).toHaveCount(0)
     await expect(rows(page)).toHaveCount(1)
     await expect(titleInput(page)).toHaveValue(prefix)
@@ -207,11 +237,15 @@ test('New adds a row that inserts on save', async ({ page }) => {
   }
 })
 
-test('edit mode switch: hidden and drawer when locked, remembered when free', async ({ page }) => {
+test('edit mode switch: hidden and drawer when locked, remembered when free', async ({
+  page,
+}) => {
   await signInAs(page, 'ops')
   await page.goto('/#/entity/contacts')
   await expect(rows(page).first()).toBeVisible()
-  await expect(page.getByRole('radiogroup', { name: 'Edit mode' })).toHaveCount(0)
+  await expect(page.getByRole('radiogroup', { name: 'Edit mode' })).toHaveCount(
+    0,
+  )
   // locked to drawer: cells are read only
   await expect(page.locator('tbody').getByRole('textbox')).toHaveCount(0)
 
@@ -223,10 +257,16 @@ test('edit mode switch: hidden and drawer when locked, remembered when free', as
   await modes.getByText('Drawer').click()
   await expect(page.locator('tbody').getByRole('textbox')).toHaveCount(0)
   await page.reload()
-  await expect(page.getByRole('radiogroup', { name: 'Edit mode' }).getByRole('radio', { name: 'Drawer' })).toBeChecked()
+  await expect(
+    page
+      .getByRole('radiogroup', { name: 'Edit mode' })
+      .getByRole('radio', { name: 'Drawer' }),
+  ).toBeChecked()
 })
 
-test('JSON opens in a dialog, Apply marks the row, invalid JSON blocks Apply', async ({ page }) => {
+test('JSON opens in a dialog, Apply marks the row, invalid JSON blocks Apply', async ({
+  page,
+}) => {
   await signInAs(page, 'admin')
   await page.goto('/#/entity/deals')
   await expect(rows(page).first()).toBeVisible()
@@ -239,7 +279,9 @@ test('JSON opens in a dialog, Apply marks the row, invalid JSON blocks Apply', a
   await page.keyboard.type('{"broken": ')
   await expect(dialog.getByRole('button', { name: 'Apply' })).toBeDisabled()
   await expect(editor).toHaveAttribute('aria-invalid', 'true')
-  await expect(dialog.getByRole('alert')).toHaveText('Unexpected end of JSON (line 1, col 12)')
+  await expect(dialog.getByRole('alert')).toHaveText(
+    'Unexpected end of JSON (line 1, col 12)',
+  )
   await page.keyboard.press('ControlOrMeta+a')
   await page.keyboard.type('[{"id":7}]')
   await expect(dialog.getByRole('button', { name: 'Apply' })).toBeEnabled()
@@ -255,13 +297,17 @@ test('JSON opens in a dialog, Apply marks the row, invalid JSON blocks Apply', a
   await page.keyboard.press('ControlOrMeta+Enter')
   await expect(dialog).toHaveCount(0)
   await expect(row).toHaveAttribute('data-dirty', '')
-  await expect(row.getByRole('button', { name: 'Edit Items (JSON)' })).toContainText('[{"id":7}]')
+  await expect(
+    row.getByRole('button', { name: 'Edit Items (JSON)' }),
+  ).toContainText('[{"id":7}]')
   await row.getByRole('button', { name: 'Edit Items (JSON)' }).focus()
   await page.keyboard.press('ControlOrMeta+Escape')
   await expect(row).not.toHaveAttribute('data-dirty')
 })
 
-test('a number keeps its arrow keys, Esc closes an open list before it cancels the row', async ({ page }) => {
+test('a number keeps its arrow keys, Esc closes an open list before it cancels the row', async ({
+  page,
+}) => {
   await signInAs(page, 'admin')
   await page.goto('/#/entity/deals')
   await expect(rows(page).first()).toBeVisible()

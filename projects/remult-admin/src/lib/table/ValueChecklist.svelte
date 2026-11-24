@@ -36,16 +36,22 @@
   const showSearch = $derived(relation || field.values.length > SEARCH_FROM)
 
   type Option = { id: unknown; caption: string }
-  const text = (id: unknown, c: unknown) => (c === undefined || c === null || c === '' ? String(id) : String(c))
+  const text = (id: unknown, c: unknown) =>
+    c === undefined || c === null || c === '' ? String(id) : String(c)
 
   const options: Option[] = $derived.by(() => {
     if (search) {
-      const found = search.items.map((x) => ({ id: x.id, caption: text(x.id, x.caption) }))
+      const found = search.items.map((x) => ({
+        id: x.id,
+        caption: text(x.id, x.caption),
+      }))
       const ids = new Set(found.map((o) => key(o.id)))
       // picked values stay on top, even when the search moved past them
       const kept = query.trim()
         ? []
-        : value.filter((id) => !ids.has(key(id))).map((id) => ({ id, caption: text(id, captionOf(id)) }))
+        : value
+            .filter((id) => !ids.has(key(id)))
+            .map((id) => ({ id, caption: text(id, captionOf(id)) }))
       return [...kept, ...found]
     }
     const q = query.trim().toLowerCase()
@@ -54,7 +60,11 @@
       .map((v) => ({ id: v.id, caption: v.caption }))
   })
 
-  const more = $derived(!!search && search.count !== undefined && search.count > search.items.length)
+  const more = $derived(
+    !!search &&
+      search.count !== undefined &&
+      search.count > search.items.length,
+  )
 
   function toggle(o: Option, on: boolean) {
     if (field.relationToOne) captions.set(field, o.id, o.caption)
@@ -62,7 +72,10 @@
   }
 
   function boxes() {
-    return [...(list?.querySelectorAll<HTMLInputElement>('input[type="checkbox"]') ?? [])]
+    return [
+      ...(list?.querySelectorAll<HTMLInputElement>('input[type="checkbox"]') ??
+        []),
+    ]
   }
 
   function onSearchKey(e: KeyboardEvent) {
@@ -79,7 +92,10 @@
     e.preventDefault()
     const next = all[i + (e.key === 'ArrowDown' ? 1 : -1)]
     if (next) next.focus()
-    else if (e.key === 'ArrowUp') list?.parentElement?.querySelector<HTMLInputElement>('.check-search input')?.focus()
+    else if (e.key === 'ArrowUp')
+      list?.parentElement
+        ?.querySelector<HTMLInputElement>('.check-search input')
+        ?.focus()
   }
 </script>
 
@@ -116,7 +132,9 @@
           data-autofocus={!showSearch && i === 0 ? '' : undefined}
           onchange={(e) => toggle(o, e.currentTarget.checked)}
         />
-        <span class="check" aria-hidden="true"><Icon name="check" size={11} stroke={2.5} /></span>
+        <span class="check" aria-hidden="true"
+          ><Icon name="check" size={11} stroke={2.5} /></span
+        >
         <span class="option-label">{o.caption}</span>
       </label>
     {:else}
@@ -133,10 +151,14 @@
   </div>
   {#if more || value.length}
     <div class="foot">
-      {#if more}<span>{search?.items.length} of {search?.count}, type to narrow</span>{/if}
+      {#if more}<span
+          >{search?.items.length} of {search?.count}, type to narrow</span
+        >{/if}
       {#if value.length}
         <span class="count">{value.length} selected</span>
-        <button class="link" type="button" onclick={() => onchange([])}>Clear</button>
+        <button class="link" type="button" onclick={() => onchange([])}
+          >Clear</button
+        >
       {/if}
     </div>
   {/if}

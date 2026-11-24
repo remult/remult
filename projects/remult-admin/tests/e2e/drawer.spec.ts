@@ -11,30 +11,41 @@ const REGEX_DELETE = /Delete this row/
 
 async function signInAs(page: Page, token: string) {
   await page.addInitScript(
-    ([key, token]) => sessionStorage.setItem(key, JSON.stringify({ bearerAuth: token })),
+    ([key, token]) =>
+      sessionStorage.setItem(key, JSON.stringify({ bearerAuth: token })),
     [KEY, token],
   )
 }
 
 const rows = (page: Page) => page.locator('tbody tr:not(.skeleton)')
-const drawer = (page: Page, name: string | RegExp = 'Tasks') => page.getByRole('dialog', { name })
-const toasts = (page: Page) => page.getByRole('region', { name: 'Notifications' })
+const drawer = (page: Page, name: string | RegExp = 'Tasks') =>
+  page.getByRole('dialog', { name })
+const toasts = (page: Page) =>
+  page.getByRole('region', { name: 'Notifications' })
 const auth = { authorization: 'Bearer admin' }
 
 async function createTask(page: Page, title: string) {
-  const res = await page.request.post('/api/tasks', { headers: auth, data: { title } })
+  const res = await page.request.post('/api/tasks', {
+    headers: auth,
+    data: { title },
+  })
   expect(res.ok()).toBe(true)
   return (await res.json()) as { id: number; title: string }
 }
 
 async function tasksTitled(page: Page, prefix: string) {
-  const res = await page.request.get(`/api/tasks?title.startsWith=${encodeURIComponent(prefix)}`, { headers: auth })
+  const res = await page.request.get(
+    `/api/tasks?title.startsWith=${encodeURIComponent(prefix)}`,
+    { headers: auth },
+  )
   expect(res.ok()).toBe(true)
   return (await res.json()) as { id: number; title: string; done: boolean }[]
 }
 
 // any write re-serializes the whole json file: put the touched files back as they were
-const DB_FILES = ['tasks.json', 'contacts.json', 'deals.json'].map((f) => join(process.cwd(), 'db', f))
+const DB_FILES = ['tasks.json', 'contacts.json', 'deals.json'].map((f) =>
+  join(process.cwd(), 'db', f),
+)
 const saved = new Map<string, string>()
 test.beforeAll(() => {
   for (const f of DB_FILES) saved.set(f, readFileSync(f, 'utf8'))
@@ -44,15 +55,21 @@ test.afterAll(() => {
 })
 
 async function cleanup(page: Page, prefix: string) {
-  for (const t of await tasksTitled(page, prefix)) await page.request.delete(`/api/tasks/${t.id}`, { headers: auth })
+  for (const t of await tasksTitled(page, prefix))
+    await page.request.delete(`/api/tasks/${t.id}`, { headers: auth })
 }
 
 async function useDrawerMode(page: Page) {
-  await page.getByRole('radiogroup', { name: 'Edit mode' }).getByText('Drawer').click()
+  await page
+    .getByRole('radiogroup', { name: 'Edit mode' })
+    .getByText('Drawer')
+    .click()
   await expect(page.locator('tbody').getByRole('textbox')).toHaveCount(0)
 }
 
-test('the open button opens the drawer with the row values', async ({ page }) => {
+test('the open button opens the drawer with the row values', async ({
+  page,
+}) => {
   const prefix = `e2e-drawer-open-${Date.now()}`
   await signInAs(page, 'admin')
   const task = await createTask(page, prefix)
@@ -64,12 +81,16 @@ test('the open button opens the drawer with the row values', async ({ page }) =>
 
     const d = drawer(page)
     await expect(d).toBeVisible()
-    await expect(d.getByRole('button', { name: `Copy id ${task.id}` })).toBeVisible()
+    await expect(
+      d.getByRole('button', { name: `Copy id ${task.id}` }),
+    ).toBeVisible()
     await expect(d.getByRole('textbox', { name: 'Title' })).toHaveValue(prefix)
     await expect(d.getByRole('textbox', { name: 'Title' })).toBeFocused()
     await expect(d.getByRole('switch', { name: 'Done' })).not.toBeChecked()
     // server filled fields are read only
-    await expect(d.locator('#drawer-tasks-createdAt')).not.toHaveAttribute('data-cell-focus')
+    await expect(d.locator('#drawer-tasks-createdAt')).not.toHaveAttribute(
+      'data-cell-focus',
+    )
     await expect(d.getByRole('button', { name: 'Save' })).toBeDisabled()
     await expect(d.getByRole('button', { name: 'Delete row' })).toBeVisible()
     await expect(rows(page).first()).toHaveAttribute('data-active', '')
@@ -102,7 +123,9 @@ test('edit and save updates the table row', async ({ page }) => {
 
     await expect(d).toHaveCount(0)
     await expect(toasts(page).getByText('Row saved')).toBeVisible()
-    await expect(rows(page).first().getByRole('textbox', { name: 'Title' })).toHaveValue(`${prefix}-edited`)
+    await expect(
+      rows(page).first().getByRole('textbox', { name: 'Title' }),
+    ).toHaveValue(`${prefix}-edited`)
     await expect(rows(page).first()).not.toHaveAttribute('data-dirty')
     await expect
       .poll(async () => (await tasksTitled(page, prefix))[0])
@@ -112,7 +135,9 @@ test('edit and save updates the table row', async ({ page }) => {
   }
 })
 
-test('a validation error shows under the field, Ctrl+Enter saves', async ({ page }) => {
+test('a validation error shows under the field, Ctrl+Enter saves', async ({
+  page,
+}) => {
   const prefix = `e2e-drawer-invalid-${Date.now()}`
   await signInAs(page, 'admin')
   await createTask(page, prefix)
@@ -134,7 +159,9 @@ test('a validation error shows under the field, Ctrl+Enter saves', async ({ page
     await expect(d.locator('#drawer-tasks-title-error')).toHaveCount(0)
     await page.keyboard.press('ControlOrMeta+Enter')
     await expect(d).toHaveCount(0)
-    await expect.poll(async () => (await tasksTitled(page, prefix))[0]?.title).toBe(`${prefix}-fixed`)
+    await expect
+      .poll(async () => (await tasksTitled(page, prefix))[0]?.title)
+      .toBe(`${prefix}-fixed`)
   } finally {
     await cleanup(page, prefix)
   }
@@ -165,7 +192,9 @@ test('Esc with unsaved changes asks before discarding', async ({ page }) => {
     await d.getByRole('button', { name: 'Close' }).click()
     await ask.getByRole('button', { name: 'Discard' }).click()
     await expect(d).toHaveCount(0)
-    await expect(rows(page).first().getByRole('textbox', { name: 'Title' })).toHaveValue(prefix)
+    await expect(
+      rows(page).first().getByRole('textbox', { name: 'Title' }),
+    ).toHaveValue(prefix)
     await expect(rows(page).first()).not.toHaveAttribute('data-dirty')
     expect((await tasksTitled(page, prefix))[0].title).toBe(prefix)
   } finally {
@@ -173,18 +202,24 @@ test('Esc with unsaved changes asks before discarding', async ({ page }) => {
   }
 })
 
-test('drawer mode: row click and Enter open, New opens a create drawer that inserts', async ({ page }) => {
+test('drawer mode: row click and Enter open, New opens a create drawer that inserts', async ({
+  page,
+}) => {
   const prefix = `e2e-drawer-create-${Date.now()}`
   await signInAs(page, 'admin')
   await createTask(page, `${prefix}-a`)
   await createTask(page, `${prefix}-b`)
   try {
-    await page.goto(`/#/entity/tasks?title.startsWith=${prefix}&_sort=title&_order=asc`)
+    await page.goto(
+      `/#/entity/tasks?title.startsWith=${prefix}&_sort=title&_order=asc`,
+    )
     await expect(rows(page)).toHaveCount(2)
     await useDrawerMode(page)
 
     await rows(page).nth(1).getByText(`${prefix}-b`).click()
-    await expect(drawer(page).getByRole('textbox', { name: 'Title' })).toHaveValue(`${prefix}-b`)
+    await expect(
+      drawer(page).getByRole('textbox', { name: 'Title' }),
+    ).toHaveValue(`${prefix}-b`)
     await page.keyboard.press('Escape')
     await expect(drawer(page)).toHaveCount(0)
 
@@ -194,7 +229,9 @@ test('drawer mode: row click and Enter open, New opens a create drawer that inse
     await expect(rows(page).nth(1)).toBeFocused()
     await page.keyboard.press('ArrowUp')
     await page.keyboard.press('Enter')
-    await expect(drawer(page).getByRole('textbox', { name: 'Title' })).toHaveValue(`${prefix}-a`)
+    await expect(
+      drawer(page).getByRole('textbox', { name: 'Title' }),
+    ).toHaveValue(`${prefix}-a`)
     await page.keyboard.press('Escape')
     await expect(drawer(page)).toHaveCount(0)
 
@@ -210,13 +247,17 @@ test('drawer mode: row click and Enter open, New opens a create drawer that inse
     await expect(d).toHaveCount(0)
     await expect(toasts(page).getByText('Row added')).toBeVisible()
     await expect(rows(page)).toHaveCount(3)
-    await expect.poll(async () => (await tasksTitled(page, `${prefix}-c`)).length).toBe(1)
+    await expect
+      .poll(async () => (await tasksTitled(page, `${prefix}-c`)).length)
+      .toBe(1)
   } finally {
     await cleanup(page, prefix)
   }
 })
 
-test('inline mode: Space on a focused row opens it, not inside an editor', async ({ page }) => {
+test('inline mode: Space on a focused row opens it, not inside an editor', async ({
+  page,
+}) => {
   const prefix = `e2e-drawer-space-${Date.now()}`
   await signInAs(page, 'admin')
   await createTask(page, prefix)
@@ -238,7 +279,9 @@ test('inline mode: Space on a focused row opens it, not inside an editor', async
   }
 })
 
-test('ops on contacts: locked drawer opens on click, without delete', async ({ page }) => {
+test('ops on contacts: locked drawer opens on click, without delete', async ({
+  page,
+}) => {
   await signInAs(page, 'ops')
   await page.goto('/#/entity/contacts')
   await expect(rows(page).first()).toBeVisible()
@@ -250,7 +293,9 @@ test('ops on contacts: locked drawer opens on click, without delete', async ({ p
   await expect(d.getByRole('button', { name: 'Save' })).toBeVisible()
 })
 
-test('JSON edits in place in the drawer, invalid JSON blocks Save', async ({ page }) => {
+test('JSON edits in place in the drawer, invalid JSON blocks Save', async ({
+  page,
+}) => {
   await signInAs(page, 'admin')
   await page.goto('/#/entity/deals')
   await expect(rows(page).first()).toBeVisible()
@@ -303,12 +348,16 @@ test('delete from the drawer asks, then removes the row', async ({ page }) => {
   }
 })
 
-test('as ops, a deal not owned opens read only, an owned one can be edited and deleted', async ({ page }) => {
+test('as ops, a deal not owned opens read only, an owned one can be edited and deleted', async ({
+  page,
+}) => {
   await signInAs(page, 'ops')
   const owned = encodeURIComponent(JSON.stringify([OPS_AM]))
 
   await page.goto(`/#/entity/deals?accountManager.nin=${owned}`)
-  await expect(page.locator('tbody').getByTitle('Read only').first()).toBeVisible()
+  await expect(
+    page.locator('tbody').getByTitle('Read only').first(),
+  ).toBeVisible()
   await rows(page).first().hover()
   await rows(page).first().getByRole('button', { name: 'Open row' }).click()
   let d = drawer(page, 'Deals')
@@ -320,7 +369,9 @@ test('as ops, a deal not owned opens read only, an owned one can be edited and d
   await expect(d).toHaveCount(0)
 
   await page.goto(`/#/entity/deals?accountManager.in=${owned}`)
-  await expect(page.getByRole('button', { name: 'Delete row' }).first()).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: 'Delete row' }).first(),
+  ).toBeVisible()
   await rows(page).first().hover()
   await rows(page).first().getByRole('button', { name: 'Open row' }).click()
   d = drawer(page, 'Deals')

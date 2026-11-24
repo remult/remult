@@ -4,7 +4,10 @@ import { errorMessage } from '../table/table-data.svelte.js'
 import { captions } from './caption-cache.svelte.js'
 
 export type RelationItem = { id: unknown; caption: unknown }
-type Load = (field: FieldUIInfo, search: string | undefined) => Promise<{ items: RelationItem[]; $count: number }>
+type Load = (
+  field: FieldUIInfo,
+  search: string | undefined,
+) => Promise<{ items: RelationItem[]; $count: number }>
 
 /** Search a relation's targets by caption: debounced, and only the latest answer lands. */
 export class RelationSearch {
@@ -19,7 +22,10 @@ export class RelationSearch {
   #seq = 0
   #timer: ReturnType<typeof setTimeout> | undefined
 
-  constructor(field: FieldUIInfo, load: Load = (f, q) => god.getItemsForSelect(f, q)) {
+  constructor(
+    field: FieldUIInfo,
+    load: Load = (f, q) => god.getItemsForSelect(f, q),
+  ) {
     this.#field = field
     this.#load = load
   }

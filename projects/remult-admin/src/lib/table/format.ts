@@ -7,21 +7,42 @@ export type Display =
   | { kind: 'color'; text: string }
   | { kind: 'relation'; text: string; title: string; missing: boolean }
 
-const dateTime = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+const dateTime = new Intl.DateTimeFormat(undefined, {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+})
 
 /** Edits bind to valFieldKey for relations, so that's where the value lives. */
-export const valueKey = (f: FieldUIInfo) => (f.relationToOne ? f.valFieldKey : f.key)
+export const valueKey = (f: FieldUIInfo) =>
+  f.relationToOne ? f.valFieldKey : f.key
 
-export function display(f: FieldUIInfo, value: unknown, caption?: unknown): Display {
-  if (value === undefined || value === null || (f.relationToOne && value === ''))
+export function display(
+  f: FieldUIInfo,
+  value: unknown,
+  caption?: unknown,
+): Display {
+  if (
+    value === undefined ||
+    value === null ||
+    (f.relationToOne && value === '')
+  )
     return { kind: 'empty', text: value === null ? 'null' : '' }
   if (f.relationToOne) {
     const missing = caption === undefined || caption === null || caption === ''
-    return { kind: 'relation', text: missing ? String(value) : String(caption), title: String(value), missing }
+    return {
+      kind: 'relation',
+      text: missing ? String(value) : String(caption),
+      title: String(value),
+      missing,
+    }
   }
   if (f.values.length) {
     const item = f.values.find((v) => v.id === value)
-    return { kind: 'text', text: item ? item.caption : String(value), title: String(value) }
+    return {
+      kind: 'text',
+      text: item ? item.caption : String(value),
+      title: String(value),
+    }
   }
   if (f.type === 'boolean') return { kind: 'boolean', value: value === true }
   if (f.type === 'number') return { kind: 'number', text: String(value) }

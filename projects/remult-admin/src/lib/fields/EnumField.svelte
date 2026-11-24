@@ -32,11 +32,19 @@
     set: (v: unknown) => void
   } = $props()
 
-  const items = $derived(field.values.map((v) => ({ value: v.id, label: v.caption })))
+  const items = $derived(
+    field.values.map((v) => ({ value: v.id, label: v.caption })),
+  )
   // the item's own id is written back, so a number stays a number
-  const selected = $derived((field.values.find((v) => v.id === value)?.id ?? null) as Id | null)
+  const selected = $derived(
+    (field.values.find((v) => v.id === value)?.id ?? null) as Id | null,
+  )
   const placeholder = $derived(
-    value === null ? 'null' : value === undefined || value === '' ? '' : String(value),
+    value === null
+      ? 'null'
+      : value === undefined || value === ''
+        ? ''
+        : String(value),
   )
 </script>
 

@@ -7,7 +7,8 @@
   import { valueKey } from './format.js'
   import type { TableRow } from './table-data.svelte.js'
 
-  const INTERACTIVE = 'button, a, input, textarea, select, [role="combobox"], [contenteditable]'
+  const INTERACTIVE =
+    'button, a, input, textarea, select, [role="combobox"], [contenteditable]'
 
   let {
     row,
@@ -68,13 +69,22 @@
   function onclick(e: MouseEvent) {
     if (!clickable) return
     // a control in the row, or a text selection, keeps the click
-    if ((e.target as HTMLElement).closest(INTERACTIVE) || getSelection()?.toString()) return
+    if (
+      (e.target as HTMLElement).closest(INTERACTIVE) ||
+      getSelection()?.toString()
+    )
+      return
     onopen?.(row)
   }
 
   function onkeydown(e: KeyboardEvent) {
     // only the row itself: Space and Enter inside an editor are the editor's
-    if (!openable || e.target !== e.currentTarget || (e.key !== 'Enter' && e.key !== ' ')) return
+    if (
+      !openable ||
+      e.target !== e.currentTarget ||
+      (e.key !== 'Enter' && e.key !== ' ')
+    )
+      return
     if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return
     e.preventDefault()
     onopen?.(row)
@@ -143,13 +153,28 @@
       </button>
     {/if}
     {#if isNew}
-      <span class="mark new" title="New row, not saved yet"><Icon name="plus" size={12} stroke={2} /><span class="sr-only">New row</span></span>
+      <span class="mark new" title="New row, not saved yet"
+        ><Icon name="plus" size={12} stroke={2} /><span class="sr-only"
+          >New row</span
+        ></span
+      >
     {:else if dirty}
-      <span class="mark" class:invalid title={invalid ? 'Not saved: check the highlighted cells' : 'Edited, not saved yet'}>
-        <span class="dot"></span><span class="sr-only">{invalid ? 'Not saved, has errors' : 'Edited'}</span>
+      <span
+        class="mark"
+        class:invalid
+        title={invalid
+          ? 'Not saved: check the highlighted cells'
+          : 'Edited, not saved yet'}
+      >
+        <span class="dot"></span><span class="sr-only"
+          >{invalid ? 'Not saved, has errors' : 'Edited'}</span
+        >
       </span>
     {:else if resolved && !canUpdate}
-      <span class="lock" title="Read only"><Icon name="lock" size={12} /><span class="sr-only">Read only</span></span>
+      <span class="lock" title="Read only"
+        ><Icon name="lock" size={12} /><span class="sr-only">Read only</span
+        ></span
+      >
     {/if}
   </td>
   {#each fields as f (f.key)}
@@ -157,7 +182,9 @@
     <Cell
       field={f}
       bind:value={() => row.draft.values[k], (v) => (row.draft.values[k] = v)}
-      caption={f.relationToOne ? captions[f.valFieldKey]?.get(row.draft.values[k]) : undefined}
+      caption={f.relationToOne
+        ? captions[f.valFieldKey]?.get(row.draft.values[k])
+        : undefined}
       editable={canEdit}
       {busy}
       dirty={!isNew && row.draft.isDirty(k)}
@@ -191,8 +218,7 @@
           <Icon name="x" size={14} />
         </button>
       </div>
-    {:else}
-      {#if canDelete && !isNew}
+    {:else if canDelete && !isNew}
       <button
         class="btn delete"
         data-variant={armed ? 'danger' : 'ghost'}
@@ -207,7 +233,6 @@
       >
         {#if armed}Delete?{:else}<Icon name="trash" size={14} />{/if}
       </button>
-      {/if}
     {/if}
   </td>
 </tr>
