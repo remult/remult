@@ -24,9 +24,6 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@codemirror/lang-json": "6.0.2",
-    "@codemirror/language": "6.13.1",
-    "@lezer/highlight": "1.2.5",
     "@playwright/test": "1.65.1",
     "@sveltejs/adapter-static": "4.0.1",
     "@sveltejs/kit": "3.4.0",
@@ -35,7 +32,6 @@
     "@types/node": "^24.0.0",
     "@ui-sdk/core": "0.1.0-beta.16",
     "@ui-sdk/svelte": "0.1.0-beta.16",
-    "codemirror": "6.0.2",
     "express": "^4.21.1",
     "happy-dom": "^21.0.4",
     "rollup-plugin-visualizer": "^7.1.3",

@@ -3,6 +3,7 @@
   import Icon from '../shell/Icon.svelte'
   import EditorDialog from './EditorDialog.svelte'
   import JsonCode from './JsonCode.svelte'
+  import { parseJson } from './json-text.js'
 
   let {
     value,
@@ -41,14 +42,8 @@
 
   const preview = $derived(value === undefined ? '' : JSON.stringify(value))
 
-  const parsed = $derived.by((): { ok: true; v: unknown } | { ok: false; error: string } => {
-    if (!text.trim()) return { ok: true, v: null }
-    try {
-      return { ok: true, v: JSON.parse(text) }
-    } catch (err) {
-      return { ok: false, error: err instanceof Error ? err.message : 'Invalid JSON' }
-    }
-  })
+  const parsed = $derived(parseJson(text))
+  const errorAt = $derived(parsed.ok ? undefined : parsed.pos)
 
   $effect(() => {
     if (!inline) return
@@ -89,10 +84,10 @@
 </script>
 
 {#if inline}
-  <div class="inline" {id}>
+  <div class="inline">
     {#if value === null && !text}<span class="null-hint" aria-hidden="true">null</span>{/if}
     {#key opens}
-      <JsonCode doc={text} {label} fit invalid={invalid || !parsed.ok} {describedby} onchange={typed} />
+      <JsonCode doc={text} {label} {id} fit invalid={invalid || !parsed.ok} {errorAt} {describedby} onchange={typed} />
     {/key}
   </div>
 {:else}
@@ -112,9 +107,9 @@
 {/if}
 
 {#if mounted}
-  <EditorDialog bind:open title={label} wide initialFocus=".cm-content" error={parsed.ok ? undefined : parsed.error} onapply={apply}>
+  <EditorDialog bind:open title={label} wide initialFocus="textarea" error={parsed.ok ? undefined : parsed.error} onapply={apply}>
     {#key opens}
-      <JsonCode doc={text} onchange={(t) => (text = t)} />
+      <JsonCode doc={text} {label} invalid={!parsed.ok} {errorAt} onchange={(t) => (text = t)} />
     {/key}
   </EditorDialog>
 {/if}
