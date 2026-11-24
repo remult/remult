@@ -83,7 +83,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
           finishGroup(result: any) {
             result[key] = {
               ...result[key],
-              avg: sum / count,
+              avg: count ? sum / count : null,
             }
             sum = 0
             count = 0
@@ -100,7 +100,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
             }
           },
           finishGroup(result: any) {
-            result[key] = { ...result[key], min }
+            result[key] = { ...result[key], min: min ?? null }
             min = undefined
           },
         }
@@ -115,7 +115,7 @@ export class ArrayEntityDataProvider implements EntityDataProvider {
             }
           },
           finishGroup(result: any) {
-            result[key] = { ...result[key], max }
+            result[key] = { ...result[key], max: max ?? null }
             max = undefined
           },
         }
