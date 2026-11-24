@@ -121,6 +121,30 @@ describe('TableData', () => {
     expect(unsubscribe).toHaveBeenCalled()
   })
 
+  it('a live update counts past the read cache, a plain find does not', async () => {
+    let push!: (items: any[]) => void
+    const calls: string[] = []
+    const freshReads = vi.fn(() => calls.push('fresh'))
+    const liveQuery = () => ({
+      subscribe: (l: { next: (info: { items: any[] }) => void }) => {
+        push = (items) => l.next({ items })
+        return () => {}
+      },
+    })
+    const table = fakeTable({ liveQuery, find: async () => [] })
+    ;(table.repo as any).count = async () => (calls.push('count'), 1)
+    const data = new TableData(table, { freshReads })
+    data.load(req())
+    await tick()
+    expect(freshReads).not.toHaveBeenCalled()
+    calls.length = 0
+    data.load(req({ live: true }))
+    push([{ id: 'a' }])
+    await tick()
+    expect(calls).toEqual(['fresh', 'count'])
+    data.dispose()
+  })
+
   it("keeps 'row' permissions closed until the server answers", async () => {
     const answer =
       deferred<Record<string, { update: boolean; delete: boolean }>>()
@@ -250,6 +274,23 @@ describe('TableData', () => {
     expect(update).toHaveBeenCalledWith('a', { name: 'B', companyId: 'c1' })
     expect(row.draft.dirty).toBe(false)
     expect(row.draft.values.name).toBe('B')
+  })
+
+  it('a save while the row is saving reports busy, not success', async () => {
+    const pending = deferred<any>()
+    const update = vi.fn(() => pending.promise)
+    const data = new TableData(
+      fakeTable({ find: async () => [{ id: 'a', name: 'b' }], update }),
+    )
+    data.load(req())
+    await tick()
+    const row = data.rows[0]
+    row.draft.values.name = 'B'
+    const first = data.save(row)
+    expect(await data.save(row)).toEqual({ ok: false, busy: true })
+    pending.resolve({ id: 'a', name: 'B' })
+    expect(await first).toEqual({ ok: true })
+    expect(update).toHaveBeenCalledOnce()
   })
 
   it('maps modelState to the edited key, and other errors to a message', async () => {

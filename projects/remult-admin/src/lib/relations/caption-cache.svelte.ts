@@ -14,6 +14,8 @@ export class CaptionCache {
   #asked = new Set<string>()
   #queue = new Map<string, { field: FieldUIInfo; ids: Set<unknown> }>()
   #timer: ReturnType<typeof setTimeout> | undefined
+  // bumped by clear(): answers to an older user's lookups are dropped
+  #gen = 0
   #load: Load
 
   constructor(load: Load) {
@@ -52,16 +54,26 @@ export class CaptionCache {
     this.#timer ??= setTimeout(() => this.#flush(), 0)
   }
 
+  /** Forgets everything, failed lookups included. */
+  clear() {
+    this.#gen++
+    this.#known.clear()
+    this.#asked.clear()
+    this.#queue.clear()
+  }
+
   #flush() {
     this.#timer = undefined
     const batch = [...this.#queue.values()]
     this.#queue.clear()
+    const gen = this.#gen
     for (const { field, ids } of batch) {
       this.#load(field, [...ids]).then(
         (map) => {
+          if (gen !== this.#gen) return
           for (const [id, caption] of map) this.set(field, id, caption)
         },
-        // a failed lookup leaves the raw id on screen; asking again would fail the same way
+        // a failed lookup leaves the raw id on screen until clear(); asking again would fail the same way
         () => {},
       )
     }
@@ -71,3 +83,5 @@ export class CaptionCache {
 export const captions = new CaptionCache((field, ids) =>
   god.captionsFor(field, ids),
 )
+// another token may see other rows: captions are per user
+god.onReload(() => captions.clear())

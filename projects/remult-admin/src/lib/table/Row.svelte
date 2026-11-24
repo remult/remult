@@ -120,6 +120,7 @@
   data-expanded={expanded ? '' : undefined}
   aria-busy={deleting || busy || undefined}
   tabindex={openable ? 0 : undefined}
+  aria-keyshortcuts={openable ? 'Enter' : undefined}
   {onclick}
   {onkeydown}
 >
@@ -147,7 +148,7 @@
         type="button"
         tabindex="-1"
         aria-label="Open row"
-        title={editable ? 'Open row' : 'Open row (Enter)'}
+        title="Open row (Enter on the row)"
         onclick={() => onopen?.(row)}
       >
         <Icon name="arrow-up-right" size={13} stroke={2} />

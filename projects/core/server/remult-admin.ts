@@ -5,8 +5,12 @@ import {
 import { Filter } from '../src/filter/filter-interfaces.js'
 import type { ClassType } from '../classType.js'
 import type { AllowedForInstance, Remult } from '../src/context.js'
-import { getValueList } from '../src/remult3/RepositoryImplementation.js'
+import {
+  getValueList,
+  rowIndependentRules,
+} from '../src/remult3/RepositoryImplementation.js'
 import type { EntityFilter, EntityMetadata } from '../src/remult3/remult3.js'
+import type { FieldMetadata } from '../src/column-interfaces.js'
 import { InputTypes } from '../inputTypes.js'
 
 export type AdminPermission = boolean | 'row'
@@ -145,7 +149,7 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
         }
         fields.push({
           key: x.key,
-          readOnly: !x.apiUpdateAllowed(),
+          readOnly: readOnlyOf(x),
           values: getValueList(x),
           valFieldKey,
           caption: x.label,
@@ -265,7 +269,12 @@ export async function getRowPermissions(o: {
   }
   for (const row of await repo.find({ where: { $and: where } })) {
     const ref = repo.getEntityRef(row)
-    result[String(repo.metadata.idMetadata.getId(row))] = {
+    // keyed like the client's String(getId(row)) on the JSON values
+    const key =
+      repo.metadata.idMetadata.fields.length === 1
+        ? String(idField.valueConverter.toJson(row[idField.key]))
+        : String(repo.metadata.idMetadata.getId(row))
+    result[key] = {
       update: ref.apiUpdateAllowed === true,
       delete: ref.apiDeleteAllowed === true,
     }
@@ -276,7 +285,18 @@ export async function getRowPermissions(o: {
 export type RelationsToOneValues = Record<string, Map<any, any>>
 
 const hasFn = (rule: AllowedForInstance<any>): boolean =>
-  Array.isArray(rule) ? rule.some(hasFn) : typeof rule === 'function'
+  Array.isArray(rule)
+    ? rule.some(hasFn)
+    : typeof rule === 'function' && !rowIndependentRules.has(rule)
+
+function readOnlyOf(field: FieldMetadata) {
+  try {
+    return !field.apiUpdateAllowed()
+  } catch {
+    // the rule needs the row; the server still enforces it per row
+    return true
+  }
+}
 
 export function resolveAdminPermission(
   remult: Remult,

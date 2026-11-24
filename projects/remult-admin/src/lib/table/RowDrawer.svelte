@@ -104,6 +104,7 @@
     if (!row || !canSave) return
     const r = row
     const result = await data.save(r)
+    if (!result.ok && result.busy) return
     if (result.ok) {
       toast.success(r.isNew ? 'Row added' : 'Row saved')
       open = false
@@ -163,7 +164,7 @@
 
   function focusFirst() {
     return (
-      body?.querySelector<HTMLElement>('[data-cell-focus], .cm-content') ??
+      body?.querySelector<HTMLElement>('[data-cell-focus], textarea') ??
       closeButton ??
       null
     )

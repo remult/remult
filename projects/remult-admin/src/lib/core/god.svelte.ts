@@ -10,7 +10,7 @@ import type {
 } from '../../../../core/src/remult3/remult3'
 import { Fields } from '../../../../core/src/remult3/Fields'
 import { Entity } from '../../../../core/src/remult3/entity'
-import { buildHeaders, createHttpClient } from './http.js'
+import { buildHeaders, createHttpClient, type HttpClient } from './http.js'
 import {
   captionOf,
   relationCaptions,
@@ -106,10 +106,21 @@ class God {
   /** Set by any 401; the shell asks for a token. */
   unauthorized = $state(false)
   userName: string | undefined = $state()
+  #http: HttpClient | undefined
+  #onReload = new Set<() => void>()
+
+  onReload(fn: () => void) {
+    this.#onReload.add(fn)
+  }
+
+  /** The next reads skip the dedupe cache: the data changed on the server. */
+  freshReads() {
+    this.#http?.clear()
+  }
 
   #setupApi() {
     remult.apiClient.url = apiUrl()
-    remult.apiClient.httpClient = createHttpClient({
+    remult.apiClient.httpClient = this.#http = createHttpClient({
       apiUrl: apiUrl(),
       getHeaders: () => headers(),
       onForbidden: (key) => {
@@ -126,6 +137,7 @@ class God {
     this.loading = true
     // forbidden is per user: the new token gets a fresh verdict
     session.forbiddenEntities = []
+    for (const fn of this.#onReload) fn()
     try {
       this.#setupApi()
       const user = await remult.initUser()
@@ -254,9 +266,10 @@ class God {
   async rowPermissions(superKey: string, ids: string[]) {
     const out: Record<string, { update: boolean; delete: boolean }> = {}
     for (let i = 0; i < ids.length; i += ROW_PERMISSIONS_MAX_IDS) {
-      const res = await fetch(`${apiUrl()}/admin/__row-permissions`, {
+      // the shared client: a 401 asks for a token, custom headers apply
+      const res = await this.#http!(`${apiUrl()}/admin/__row-permissions`, {
         method: 'POST',
-        headers: headers({ 'content-type': 'application/json' }),
+        headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           superKey,
           ids: ids.slice(i, i + ROW_PERMISSIONS_MAX_IDS),

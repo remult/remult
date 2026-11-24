@@ -101,6 +101,24 @@ describe('createHttpClient', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
+  it('evicts expired entries on the next GET', async () => {
+    const http = client()
+    await http('/api/a')
+    await http('/api/b')
+    expect(http.cacheSize).toBe(2)
+    vi.advanceTimersByTime(2001)
+    await http('/api/c')
+    expect(http.cacheSize).toBe(1)
+  })
+
+  it('clear() makes the next GET hit the server', async () => {
+    const http = client()
+    await http('/api/tasks')
+    http.clear()
+    await http('/api/tasks')
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
   it('never caches POST', async () => {
     const http = client()
     await http('/api/tasks', { method: 'POST', body: '{}' })

@@ -264,6 +264,10 @@ test('inline mode: Space on a focused row opens it, not inside an editor', async
   try {
     await page.goto(`/#/entity/tasks?title.startsWith=${prefix}`)
     await expect(rows(page)).toHaveCount(1)
+    await expect(rows(page).first()).toHaveAttribute(
+      'aria-keyshortcuts',
+      'Enter',
+    )
     const title = rows(page).first().getByRole('textbox', { name: 'Title' })
     await title.focus()
     await page.keyboard.press('Space')

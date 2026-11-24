@@ -52,6 +52,32 @@ describe('CaptionCache', () => {
   })
 })
 
+describe('CaptionCache.clear', () => {
+  it('forgets captions and failed lookups, and drops answers still in flight', async () => {
+    let fail = true
+    let release!: () => void
+    const gate = new Promise<void>((r) => (release = r))
+    const load = vi.fn(async (_f, ids: unknown[]) => {
+      if (fail) throw new Error('down')
+      await gate
+      return new Map(ids.map((id) => [id, `name ${id}`]))
+    })
+    const cache = new CaptionCache(load)
+    cache.set(am, 'a', 'old user caption')
+    cache.request(am, 'b')
+    await vi.waitFor(() => expect(load).toHaveBeenCalledTimes(1))
+    cache.clear()
+    expect(cache.get(am, 'a')).toBeUndefined()
+    fail = false
+    cache.request(am, 'b')
+    await vi.waitFor(() => expect(load).toHaveBeenCalledTimes(2))
+    cache.clear()
+    release()
+    await new Promise((r) => setTimeout(r, 5))
+    expect(cache.get(am, 'b')).toBeUndefined()
+  })
+})
+
 describe('CaptionCache on a non-id target field', () => {
   // contacts.company: the row holds companyId, matched on Company.companyId ('id:' + id), not Company.id
   const company = field({

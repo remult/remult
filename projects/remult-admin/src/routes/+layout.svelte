@@ -31,7 +31,7 @@
     const location = to?.url.hash.slice(1) || '/'
     // only the app opening on Home restores the last location, so Home stays reachable in-app
     if (type === 'enter' && location === '/' && settings.lastLocation !== '/') {
-      goto('#' + settings.lastLocation, { replaceState: true })
+      goto('#' + settings.lastLocation, { replace: true })
       return
     }
     if (location !== '/') settings.lastLocation = location

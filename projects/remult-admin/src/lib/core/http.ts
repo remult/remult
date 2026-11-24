@@ -57,13 +57,19 @@ function entityKeyOf(url: string, apiUrl?: string) {
   return segments.at(-1) ?? ''
 }
 
+export type HttpClient = typeof fetch & {
+  /** Drops every cached read, so the next GET hits the server. */
+  clear(): void
+  readonly cacheSize: number
+}
+
 export function createHttpClient(o: {
   getHeaders: () => Record<string, string>
   onForbidden: (entityKey: string) => void
   onUnauthorized?: () => void
   dedupeMs?: number
   apiUrl?: string
-}): typeof fetch {
+}): HttpClient {
   const dedupeMs = o.dedupeMs ?? 2000
   const cache = new Map<string, { promise: Promise<Response>; at: number }>()
 
@@ -96,6 +102,8 @@ export function createHttpClient(o: {
 
     const key = urlOf(input)
     const now = Date.now()
+    // each entry holds a Response body: expired ones must not pile up
+    for (const [k, e] of cache) if (now - e.at >= dedupeMs) cache.delete(k)
     const hit = cache.get(key)
     if (hit && now - hit.at < dedupeMs) return (await hit.promise).clone()
 
@@ -112,5 +120,8 @@ export function createHttpClient(o: {
       throw err
     }
   }
-  return client as typeof fetch
+  return Object.defineProperties(client, {
+    clear: { value: () => cache.clear() },
+    cacheSize: { get: () => cache.size },
+  }) as unknown as HttpClient
 }

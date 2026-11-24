@@ -1,7 +1,9 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { EntityUIInfo } from '../../../../core/server/remult-admin'
 import { field } from '../query/fixtures.js'
-import { buildTables } from './god.svelte.js'
+import { captions } from '../relations/caption-cache.svelte.js'
+import { buildTables, god } from './god.svelte.js'
+import { settings } from './settings.svelte.js'
 
 const info = (fields: EntityUIInfo['fields']): EntityUIInfo =>
   ({
@@ -33,5 +35,48 @@ describe('buildTables', () => {
       { id: 'male', caption: 'male' },
       { id: 'female', caption: 'female' },
     ])
+  })
+})
+
+describe('god.reload and rowPermissions', () => {
+  const am = field({
+    key: 'owner',
+    relationToOne: {
+      entityKey: 'users',
+      fields: { id: 'owner' },
+      captionField: 'name',
+    } as any,
+  })
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    settings.customHeaders = ''
+  })
+
+  it('reload clears captions; rowPermissions sends custom headers and flags a 401', async () => {
+    const fetchMock = vi.fn(
+      async (input: RequestInfo | URL, _init?: RequestInit) => {
+        const url = String(input)
+        if (url.endsWith('/__row-permissions'))
+          return new Response('', { status: 401 })
+        return new Response(url.endsWith('/me') ? 'null' : '[]', {
+          status: 200,
+        })
+      },
+    )
+    vi.stubGlobal('fetch', fetchMock)
+    settings.customHeaders = 'x-tenant: t1'
+    captions.set(am, 'u1', 'Previous user caption')
+    await god.reload()
+    expect(captions.get(am, 'u1')).toBeUndefined()
+    expect(god.unauthorized).toBe(false)
+    await expect(god.rowPermissions('things', ['1'])).rejects.toThrow('401')
+    expect(god.unauthorized).toBe(true)
+    const init = fetchMock.mock.calls.find(([u]) =>
+      String(u).endsWith('/__row-permissions'),
+    )![1]!
+    expect(init.headers).toMatchObject({
+      'content-type': 'application/json',
+      'x-tenant': 't1',
+    })
   })
 })

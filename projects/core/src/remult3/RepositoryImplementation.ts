@@ -2695,6 +2695,9 @@ let tempLabelTransformer: (typeof remultStatic)['labelTransformer'] = {
     this.transformLabel = val
   },
 }
+/** Rule functions that ignore the row, so they can be evaluated without one. */
+export const rowIndependentRules = new WeakSet<Function>()
+
 export const fieldOptionsEnricher: {
   enrichFieldOptions: (options: FieldOptions) => void
 } = remultStatic.fieldOptionsEnricher || {
@@ -2890,9 +2893,10 @@ class EntityFullInfo<T> implements EntityMetadata<T> {
     this.options = entityInfo as any
     if (this.options.allowApiCrud !== undefined) {
       let crud: AllowedForInstance<T>
-      if (typeof this.options.allowApiCrud === 'function')
+      if (typeof this.options.allowApiCrud === 'function') {
         crud = (_, remult) => (this.options.allowApiCrud as Function)(remult)
-      else crud = this.options.allowApiCrud as AllowedForInstance<T>
+        rowIndependentRules.add(crud)
+      } else crud = this.options.allowApiCrud as AllowedForInstance<T>
       if (this.options.allowApiDelete === undefined)
         this.entityInfo.allowApiDelete = crud
       if (this.options.allowApiInsert === undefined)

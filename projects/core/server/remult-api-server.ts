@@ -545,16 +545,15 @@ export class RemultServerImplementation<RequestType>
           r,
         )
       if (this.options.admin !== undefined && this.options.admin !== false) {
+        const adminAllowed = (remult: Remult) =>
+          remult.isAllowed(
+            isOfType<{ allow: Allowed }>(this.options.admin, 'allow')
+              ? this.options.admin.allow
+              : (this.options.admin as Allowed),
+          )
         const admin = () =>
           this.process(async (remult, req, res, orig, origResponse) => {
-            const allowed = isOfType<{ allow: Allowed }>(
-              this.options.admin,
-              'allow',
-            )
-              ? this.options.admin.allow
-              : this.options.admin
-
-            if (remult.isAllowed(allowed)) {
+            if (adminAllowed(remult)) {
               if (orig?.params?.id === '__entities-metadata') {
                 res.success(
                   buildEntityInfo({
@@ -600,13 +599,7 @@ export class RemultServerImplementation<RequestType>
         r.route(this.options.rootPath + '/admin/__row-permissions').post(
           this.process(
             async (remult, req, res, orig, origRes, origReq: RequestType) => {
-              const allowed = isOfType<{ allow: Allowed }>(
-                this.options.admin,
-                'allow',
-              )
-                ? this.options.admin.allow
-                : this.options.admin
-              if (!remult.isAllowed(allowed)) return res.notFound()
+              if (!adminAllowed(remult)) return res.notFound()
               const body = await this.coreOptions.getRequestBody(origReq)
               const ids: unknown = body?.ids
               if (

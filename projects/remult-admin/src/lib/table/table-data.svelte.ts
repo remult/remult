@@ -15,7 +15,10 @@ export type TableRow = {
   isNew?: boolean
 }
 
-export type SaveResult = { ok: true } | { ok: false; message?: string }
+/** `busy`: that row is already saving, nothing was sent. */
+export type SaveResult =
+  | { ok: true }
+  | { ok: false; message?: string; busy?: true }
 
 export type LoadRequest = {
   where: EntityFilter<any>
@@ -34,11 +37,14 @@ export type TableDataDeps = {
     superKey: string,
     ids: string[],
   ) => Promise<Record<string, Verdict>>
+  /** Next reads skip the client's dedupe cache. */
+  freshReads: () => void
 }
 
 const defaultDeps: TableDataDeps = {
   captions: (field, rows) => god.displayValueForEach(field, rows),
   rowPermissions: (superKey, ids) => god.rowPermissions(superKey, ids),
+  freshReads: () => god.freshReads(),
 }
 
 export function errorMessage(err: unknown): string {
@@ -136,7 +142,7 @@ export class TableData {
     }
     if (request.live) {
       this.#unsub = repo.liveQuery(options).subscribe({
-        next: (info) => this.#apply(gen, info.items),
+        next: (info) => this.#apply(gen, info.items, true),
         error: (err) => this.#fail(gen, err),
       })
     } else {
@@ -207,7 +213,7 @@ export class TableData {
   /** Update sends only the changed keys; insert sends every value typed in. */
   async save(row: TableRow): Promise<SaveResult> {
     const { repo, fields } = this.#table
-    if (this.saving[row.id]) return { ok: true }
+    if (this.saving[row.id]) return { ok: false, busy: true }
     delete this.errors[row.id]
     this.saving[row.id] = true
     try {
@@ -273,7 +279,7 @@ export class TableData {
     return Object.fromEntries(this.#keys().map((k) => [k, item[k]]))
   }
 
-  #apply(gen: number, items: any[]) {
+  #apply(gen: number, items: any[], live = false) {
     if (gen !== this.#gen) return
     const { repo, fields } = this.#table
     const drafts = new Map<string, RowDraft<Values>>()
@@ -292,6 +298,8 @@ export class TableData {
     this.loading = false
     this.loaded = true
     const values = rows.map((r) => r.draft.values)
+    // a live tick means someone wrote: a deduped count would show the old total
+    if (live) this.#deps.freshReads()
     void this.#count(gen)
     void this.#loadCaptions(gen, values)
     void this.#loadVerdicts(
