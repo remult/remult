@@ -1,4 +1,5 @@
 import { remult } from '../../../../core/src/remult-proxy'
+import type { UserInfo } from '../../../../core/src/context'
 import type {
   AdminPermission,
   EntityUIInfo,
@@ -105,7 +106,9 @@ class God {
   error: string | undefined = $state()
   /** Set by any 401; the shell asks for a token. */
   unauthorized = $state(false)
-  userName: string | undefined = $state()
+  /** What `/me` returned for the current token; undefined when anonymous. */
+  user: UserInfo | undefined = $state.raw()
+  userName = $derived(this.user?.name)
   #http: HttpClient | undefined
   #onReload = new Set<() => void>()
 
@@ -138,10 +141,11 @@ class God {
     // forbidden is per user: the new token gets a fresh verdict
     session.forbiddenEntities = []
     for (const fn of this.#onReload) fn()
+    // the previous user stays until /me answers: no Anonymous flash on reload
+    let user: UserInfo | undefined
     try {
       this.#setupApi()
-      const user = await remult.initUser()
-      this.userName = user?.name
+      user = await remult.initUser()
       const res = await fetch(`${apiUrl()}/admin/__entities-metadata`, {
         headers: headers(),
       })
@@ -156,6 +160,7 @@ class God {
           ? err.message
           : String(err)
     } finally {
+      this.user = user
       this.loaded = true
       this.loading = false
     }

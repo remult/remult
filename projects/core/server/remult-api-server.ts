@@ -45,6 +45,7 @@ import { remultStatic } from '../src/remult-static.js'
 import {
   ADMIN_ROW_PERMISSIONS_MAX_IDS,
   buildEntityInfo,
+  resolveAdminPrefilters,
   getRowPermissions,
   type AdminEntityConfig,
 } from './remult-admin.js'
@@ -556,16 +557,20 @@ export class RemultServerImplementation<RequestType>
             if (adminAllowed(remult)) {
               if (orig?.params?.id === '__entities-metadata') {
                 res.success(
-                  buildEntityInfo({
+                  await resolveAdminPrefilters(
+                    buildEntityInfo({
+                      remult,
+                      entities: this.entities,
+                      entityConfig: isOfType<{ allow: Allowed }>(
+                        this.options.admin,
+                        'allow',
+                      )
+                        ? this.options.admin.entities
+                        : undefined,
+                    }),
+                    this.entities,
                     remult,
-                    entities: this.entities,
-                    entityConfig: isOfType<{ allow: Allowed }>(
-                      this.options.admin,
-                      'allow',
-                    )
-                      ? this.options.admin.entities
-                      : undefined,
-                  }),
+                  ),
                 )
               } else {
                 let head = '<title>Admin</title>'

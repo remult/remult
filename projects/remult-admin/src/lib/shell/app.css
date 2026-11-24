@@ -49,6 +49,11 @@
   --danger-soft: oklch(0.53 0.19 27 / 0.09);
   --success: oklch(0.52 0.13 152);
   --warning: oklch(0.52 0.12 65);
+  --success-soft: oklch(0.52 0.13 152 / 0.12);
+  /* unsaved edits: warm, never green (green means saved) */
+  --edited: oklch(0.72 0.16 62);
+  --edited-soft: oklch(0.8 0.15 75 / 0.2);
+  --edited-text: oklch(0.5 0.12 58);
   --hue-l: 0.62;
   --hue-c: 0.15;
   --shadow-pop:
@@ -80,6 +85,10 @@
     --danger-soft: oklch(0.7 0.16 25 / 0.12);
     --success: oklch(0.74 0.14 152);
     --warning: oklch(0.8 0.13 80);
+    --success-soft: oklch(0.74 0.14 152 / 0.16);
+    --edited: oklch(0.78 0.15 70);
+    --edited-soft: oklch(0.78 0.15 70 / 0.15);
+    --edited-text: oklch(0.84 0.12 78);
     --hue-l: 0.72;
     --hue-c: 0.13;
     --shadow-pop:
@@ -109,6 +118,10 @@
   --danger-soft: oklch(0.7 0.16 25 / 0.12);
   --success: oklch(0.74 0.14 152);
   --warning: oklch(0.8 0.13 80);
+  --success-soft: oklch(0.74 0.14 152 / 0.16);
+  --edited: oklch(0.78 0.15 70);
+  --edited-soft: oklch(0.78 0.15 70 / 0.15);
+  --edited-text: oklch(0.84 0.12 78);
   --hue-l: 0.72;
   --hue-c: 0.13;
   --shadow-pop:

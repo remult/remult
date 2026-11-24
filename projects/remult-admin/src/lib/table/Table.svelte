@@ -2,7 +2,10 @@
   import { goto } from '$app/navigation'
   import { page } from '$app/state'
   import { onDestroy, tick, untrack } from 'svelte'
+  import { cubicOut } from 'svelte/easing'
+  import { prefersReducedMotion } from 'svelte/motion'
   import { SvelteSet } from 'svelte/reactivity'
+  import { fly } from 'svelte/transition'
   import type { EntityFilter } from '../../../../core/index.js'
   import type {
     AdminEditMode,
@@ -17,6 +20,8 @@
   } from '../query/filter-model.js'
   import { parseQuery, serializeQuery } from '../query/url-state.js'
   import Icon, { type IconName } from '../shell/Icon.svelte'
+  import PrefilterBadge from '../shell/PrefilterBadge.svelte'
+  import { modKey } from '../shell/shell.svelte.js'
   import { toast } from '../shell/Toasts.svelte'
   import { orderByFor } from './order.js'
   import FilterBar from './FilterBar.svelte'
@@ -211,6 +216,15 @@
     else if (saved > 1) toast.success(`${saved} rows saved`)
   }
 
+  function cancelRows(rows: TableRow[]) {
+    for (const r of rows) data.cancel(r)
+  }
+
+  const pending = $derived(editMode === 'inline' ? data.dirtyRows() : [])
+  const pendingNew = $derived(pending.filter((r) => r.isNew).length)
+  const pendingBusy = $derived(pending.some((r) => data.saving[r.id]))
+  const modAria = modKey === 'Ctrl' ? 'Control' : 'Meta'
+
   function rowOf(target: EventTarget | null) {
     const id = (target as HTMLElement | null)?.closest<HTMLElement>(
       'tr[data-row]',
@@ -243,7 +257,7 @@
       if (!rows.length) return
       e.preventDefault()
       if (e.key === 'Enter') saveRows(rows)
-      else for (const r of rows) data.cancel(r)
+      else cancelRows(rows)
       return
     }
     if (
@@ -356,6 +370,7 @@
         ><Icon name="lock" size={12} /> Read only</span
       >
     {/if}
+    {#if table.apiPrefilter && !forbidden}<PrefilterBadge />{/if}
     {#if live && data.loaded && !data.error}
       <span class="live" title="Rows update as the data changes">Live</span>
     {/if}
@@ -527,6 +542,7 @@
                 editable={editMode === 'inline'}
                 busy={!!data.saving[row.id]}
                 errors={data.errors[row.id]}
+                flash={data.flash[row.id]}
                 ondelete={deleteRow}
                 onsave={(r) => saveRows([r])}
                 oncancel={(r) => data.cancel(r)}
@@ -586,6 +602,56 @@
       {/if}
     {/if}
   </div>
+  {#if pending.length}
+    <div
+      class="pending-bar"
+      role="region"
+      aria-label="Unsaved changes"
+      transition:fly={{
+        y: 12,
+        duration: prefersReducedMotion.current ? 0 : 180,
+        easing: cubicOut,
+      }}
+    >
+      <span class="pending-icon"
+        ><Icon name="pencil" size={13} stroke={2} /></span
+      >
+      <span class="pending-count" aria-live="polite">
+        <strong>{pending.length}</strong>
+        {pending.length === 1 ? 'row' : 'rows'} edited
+        {#if pendingNew}<span class="pending-new">({pendingNew} new)</span>{/if}
+      </span>
+      <!-- next to the count, clear of the toasts in the bottom right corner -->
+      <span class="pending-gap"></span>
+      <button
+        class="btn"
+        data-variant="ghost"
+        type="button"
+        title="Cancel all edits"
+        aria-keyshortcuts="Shift+Escape"
+        disabled={pendingBusy}
+        onclick={() => cancelRows(pending)}
+      >
+        Cancel all <span class="keys" aria-hidden="true"
+          ><kbd>Shift</kbd><kbd>Esc</kbd></span
+        >
+      </button>
+      <button
+        class="btn"
+        data-variant="primary"
+        type="button"
+        title="Save all edited rows"
+        aria-keyshortcuts={`Shift+${modAria}+Enter`}
+        disabled={pendingBusy}
+        onclick={() => saveRows(pending)}
+      >
+        <Icon name="check" size={14} stroke={2} />Save all
+        <span class="keys" aria-hidden="true"
+          ><kbd>Shift</kbd><kbd>{modKey}</kbd><kbd>Enter</kbd></span
+        >
+      </button>
+    </div>
+  {/if}
   <RowDrawer bind:this={drawer} {table} {data} />
 </section>
 
@@ -889,5 +955,65 @@
   .state-actions {
     display: flex;
     gap: 8px;
+  }
+  .pending-bar {
+    position: relative;
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 6px 12px 6px 20px;
+    border-top: 1px solid var(--border);
+    background: color-mix(in oklab, var(--edited) 10%, var(--bg-raised));
+    box-shadow: 0 -4px 12px -6px oklch(0 0 0 / 0.12);
+  }
+  /* same edge as the edited rows */
+  .pending-bar::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    width: 3px;
+    background: var(--edited);
+  }
+  .nested .pending-bar {
+    min-height: 38px;
+    padding: 4px 8px 4px 12px;
+  }
+  .pending-icon {
+    display: flex;
+    color: var(--edited);
+  }
+  .pending-count {
+    color: var(--edited-text);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .pending-count strong {
+    font-weight: 650;
+  }
+  .pending-new {
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+  .pending-gap {
+    width: 8px;
+  }
+  .pending-bar .keys {
+    display: inline-flex;
+    gap: 2px;
+    margin-inline-start: 2px;
+  }
+  .pending-bar .btn[data-variant='primary'] kbd {
+    border-color: color-mix(in oklch, var(--accent-text) 35%, transparent);
+    background: transparent;
+    color: inherit;
+    opacity: 0.85;
+  }
+  @media (hover: none) {
+    .pending-bar .keys {
+      display: none;
+    }
   }
 </style>

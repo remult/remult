@@ -16,6 +16,7 @@ const info = (fields: EntityUIInfo['fields']): EntityUIInfo =>
     hidden: false,
     editMode: 'inline',
     editModeLocked: false,
+    apiPrefilter: false,
     permissions: { insert: true, update: true, delete: true },
   }) as EntityUIInfo
 

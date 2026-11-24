@@ -32,6 +32,8 @@ export interface EntityUIInfo {
   hidden: boolean
   editMode: AdminEditMode
   editModeLocked: boolean
+  /** The API narrows the rows this user sees (see resolveAdminPrefilters). */
+  apiPrefilter: boolean
   permissions: {
     insert: AdminPermission
     update: AdminPermission
@@ -193,6 +195,7 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
         hidden: config === false,
         editMode: custom?.editMode ?? 'inline',
         editModeLocked: custom?.lockEditMode ?? false,
+        apiPrefilter: metadata.options.apiPrefilter !== undefined,
         permissions: {
           insert: resolveAdminPermission(
             options.remult,
@@ -235,6 +238,32 @@ function findAdminEntity(
     seen[metadata.key] = nb + 1
     if (adminSuperKey(metadata.key, nb) === superKey) return entity
   }
+}
+
+/** Keeps `apiPrefilter` only where it narrows rows for this user: an admin whose prefilter is `{}` sees everything. */
+export async function resolveAdminPrefilters(
+  info: EntityUIInfo[],
+  entities: ClassType<any>[],
+  remult: Remult,
+): Promise<EntityUIInfo[]> {
+  for (const e of info) {
+    if (!e.apiPrefilter) continue
+    const entity = findAdminEntity(entities, remult, e.superKey)
+    if (!entity) continue
+    const metadata = remult.repo(entity).metadata
+    const prefilter = metadata.options.apiPrefilter
+    try {
+      const where =
+        typeof prefilter === 'function' ? await prefilter() : prefilter
+      e.apiPrefilter =
+        Object.keys(Filter.entityFilterToJson(metadata, where ?? {}) ?? {})
+          .length > 0
+    } catch {
+      // can't tell: say it may narrow
+      e.apiPrefilter = true
+    }
+  }
+  return info
 }
 
 export const ADMIN_ROW_PERMISSIONS_MAX_IDS = 200

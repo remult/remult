@@ -28,6 +28,9 @@ const ownsDeal = (deal: Deal | undefined, r: Remult | undefined) =>
   allowApiCrud: true,
   allowApiUpdate: ownsDeal,
   allowApiDelete: ownsDeal,
+  // demo: only admins see lost deals
+  apiPrefilter: () =>
+    remult.isAllowed('admin') ? {} : { stage: { $ne: 'lost' } },
 })
 export class Deal {
   @Fields.id()

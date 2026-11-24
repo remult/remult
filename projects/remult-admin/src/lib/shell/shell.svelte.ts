@@ -6,6 +6,7 @@ const REGEX_APPLE = /mac|iphone|ipad/i
 class Shell {
   paletteOpen = $state(false)
   settingsOpen = $state(false)
+  accessOpen = $state(false)
   /** Small screens get the rail, whatever `settings.navCollapsed` says. */
   narrow = new MediaQuery('max-width: 720px')
 

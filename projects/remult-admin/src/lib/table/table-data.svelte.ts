@@ -20,6 +20,12 @@ export type SaveResult =
   | { ok: true }
   | { ok: false; message?: string; busy?: true }
 
+/** What a row just went through; `keys`: the cells a cancel put back. */
+export type RowFlash = { kind: 'saved' | 'reverted'; keys?: string[] }
+
+/** Ms an outcome stays shown. */
+export const FLASH_MS = 1400
+
 export type LoadRequest = {
   where: EntityFilter<any>
   orderBy?: EntityOrderBy<any>
@@ -101,6 +107,8 @@ export class TableData {
   /** Per row id, per edited key: the server's validation message. */
   errors: Record<string, Record<string, string>> = $state({})
   saving: Record<string, boolean> = $state({})
+  /** Per row id: the outcome of its last save or cancel, for FLASH_MS. */
+  flash: Record<string, RowFlash> = $state({})
 
   #table: TableInfo
   #deps: TableDataDeps
@@ -112,6 +120,10 @@ export class TableData {
   #newSeq = 0
   #unsub: (() => void) | undefined
   #request: LoadRequest | undefined
+  #flashTimers = new Map<string, ReturnType<typeof setTimeout>>()
+  // an inserted row flashes once a load shows it; forgotten if none does soon
+  #flashOnShow = new Map<string, ReturnType<typeof setTimeout>>()
+  #disposed = false
 
   constructor(table: TableInfo, deps: Partial<TableDataDeps> = {}) {
     this.#table = table
@@ -161,6 +173,12 @@ export class TableData {
   dispose() {
     this.#stop()
     this.#gen++
+    this.#disposed = true
+    for (const t of this.#flashTimers.values()) clearTimeout(t)
+    for (const t of this.#flashOnShow.values()) clearTimeout(t)
+    this.#flashTimers.clear()
+    this.#flashOnShow.clear()
+    this.flash = {}
   }
 
   can(kind: 'update' | 'delete', id: string) {
@@ -202,8 +220,13 @@ export class TableData {
 
   cancel(row: TableRow) {
     delete this.errors[row.id]
-    if (row.isNew) this.newRows = this.newRows.filter((r) => r !== row)
-    else row.draft.reset()
+    if (row.isNew) {
+      this.newRows = this.newRows.filter((r) => r !== row)
+      return
+    }
+    const keys = Object.keys(row.draft.changes())
+    row.draft.reset()
+    if (keys.length) this.#flash(row.id, { kind: 'reverted', keys })
   }
 
   clearError(row: TableRow, key: string) {
@@ -226,8 +249,10 @@ export class TableData {
             ([k, v]) => v !== undefined && writable.has(k),
           ),
         )
-        await repo.insert(values)
+        const inserted = await repo.insert(values)
         this.newRows = this.newRows.filter((r) => r !== row)
+        if (inserted)
+          this.#flashWhenShown(String(repo.metadata.idMetadata.getId(inserted)))
         this.refresh()
       } else {
         const changes = row.draft.changes()
@@ -240,6 +265,7 @@ export class TableData {
         // editors are locked while saving, so dropping the user's values loses nothing
         row.draft.rebase(this.#valuesOf(saved))
         row.draft.reset()
+        this.#flash(row.id, { kind: 'saved' })
       }
       return { ok: true }
     } catch (err) {
@@ -257,6 +283,28 @@ export class TableData {
   async delete(row: TableRow) {
     await this.#table.repo.delete(row.item)
     this.refresh()
+  }
+
+  #flash(id: string, flash: RowFlash) {
+    if (this.#disposed) return
+    clearTimeout(this.#flashTimers.get(id))
+    this.flash[id] = flash
+    this.#flashTimers.set(
+      id,
+      setTimeout(() => {
+        this.#flashTimers.delete(id)
+        delete this.flash[id]
+      }, FLASH_MS),
+    )
+  }
+
+  #flashWhenShown(id: string) {
+    if (this.#disposed) return
+    clearTimeout(this.#flashOnShow.get(id))
+    this.#flashOnShow.set(
+      id,
+      setTimeout(() => this.#flashOnShow.delete(id), FLASH_MS * 3),
+    )
   }
 
   #stop() {
@@ -294,6 +342,13 @@ export class TableData {
     })
     this.#drafts = drafts
     this.rows = rows
+    for (const r of rows) {
+      const wait = this.#flashOnShow.get(r.id)
+      if (wait === undefined) continue
+      clearTimeout(wait)
+      this.#flashOnShow.delete(r.id)
+      this.#flash(r.id, { kind: 'saved' })
+    }
     this.error = undefined
     this.loading = false
     this.loaded = true

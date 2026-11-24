@@ -1,8 +1,9 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { TableInfo } from '../core/god.svelte.js'
 import { field } from '../query/fixtures.js'
 import { orderByFor } from './order.js'
 import {
+  FLASH_MS,
   fieldErrors,
   prefillFrom,
   TableData,
@@ -47,6 +48,7 @@ function fakeTable(o: {
     hidden: false,
     editMode: 'inline',
     editModeLocked: false,
+    apiPrefilter: false,
     permissions: { insert: true, update: true, delete: true, ...o.permissions },
     repo: {
       metadata: {
@@ -364,6 +366,97 @@ describe('TableData', () => {
     const row = data.addNew()
     data.cancel(row)
     expect(data.newRows).toEqual([])
+  })
+})
+
+describe('TableData flash', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('marks a saved row, then clears it', async () => {
+    vi.useFakeTimers()
+    const update = vi.fn(async (_id: unknown, c: any) => ({ id: 'a', ...c }))
+    const data = new TableData(
+      fakeTable({ find: async () => [{ id: 'a', name: 'b' }], update }),
+    )
+    data.load(req())
+    await vi.advanceTimersByTimeAsync(0)
+    const row = data.rows[0]
+    row.draft.values.name = 'B'
+    await data.save(row)
+    expect(data.flash.a).toEqual({ kind: 'saved' })
+    vi.advanceTimersByTime(FLASH_MS)
+    expect(data.flash.a).toBeUndefined()
+  })
+
+  it('a failed save does not flash', async () => {
+    const update = vi.fn().mockRejectedValue({ message: 'Network down' })
+    const data = new TableData(
+      fakeTable({ find: async () => [{ id: 'a', name: 'b' }], update }),
+    )
+    data.load(req())
+    await tick()
+    data.rows[0].draft.values.name = 'B'
+    await data.save(data.rows[0])
+    expect(data.flash.a).toBeUndefined()
+  })
+
+  it('a cancel lists the reverted keys; a clean or new row does not flash', async () => {
+    const data = new TableData(
+      fakeTable({ find: async () => [{ id: 'a', name: 'b', note: 'n' }] }),
+    )
+    data.load(req())
+    await tick()
+    const row = data.rows[0]
+    data.cancel(row)
+    expect(data.flash.a).toBeUndefined()
+    row.draft.values.name = 'x'
+    row.draft.values.companyId = 'c9'
+    data.cancel(row)
+    expect(data.flash.a).toEqual({
+      kind: 'reverted',
+      keys: ['name', 'companyId'],
+    })
+    const fresh = data.addNew()
+    data.cancel(fresh)
+    expect(data.flash[fresh.id]).toBeUndefined()
+  })
+
+  it('flashes an inserted row once a load shows it under its server id', async () => {
+    vi.useFakeTimers()
+    let items: any[] = []
+    const insert = vi.fn(async (v: any) => ({ id: 'srv1', ...v }))
+    const data = new TableData(fakeTable({ find: async () => items, insert }))
+    data.load(req())
+    await vi.advanceTimersByTimeAsync(0)
+    const row = data.addNew()
+    row.draft.values.name = 'fresh'
+    items = [{ id: 'srv1', name: 'fresh' }]
+    await data.save(row)
+    await vi.advanceTimersByTimeAsync(0)
+    expect(data.flash.srv1).toEqual({ kind: 'saved' })
+    vi.advanceTimersByTime(FLASH_MS)
+    expect(data.flash.srv1).toBeUndefined()
+    // shown once only: a later load does not flash it again
+    data.refresh()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(data.flash.srv1).toBeUndefined()
+  })
+
+  it('dispose drops the flashes and their timers', async () => {
+    vi.useFakeTimers()
+    const data = new TableData(
+      fakeTable({ find: async () => [{ id: 'a', name: 'b' }] }),
+    )
+    data.load(req())
+    await vi.advanceTimersByTimeAsync(0)
+    data.rows[0].draft.values.name = 'x'
+    data.cancel(data.rows[0])
+    expect(data.flash.a).toBeDefined()
+    data.dispose()
+    expect(data.flash).toEqual({})
+    expect(vi.getTimerCount()).toBe(0)
   })
 })
 

@@ -1,6 +1,7 @@
 import {
   buildEntityInfo,
   getRowPermissions,
+  type EntityUIInfo,
 } from '../../../projects/core/server/remult-admin'
 import remultAdminHtml from '../../../projects/core/server/remult-admin-html'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
@@ -11,6 +12,7 @@ import {
   Fields,
   Relations,
   ValueListFieldType,
+  remult,
 } from '../../core'
 import {
   Remult,
@@ -82,6 +84,7 @@ describe('remult-admin', () => {
     expect(res).toMatchInlineSnapshot(`
       [
         {
+          "apiPrefilter": false,
           "caption": "Users",
           "defaultOrderBy": {
             "id": "asc",
@@ -266,6 +269,7 @@ describe('remult-admin', () => {
           "superKey": "users",
         },
         {
+          "apiPrefilter": false,
           "caption": "Users*",
           "defaultOrderBy": {
             "id": "asc",
@@ -439,6 +443,7 @@ describe('remult-admin', () => {
           "superKey": "users_ext_1",
         },
         {
+          "apiPrefilter": false,
           "caption": "Accounts",
           "defaultOrderBy": {
             "id": "asc",
@@ -588,6 +593,21 @@ describe('remult-admin', () => {
     const remult = new Remult()
     expect(remult.repo(A).metadata.apiInsertAllowed()).toBe(true)
     expect(remult.repo(B).metadata.apiInsertAllowed()).toBe(false)
+  })
+
+  it('flags apiPrefilter', () => {
+    @Entity('pf1', { allowApiCrud: true, apiPrefilter: () => ({}) })
+    class A {
+      @Fields.id()
+      id!: string
+    }
+    @Entity('pf2', { allowApiCrud: true })
+    class B {
+      @Fields.id()
+      id!: string
+    }
+    const info = buildEntityInfo({ entities: [A, B], remult: new Remult() })
+    expect(info.map((e) => e.apiPrefilter)).toEqual([true, false])
   })
 
   describe('permissions', () => {
@@ -1113,6 +1133,57 @@ describe('POST admin/__row-permissions', () => {
         a: { update: true, delete: false },
         b: { update: false, delete: false },
       },
+    })
+  })
+})
+
+describe('GET admin/__entities-metadata apiPrefilter', () => {
+  @Entity('pfHttp', {
+    allowApiCrud: true,
+    apiPrefilter: () => (remult.isAllowed('admin') ? {} : { owner: 'me' }),
+  })
+  class E {
+    @Fields.string()
+    id = ''
+    @Fields.string()
+    owner = ''
+  }
+  @Entity('pfStatic', { allowApiCrud: true, apiPrefilter: {} })
+  class S {
+    @Fields.string()
+    id = ''
+  }
+  type Req = GenericRequestInfo & { user?: UserInfo }
+  let api: ReturnType<typeof createRemultServer<Req>>
+  // built here: an earlier suite's afterAll turns the request context off
+  beforeAll(() => {
+    api = createRemultServer<Req>({
+      entities: [E, S],
+      dataProvider: new InMemoryDataProvider(),
+      logApiEndPoints: false,
+      admin: true,
+    })
+  })
+  const flags = async (user?: UserInfo) => {
+    const res = await api.handle({
+      method: 'GET',
+      url: '/api/admin/__entities-metadata',
+      user,
+    })
+    return Object.fromEntries(
+      (res?.data as EntityUIInfo[]).map((e) => [e.key, e.apiPrefilter]),
+    )
+  }
+  afterAll(() => RemultAsyncLocalStorage.disable())
+
+  it('is set only where it narrows rows for this user', async () => {
+    expect(await flags({ id: 'a', name: 'a', roles: ['admin'] })).toEqual({
+      pfHttp: false,
+      pfStatic: false,
+    })
+    expect(await flags({ id: 'o', name: 'o' })).toEqual({
+      pfHttp: true,
+      pfStatic: false,
     })
   })
 })

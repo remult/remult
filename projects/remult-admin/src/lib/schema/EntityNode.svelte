@@ -4,6 +4,7 @@
   import { god } from '../core/god.svelte.js'
   import { settings } from '../core/settings.svelte.js'
   import Icon, { type IconName } from '../shell/Icon.svelte'
+  import PrefilterBadge from '../shell/PrefilterBadge.svelte'
   import type { EntityNode } from './layout.js'
 
   let { data, selected }: NodeProps<EntityNode> = $props()
@@ -66,6 +67,7 @@
     >
       <span class="hue-dot"></span>
       <span class="caption">{name(table)}</span>
+      {#if table.apiPrefilter}<PrefilterBadge />{/if}
       <span class="go"><Icon name="arrow-up-right" size={13} /></span>
     </a>
     <ul class="rows">

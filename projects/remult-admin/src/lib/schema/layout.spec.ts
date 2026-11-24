@@ -14,6 +14,7 @@ function table(key: string, p: Partial<TableInfo> = {}): TableInfo {
     hidden: false,
     editMode: 'inline',
     editModeLocked: false,
+    apiPrefilter: false,
     permissions: { insert: true, update: true, delete: true },
     repo: undefined as never,
     ...p,

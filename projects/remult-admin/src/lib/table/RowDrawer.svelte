@@ -31,7 +31,7 @@
   import Icon from '../shell/Icon.svelte'
   import { modKey } from '../shell/shell.svelte.js'
   import { toast } from '../shell/Toasts.svelte'
-  import { valueKey } from './format.js'
+  import { plainText, valueKey } from './format.js'
   import {
     errorMessage,
     type TableData,
@@ -285,6 +285,16 @@
               <p class="error" id={`${ctl}-error`}>
                 <Icon name="alert" size={12} />{error}
               </p>
+            {:else if dirty}
+              <p class="was">
+                Was: {plainText(
+                  f,
+                  row.draft.saved[k],
+                  f.relationToOne
+                    ? data.captions[f.valFieldKey]?.get(row.draft.saved[k])
+                    : undefined,
+                )}
+              </p>
             {/if}
           </div>
         {/each}
@@ -510,7 +520,10 @@
     font-size: var(--text-xs);
   }
   .tag.edited {
-    color: var(--accent);
+    color: var(--edited-text);
+  }
+  .tag.edited .dot {
+    background: var(--edited);
   }
   .dot {
     width: 6px;
@@ -530,6 +543,7 @@
     overscroll-behavior: contain;
   }
   .field {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -557,7 +571,28 @@
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: var(--accent);
+    background: var(--edited);
+  }
+  /* the table's edited-row edge, in the form's gutter */
+  .field[data-dirty]::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    left: -12px;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--edited);
+  }
+  .field[data-dirty] :global(.editor .ctl) {
+    background: color-mix(in oklab, var(--edited) 10%, var(--bg-raised));
+  }
+  .was {
+    margin: 0;
+    overflow: hidden;
+    color: var(--text-faint);
+    font-size: var(--text-sm);
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .field-key {
     margin-inline-start: auto;

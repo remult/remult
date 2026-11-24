@@ -4,8 +4,8 @@
   import Icon from '../shell/Icon.svelte'
   import { modKey } from '../shell/shell.svelte.js'
   import Cell from './Cell.svelte'
-  import { valueKey } from './format.js'
-  import type { TableRow } from './table-data.svelte.js'
+  import { plainText, valueKey } from './format.js'
+  import type { RowFlash, TableRow } from './table-data.svelte.js'
 
   const INTERACTIVE =
     'button, a, input, textarea, select, [role="combobox"], [contenteditable]'
@@ -20,6 +20,7 @@
     editable,
     busy = false,
     errors,
+    flash,
     ondelete,
     onsave,
     oncancel,
@@ -40,6 +41,8 @@
     editable: boolean
     busy?: boolean
     errors?: Record<string, string>
+    /** The outcome of its last save or cancel, while it shows. */
+    flash?: RowFlash
     ondelete: (row: TableRow) => Promise<void>
     onsave: (row: TableRow) => void
     oncancel: (row: TableRow) => void
@@ -62,6 +65,8 @@
   const dirty = $derived(isNew || row.draft.dirty)
   const canEdit = $derived(editable && (isNew || canUpdate))
   const invalid = $derived(!!errors && Object.keys(errors).length > 0)
+  // a new edit outranks the last outcome
+  const outcome = $derived(dirty ? undefined : flash?.kind)
   const openable = $derived(!!onopen && !isNew)
   // drawer mode: the whole row is the way in
   const clickable = $derived(openable && !editable)
@@ -113,7 +118,9 @@
   class="row"
   data-row={row.id}
   data-dirty={dirty ? '' : undefined}
+  data-invalid={dirty && invalid ? '' : undefined}
   data-new={isNew ? '' : undefined}
+  data-flash={outcome}
   data-readonly={isNew || canUpdate ? undefined : ''}
   data-clickable={clickable ? '' : undefined}
   data-active={active ? '' : undefined}
@@ -162,14 +169,27 @@
       >
     {:else if dirty}
       <span
-        class="mark"
-        class:invalid
+        class={['mark', { invalid }]}
         title={invalid
           ? 'Not saved: check the highlighted cells'
           : 'Edited, not saved yet'}
       >
-        <span class="dot"></span><span class="sr-only"
-          >{invalid ? 'Not saved, has errors' : 'Edited'}</span
+        <Icon name={invalid ? 'alert' : 'pencil'} size={12} stroke={2} /><span
+          class="sr-only">{invalid ? 'Not saved, has errors' : 'Edited'}</span
+        >
+      </span>
+    {:else if outcome}
+      <span
+        class="mark outcome"
+        data-kind={outcome}
+        title={outcome === 'saved' ? 'Saved' : 'Changes reverted'}
+      >
+        <Icon
+          name={outcome === 'saved' ? 'check' : 'undo'}
+          size={13}
+          stroke={2.25}
+        /><span class="sr-only"
+          >{outcome === 'saved' ? 'Saved' : 'Reverted'}</span
         >
       </span>
     {:else if resolved && !canUpdate}
@@ -181,6 +201,7 @@
   </td>
   {#each fields as f (f.key)}
     {@const k = valueKey(f)}
+    {@const cellDirty = !isNew && row.draft.isDirty(k)}
     <Cell
       field={f}
       bind:value={() => row.draft.values[k], (v) => (row.draft.values[k] = v)}
@@ -189,7 +210,17 @@
         : undefined}
       editable={canEdit}
       {busy}
-      dirty={!isNew && row.draft.isDirty(k)}
+      dirty={cellDirty}
+      was={!cellDirty
+        ? undefined
+        : plainText(
+            f,
+            row.draft.saved[k],
+            f.relationToOne
+              ? captions[f.valFieldKey]?.get(row.draft.saved[k])
+              : undefined,
+          )}
+      reverted={outcome === 'reverted' && !!flash?.keys?.includes(k)}
       error={errors?.[k]}
       onedit={() => onedit(row, k)}
     />
@@ -370,17 +401,76 @@
     color: var(--text-faint);
   }
   .mark {
-    color: var(--accent);
+    color: var(--edited);
   }
-  .dot {
-    width: 7px;
-    height: 7px;
-    margin-inline-start: 2px;
-    border-radius: 50%;
-    background: currentColor;
+  .mark.new {
+    color: var(--accent);
   }
   .mark.invalid {
     color: var(--danger);
+  }
+  .outcome {
+    animation: outcome-in 200ms var(--ease-out);
+  }
+  .outcome[data-kind='saved'] {
+    color: var(--success);
+  }
+  .outcome[data-kind='reverted'] {
+    color: var(--text-muted);
+  }
+  @keyframes outcome-in {
+    from {
+      opacity: 0;
+      scale: 0.6;
+    }
+  }
+  /* the row's state, on its left edge */
+  .row > :global(td:first-child) {
+    transition: box-shadow 160ms var(--ease-out);
+  }
+  .row[data-dirty] > :global(td:first-child) {
+    box-shadow: inset 3px 0 0 var(--edited);
+  }
+  .row[data-new] > :global(td:first-child) {
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+  .row[data-invalid] > :global(td:first-child) {
+    box-shadow: inset 3px 0 0 var(--danger);
+  }
+  /* animations win over the hover and active backgrounds */
+  .row[data-flash='saved'] > :global(td) {
+    animation: saved-bg 1400ms var(--ease-out);
+  }
+  .row[data-flash='saved'] > :global(td:first-child) {
+    animation-name: saved-bg, saved-bar;
+  }
+  .row[data-flash='reverted'] > :global(td:first-child) {
+    animation: reverted-bar 1400ms var(--ease-out);
+  }
+  @keyframes saved-bg {
+    0%,
+    45% {
+      /* opaque: the sticky actions cell must still hide what scrolls under it */
+      background-color: color-mix(in oklab, var(--success) 16%, var(--bg));
+    }
+  }
+  @keyframes saved-bar {
+    0%,
+    45% {
+      box-shadow: inset 3px 0 0 var(--success);
+    }
+  }
+  @keyframes reverted-bar {
+    0%,
+    45% {
+      box-shadow: inset 3px 0 0 var(--text-faint);
+    }
+  }
+  /* no motion: paused on its first frame, the state holds until it is cleared */
+  @media (prefers-reduced-motion: reduce) {
+    .row[data-flash] > :global(td) {
+      animation-play-state: paused;
+    }
   }
   .actions {
     position: sticky;

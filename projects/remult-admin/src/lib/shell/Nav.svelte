@@ -2,10 +2,16 @@
   import { page } from '$app/state'
   import { god } from '../core/god.svelte.js'
   import { session, settings } from '../core/settings.svelte.js'
+  import AccessDialog from './AccessDialog.svelte'
+  import Avatar from './Avatar.svelte'
   import Icon from './Icon.svelte'
   import Logo from './Logo.svelte'
   import Palette from './Palette.svelte'
   import { entityHref, shell } from './shell.svelte.js'
+
+  const userLabel = $derived(
+    god.user ? (god.user.name ?? god.user.id) : 'Anonymous',
+  )
 
   let filterInput: HTMLInputElement | undefined = $state()
 
@@ -168,12 +174,24 @@
     >
       <Icon name="settings" size={15} />
       <span class="text wide">Settings</span>
-      {#if god.userName}
-        <span class="user wide" title="Signed in user">{god.userName}</span>
-      {/if}
     </button>
+    {#if god.loaded}
+      <button
+        class="item you"
+        type="button"
+        aria-label="Your access, {userLabel}"
+        title={collapsed ? `${userLabel}: your access` : 'Your access'}
+        onclick={() => (shell.accessOpen = true)}
+      >
+        <Avatar name={god.user ? userLabel : undefined} size={22} />
+        <span class="text wide">{userLabel}</span>
+        <span class="you-hint wide"><Icon name="key" size={13} /></span>
+      </button>
+    {/if}
   </div>
 </nav>
+
+<AccessDialog />
 
 <style>
   .nav {
@@ -334,17 +352,21 @@
   .foot .item :global(svg) {
     margin-inline: -1px;
   }
-  .user {
-    max-width: 90px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    padding: 0 6px;
-    border-radius: 9px;
-    background: var(--bg-active);
-    color: var(--text-muted);
-    font-size: var(--text-xs);
-    line-height: 18px;
+  .you {
+    height: 34px;
+    margin-top: 4px;
+    padding-inline-start: 5px;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .you-hint {
+    display: flex;
+    color: var(--text-faint);
+    opacity: 0;
+    transition: opacity 100ms var(--ease-out);
+  }
+  .you:is(:hover, :focus-visible) .you-hint {
+    opacity: 1;
   }
 
   /* rail: icons and hue dots only */

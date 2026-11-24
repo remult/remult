@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { field } from '../query/fixtures.js'
-import { display } from './format.js'
+import { display, plainText } from './format.js'
 
 const rel = field({
   key: 'company',
@@ -57,5 +57,16 @@ describe('display', () => {
       kind: 'date',
       text: '2026-11-24',
     })
+  })
+})
+
+describe('plainText', () => {
+  it('reads as one short line', () => {
+    expect(plainText(rel, 'id:1', 'Acme')).toBe('Acme')
+    expect(plainText(field({ key: 'n' }), null)).toBe('empty')
+    expect(plainText(field({ key: 'b', type: 'boolean' }), false)).toBe('No')
+    const long = plainText(field({ key: 't' }), 'x'.repeat(100))
+    expect(long).toHaveLength(60)
+    expect(long.endsWith('...')).toBe(true)
   })
 })

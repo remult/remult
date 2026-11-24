@@ -58,3 +58,23 @@ export function display(
   const text = String(value)
   return { kind: 'text', text, title: text.length > 40 ? text : undefined }
 }
+
+const PLAIN_MAX = 60
+
+/** One line for a tooltip: "empty" when there is no value, long text cut. */
+export function plainText(
+  f: FieldUIInfo,
+  value: unknown,
+  caption?: unknown,
+): string {
+  const d = display(f, value, caption)
+  const text =
+    d.kind === 'boolean'
+      ? d.value
+        ? 'Yes'
+        : 'No'
+      : d.kind === 'empty'
+        ? 'empty'
+        : d.text
+  return text.length > PLAIN_MAX ? `${text.slice(0, PLAIN_MAX - 3)}...` : text
+}

@@ -1,16 +1,13 @@
 <script lang="ts">
+  import { accessState } from '#lib/core/access.js'
   import { god, type TableInfo } from '#lib/core/god.svelte.js'
-  import type { AdminPermission } from '../../../core/server/remult-admin'
   import { session, settings } from '#lib/core/settings.svelte.js'
+  import AccessMark from '#lib/shell/AccessMark.svelte'
   import Icon from '#lib/shell/Icon.svelte'
+  import PrefilterBadge from '#lib/shell/PrefilterBadge.svelte'
   import { entityHref, modKey, shell } from '#lib/shell/shell.svelte.js'
 
   const label = (t: TableInfo) => (settings.displayCaption ? t.caption : t.key)
-
-  const perm = (p: AdminPermission) =>
-    p === 'row' ? 'Per row' : p ? 'Yes' : 'No'
-  const permState = (p: AdminPermission) =>
-    p === 'row' ? 'row' : p ? 'yes' : 'no'
 </script>
 
 <div class="page">
@@ -63,6 +60,9 @@
                   <Icon name="lock" size={12} /> Forbidden
                 </span>
               {/if}
+              {#if t.apiPrefilter}
+                <span class="prefilter"><PrefilterBadge /></span>
+              {/if}
               {#if t.editModeLocked}
                 <span class="badge"
                   >{t.editMode === 'drawer'
@@ -74,21 +74,9 @@
             <td class="mono hide-sm">{t.key}</td>
             <td class="num">{t.fields.length}</td>
             <td class="num hide-sm">{t.relations.length}</td>
-            <td
-              ><span class="perm" data-state={permState(t.permissions.insert)}
-                >{perm(t.permissions.insert)}</span
-              ></td
-            >
-            <td
-              ><span class="perm" data-state={permState(t.permissions.update)}
-                >{perm(t.permissions.update)}</span
-              ></td
-            >
-            <td
-              ><span class="perm" data-state={permState(t.permissions.delete)}
-                >{perm(t.permissions.delete)}</span
-              ></td
-            >
+            <td><AccessMark state={accessState(t.permissions.insert)} /></td>
+            <td><AccessMark state={accessState(t.permissions.update)} /></td>
+            <td><AccessMark state={accessState(t.permissions.delete)} /></td>
           </tr>
         {/each}
       </tbody>
@@ -184,15 +172,8 @@
     line-height: 18px;
     vertical-align: 1px;
   }
-  .perm {
-    font-size: var(--text-sm);
-    color: var(--text-muted);
-  }
-  .perm[data-state='no'] {
-    color: var(--text-faint);
-  }
-  .perm[data-state='row'] {
-    color: var(--warning);
+  .prefilter {
+    margin-inline-start: 8px;
   }
   .empty {
     display: flex;

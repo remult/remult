@@ -57,7 +57,8 @@ test('no row is dirty on arrival', async ({ page }) => {
   await signInAs(page, 'admin')
   for (const entity of ['tasks', 'contacts', 'companies', 'deals']) {
     await page.goto(`/#/entity/${entity}`)
-    await expect(rows(page).first()).toBeVisible()
+    // each goto is a cold load on the dev server
+    await expect(rows(page).first()).toBeVisible({ timeout: 15_000 })
     // editors are mounted: give any write on mount a chance to happen
     await page.waitForTimeout(300)
     await expect(page.locator('tbody tr[data-dirty]')).toHaveCount(0)
@@ -104,6 +105,55 @@ test('edit then Ctrl+Enter saves, Ctrl+Esc reverts', async ({ page }) => {
     await expect(titleInput(page)).toHaveValue(`${prefix}-edited`)
     await expect(rows(page).first()).not.toHaveAttribute('data-dirty')
     expect((await tasksTitled(page, prefix))[0].title).toBe(`${prefix}-edited`)
+  } finally {
+    await cleanup(page, prefix)
+  }
+})
+
+test('edit lifecycle: marked cells, pending bar, Save all, saved and reverted flashes', async ({
+  page,
+}) => {
+  const prefix = `e2e-inline-life-${Date.now()}`
+  await signInAs(page, 'admin')
+  await createTask(page, `${prefix}-a`)
+  await createTask(page, `${prefix}-b`)
+  try {
+    await page.goto(
+      `/#/entity/tasks?title.startsWith=${prefix}&_sort=title&_order=asc`,
+    )
+    await expect(rows(page)).toHaveCount(2)
+    const bar = page.getByRole('region', { name: 'Unsaved changes' })
+    const first = rows(page).nth(0)
+    await expect(bar).toHaveCount(0)
+
+    await titleInput(page, 0).fill(`${prefix}-a2`)
+    await expect(first.locator('td[data-dirty]')).toHaveCount(1)
+    await expect(first.getByText(`Was: ${prefix}-a`)).toBeVisible()
+    await expect(first.getByText('Edited', { exact: true })).toHaveCount(1)
+    await expect(bar).toContainText('1 row edited')
+
+    await titleInput(page, 1).fill(`${prefix}-b2`)
+    await expect(bar).toContainText('2 rows edited')
+    await bar.getByRole('button', { name: 'Save all' }).click()
+    await expect(page.locator('tbody tr[data-dirty]')).toHaveCount(0)
+    await expect(first).toHaveAttribute('data-flash', 'saved')
+    await expect(rows(page).nth(1)).toHaveAttribute('data-flash', 'saved')
+    await expect(first.getByText('Saved', { exact: true })).toHaveCount(1)
+    await expect(bar).toHaveCount(0)
+    await expect
+      .poll(async () => (await tasksTitled(page, prefix)).map((t) => t.title))
+      .toEqual(expect.arrayContaining([`${prefix}-a2`, `${prefix}-b2`]))
+    await expect(first).not.toHaveAttribute('data-flash', { timeout: 3000 })
+
+    await titleInput(page, 0).fill(`${prefix}-dropped`)
+    await expect(bar).toContainText('1 row edited')
+    await bar.getByRole('button', { name: 'Cancel all' }).click()
+    await expect(titleInput(page, 0)).toHaveValue(`${prefix}-a2`)
+    await expect(first).toHaveAttribute('data-flash', 'reverted')
+    await expect(first.locator('td[data-reverted]')).toHaveCount(1)
+    await expect(first.getByText('Reverted', { exact: true })).toHaveCount(1)
+    await expect(bar).toHaveCount(0)
+    await expect(first).not.toHaveAttribute('data-flash', { timeout: 3000 })
   } finally {
     await cleanup(page, prefix)
   }
@@ -230,6 +280,7 @@ test('New adds a row that inserts on save', async ({ page }) => {
     ).toContainText('Row added')
     await expect(page.locator('tbody tr[data-new]')).toHaveCount(0)
     await expect(rows(page)).toHaveCount(1)
+    await expect(rows(page).first()).toHaveAttribute('data-flash', 'saved')
     await expect(titleInput(page)).toHaveValue(prefix)
     expect(await tasksTitled(page, prefix)).toHaveLength(1)
   } finally {
