@@ -4,8 +4,7 @@
   import { god } from '../core/god.svelte.js'
   import { settings } from '../core/settings.svelte.js'
   import Icon, { type IconName } from '../shell/Icon.svelte'
-  import PrefilterBadge from '../shell/PrefilterBadge.svelte'
-  import { shownFields, type EntityNode } from './layout.js'
+  import { inRow, shownFields, type EntityNode } from './layout.js'
 
   let { data, selected }: NodeProps<EntityNode> = $props()
 
@@ -14,6 +13,8 @@
   const shown = $derived(
     table ? shownFields(table, data.compact) : { fields: [], more: 0 },
   )
+  // links arrive at the id row: a foreign key points at a key
+  const pk = $derived(table && inRow(table, data.compact))
   const name = (x: { caption: string; key: string }) =>
     settings.displayCaption ? x.caption : x.key
 
@@ -44,24 +45,28 @@
   }
 </script>
 
+{#snippet inHandles()}
+  <Handle
+    type="target"
+    position={Position.Left}
+    id="in-l"
+    isConnectable={false}
+  />
+  <Handle
+    type="target"
+    position={Position.Right}
+    id="in-r"
+    isConnectable={false}
+  />
+{/snippet}
+
 {#if table}
   <div
     class="node"
     data-selected={selected ? '' : undefined}
     style:--hue={table.color}
   >
-    <Handle
-      type="target"
-      position={Position.Left}
-      id="in-l"
-      isConnectable={false}
-    />
-    <Handle
-      type="target"
-      position={Position.Right}
-      id="in-r"
-      isConnectable={false}
-    />
+    {#if !pk}{@render inHandles()}{/if}
     <a
       class="head"
       href={`#/entity/${table.superKey}`}
@@ -70,7 +75,6 @@
     >
       <span class="hue-dot"></span>
       <span class="caption">{name(table)}</span>
-      {#if table.apiPrefilter}<PrefilterBadge />{/if}
       <span class="go"><Icon name="arrow-up-right" size={13} /></span>
     </a>
     <ul class="rows">
@@ -83,6 +87,7 @@
           <span class="icon"><Icon name={typeIcon(f)} size={13} /></span>
           <span class="name">{name(f)}</span>
           <span class="type">{typeName(f)}</span>
+          {#if f.key === pk}{@render inHandles()}{/if}
           {#if f.relationToOne}
             <Handle
               type="source"

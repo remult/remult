@@ -15,6 +15,7 @@
   } from '../core/access.js'
   import { god } from '../core/god.svelte.js'
   import { session, settings } from '../core/settings.svelte.js'
+  import AccessLegend from './AccessLegend.svelte'
   import AccessMark from './AccessMark.svelte'
   import Avatar from './Avatar.svelte'
   import Icon from './Icon.svelte'
@@ -144,6 +145,7 @@
                   <td
                     ><AccessMark
                       state={r.prefilter ? 'yes' : 'no'}
+                      icon="filter"
                       hint={r.prefilter ? PREFILTER_HINT : undefined}
                     /></td
                   >
@@ -151,14 +153,7 @@
               {/each}
             </tbody>
           </table>
-          <ul class="legend">
-            <li>
-              <AccessMark state="row" />: the server decides for each row.
-            </li>
-            {#if rows.some((r) => r.prefilter)}
-              <li>Prefilter: the server narrows the rows you can see.</li>
-            {/if}
-          </ul>
+          <AccessLegend />
         {:else}
           <p class="none">No entity is shown to you.</p>
         {/if}
@@ -333,6 +328,10 @@
   }
   .matrix td {
     width: 68px;
+    text-align: center;
+  }
+  .matrix thead th:not(:first-child) {
+    text-align: center;
   }
   .entity {
     display: flex;
@@ -358,16 +357,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-  .legend {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    color: var(--text-muted);
-    font-size: var(--text-sm);
   }
   @media (max-width: 520px) {
     .who .btn {

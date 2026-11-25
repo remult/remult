@@ -20,7 +20,6 @@
   } from '../query/filter-model.js'
   import { parseQuery, serializeQuery } from '../query/url-state.js'
   import Icon, { type IconName } from '../shell/Icon.svelte'
-  import PrefilterBadge from '../shell/PrefilterBadge.svelte'
   import { modKey } from '../shell/shell.svelte.js'
   import { toast } from '../shell/Toasts.svelte'
   import { orderByFor } from './order.js'
@@ -370,7 +369,6 @@
         ><Icon name="lock" size={12} /> Read only</span
       >
     {/if}
-    {#if table.apiPrefilter && !forbidden}<PrefilterBadge />{/if}
     {#if live && data.loaded && !data.error}
       <span class="live" title="Rows update as the data changes">Live</span>
     {/if}

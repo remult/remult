@@ -10,8 +10,8 @@ export type EntityNodeData = {
   compact: boolean
 }
 export type EntityNode = Node<EntityNodeData, 'entity'>
-/** Points an edge passes through, from its source to its target. */
-export type RoutedEdgeData = { via?: XY[] }
+/** An orthogonal route: the x of its vertical in each gap it crosses, the y it runs at through each column between. */
+export type RoutedEdgeData = { xs?: number[]; ys?: number[] }
 
 /** Px, fixed so side picking and the grid never need measured sizes. */
 export const NODE_WIDTH = 248
@@ -26,6 +26,10 @@ const NODE_GAP = 36
 const LANE_H = 10
 const LANE_GAP = 14
 const SWEEPS = 16
+// verticals in a gap: this far apart, and this far from the nodes at least
+const TRACK_GAP = 14
+const TRACK_MARGIN = 40
+const CORNER = 8
 
 /** Field rows a node shows: all of them, or only ids and relations (compact). */
 export function shownFields(t: TableInfo, compact: boolean) {
@@ -53,6 +57,15 @@ function rowY(t: TableInfo, row: string, compact: boolean) {
   return HEADER_H + 4 + i * ROW_H + ROW_H / 2
 }
 const headY = HEADER_H / 2
+
+/** The row links arrive at: the first id, else the header. */
+export function inRow(t: TableInfo, compact: boolean) {
+  return shownFields(t, compact).fields.find((f) => t.ids[f.key])?.key
+}
+function inY(t: TableInfo, compact: boolean) {
+  const row = inRow(t, compact)
+  return row ? rowY(t, row, compact) : headY
+}
 
 /** Entity keys this table points to, to-one first, in field order. */
 function neighbours(t: TableInfo) {
@@ -238,6 +251,108 @@ function crossings(pairs: [number, number][]) {
   return n
 }
 
+/** Links sharing one vertical in a gap; each hop runs in at `yl` from the left column and out at `yr` to the right one. */
+type Track = {
+  hops: { yl: number; yr: number }[]
+  lo: number
+  hi: number
+  x: number
+}
+
+const within = (y: number, t: Track) => y > t.lo + 0.5 && y < t.hi - 0.5
+/** Crossings when `a` sits left of `b`: a's right stubs over b's vertical, b's left stubs over a's. */
+const trackCost = (a: Track, b: Track) =>
+  a.hops.filter((h) => within(h.yr, b)).length +
+  b.hops.filter((h) => within(h.yl, a)).length
+
+/** Left to right order with the fewest crossings: exhaustive for a few tracks, greedy beyond. */
+function orderTracks(tracks: Track[]): Track[] {
+  const start = [...tracks].sort((a, b) => a.lo - b.lo || a.hi - b.hi)
+  if (start.length > 7) {
+    const out: Track[] = []
+    for (const t of start) {
+      let at = 0
+      let best = Infinity
+      for (let i = 0; i <= out.length; i++) {
+        const c =
+          out.slice(0, i).reduce((s, o) => s + trackCost(o, t), 0) +
+          out.slice(i).reduce((s, o) => s + trackCost(t, o), 0)
+        if (c < best) [best, at] = [c, i]
+      }
+      out.splice(at, 0, t)
+    }
+    return out
+  }
+  let best = start
+  let bestCost = Infinity
+  const used = new Set<Track>()
+  const path: Track[] = []
+  const walk = (cost: number) => {
+    if (cost >= bestCost) return
+    if (path.length === start.length) {
+      bestCost = cost
+      best = [...path]
+      return
+    }
+    for (const t of start) {
+      if (used.has(t)) continue
+      used.add(t)
+      path.push(t)
+      walk(cost + path.slice(0, -1).reduce((s, o) => s + trackCost(o, t), 0))
+      path.pop()
+      used.delete(t)
+    }
+  }
+  walk(0)
+  return best
+}
+
+/** Corner points of a route between two handles. */
+export function routePoints(s: XY, t: XY, r: RoutedEdgeData): XY[] {
+  const xs = r.xs?.length ? r.xs : [(s.x + t.x) / 2]
+  const ys = r.ys ?? []
+  const pts = [s]
+  let y = s.y
+  xs.forEach((x, i) => {
+    pts.push({ x, y })
+    y = i < ys.length ? ys[i] : t.y
+    pts.push({ x, y })
+  })
+  pts.push(t)
+  return pts
+}
+
+/** SVG path through axis aligned points, corners rounded. */
+export function orthoPath(points: XY[], radius = CORNER) {
+  const near = (a: number, b: number) => Math.abs(a - b) < 0.5
+  const p: XY[] = []
+  for (const q of points) {
+    const a = p.at(-1)
+    if (a && near(a.x, q.x) && near(a.y, q.y)) continue
+    const b = p.at(-2)
+    // a point on a straight run is no corner
+    if (
+      a &&
+      b &&
+      ((near(b.x, a.x) && near(a.x, q.x)) || (near(b.y, a.y) && near(a.y, q.y)))
+    )
+      p.pop()
+    p.push(q)
+  }
+  let d = `M ${p[0].x},${p[0].y}`
+  for (let i = 1; i + 1 < p.length; i++) {
+    const [a, b, c] = [p[i - 1], p[i], p[i + 1]]
+    const la = Math.hypot(b.x - a.x, b.y - a.y)
+    const lc = Math.hypot(c.x - b.x, c.y - b.y)
+    const r = Math.min(radius, la / 2, lc / 2)
+    const u = { x: (b.x - a.x) / la, y: (b.y - a.y) / la }
+    const v = { x: (c.x - b.x) / lc, y: (c.y - b.y) / lc }
+    d += ` L ${b.x - u.x * r},${b.y - u.y * r} Q ${b.x},${b.y} ${b.x + v.x * r},${b.y + v.y * r}`
+  }
+  const last = p.at(-1)!
+  return `${d} L ${last.x},${last.y}`
+}
+
 /**
  * Layered (Sugiyama) layout: parents left, children right, long links on reserved lanes.
  * Returns top-left positions and, per link id, the points its edge passes through.
@@ -403,7 +518,7 @@ export function layered(tables: TableInfo[], compact = true) {
           (x.parent === it.id && x.child === other.id),
       )
     if (!l) return it.h / 2
-    return l.source === it.id ? rowY(t, l.row, compact) : headY
+    return l.source === it.id ? rowY(t, l.row, compact) : inY(t, compact)
   }
   for (const layer of layers) {
     let y = 0
@@ -436,30 +551,71 @@ export function layered(tables: TableInfo[], compact = true) {
   for (const [r, layer] of layers.entries())
     for (const it of layer)
       if (!it.lane) positions[it.id] = { x: colX(r), y: it.y }
-  const routes: Record<string, XY[]> = {}
+  // orthogonal routes: one vertical per gap, links into the same row share it, the others get their own track
+  const portY = (k: string, l: Link) =>
+    itemOf.get(k)!.y +
+    (k === l.source
+      ? rowY(bySk.get(k)!, l.row, compact)
+      : inY(bySk.get(k)!, compact))
+  const gaps = new Map<number, Map<string, Track>>()
+  const hopsOf = new Map<string, { gap: number; key: string }[]>()
+  const lanesOf = new Map<string, number[]>()
   for (const l of ranked) {
-    const chain = lanes.get(l.id)
-    if (!chain) continue
-    const pts = chain.flatMap((lane) => {
-      const r = layers.findIndex((layer) => layer.includes(lane))
-      const y = lane.y + lane.h / 2
-      return [
-        { x: colX(r), y },
-        { x: colX(r) + NODE_WIDTH, y },
-      ]
-    })
-    // lanes run left to right: flip when the edge is drawn right to left
-    const sourceLeft = rank.get(l.source)! < rank.get(l.target)!
-    routes[l.id] = sourceLeft ? pts : pts.reverse()
+    const rs = rank.get(l.source)!
+    const rt = rank.get(l.target)!
+    if (rs === rt) continue
+    const step = rs < rt ? 1 : -1
+    // lanes are chained from the lower rank up
+    const chain = lanes.get(l.id) ?? []
+    const ys = (step > 0 ? chain : [...chain].reverse()).map(
+      (it) => it.y + it.h / 2,
+    )
+    const seq = [portY(l.source, l), ...ys, portY(l.target, l)]
+    const hops: { gap: number; key: string }[] = []
+    for (let i = 0; i + 1 < seq.length; i++) {
+      const gap = Math.min(rs + step * i, rs + step * (i + 1))
+      const [yl, yr] = step > 0 ? [seq[i], seq[i + 1]] : [seq[i + 1], seq[i]]
+      const key =
+        i + 2 === seq.length
+          ? `${l.target}>${step > 0 ? 'l' : 'r'}`
+          : `${l.id}@${i}`
+      const g = gaps.get(gap) ?? new Map<string, Track>()
+      gaps.set(gap, g)
+      const t = g.get(key) ?? { hops: [], lo: Infinity, hi: -Infinity, x: 0 }
+      g.set(key, t)
+      t.hops.push({ yl, yr })
+      t.lo = Math.min(t.lo, yl, yr)
+      t.hi = Math.max(t.hi, yl, yr)
+      hops.push({ gap, key })
+    }
+    hopsOf.set(l.id, hops)
+    lanesOf.set(l.id, ys)
   }
+  for (const [gap, g] of gaps) {
+    const mid = colX(gap) + NODE_WIDTH + LAYER_GAP / 2
+    const flat = [...g.values()].filter((t) => t.hi - t.lo < 1)
+    for (const t of flat) t.x = mid
+    const tracks = orderTracks([...g.values()].filter((t) => t.hi - t.lo >= 1))
+    const step =
+      tracks.length > 1
+        ? Math.min(
+            TRACK_GAP,
+            (LAYER_GAP - 2 * TRACK_MARGIN) / (tracks.length - 1),
+          )
+        : 0
+    tracks.forEach((t, i) => (t.x = mid + (i - (tracks.length - 1) / 2) * step))
+  }
+  const routes: Record<string, RoutedEdgeData> = {}
+  for (const [id, hops] of hopsOf)
+    routes[id] = {
+      xs: hops.map((h) => Math.round(gaps.get(h.gap)!.get(h.key)!.x)),
+      ys: lanesOf.get(id)!,
+    }
 
   // entities without links fill the shortest columns, so the diagram stays compact
-  const top = Math.min(0, ...Object.values(positions).map((p) => p.y))
+  const top = Math.min(0, ...layers.flat().map((it) => it.y))
   const bottoms = layers.map((layer) =>
-    Math.max(
-      top - NODE_GAP,
-      ...layer.filter((it) => !it.lane).map((it) => it.y + it.h),
-    ),
+    Math.max(top - NODE_GAP, ...layer.map((it) => it.y + it.h)),
   )
   if (!bottoms.length) bottoms.push(top - NODE_GAP)
   for (const t of ordered(tables, 'grid-dfs'))
@@ -470,8 +626,8 @@ export function layered(tables: TableInfo[], compact = true) {
     }
   // origin at the top left
   for (const p of Object.values(positions)) p.y = Math.round(p.y - top)
-  for (const pts of Object.values(routes))
-    for (const p of pts) p.y = Math.round(p.y - top)
+  for (const r of Object.values(routes))
+    r.ys = r.ys!.map((y) => Math.round(y - top))
   return { positions, routes, crossings: bestScore }
 }
 
@@ -488,7 +644,7 @@ function sides(from: XY, to: XY, self: boolean) {
 export function edgesFor(
   tables: TableInfo[],
   positions: Record<string, XY>,
-  routed?: { routes: Record<string, XY[]>; at: Record<string, XY> },
+  routed?: { routes: Record<string, RoutedEdgeData>; at: Record<string, XY> },
 ): Edge<RoutedEdgeData>[] {
   const same = (k: string) =>
     !!routed &&
@@ -498,8 +654,9 @@ export function edgesFor(
     const from = positions[l.source]
     const to = positions[l.target]
     if (!from || !to) return []
-    const s = sides(from, to, l.source === l.target)
-    const via =
+    const self = l.source === l.target
+    const s = sides(from, to, self)
+    const route =
       routed && same(l.source) && same(l.target)
         ? routed.routes[l.id]
         : undefined
@@ -511,8 +668,9 @@ export function edgesFor(
         sourceHandle: `${l.row}-${s.out}`,
         targetHandle: `in-${s.in}`,
         class: `rel to-${l.kind}`,
-        type: routed ? 'routed' : undefined,
-        data: via ? { via } : {},
+        // moved nodes lose their route: a plain step edge until the next layout
+        type: !routed ? undefined : route || self ? 'routed' : 'smoothstep',
+        data: route ?? {},
         markerEnd: {
           type: 'arrowclosed' as MarkerType.ArrowClosed,
           width: 14,
@@ -532,12 +690,12 @@ export function layoutEntities(
 ): {
   nodes: EntityNode[]
   edges: Edge<RoutedEdgeData>[]
-  routed?: { routes: Record<string, XY[]>; at: Record<string, XY> }
+  routed?: { routes: Record<string, RoutedEdgeData>; at: Record<string, XY> }
 } {
   const visible = tables.filter((t) => !t.hidden)
   let positions: Record<string, XY>
   let routed:
-    | { routes: Record<string, XY[]>; at: Record<string, XY> }
+    | { routes: Record<string, RoutedEdgeData>; at: Record<string, XY> }
     | undefined
   if (algo === 'layered') {
     const l = layered(visible, compact)

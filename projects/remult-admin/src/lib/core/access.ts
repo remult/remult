@@ -8,7 +8,7 @@ const REGEX_WORDS = /[\s._@-]+/
 export type AccessState = 'yes' | 'no' | 'row'
 
 export const PREFILTER_HINT =
-  'The server narrows the rows you can see (apiPrefilter)'
+  'apiPrefilter: the server narrows the rows you get'
 
 export function accessState(p: AdminPermission): AccessState {
   return p === 'row' ? 'row' : p ? 'yes' : 'no'
@@ -17,11 +17,21 @@ export function accessState(p: AdminPermission): AccessState {
 const labels: Record<AccessState, string> = {
   yes: 'Yes',
   no: 'No',
-  row: 'Per row',
+  row: 'Function',
+}
+
+const hints: Record<AccessState, string> = {
+  yes: 'Allowed',
+  no: 'Not allowed',
+  row: 'A function decides, row by row',
 }
 
 export function accessLabel(s: AccessState): string {
   return labels[s]
+}
+
+export function accessHint(s: AccessState): string {
+  return hints[s]
 }
 
 export type AccessRow = {

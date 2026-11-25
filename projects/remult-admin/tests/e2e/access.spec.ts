@@ -40,7 +40,10 @@ test('ops: no roles, deals prefiltered and editable per row', async ({
     .filter({
       has: page.getByRole('link', { name: 'Deals', exact: true }),
     })
-  await expect(home.getByRole('cell').last()).toHaveText('Yes')
+  await expect(
+    home.getByRole('cell').last().getByRole('img'),
+  ).toHaveAccessibleName('Yes')
+  await expect(page.getByRole('button', { name: "Ops's access" })).toBeVisible()
 
   const p = await openPanel(page, 'Ops')
   await expect(p.getByTestId('access-name')).toHaveText('Ops')
@@ -50,20 +53,14 @@ test('ops: no roles, deals prefiltered and editable per row', async ({
     has: page.getByRole('link', { name: 'Deals', exact: true }),
   })
   const cells = deals.getByRole('cell')
-  await expect(cells.nth(0)).toHaveText('Yes')
-  await expect(cells.nth(2)).toHaveText('Per row')
-  await expect(cells.nth(4)).toHaveText('Yes')
+  await expect(cells.nth(0).getByRole('img')).toHaveAccessibleName('Yes')
+  await expect(cells.nth(2).getByRole('img')).toHaveAccessibleName('Function')
+  await expect(cells.nth(4).getByRole('img')).toHaveAccessibleName('Yes')
   if (SHOT) await p.screenshot({ path: SHOT })
 
   await deals.getByRole('link', { name: 'Deals', exact: true }).click()
   await expect(panel(page)).toBeHidden()
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Deals')
-  const bar = page.locator('header.bar')
-  await expect(bar.getByText('Prefiltered')).toBeVisible()
-  await expect(bar.getByText('Prefiltered')).toHaveAttribute(
-    'title',
-    'The server narrows the rows you can see (apiPrefilter)',
-  )
 })
 
 test('anonymous when the token is unknown', async ({ page }) => {

@@ -2,11 +2,16 @@
   import { accessState, PREFILTER_HINT } from '#lib/core/access.js'
   import { god, type TableInfo } from '#lib/core/god.svelte.js'
   import { session, settings } from '#lib/core/settings.svelte.js'
+  import AccessLegend from '#lib/shell/AccessLegend.svelte'
   import AccessMark from '#lib/shell/AccessMark.svelte'
+  import Avatar from '#lib/shell/Avatar.svelte'
   import Icon from '#lib/shell/Icon.svelte'
   import { entityHref, modKey, shell } from '#lib/shell/shell.svelte.js'
 
   const label = (t: TableInfo) => (settings.displayCaption ? t.caption : t.key)
+  const userLabel = $derived(
+    god.user ? (god.user.name ?? god.user.id) : 'Anonymous',
+  )
 </script>
 
 <div class="page">
@@ -32,15 +37,31 @@
   {:else}
     <table class="grid">
       <thead>
+        <tr class="group">
+          <td></td>
+          <td class="hide-sm"></td>
+          <td></td>
+          <td class="hide-sm"></td>
+          <th scope="colgroup" colspan="4" class="acc you">
+            <button
+              type="button"
+              title="Your access"
+              onclick={() => (shell.accessOpen = true)}
+            >
+              <Avatar name={god.user ? userLabel : undefined} size={18} />
+              {userLabel}'s access
+            </button>
+          </th>
+        </tr>
         <tr>
           <th scope="col">Name</th>
           <th scope="col" class="hide-sm">Key</th>
           <th scope="col" class="num">Fields</th>
           <th scope="col" class="num hide-sm">Relations</th>
-          <th scope="col">Create</th>
-          <th scope="col">Edit</th>
-          <th scope="col">Delete</th>
-          <th scope="col" title={PREFILTER_HINT}>Prefilter</th>
+          <th scope="col" class="acc">Create</th>
+          <th scope="col" class="acc">Edit</th>
+          <th scope="col" class="acc">Delete</th>
+          <th scope="col" class="acc" title={PREFILTER_HINT}>Prefilter</th>
         </tr>
       </thead>
       <tbody>
@@ -71,12 +92,19 @@
             <td class="mono hide-sm">{t.key}</td>
             <td class="num">{t.fields.length}</td>
             <td class="num hide-sm">{t.relations.length}</td>
-            <td><AccessMark state={accessState(t.permissions.insert)} /></td>
-            <td><AccessMark state={accessState(t.permissions.update)} /></td>
-            <td><AccessMark state={accessState(t.permissions.delete)} /></td>
-            <td
+            <td class="acc"
+              ><AccessMark state={accessState(t.permissions.insert)} /></td
+            >
+            <td class="acc"
+              ><AccessMark state={accessState(t.permissions.update)} /></td
+            >
+            <td class="acc"
+              ><AccessMark state={accessState(t.permissions.delete)} /></td
+            >
+            <td class="acc"
               ><AccessMark
                 state={t.apiPrefilter ? 'yes' : 'no'}
+                icon="filter"
                 hint={t.apiPrefilter ? PREFILTER_HINT : undefined}
               /></td
             >
@@ -84,6 +112,7 @@
         {/each}
       </tbody>
     </table>
+    <div class="legend"><AccessLegend /></div>
   {/if}
 </div>
 
@@ -155,6 +184,49 @@
   }
   .num {
     text-align: end;
+  }
+  /* the access columns read as one block: yours */
+  .acc {
+    width: 76px;
+    text-align: center;
+    background: color-mix(in oklch, var(--accent) 4%, transparent);
+  }
+  thead th.acc {
+    text-align: center;
+    background: color-mix(in oklch, var(--accent) 8%, var(--bg-inset));
+    color: var(--accent);
+  }
+  .group > * {
+    height: 34px;
+    padding: 0;
+    border-bottom: 0;
+    background: var(--bg-raised);
+  }
+  .group .you {
+    padding: 6px 6px 0;
+    background: var(--bg-raised);
+  }
+  .you button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 100%;
+    height: 28px;
+    border: 0;
+    border-radius: var(--radius) var(--radius) 0 0;
+    background: color-mix(in oklch, var(--accent) 10%, transparent);
+    color: var(--accent);
+    font: inherit;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .you button:hover {
+    background: color-mix(in oklch, var(--accent) 16%, transparent);
+  }
+  .legend {
+    margin-top: 12px;
   }
   .mono {
     font-family: var(--mono);

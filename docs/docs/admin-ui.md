@@ -61,9 +61,7 @@ This only filters the UI, it is not security. Hidden entities stay reachable thr
 
 The admin UI follows your `allowApiInsert`, `allowApiUpdate` and `allowApiDelete` rules: actions the current user can't perform are hidden. Rules that depend on the row (a function) are checked per row, for the rows on screen, with the same `apiPrefilter` as the API.
 
-An entity whose `apiPrefilter` narrows the rows for the current user shows a **Prefiltered** badge. A prefilter that returns `{}` for this user (an admin, say) shows none.
-
-**Your access**, at the bottom of the side nav, shows the signed in user (name, id, roles) and what they can read, create, edit and delete in each entity.
+The home page and **Your access** (bottom of the side nav) show, per entity, what the signed in user can create, edit and delete: allowed, not allowed, or a function that decides row by row. Rules are evaluated for this user, so roles stay on the server. **Prefilter** is on when `apiPrefilter` narrows the rows for this user (a prefilter returning `{}`, for an admin say, is off). Your access also shows the user (name, id, roles).
 
 ## Accessing and Using the Admin UI
 

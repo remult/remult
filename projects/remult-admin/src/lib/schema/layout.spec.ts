@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import type { TableInfo } from '../core/god.svelte.js'
 import { field } from '../query/fixtures.js'
-import { edgesFor, layered, layoutEntities, NODE_WIDTH } from './layout.js'
+import {
+  edgesFor,
+  layered,
+  layoutEntities,
+  NODE_WIDTH,
+  orthoPath,
+  routePoints,
+} from './layout.js'
 
 function table(key: string, p: Partial<TableInfo> = {}): TableInfo {
   return {
@@ -205,14 +212,23 @@ describe('layered', () => {
 
   it('routes a long link through the column it crosses, clear of its nodes', () => {
     const l = layered(graph)
-    const via = l.routes['a.c']
-    expect(via).toHaveLength(2)
-    const b = l.positions.b
-    // the lane runs over b's column, above or below b
-    expect(via[0].x).toBe(b.x + NODE_WIDTH)
-    expect(via[1].x).toBe(b.x)
-    const inB = (y: number) => y > b.y && y < b.y + 100
-    expect(via.some((v) => inB(v.y))).toBe(false)
+    const { xs = [], ys = [] } = l.routes['a.c']
+    const { a, b, c } = l.positions
+    // one vertical in each gap, a run across b's column above or below b
+    expect(xs).toHaveLength(2)
+    expect(xs[0]).toBeGreaterThan(b.x + NODE_WIDTH)
+    expect(xs[0]).toBeLessThan(a.x)
+    expect(xs[1]).toBeGreaterThan(c.x + NODE_WIDTH)
+    expect(xs[1]).toBeLessThan(b.x)
+    expect(ys).toHaveLength(1)
+    expect(ys[0] > b.y && ys[0] < b.y + 100).toBe(false)
+  })
+
+  it('links into the same row share a vertical, others get their own', () => {
+    const { routes } = layered(graph)
+    // a.c and b.c both end at c's id row, in the gap left of b
+    expect(routes['a.c'].xs![1]).toBe(routes['b.c'].xs![0])
+    expect(routes['a.b'].xs![0]).not.toBe(routes['a.c'].xs![0])
   })
 
   it('no two nodes overlap, entities without links go under a column', () => {
@@ -229,6 +245,22 @@ describe('layered', () => {
     expect(l.positions.x.y).toBeGreaterThan(col[1].y)
   })
 
+  it('orthoPath rounds corners and skips straight runs', () => {
+    const pts = routePoints({ x: 0, y: 0 }, { x: 100, y: 40 }, { xs: [50] })
+    expect(pts).toEqual([
+      { x: 0, y: 0 },
+      { x: 50, y: 0 },
+      { x: 50, y: 40 },
+      { x: 100, y: 40 },
+    ])
+    expect(orthoPath(pts)).toBe(
+      'M 0,0 L 42,0 Q 50,0 50,8 L 50,32 Q 50,40 58,40 L 100,40',
+    )
+    expect(orthoPath(routePoints({ x: 0, y: 5 }, { x: 90, y: 5 }, {}))).toBe(
+      'M 0,5 L 90,5',
+    )
+  })
+
   it('is deterministic', () => {
     expect(layered(graph)).toEqual(layered(graph))
   })
@@ -236,11 +268,14 @@ describe('layered', () => {
   it('draws one edge per relationship, the to-one side', () => {
     const r = layoutEntities(graph, 'layered', {})
     expect(r.edges.map((e) => e.id).sort()).toEqual(['a.b', 'a.c', 'b.c'])
-    expect(r.edges.find((e) => e.id === 'a.c')?.data?.via).toHaveLength(2)
+    expect(r.edges.find((e) => e.id === 'a.c')?.data?.xs).toHaveLength(2)
   })
 
   it('a moved node drops the routes of its edges', () => {
     const r = layoutEntities(graph, 'layered', { a: { x: 5000, y: 0 } })
-    expect(r.edges.find((e) => e.id === 'a.c')?.data?.via).toBeUndefined()
+    expect(r.edges.find((e) => e.id === 'a.c')).toMatchObject({
+      type: 'smoothstep',
+      data: {},
+    })
   })
 })

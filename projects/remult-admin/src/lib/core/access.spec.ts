@@ -24,7 +24,7 @@ describe('accessState / accessLabel', () => {
     expect(accessState('row')).toBe('row')
     expect(accessLabel('yes')).toBe('Yes')
     expect(accessLabel('no')).toBe('No')
-    expect(accessLabel('row')).toBe('Per row')
+    expect(accessLabel('row')).toBe('Function')
   })
 })
 
