@@ -1,22 +1,9 @@
 {
+  "extends": "$app/tsconfig",
   "compilerOptions": {
-    "target": "ESNext",
-    "useDefineForClassFields": true,
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "allowJs": false,
-    "skipLibCheck": true,
-    "esModuleInterop": false,
-    "allowSyntheticDefaultImports": true,
-
-    "forceConsistentCasingInFileNames": true,
-    "experimentalDecorators": true,
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "resolveJsonModule": true,
-
-    "noEmit": true,
-    "jsx": "react-jsx"
+    "strict": true,
+    "experimentalDecorators": true
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["src", "vite.config.ts"],
+  "exclude": ["src/server", "src/misc"]
 }

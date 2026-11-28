@@ -17,4 +17,11 @@ export class Story {
     allowApiUpdate: (story) => (story ? getEntityRef(story).isNew() : true),
   })
   ownerId = remult.user?.id
+
+  @Fields.string()
+  title = ''
+
+  // demo: a visible entity (companies) lists the stories of an entity hidden for 'ops'
+  @Fields.string()
+  companyId = ''
 }

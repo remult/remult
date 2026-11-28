@@ -3,5 +3,5 @@ export const DealTypes = [
   'Copywriting',
   'Print project',
   'UI Design',
-  'Website design'
+  'Website design',
 ]

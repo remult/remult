@@ -42,7 +42,11 @@ import type {
 import { Action, classBackendMethodsArray } from '../src/server-action.js'
 import { serverActionField } from '../src/server-action-info.js'
 import { remultStatic } from '../src/remult-static.js'
-import { buildEntityInfo } from './remult-admin.js'
+import {
+  buildEntityInfo,
+  resolveAdminPrefilters,
+  type AdminEntityConfig,
+} from './remult-admin.js'
 import { isOfType } from '../src/isOfType.js'
 import { initDataProviderOrJson } from './initDataProviderOrJson.js'
 import { modulesFlatAndOrdered, type Module } from './module.js'
@@ -127,6 +131,22 @@ export interface RemultServerOptions<RequestType> {
         customHtmlHead?: (remult: Remult) => string
         requireAuthToken?: boolean
         disableLiveQuery?: boolean
+        /** Hide entities from the admin UI or tune how they are edited. UI filtering only, not security.
+         * `false` hides the entity, `true` keeps the defaults, an object overrides them.
+         * @example
+         * admin: {
+         *   allow: Allow.authenticated,
+         *   entities: (entity, remult) => {
+         *     if (remult.isAllowed('admin')) return true
+         *     if (!['tasks', 'contacts'].includes(entity.key)) return false
+         *     return { editMode: 'drawer', lockEditMode: true }
+         *   },
+         * }
+         */
+        entities?: (
+          entity: EntityMetadata,
+          remult: Remult,
+        ) => boolean | AdminEntityConfig
       }
 
   /** Storage to use for backend methods that use queue */
@@ -536,10 +556,20 @@ export class RemultServerImplementation<RequestType>
             if (remult.isAllowed(allowed)) {
               if (orig?.params?.id === '__entities-metadata') {
                 res.success(
-                  buildEntityInfo({
+                  await resolveAdminPrefilters(
+                    buildEntityInfo({
+                      remult,
+                      entities: this.entities,
+                      entityConfig: isOfType<{ allow: Allowed }>(
+                        this.options.admin,
+                        'allow',
+                      )
+                        ? this.options.admin.entities
+                        : undefined,
+                    }),
+                    this.entities,
                     remult,
-                    entities: this.entities,
-                  }),
+                  ),
                 )
               } else {
                 let head = '<title>Admin</title>'
@@ -586,14 +616,7 @@ export class RemultServerImplementation<RequestType>
           addRoute: (relativePath, method, handler) => {
             r.route(this.options.rootPath + relativePath)[method](
               this.process(
-                async (
-                  remult,
-                  _,
-                  res,
-                  req,
-                  origRes,
-                  origReq: RequestType,
-                ) =>
+                async (remult, _, res, req, origRes, origReq: RequestType) =>
                   handler({
                     remult,
                     res,

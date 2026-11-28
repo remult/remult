@@ -9,5 +9,5 @@ export const sectors = [
   'Information Technology',
   'Materials',
   'Real Estate',
-  'Utilities'
+  'Utilities',
 ]

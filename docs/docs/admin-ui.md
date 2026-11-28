@@ -1,10 +1,10 @@
 ---
-llm: "Built-in /api/admin CRUD UI with entity diagram, gated by allow and configurable via the admin option."
+llm: 'Built-in /api/admin CRUD UI with entity diagram, gated by allow and configurable via the admin option.'
 ---
 
 # Admin UI
 
-Enjoy a fully featured Admin UI for your entities, you can do CRUD operations on your entities, view their relationships via the Diagram entry, and ensure secure management with the same validations and authorizations as your application.
+Enjoy a fully featured Admin UI for your entities, you can do CRUD operations on your entities, view their relationships in the Schema diagram, and ensure secure management with the same validations and authorizations as your application.
 
 ## Enabling the Admin UI
 
@@ -40,27 +40,43 @@ export const api = remultApi({
 })
 ```
 
+### Choosing which entities to show
+
+`entities` is called for each entity with its metadata and the request's `remult`. Return `false` to hide it, `true` for the defaults, or an object to override them (`editMode`: `'inline'` by default or `'drawer'`, `lockEditMode`: hide the edit mode switch).
+
+```ts
+admin: {
+  allow: Allow.authenticated,
+  entities: (entity, remult) => {
+    if (remult.isAllowed('admin')) return true
+    if (!['tasks', 'contacts'].includes(entity.key)) return false
+    return { editMode: 'drawer', lockEditMode: true }
+  },
+}
+```
+
+This only filters the UI, it is not security. Hidden entities stay reachable through the API and as relations of visible entities. Use `allowApi*` to restrict access.
+
+### Permission-aware UI
+
+The admin UI follows your `allowApiInsert`, `allowApiUpdate` and `allowApiDelete` rules: actions the current user can't perform are hidden. A rule that is a function stays open in the UI, the server decides on save.
+
+The home page and **Your access** (bottom of the side nav) show, per entity, what the signed in user can do, as CRUD: create, read, update and delete. Each is allowed, not allowed, or a function. Rules are evaluated for this user: the UI only learns the kind of rule (a boolean, a role `R`, a list of roles `R[]` or a function `ƒ`), never the role names. **Read (prefilter)** shows a funnel when `apiPrefilter` narrows the rows for this user (a prefilter returning `{}`, for an admin say, is off). Your access also shows the user (name, id, roles).
+
 ## Accessing and Using the Admin UI
 
-Navigate to `/api/admin` to access the Admin UI. Here, you can perform CRUD operations on your entities, view their relationships via the Diagram entry, and ensure secure management with the same validations and authorizations as your application.
-
-![Remult Admin](/remult-admin.png)
+Navigate to `/api/admin`. Every request goes through your API, so the admin uses the same validations and authorizations as your application, for the signed in user.
 
 ## Features
 
-- **Entity List**: On the left side of the screen you have the entity list, you can use the search field to search for entities.
-
-- **Entity Details**: Clicking on an entity in the menu will open the entity details screen (in the middle), here you can view filter & paginate your data _(top right)_. You can also see all relations of entity by clicking on the arrow on the left of each row. The last column is dedicated for actions where you can edit or delete an entity. On top left you can also add a new entity by clicking on the `+`.
-
-- **Entity Diagram**: Clicking on the Diagram entry will open the entity diagram screen, here you can see the entity relationships.
-
-![Remult Admin Diagram](/remult-admin-diagram.png)
-
-- **Settings**: On top left, you have a menu _(remult logo)_ where you can find various settings for your admin ui.
-  - You want to confirm a delete all the time?
-  - You want to display Labels or Keys?
-  - Multiple options for automatic diagram layout (you want also do your own layout)
-  - You don't use cookies? No problem, you can set your bearer token (it will only be in session)
+- **Entities**: the side nav lists your entities (filter with `/`). `Ctrl+K` (`⌘K` on macOS) jumps to an entity, the schema or the settings.
+- **Table**: sort, paging, row count and live updates (live query). An entity the user can't read shows as Forbidden.
+- **Edit inline or in a drawer**: edit cells in the table and save each row (`Ctrl+Enter`, add `Shift` for all rows, `Esc` to cancel), or open a row in a side drawer. Edited cells are marked with their previous value, a bar counts the edited rows with `Save all` and `Cancel all`, and a saved or reverted row flashes. Switch per entity, or set it with the `entities` hook.
+- **Filters in the URL**: filter by text, number, date range, value list or relation. Filters, sort and page live in the URL, so `Copy link` shares the exact view.
+- **Relations**: to-one fields show the related row's caption and are edited with a search. To-many relations open under a row as tabs of nested tables, and a new row there is prefilled with its parent.
+- **Permission-aware**: actions the user can't perform are hidden (see [Permission-aware UI](#permission-aware-ui)).
+- **Schema**: an entity relationship diagram with automatic layouts. Drag entities to arrange them, positions are kept in the browser.
+- **Settings**: rows per page, confirm delete, captions or keys, theme (system, light or dark), live query, and the connection: a bearer token (kept for the tab only), a `localStorage` key to read the token from, and custom headers.
 
 ## Demo in video
 

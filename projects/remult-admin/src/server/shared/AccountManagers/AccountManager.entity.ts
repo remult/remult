@@ -10,7 +10,7 @@ import {
 @Entity<AccountManager>('accountManagers', {
   // allowApiCrud: Allow.authenticated,
   allowApiCrud: true,
-  allowApiDelete: false,
+  allowApiDelete: 'admin',
   defaultOrderBy: {
     firstName: 'asc',
     lastName: 'asc',
