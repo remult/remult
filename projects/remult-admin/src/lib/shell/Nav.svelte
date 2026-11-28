@@ -5,6 +5,7 @@
   import AccessDialog from './AccessDialog.svelte'
   import Avatar from './Avatar.svelte'
   import Icon from './Icon.svelte'
+  import MiddleText from './MiddleText.svelte'
   import Logo from './Logo.svelte'
   import Palette from './Palette.svelte'
   import { entityHref, shell } from './shell.svelte.js'
@@ -131,7 +132,7 @@
             style:--hue={t.color}
           >
             <span class="hue-dot"></span>
-            <span class="text wide">{label(t)}</span>
+            <span class="text wide"><MiddleText text={label(t)} /></span>
             {#if forbidden}
               <span class="wide lock" title="Forbidden"
                 ><Icon name="lock" size={13} /></span

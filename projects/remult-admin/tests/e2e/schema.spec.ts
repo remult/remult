@@ -48,9 +48,9 @@ test('a node per visible entity, with its fields and relation edges', async ({
   await page.goto('/#/schema')
   await expect(nodes(page)).toHaveCount(visible.length)
   for (const e of visible)
-    await expect(node(page, e.superKey).locator('.caption')).toHaveText(
-      e.caption,
-    )
+    await expect(
+      node(page, e.superKey).locator('.caption .sr-only'),
+    ).toHaveText(e.caption)
   await expect(
     node(page, 'deals').locator('.row', { hasText: 'Company' }).first(),
   ).toContainText('Companies')

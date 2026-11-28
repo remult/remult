@@ -10,6 +10,7 @@
   import {
     accessRow,
     PREFILTER_HINT,
+    READ_HINT,
     userExtras,
     userRoles,
   } from '../core/access.js'
@@ -19,6 +20,7 @@
   import AccessMark from './AccessMark.svelte'
   import Avatar from './Avatar.svelte'
   import Icon from './Icon.svelte'
+  import MiddleText from './MiddleText.svelte'
   import { entityHref, shell } from './shell.svelte.js'
 
   const user = $derived(god.user)
@@ -31,9 +33,9 @@
     settings.displayCaption ? r.caption : r.key
 
   const columns = [
-    ['read', 'Read'],
     ['create', 'Create'],
-    ['edit', 'Edit'],
+    ['read', 'Read'],
+    ['update', 'Update'],
     ['delete', 'Delete'],
   ] as const
 
@@ -120,9 +122,10 @@
               <tr>
                 <th scope="col">Entity</th>
                 {#each columns as [key, text] (key)}
-                  <th scope="col">{text}</th>
+                  <th scope="col" title={key === 'read' ? READ_HINT : undefined}
+                    >{text}</th
+                  >
                 {/each}
-                <th scope="col" title={PREFILTER_HINT}>Prefilter</th>
               </tr>
             </thead>
             <tbody>
@@ -135,25 +138,26 @@
                         onclick={() => (shell.accessOpen = false)}
                       >
                         <span class="hue-dot"></span>
-                        <span class="caption">{label(r)}</span>
+                        <span class="caption"
+                          ><MiddleText text={label(r)} /></span
+                        >
                       </a>
                     </span>
                   </th>
                   {#each columns as [key] (key)}
                     <td
-                      ><AccessMark
-                        state={r[key]}
-                        rule={key === 'read' ? undefined : r.rules[key]}
-                      /></td
+                      >{#if key === 'read'}<AccessMark
+                          state={r.read}
+                          icon={r.prefilter ? 'filter' : 'check'}
+                          hint={r.prefilter && r.read === 'yes'
+                            ? PREFILTER_HINT
+                            : undefined}
+                        />{:else}<AccessMark
+                          state={r[key]}
+                          rule={r.rules[key]}
+                        />{/if}</td
                     >
                   {/each}
-                  <td
-                    ><AccessMark
-                      state={r.prefilter ? 'yes' : 'no'}
-                      icon="filter"
-                      hint={r.prefilter ? PREFILTER_HINT : undefined}
-                    /></td
-                  >
                 </tr>
               {/each}
             </tbody>

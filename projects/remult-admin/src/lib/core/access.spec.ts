@@ -47,9 +47,9 @@ describe('accessRow', () => {
       color: '120',
       read: 'yes',
       create: 'yes',
-      edit: 'row',
+      update: 'row',
       delete: 'no',
-      rules: { create: 'roles', edit: 'function', delete: 'bool' },
+      rules: { create: 'roles', update: 'function', delete: 'bool' },
       prefilter: true,
     })
   })

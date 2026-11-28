@@ -16,6 +16,11 @@
   } = $props()
 
   const byRoles = $derived(rule === 'roles' && state !== 'row')
+  const name = $derived(
+    accessLabel(state) +
+      (byRoles ? ', by role' : '') +
+      (icon === 'filter' && state === 'yes' ? ', prefiltered' : ''),
+  )
 </script>
 
 <span
@@ -24,7 +29,7 @@
   data-icon={icon}
   data-roles={byRoles || undefined}
   role="img"
-  aria-label={byRoles ? `${accessLabel(state)}, by role` : accessLabel(state)}
+  aria-label={name}
   title={hint ?? accessHint(state, rule)}
 >
   {#if state === 'row'}

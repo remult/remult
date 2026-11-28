@@ -61,7 +61,7 @@ This only filters the UI, it is not security. Hidden entities stay reachable thr
 
 The admin UI follows your `allowApiInsert`, `allowApiUpdate` and `allowApiDelete` rules: actions the current user can't perform are hidden. A rule that is a function stays open in the UI, the server decides on save.
 
-The home page and **Your access** (bottom of the side nav) show, per entity, what the signed in user can create, edit and delete: allowed, not allowed, or a function. Rules are evaluated for this user: the UI only learns the kind of rule (a boolean, roles or a function), never the role names. **Prefilter** is on when `apiPrefilter` narrows the rows for this user (a prefilter returning `{}`, for an admin say, is off). Your access also shows the user (name, id, roles).
+The home page and **Your access** (bottom of the side nav) show, per entity, what the signed in user can do, as CRUD: create, read, update and delete. Each is allowed, not allowed, or a function. Rules are evaluated for this user: the UI only learns the kind of rule (a boolean, roles or a function), never the role names. **Read** shows a funnel when `apiPrefilter` narrows the rows for this user (a prefilter returning `{}`, for an admin say, is off). Your access also shows the user (name, id, roles).
 
 ## Accessing and Using the Admin UI
 

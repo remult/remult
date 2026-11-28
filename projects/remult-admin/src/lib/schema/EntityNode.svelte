@@ -4,6 +4,7 @@
   import { god } from '../core/god.svelte.js'
   import { settings } from '../core/settings.svelte.js'
   import Icon, { type IconName } from '../shell/Icon.svelte'
+  import MiddleText from '../shell/MiddleText.svelte'
   import { inRow, shownFields, type EntityNode } from './layout.js'
 
   let { data, selected }: NodeProps<EntityNode> = $props()
@@ -74,7 +75,7 @@
       title={`Open ${name(table)}`}
     >
       <span class="hue-dot"></span>
-      <span class="caption">{name(table)}</span>
+      <span class="caption"><MiddleText text={name(table)} /></span>
       <span class="go"><Icon name="arrow-up-right" size={13} /></span>
     </a>
     <ul class="rows">

@@ -10,6 +10,7 @@ export type AccessState = 'yes' | 'no' | 'row'
 
 export const PREFILTER_HINT =
   'apiPrefilter: the server narrows the rows you get'
+export const READ_HINT = 'Read, a funnel when apiPrefilter narrows the rows'
 
 export function accessState(p: AdminPermission): AccessState {
   return p === 'row' ? 'row' : p ? 'yes' : 'no'
@@ -48,9 +49,9 @@ export type AccessRow = {
   color?: string
   read: AccessState
   create: AccessState
-  edit: AccessState
+  update: AccessState
   delete: AccessState
-  rules: Record<'create' | 'edit' | 'delete', AdminRule>
+  rules: Record<'create' | 'update' | 'delete', AdminRule>
   prefilter: boolean
 }
 
@@ -75,11 +76,11 @@ export function accessRow(
     // listed entities are readable unless a request was refused
     read: forbidden.includes(t.key) ? 'no' : 'yes',
     create: accessState(t.permissions.insert),
-    edit: accessState(t.permissions.update),
+    update: accessState(t.permissions.update),
     delete: accessState(t.permissions.delete),
     rules: {
       create: t.rules.insert,
-      edit: t.rules.update,
+      update: t.rules.update,
       delete: t.rules.delete,
     },
     prefilter: !!t.apiPrefilter,

@@ -28,7 +28,7 @@ test('admin sees their name and role', async ({ page }) => {
   await expect(p.getByRole('list', { name: 'Roles' })).toHaveText('admin')
 })
 
-test('ops: no roles, deals prefiltered and editable per row', async ({
+test('ops: no roles, deals prefiltered, update and delete by a function', async ({
   page,
 }) => {
   await signInAs(page, 'ops')
@@ -40,9 +40,10 @@ test('ops: no roles, deals prefiltered and editable per row', async ({
     .filter({
       has: page.getByRole('link', { name: 'Deals', exact: true }),
     })
-  await expect(
-    home.getByRole('cell').last().getByRole('img'),
-  ).toHaveAccessibleName('Yes')
+  const marks = home.getByRole('cell').getByRole('img')
+  await expect(marks).toHaveCount(4)
+  await expect(marks.nth(1)).toHaveAccessibleName('Yes, prefiltered')
+  await expect(marks.nth(2)).toHaveAccessibleName('Function')
   await expect(page.getByRole('button', { name: "Ops's access" })).toBeVisible()
 
   const p = await openPanel(page, 'Ops')
@@ -54,8 +55,11 @@ test('ops: no roles, deals prefiltered and editable per row', async ({
   })
   const cells = deals.getByRole('cell')
   await expect(cells.nth(0).getByRole('img')).toHaveAccessibleName('Yes')
+  await expect(cells.nth(1).getByRole('img')).toHaveAccessibleName(
+    'Yes, prefiltered',
+  )
   await expect(cells.nth(2).getByRole('img')).toHaveAccessibleName('Function')
-  await expect(cells.nth(4).getByRole('img')).toHaveAccessibleName('Yes')
+  await expect(cells.nth(3).getByRole('img')).toHaveAccessibleName('Function')
   if (SHOT) await p.screenshot({ path: SHOT })
 
   await deals.getByRole('link', { name: 'Deals', exact: true }).click()

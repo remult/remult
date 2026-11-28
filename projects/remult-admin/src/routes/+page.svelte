@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { accessState, PREFILTER_HINT } from '#lib/core/access.js'
+  import { accessState, PREFILTER_HINT, READ_HINT } from '#lib/core/access.js'
   import { god, type TableInfo } from '#lib/core/god.svelte.js'
   import { session, settings } from '#lib/core/settings.svelte.js'
   import AccessLegend from '#lib/shell/AccessLegend.svelte'
@@ -59,9 +59,9 @@
           <th scope="col" class="num">Fields</th>
           <th scope="col" class="num hide-sm">Relations</th>
           <th scope="col" class="acc">Create</th>
-          <th scope="col" class="acc">Edit</th>
+          <th scope="col" class="acc" title={READ_HINT}>Read</th>
+          <th scope="col" class="acc">Update</th>
           <th scope="col" class="acc">Delete</th>
-          <th scope="col" class="acc" title={PREFILTER_HINT}>Prefilter</th>
         </tr>
       </thead>
       <tbody>
@@ -100,6 +100,13 @@
             >
             <td class="acc"
               ><AccessMark
+                state={forbidden ? 'no' : 'yes'}
+                icon={t.apiPrefilter ? 'filter' : 'check'}
+                hint={t.apiPrefilter && !forbidden ? PREFILTER_HINT : undefined}
+              /></td
+            >
+            <td class="acc"
+              ><AccessMark
                 state={accessState(t.permissions.update)}
                 rule={t.rules.update}
               /></td
@@ -108,13 +115,6 @@
               ><AccessMark
                 state={accessState(t.permissions.delete)}
                 rule={t.rules.delete}
-              /></td
-            >
-            <td class="acc"
-              ><AccessMark
-                state={t.apiPrefilter ? 'yes' : 'no'}
-                icon="filter"
-                hint={t.apiPrefilter ? PREFILTER_HINT : undefined}
               /></td
             >
           </tr>
