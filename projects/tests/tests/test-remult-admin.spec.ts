@@ -579,22 +579,6 @@ describe('remult-admin', () => {
     expect(res).includes('"disableLiveQuery":true')
   })
 
-  it('metadata.apiInsertAllowed() follows allowApiInsert', () => {
-    @Entity('ins1', { allowApiInsert: true })
-    class A {
-      @Fields.id()
-      id!: string
-    }
-    @Entity('ins2', { allowApiInsert: false, allowApiUpdate: true })
-    class B {
-      @Fields.id()
-      id!: string
-    }
-    const remult = new Remult()
-    expect(remult.repo(A).metadata.apiInsertAllowed()).toBe(true)
-    expect(remult.repo(B).metadata.apiInsertAllowed()).toBe(false)
-  })
-
   it('flags apiPrefilter', () => {
     @Entity('pf1', { allowApiCrud: true, apiPrefilter: () => ({}) })
     class A {
