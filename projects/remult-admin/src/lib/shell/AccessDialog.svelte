@@ -123,7 +123,8 @@
                 <th scope="col">Entity</th>
                 {#each columns as [key, text] (key)}
                   <th scope="col" title={key === 'read' ? READ_HINT : undefined}
-                    >{text}</th
+                    >{text}{#if key === 'read'}
+                      <span class="sub">(prefilter)</span>{/if}</th
                   >
                 {/each}
               </tr>
@@ -172,6 +173,10 @@
 </Dialog>
 
 <style>
+  .sub {
+    font-weight: 400;
+    opacity: 0.75;
+  }
   :global(.access) {
     position: fixed;
     top: 50%;

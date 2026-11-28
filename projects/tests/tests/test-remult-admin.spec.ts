@@ -805,7 +805,7 @@ describe('remult-admin', () => {
     }
     const [e, b] = buildEntityInfo({ entities: [E, B], remult: new Remult() })
     expect(e.rules).toEqual({
-      insert: 'roles',
+      insert: 'role',
       update: 'roles',
       delete: 'function',
     })

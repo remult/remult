@@ -30,7 +30,8 @@ describe('accessState / accessLabel', () => {
   })
 
   it('hints name the kind of rule, never its content', () => {
-    expect(accessHint('yes', 'roles')).toBe('Allowed, by your roles')
+    expect(accessHint('yes', 'role')).toBe('Allowed, by a role')
+    expect(accessHint('no', 'roles')).toBe('Not allowed, by a list of roles')
     expect(accessHint('no', 'bool')).toBe('Not allowed')
     expect(accessHint('row', 'function')).toBe(
       'A function decides, the server checks it on save',

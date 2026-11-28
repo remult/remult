@@ -8,7 +8,7 @@ import { Story } from '../Story'
 @Entity<Company>('companies', {
   // allowApiCrud: Allow.authenticated,
   allowApiCrud: true,
-  allowApiDelete: false,
+  allowApiDelete: ['admin', 'manager'],
   defaultOrderBy: { name: 'asc' },
   saving: (item) => {
     item.companyId = 'id:' + item.id

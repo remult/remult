@@ -29,7 +29,8 @@ const hints: Record<AccessState, string> = {
 }
 
 const ruleHints: Partial<Record<AdminRule, string>> = {
-  roles: 'by your roles',
+  role: 'by a role',
+  roles: 'by a list of roles',
   function: 'a function decided for you',
 }
 

@@ -15,10 +15,19 @@
     rule?: AdminRule
   } = $props()
 
-  const byRoles = $derived(rule === 'roles' && state !== 'row')
+  // role rules show R or R[] (allowed or not), never the role names
+  const roleText = $derived(
+    state === 'row'
+      ? undefined
+      : rule === 'role'
+        ? 'R'
+        : rule === 'roles'
+          ? 'R[]'
+          : undefined,
+  )
   const name = $derived(
     accessLabel(state) +
-      (byRoles ? ', by role' : '') +
+      (roleText ? (rule === 'role' ? ', by a role' : ', by roles') : '') +
       (icon === 'filter' && state === 'yes' ? ', prefiltered' : ''),
   )
 </script>
@@ -27,13 +36,15 @@
   class="mark"
   data-state={state}
   data-icon={icon}
-  data-roles={byRoles || undefined}
+  data-roles={roleText ? '' : undefined}
   role="img"
   aria-label={name}
   title={hint ?? accessHint(state, rule)}
 >
   {#if state === 'row'}
     <span class="fn" aria-hidden="true">ƒ</span>
+  {:else if roleText}
+    <span class="r" aria-hidden="true">{roleText}</span>
   {:else}
     <Icon name={state === 'yes' ? icon : 'minus'} size={13} stroke={2.4} />
   {/if}
@@ -62,12 +73,18 @@
     background: color-mix(in oklch, var(--warning) 14%, transparent);
     color: var(--warning);
   }
-  /* a role rule: ring around the mark */
   .mark[data-roles] {
-    margin: 0 3.5px;
-    box-shadow:
-      0 0 0 2px var(--bg),
-      0 0 0 3.5px currentColor;
+    width: auto;
+    min-width: 22px;
+    padding: 0 5px;
+    border-radius: 11px;
+  }
+  .r {
+    font: 700 11px/1 var(--mono);
+    letter-spacing: -0.02em;
+  }
+  .mark[data-state='no'] .r {
+    text-decoration: line-through;
   }
   .fn {
     font: italic 600 15px/1 Georgia, 'Times New Roman', serif;

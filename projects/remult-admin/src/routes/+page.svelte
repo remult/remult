@@ -59,7 +59,9 @@
           <th scope="col" class="num">Fields</th>
           <th scope="col" class="num hide-sm">Relations</th>
           <th scope="col" class="acc">Create</th>
-          <th scope="col" class="acc" title={READ_HINT}>Read</th>
+          <th scope="col" class="acc" title={READ_HINT}
+            >Read <span class="sub">(prefilter)</span></th
+          >
           <th scope="col" class="acc">Update</th>
           <th scope="col" class="acc">Delete</th>
         </tr>
@@ -199,6 +201,10 @@
     width: 76px;
     text-align: center;
     background: color-mix(in oklch, var(--accent) 4%, transparent);
+  }
+  .sub {
+    font-weight: 400;
+    opacity: 0.75;
   }
   thead th.acc {
     text-align: center;

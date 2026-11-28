@@ -4,5 +4,5 @@ export const DealStages = [
   'in-negotiation',
   'won',
   'lost',
-  'delayed'
+  'delayed',
 ]

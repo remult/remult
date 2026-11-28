@@ -15,7 +15,7 @@ import { InputTypes } from '../inputTypes.js'
 
 export type AdminPermission = boolean | 'row'
 /** The kind of rule behind a permission, never its content (no role names). */
-export type AdminRule = 'bool' | 'roles' | 'function'
+export type AdminRule = 'bool' | 'role' | 'roles' | 'function'
 export type AdminEditMode = 'inline' | 'drawer'
 export interface AdminEntityConfig {
   editMode?: AdminEditMode
@@ -300,10 +300,10 @@ export function adminRule(
   if (Array.isArray(rule)) {
     const kinds = rule.map(adminRule)
     if (kinds.includes('function')) return 'function'
-    return kinds.includes('roles') ? 'roles' : 'bool'
+    return kinds.includes('role') ? 'roles' : 'bool'
   }
   if (typeof rule === 'function') return 'function'
-  return typeof rule === 'string' ? 'roles' : 'bool'
+  return typeof rule === 'string' ? 'role' : 'bool'
 }
 
 export function resolveAdminPermission(
