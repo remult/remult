@@ -16,7 +16,6 @@
     captions,
     canUpdate,
     canDelete,
-    resolved,
     editable,
     busy = false,
     errors,
@@ -36,7 +35,6 @@
     captions: Record<string, Map<unknown, unknown>>
     canUpdate: boolean
     canDelete: boolean
-    resolved: boolean
     /** Inline mode: cells are editors when the row may change. */
     editable: boolean
     busy?: boolean
@@ -192,7 +190,7 @@
           >{outcome === 'saved' ? 'Saved' : 'Reverted'}</span
         >
       </span>
-    {:else if resolved && !canUpdate}
+    {:else if !canUpdate}
       <span class="lock" title="Read only"
         ><Icon name="lock" size={12} /><span class="sr-only">Read only</span
         ></span

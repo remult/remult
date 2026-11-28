@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  accessHint,
   accessLabel,
   accessRow,
   accessState,
@@ -15,6 +16,7 @@ const table = {
   color: '120',
   apiPrefilter: true,
   permissions: { insert: true, update: 'row', delete: false } as const,
+  rules: { insert: 'roles', update: 'function', delete: 'bool' } as const,
 }
 
 describe('accessState / accessLabel', () => {
@@ -25,6 +27,14 @@ describe('accessState / accessLabel', () => {
     expect(accessLabel('yes')).toBe('Yes')
     expect(accessLabel('no')).toBe('No')
     expect(accessLabel('row')).toBe('Function')
+  })
+
+  it('hints name the kind of rule, never its content', () => {
+    expect(accessHint('yes', 'roles')).toBe('Allowed, by your roles')
+    expect(accessHint('no', 'bool')).toBe('Not allowed')
+    expect(accessHint('row', 'function')).toBe(
+      'A function decides, the server checks it on save',
+    )
   })
 })
 
@@ -39,6 +49,7 @@ describe('accessRow', () => {
       create: 'yes',
       edit: 'row',
       delete: 'no',
+      rules: { create: 'roles', edit: 'function', delete: 'bool' },
       prefilter: true,
     })
   })

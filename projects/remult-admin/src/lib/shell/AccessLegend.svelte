@@ -6,7 +6,8 @@
 <ul class="legend" aria-label="Legend">
   <li><AccessMark state="yes" /> Allowed</li>
   <li><AccessMark state="no" /> Not allowed</li>
-  <li><AccessMark state="row" /> A function decides, row by row</li>
+  <li><AccessMark state="yes" rule="roles" /> By your roles</li>
+  <li><AccessMark state="row" /> A function decides on save</li>
   <li>
     <AccessMark state="yes" icon="filter" hint={PREFILTER_HINT} /> Prefilter: the
     server narrows the rows you get

@@ -5,7 +5,6 @@ import { valueKey } from './format.js'
 import { RowDraft } from './row-draft.svelte.js'
 
 type Values = Record<string, any>
-type Verdict = { update: boolean; delete: boolean }
 
 /** `item` is the server entity; undefined on a row not inserted yet. */
 export type TableRow = {
@@ -39,17 +38,12 @@ export type TableDataDeps = {
     field: FieldUIInfo,
     rows: Values[],
   ) => Promise<Record<string, Map<unknown, unknown>>>
-  rowPermissions: (
-    superKey: string,
-    ids: string[],
-  ) => Promise<Record<string, Verdict>>
   /** Next reads skip the client's dedupe cache. */
   freshReads: () => void
 }
 
 const defaultDeps: TableDataDeps = {
   captions: (field, rows) => god.displayValueForEach(field, rows),
-  rowPermissions: (superKey, ids) => god.rowPermissions(superKey, ids),
   freshReads: () => god.freshReads(),
 }
 
@@ -101,7 +95,6 @@ export class TableData {
   loading = $state(false)
   error: string | undefined = $state()
   captions: Record<string, Map<unknown, unknown>> = $state.raw({})
-  verdicts: Record<string, Verdict> = $state.raw({})
   /** Rows typed in but not inserted yet, shown above the page. */
   newRows: TableRow[] = $state.raw([])
   /** Per row id, per edited key: the server's validation message. */
@@ -115,8 +108,6 @@ export class TableData {
   #drafts = new Map<string, RowDraft<Values>>()
   // every load bumps it: results of an older load (or a disposed table) are dropped
   #gen = 0
-  // live ticks share a generation: only the latest verdict request may answer
-  #verdictSeq = 0
   #newSeq = 0
   #unsub: (() => void) | undefined
   #request: LoadRequest | undefined
@@ -137,12 +128,6 @@ export class TableData {
   load(request: LoadRequest) {
     this.#stop()
     const gen = ++this.#gen
-    // a refresh or another page keeps known verdicts, so rows don't flicker to locked
-    if (
-      this.#request &&
-      JSON.stringify(this.#request.where) !== JSON.stringify(request.where)
-    )
-      this.verdicts = {}
     this.#request = request
     this.loading = true
     const { repo } = this.#table
@@ -181,16 +166,9 @@ export class TableData {
     this.flash = {}
   }
 
-  can(kind: 'update' | 'delete', id: string) {
-    const p = this.#table.permissions[kind]
-    // 'row' stays closed until the server has answered for this row
-    return p === 'row' ? this.verdicts[id]?.[kind] === true : p
-  }
-
-  /** True once the per row answer is known (always true when the entity flag is not 'row'). */
-  resolved(id: string) {
-    const { update, delete: del } = this.#table.permissions
-    return (update !== 'row' && del !== 'row') || id in this.verdicts
+  can(kind: 'update' | 'delete') {
+    // a function rule is decided by the server on save
+    return this.#table.permissions[kind] !== false
   }
 
   /** Rows not inserted yet, then edited rows. */
@@ -357,10 +335,6 @@ export class TableData {
     if (live) this.#deps.freshReads()
     void this.#count(gen)
     void this.#loadCaptions(gen, values)
-    void this.#loadVerdicts(
-      gen,
-      rows.map((r) => r.id),
-    )
   }
 
   async #count(gen: number) {
@@ -388,24 +362,5 @@ export class TableData {
         next[k] = new Map([...(next[k] ?? []), ...map])
     }
     this.captions = next
-  }
-
-  async #loadVerdicts(gen: number, ids: string[]) {
-    const { update, delete: del } = this.#table.permissions
-    if ((update !== 'row' && del !== 'row') || !ids.length) return
-    const seq = ++this.#verdictSeq
-    try {
-      const verdicts = await this.#deps.rowPermissions(
-        this.#table.superKey,
-        ids,
-      )
-      if (gen !== this.#gen || seq !== this.#verdictSeq) return
-      // ids the server did not report stay read-only
-      this.verdicts = Object.fromEntries(
-        ids.map((id) => [id, verdicts[id] ?? { update: false, delete: false }]),
-      )
-    } catch {
-      // without an answer the rows stay read-only, the server enforces anyway
-    }
   }
 }

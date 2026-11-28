@@ -140,7 +140,12 @@
                     </span>
                   </th>
                   {#each columns as [key] (key)}
-                    <td><AccessMark state={r[key]} /></td>
+                    <td
+                      ><AccessMark
+                        state={r[key]}
+                        rule={key === 'read' ? undefined : r.rules[key]}
+                      /></td
+                    >
                   {/each}
                   <td
                     ><AccessMark

@@ -1,6 +1,5 @@
 import {
   buildEntityInfo,
-  getRowPermissions,
   type EntityUIInfo,
 } from '../../../projects/core/server/remult-admin'
 import remultAdminHtml from '../../../projects/core/server/remult-admin-html'
@@ -266,6 +265,11 @@ describe('remult-admin', () => {
             "update": false,
           },
           "relations": [],
+          "rules": {
+            "delete": "bool",
+            "insert": "bool",
+            "update": "bool",
+          },
           "superKey": "users",
         },
         {
@@ -440,6 +444,11 @@ describe('remult-admin', () => {
             "update": false,
           },
           "relations": [],
+          "rules": {
+            "delete": "bool",
+            "insert": "bool",
+            "update": "bool",
+          },
           "superKey": "users_ext_1",
         },
         {
@@ -507,6 +516,11 @@ describe('remult-admin', () => {
               "where": undefined,
             },
           ],
+          "rules": {
+            "delete": "bool",
+            "insert": "bool",
+            "update": "bool",
+          },
           "superKey": "accounts",
         },
       ]
@@ -773,6 +787,31 @@ describe('remult-admin', () => {
     })
   })
 
+  it('rules say which kind of rule decides, never its content', () => {
+    @Entity('r1', {
+      allowApiRead: true,
+      allowApiInsert: 'admin',
+      allowApiUpdate: ['admin', 'ops'],
+      allowApiDelete: (t: any) => t.owner === 'me',
+    })
+    class E {
+      @Fields.id()
+      id!: string
+    }
+    @Entity('r2', { allowApiCrud: true })
+    class B {
+      @Fields.id()
+      id!: string
+    }
+    const [e, b] = buildEntityInfo({ entities: [E, B], remult: new Remult() })
+    expect(e.rules).toEqual({
+      insert: 'roles',
+      update: 'roles',
+      delete: 'function',
+    })
+    expect(b.rules).toEqual({ insert: 'bool', update: 'bool', delete: 'bool' })
+  })
+
   describe('entities hook', () => {
     @Entity('eh_users', { allowApiCrud: true })
     class U {
@@ -822,205 +861,6 @@ describe('remult-admin', () => {
     })
   })
 
-  describe('getRowPermissions', () => {
-    const mk = () => new Remult(new InMemoryDataProvider())
-
-    it('row level update rule', async () => {
-      const remult = mk()
-      remult.user = { id: 'u1', name: 'u1' }
-      @Entity('rp1', {
-        allowApiRead: true,
-        allowApiDelete: true,
-        allowApiUpdate: (t: any) => t.owner === remult.user?.id,
-      })
-      class E {
-        @Fields.string()
-        id = ''
-        @Fields.string()
-        owner = ''
-      }
-      await remult.repo(E).insert([
-        { id: 'a', owner: 'u1' },
-        { id: 'b', owner: 'u2' },
-      ])
-      expect(
-        await getRowPermissions({
-          remult,
-          entities: [E],
-          superKey: 'rp1',
-          ids: ['a', 'b', 'nope'],
-        }),
-      ).toEqual({
-        a: { update: true, delete: true },
-        b: { update: false, delete: true },
-      })
-    })
-
-    it('role rule without role', async () => {
-      const remult = mk()
-      @Entity('rp2', { allowApiRead: true, allowApiCrud: 'admin' })
-      class E {
-        @Fields.string()
-        id = ''
-      }
-      await remult.repo(E).insert([{ id: 'a' }])
-      expect(
-        await getRowPermissions({
-          remult,
-          entities: [E],
-          superKey: 'rp2',
-          ids: ['a'],
-        }),
-      ).toEqual({ a: { update: false, delete: false } })
-    })
-
-    it('_ext_ superKey resolves to the extended class', async () => {
-      const remult = mk()
-      @Entity('rp3', { allowApiRead: true, allowApiUpdate: true })
-      class Base {
-        @Fields.string()
-        id = ''
-      }
-      @Entity('rp3', { allowApiRead: true, allowApiUpdate: false })
-      class Ext extends Base {}
-      await remult.repo(Base).insert([{ id: 'a' }])
-      const run = (superKey: string) =>
-        getRowPermissions({
-          remult,
-          entities: [Base, Ext],
-          superKey,
-          ids: ['a'],
-        })
-      expect((await run('rp3'))!['a'].update).toBe(true)
-      expect((await run('rp3_ext_1'))!['a'].update).toBe(false)
-    })
-
-    it('numeric id column', async () => {
-      const remult = mk()
-      @Entity('rp5', { allowApiRead: true, allowApiUpdate: true })
-      class E {
-        @Fields.autoIncrement()
-        id = 0
-        @Fields.string()
-        name = ''
-      }
-      await remult.repo(E).insert([{ name: 'x' }, { name: 'y' }])
-      expect(
-        await getRowPermissions({
-          remult,
-          entities: [E],
-          superKey: 'rp5',
-          ids: ['1', '2'],
-        }),
-      ).toEqual({
-        '1': { update: true, delete: false },
-        '2': { update: true, delete: false },
-      })
-    })
-
-    it('compound id', async () => {
-      const remult = mk()
-      @Entity<E>('rp6', {
-        allowApiRead: true,
-        allowApiUpdate: true,
-        id: { a: true, b: true },
-      })
-      class E {
-        @Fields.number()
-        a = 0
-        @Fields.number()
-        b = 0
-      }
-      await remult.repo(E).insert([{ a: 1, b: 2 }])
-      expect(
-        await getRowPermissions({
-          remult,
-          entities: [E],
-          superKey: 'rp6',
-          ids: ['1,2'],
-        }),
-      ).toEqual({ '1,2': { update: true, delete: false } })
-    })
-
-    it('unknown superKey returns undefined', async () => {
-      expect(
-        await getRowPermissions({
-          remult: mk(),
-          entities: [],
-          superKey: 'x',
-          ids: [],
-        }),
-      ).toBeUndefined()
-    })
-
-    it('keys Date and value list ids like the client', async () => {
-      const remult = mk()
-      @ValueListFieldType()
-      class Size {
-        static small = new Size(1, 'Small')
-        constructor(
-          public id: number,
-          public caption: string,
-        ) {}
-      }
-      @Entity('rp7', { allowApiRead: true, allowApiUpdate: true })
-      class ByDate {
-        @Fields.date()
-        id = new Date()
-      }
-      @Entity('rp8', { allowApiRead: true, allowApiUpdate: true })
-      class BySize {
-        @Field(() => Size)
-        id = Size.small
-      }
-      const at = new Date('2026-01-02T03:04:05.000Z')
-      await remult.repo(ByDate).insert([{ id: at }])
-      await remult.repo(BySize).insert([{ id: Size.small }])
-      const run = (superKey: string, ids: string[]) =>
-        getRowPermissions({
-          remult,
-          entities: [ByDate, BySize],
-          superKey,
-          ids,
-        })
-      expect(await run('rp7', [at.toISOString()])).toEqual({
-        [at.toISOString()]: { update: true, delete: false },
-      })
-      expect(await run('rp8', ['1'])).toEqual({
-        '1': { update: true, delete: false },
-      })
-    })
-
-    it('apiPrefilter hides rows', async () => {
-      const remult = mk()
-      @Entity('rp4', {
-        allowApiRead: true,
-        allowApiCrud: true,
-        apiPrefilter: { owner: 'u1' } as any,
-      })
-      class E {
-        @Fields.string()
-        id = ''
-        @Fields.string()
-        owner = ''
-      }
-      await remult.repo(E).insert([
-        { id: 'a', owner: 'u1' },
-        { id: 'b', owner: 'u2' },
-      ])
-      expect(
-        Object.keys(
-          (await getRowPermissions({
-            remult,
-            entities: [E],
-            superKey: 'rp4',
-            ids: ['a', 'b'],
-          }))!,
-        ),
-      ).toEqual(['a'])
-    })
-  })
-
   it('should correctly set valueType for json fields', () => {
     @Entity('test-json-types')
     class JsonTypeTest {
@@ -1046,78 +886,6 @@ describe('remult-admin', () => {
     expect(repo.fields.metadata.inputType).toBe(InputTypes.json)
     expect(repo.fields.metadata2.valueType).toBe(Array)
     expect(repo.fields.metadata2.inputType).toBe(InputTypes.json)
-  })
-})
-
-describe('POST admin/__row-permissions', () => {
-  @Entity('rpHttp', {
-    allowApiRead: true,
-    allowApiUpdate: (t: any) => t.owner === 'u1',
-  })
-  class E {
-    @Fields.string()
-    id = ''
-    @Fields.string()
-    owner = ''
-  }
-  type Req = GenericRequestInfo & { body?: unknown; user?: UserInfo }
-  const dataProvider = new InMemoryDataProvider()
-  const api = createRemultServer<Req>({
-    entities: [E],
-    dataProvider,
-    logApiEndPoints: false,
-    admin: { allow: 'admin' },
-  })
-  const admin = { id: 'u1', name: 'u1', roles: ['admin'] }
-  const post = (body: unknown, user: UserInfo | undefined = admin) =>
-    api.handle({
-      method: 'POST',
-      url: '/api/admin/__row-permissions',
-      body,
-      user,
-    })
-
-  beforeAll(async () => {
-    await new Remult(dataProvider).repo(E).insert([
-      { id: 'a', owner: 'u1' },
-      { id: 'b', owner: 'u2' },
-    ])
-  })
-  afterAll(() => RemultAsyncLocalStorage.disable())
-
-  it('is 404 without the admin role', async () => {
-    const res = await post(
-      { superKey: 'rpHttp', ids: ['a'] },
-      {
-        id: 'u2',
-        name: 'u2',
-      },
-    )
-    expect(res?.statusCode).toBe(404)
-  })
-
-  it('is 400 on a bad body', async () => {
-    expect((await post({ ids: ['a'] }))?.statusCode).toBe(400)
-    expect((await post({ superKey: 'rpHttp', ids: 'a' }))?.statusCode).toBe(400)
-  })
-
-  it('is 400 above the id cap', async () => {
-    const ids = Array.from({ length: 201 }, (_, i) => String(i))
-    expect((await post({ superKey: 'rpHttp', ids }))?.statusCode).toBe(400)
-  })
-
-  it('is 404 on an unknown superKey', async () => {
-    expect((await post({ superKey: 'nope', ids: ['a'] }))?.statusCode).toBe(404)
-  })
-
-  it('answers per id', async () => {
-    expect(await post({ superKey: 'rpHttp', ids: ['a', 'b', 'x'] })).toEqual({
-      statusCode: 200,
-      data: {
-        a: { update: true, delete: false },
-        b: { update: false, delete: false },
-      },
-    })
   })
 })
 

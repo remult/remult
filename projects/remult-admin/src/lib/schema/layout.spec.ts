@@ -23,6 +23,7 @@ function table(key: string, p: Partial<TableInfo> = {}): TableInfo {
     editModeLocked: false,
     apiPrefilter: false,
     permissions: { insert: true, update: true, delete: true },
+    rules: { insert: 'bool', update: 'bool', delete: 'bool' },
     repo: undefined as never,
     ...p,
   }

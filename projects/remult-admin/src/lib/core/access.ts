@@ -1,5 +1,6 @@
 import type {
   AdminPermission,
+  AdminRule,
   EntityUIInfo,
 } from '../../../../core/server/remult-admin'
 
@@ -23,15 +24,21 @@ const labels: Record<AccessState, string> = {
 const hints: Record<AccessState, string> = {
   yes: 'Allowed',
   no: 'Not allowed',
-  row: 'A function decides, row by row',
+  row: 'A function decides, the server checks it on save',
+}
+
+const ruleHints: Partial<Record<AdminRule, string>> = {
+  roles: 'by your roles',
+  function: 'a function decided for you',
 }
 
 export function accessLabel(s: AccessState): string {
   return labels[s]
 }
 
-export function accessHint(s: AccessState): string {
-  return hints[s]
+export function accessHint(s: AccessState, rule?: AdminRule): string {
+  const by = rule && s !== 'row' ? ruleHints[rule] : undefined
+  return by ? `${hints[s]}, ${by}` : hints[s]
 }
 
 export type AccessRow = {
@@ -43,13 +50,20 @@ export type AccessRow = {
   create: AccessState
   edit: AccessState
   delete: AccessState
+  rules: Record<'create' | 'edit' | 'delete', AdminRule>
   prefilter: boolean
 }
 
 export function accessRow(
   t: Pick<
     EntityUIInfo,
-    'superKey' | 'key' | 'caption' | 'color' | 'permissions' | 'apiPrefilter'
+    | 'superKey'
+    | 'key'
+    | 'caption'
+    | 'color'
+    | 'permissions'
+    | 'rules'
+    | 'apiPrefilter'
   >,
   forbidden: readonly string[],
 ): AccessRow {
@@ -63,6 +77,11 @@ export function accessRow(
     create: accessState(t.permissions.insert),
     edit: accessState(t.permissions.update),
     delete: accessState(t.permissions.delete),
+    rules: {
+      create: t.rules.insert,
+      edit: t.rules.update,
+      delete: t.rules.delete,
+    },
     prefilter: !!t.apiPrefilter,
   }
 }

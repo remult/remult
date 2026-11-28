@@ -352,25 +352,21 @@ test('delete from the drawer asks, then removes the row', async ({ page }) => {
   }
 })
 
-test('as ops, a deal not owned opens read only, an owned one can be edited and deleted', async ({
+test('as ops, the server refuses saving a deal not owned, an owned one can be edited and deleted', async ({
   page,
 }) => {
   await signInAs(page, 'ops')
   const owned = encodeURIComponent(JSON.stringify([OPS_AM]))
 
   await page.goto(`/#/entity/deals?accountManager.nin=${owned}`)
-  await expect(
-    page.locator('tbody').getByTitle('Read only').first(),
-  ).toBeVisible()
   await rows(page).first().hover()
   await rows(page).first().getByRole('button', { name: 'Open row' }).click()
   let d = drawer(page, 'Deals')
-  await expect(d.getByText('Read only')).toBeVisible()
-  await expect(d.getByRole('textbox')).toHaveCount(0)
-  await expect(d.getByRole('button', { name: 'Save' })).toHaveCount(0)
-  await expect(d.getByRole('button', { name: 'Delete row' })).toHaveCount(0)
+  const name = d.getByRole('textbox', { name: 'Name' })
+  await name.fill(`${await name.inputValue()} x`)
+  await d.getByRole('button', { name: 'Save' }).click()
+  await expect(toasts(page).getByText('Save failed')).toBeVisible()
   await d.getByRole('button', { name: 'Close', exact: true }).first().click()
-  await expect(d).toHaveCount(0)
 
   await page.goto(`/#/entity/deals?accountManager.in=${owned}`)
   await expect(

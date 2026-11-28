@@ -21,14 +21,11 @@ import { session, settings } from './settings.svelte.js'
 
 export type TableInfo = EntityUIInfo & { repo: Repository<any> }
 
-// server cap per request (ADMIN_ROW_PERMISSIONS_MAX_IDS)
-const ROW_PERMISSIONS_MAX_IDS = 200
-
 function hues(count: number) {
   return Array.from({ length: count }, (_, i) => String((i * 360) / count))
 }
 
-// 'row' means it depends on the row: let the request through, the server decides
+// 'row' is a function: let the request through, the server decides
 const allowed = (p: AdminPermission) => p !== false
 
 export function buildTables(infos: EntityUIInfo[]): TableInfo[] {
@@ -265,25 +262,6 @@ class God {
       ids.map((id) => ({ [k]: id })),
     )
     return res[k]
-  }
-
-  /** Per row update/delete verdicts, for entities whose rules depend on the row. */
-  async rowPermissions(superKey: string, ids: string[]) {
-    const out: Record<string, { update: boolean; delete: boolean }> = {}
-    for (let i = 0; i < ids.length; i += ROW_PERMISSIONS_MAX_IDS) {
-      // the shared client: a 401 asks for a token, custom headers apply
-      const res = await this.#http!(`${apiUrl()}/admin/__row-permissions`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          superKey,
-          ids: ids.slice(i, i + ROW_PERMISSIONS_MAX_IDS),
-        }),
-      })
-      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`.trim())
-      Object.assign(out, await res.json())
-    }
-    return out
   }
 }
 

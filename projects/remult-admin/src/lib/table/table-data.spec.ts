@@ -10,8 +10,6 @@ import {
   type LoadRequest,
 } from './table-data.svelte.js'
 
-type Verdicts = Record<string, { update: boolean; delete: boolean }>
-
 function deferred<T>() {
   let resolve!: (v: T) => void
   const promise = new Promise<T>((r) => (resolve = r))
@@ -50,6 +48,7 @@ function fakeTable(o: {
     editModeLocked: false,
     apiPrefilter: false,
     permissions: { insert: true, update: true, delete: true, ...o.permissions },
+    rules: { insert: 'bool', update: 'bool', delete: 'bool' },
     repo: {
       metadata: {
         fields: { toArray: () => fields },
@@ -147,110 +146,12 @@ describe('TableData', () => {
     data.dispose()
   })
 
-  it("keeps 'row' permissions closed until the server answers", async () => {
-    const answer =
-      deferred<Record<string, { update: boolean; delete: boolean }>>()
-    const rowPermissions = vi.fn(() => answer.promise)
+  it('a function rule leaves the row open, false closes it', () => {
     const data = new TableData(
-      fakeTable({
-        find: async () => [{ id: 'a' }, { id: 'b' }, { id: 'c' }],
-        permissions: { update: 'row', delete: 'row' },
-      }),
-      { rowPermissions },
+      fakeTable({ permissions: { update: 'row', delete: false } }),
     )
-    data.load(req())
-    await tick()
-    expect(rowPermissions).toHaveBeenCalledWith('things', ['a', 'b', 'c'])
-    expect(data.can('delete', 'a')).toBe(false)
-    expect(data.resolved('a')).toBe(false)
-    answer.resolve({
-      a: { update: true, delete: true },
-      b: { update: false, delete: false },
-    })
-    await tick()
-    expect(data.can('delete', 'a')).toBe(true)
-    expect(data.can('update', 'b')).toBe(false)
-    expect(data.can('delete', 'c')).toBe(false)
-    expect(data.resolved('c')).toBe(true)
-  })
-
-  it('skips the permissions route when no flag is per row', async () => {
-    const rowPermissions = vi.fn()
-    const data = new TableData(
-      fakeTable({
-        find: async () => [{ id: 'a' }],
-        permissions: { delete: false },
-      }),
-      { rowPermissions },
-    )
-    data.load(req())
-    await tick()
-    expect(rowPermissions).not.toHaveBeenCalled()
-    expect(data.can('delete', 'a')).toBe(false)
-    expect(data.can('update', 'a')).toBe(true)
-  })
-
-  it('keeps row verdicts across a refresh, and drops them when the filter changes', async () => {
-    const answers: {
-      promise: Promise<Verdicts>
-      resolve: (v: Verdicts) => void
-    }[] = []
-    const rowPermissions = vi.fn(() => {
-      answers.push(deferred<Verdicts>())
-      return answers.at(-1)!.promise
-    })
-    const data = new TableData(
-      fakeTable({
-        find: async () => [{ id: 'a' }],
-        permissions: { update: 'row', delete: 'row' },
-      }),
-      { rowPermissions },
-    )
-    data.load(req())
-    await tick()
-    answers[0].resolve({ a: { update: true, delete: true } })
-    await tick()
-    expect(data.can('update', 'a')).toBe(true)
-
-    data.refresh()
-    await tick()
-    expect(answers).toHaveLength(2)
-    // the second answer is still pending: no flicker to locked
-    expect(data.can('update', 'a')).toBe(true)
-
-    data.load(req({ where: { name: 'x' } }))
-    expect(data.can('update', 'a')).toBe(false)
-  })
-
-  it('ignores an older verdict answer that lands after a newer one', async () => {
-    let push!: (items: any[]) => void
-    const liveQuery = () => ({
-      subscribe: (l: { next: (info: { items: any[] }) => void }) => {
-        push = (items) => l.next({ items })
-        return () => {}
-      },
-    })
-    const first = deferred<Verdicts>()
-    const second = deferred<Verdicts>()
-    const rowPermissions = vi
-      .fn()
-      .mockReturnValueOnce(first.promise)
-      .mockReturnValueOnce(second.promise)
-    const data = new TableData(
-      fakeTable({ liveQuery, permissions: { update: 'row', delete: 'row' } }),
-      {
-        rowPermissions,
-      },
-    )
-    data.load(req({ live: true }))
-    push([{ id: 'a' }])
-    push([{ id: 'a' }])
-    second.resolve({ a: { update: false, delete: false } })
-    await tick()
-    first.resolve({ a: { update: true, delete: true } })
-    await tick()
-    expect(data.can('update', 'a')).toBe(false)
-    data.dispose()
+    expect(data.can('update')).toBe(true)
+    expect(data.can('delete')).toBe(false)
   })
 
   it('updates only the changed keys and comes back clean', async () => {

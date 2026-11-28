@@ -14,6 +14,8 @@ import type { FieldMetadata } from '../src/column-interfaces.js'
 import { InputTypes } from '../inputTypes.js'
 
 export type AdminPermission = boolean | 'row'
+/** The kind of rule behind a permission, never its content (no role names). */
+export type AdminRule = 'bool' | 'roles' | 'function'
 export type AdminEditMode = 'inline' | 'drawer'
 export interface AdminEntityConfig {
   editMode?: AdminEditMode
@@ -38,6 +40,11 @@ export interface EntityUIInfo {
     insert: AdminPermission
     update: AdminPermission
     delete: AdminPermission
+  }
+  rules: {
+    insert: AdminRule
+    update: AdminRule
+    delete: AdminRule
   }
 }
 export interface EntityRelationToManyInfo extends RelationFields {
@@ -213,6 +220,11 @@ export function buildEntityInfo(options: AdminEntitiesOptions) {
             'delete',
           ),
         },
+        rules: {
+          insert: adminRule(metadata.options.allowApiInsert),
+          update: adminRule(metadata.options.allowApiUpdate),
+          delete: adminRule(metadata.options.allowApiDelete),
+        },
       })
     }
   }
@@ -266,51 +278,6 @@ export async function resolveAdminPrefilters(
   return info
 }
 
-export const ADMIN_ROW_PERMISSIONS_MAX_IDS = 200
-
-/** Undefined when superKey is unknown. Ids not found (or hidden by apiPrefilter) are omitted. */
-export async function getRowPermissions(o: {
-  remult: Remult
-  entities: ClassType<any>[]
-  superKey: string
-  ids: string[]
-}): Promise<Record<string, { update: boolean; delete: boolean }> | undefined> {
-  const entity = findAdminEntity(o.entities, o.remult, o.superKey)
-  if (!entity) return undefined
-  const repo = o.remult.repo(entity)
-  const result: Record<string, { update: boolean; delete: boolean }> = {}
-  if (o.ids.length === 0) return result
-
-  // repo.find does not apply apiPrefilter, rows the API would not return must not be reported
-  const prefilter = repo.metadata.options.apiPrefilter
-  const idField = repo.metadata.idMetadata.field
-  // Ids arrive as strings, number/date id columns need their real value; compound ids are parsed by getIdFilter
-  const ids = o.ids.map((id) =>
-    repo.metadata.idMetadata.fields.length === 1
-      ? idField.valueConverter.fromJson(id)
-      : id,
-  )
-  const where: EntityFilter<any>[] = [
-    repo.metadata.idMetadata.getIdFilter(...ids),
-  ]
-  if (prefilter) {
-    where.push(typeof prefilter === 'function' ? await prefilter() : prefilter)
-  }
-  for (const row of await repo.find({ where: { $and: where } })) {
-    const ref = repo.getEntityRef(row)
-    // keyed like the client's String(getId(row)) on the JSON values
-    const key =
-      repo.metadata.idMetadata.fields.length === 1
-        ? String(idField.valueConverter.toJson(row[idField.key]))
-        : String(repo.metadata.idMetadata.getId(row))
-    result[key] = {
-      update: ref.apiUpdateAllowed === true,
-      delete: ref.apiDeleteAllowed === true,
-    }
-  }
-  return result
-}
-
 export type RelationsToOneValues = Record<string, Map<any, any>>
 
 const hasFn = (rule: AllowedForInstance<any>): boolean =>
@@ -325,6 +292,18 @@ function readOnlyOf(field: FieldMetadata) {
     // the rule needs the row; the server still enforces it per row
     return true
   }
+}
+
+export function adminRule(
+  rule: AllowedForInstance<any> | undefined,
+): AdminRule {
+  if (Array.isArray(rule)) {
+    const kinds = rule.map(adminRule)
+    if (kinds.includes('function')) return 'function'
+    return kinds.includes('roles') ? 'roles' : 'bool'
+  }
+  if (typeof rule === 'function') return 'function'
+  return typeof rule === 'string' ? 'roles' : 'bool'
 }
 
 export function resolveAdminPermission(

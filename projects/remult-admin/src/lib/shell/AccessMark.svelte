@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { AdminRule } from '../../../../core/server/remult-admin'
   import { accessHint, accessLabel, type AccessState } from '../core/access.js'
   import Icon, { type IconName } from './Icon.svelte'
 
@@ -6,16 +7,25 @@
     state,
     hint,
     icon = 'check',
-  }: { state: AccessState; hint?: string; icon?: IconName } = $props()
+    rule,
+  }: {
+    state: AccessState
+    hint?: string
+    icon?: IconName
+    rule?: AdminRule
+  } = $props()
+
+  const byRoles = $derived(rule === 'roles' && state !== 'row')
 </script>
 
 <span
   class="mark"
   data-state={state}
   data-icon={icon}
+  data-roles={byRoles || undefined}
   role="img"
-  aria-label={accessLabel(state)}
-  title={hint ?? accessHint(state)}
+  aria-label={byRoles ? `${accessLabel(state)}, by role` : accessLabel(state)}
+  title={hint ?? accessHint(state, rule)}
 >
   {#if state === 'row'}
     <span class="fn" aria-hidden="true">ƒ</span>
@@ -46,6 +56,13 @@
   .mark[data-state='row'] {
     background: color-mix(in oklch, var(--warning) 14%, transparent);
     color: var(--warning);
+  }
+  /* a role rule: ring around the mark */
+  .mark[data-roles] {
+    margin: 0 3.5px;
+    box-shadow:
+      0 0 0 2px var(--bg),
+      0 0 0 3.5px currentColor;
   }
   .fn {
     font: italic 600 15px/1 Georgia, 'Times New Roman', serif;

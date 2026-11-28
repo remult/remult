@@ -43,10 +43,8 @@ import { Action, classBackendMethodsArray } from '../src/server-action.js'
 import { serverActionField } from '../src/server-action-info.js'
 import { remultStatic } from '../src/remult-static.js'
 import {
-  ADMIN_ROW_PERMISSIONS_MAX_IDS,
   buildEntityInfo,
   resolveAdminPrefilters,
-  getRowPermissions,
   type AdminEntityConfig,
 } from './remult-admin.js'
 import { isOfType } from '../src/isOfType.js'
@@ -546,15 +544,16 @@ export class RemultServerImplementation<RequestType>
           r,
         )
       if (this.options.admin !== undefined && this.options.admin !== false) {
-        const adminAllowed = (remult: Remult) =>
-          remult.isAllowed(
-            isOfType<{ allow: Allowed }>(this.options.admin, 'allow')
-              ? this.options.admin.allow
-              : (this.options.admin as Allowed),
-          )
         const admin = () =>
           this.process(async (remult, req, res, orig, origResponse) => {
-            if (adminAllowed(remult)) {
+            const allowed = isOfType<{ allow: Allowed }>(
+              this.options.admin,
+              'allow',
+            )
+              ? this.options.admin.allow
+              : this.options.admin
+
+            if (remult.isAllowed(allowed)) {
               if (orig?.params?.id === '__entities-metadata') {
                 res.success(
                   await resolveAdminPrefilters(
@@ -601,35 +600,6 @@ export class RemultServerImplementation<RequestType>
             } else res.notFound()
           })
 
-        r.route(this.options.rootPath + '/admin/__row-permissions').post(
-          this.process(
-            async (remult, req, res, orig, origRes, origReq: RequestType) => {
-              if (!adminAllowed(remult)) return res.notFound()
-              const body = await this.coreOptions.getRequestBody(origReq)
-              const ids: unknown = body?.ids
-              if (
-                typeof body?.superKey !== 'string' ||
-                !Array.isArray(ids) ||
-                ids.length > ADMIN_ROW_PERMISSIONS_MAX_IDS
-              )
-                return res.error(
-                  {
-                    message: `Expected { superKey, ids } with at most ${ADMIN_ROW_PERMISSIONS_MAX_IDS} ids`,
-                  },
-                  undefined,
-                  400,
-                )
-              const result = await getRowPermissions({
-                remult,
-                entities: this.entities,
-                superKey: body.superKey,
-                ids: ids.map(String),
-              })
-              if (result === undefined) res.notFound()
-              else res.success(result)
-            },
-          ),
-        )
         r.route(this.options.rootPath + '/admin/:id').get(admin())
         r.route(this.options.rootPath + '/admin/').get(admin())
         r.route(this.options.rootPath + '/admin').get(admin())

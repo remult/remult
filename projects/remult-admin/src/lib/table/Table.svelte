@@ -534,9 +534,8 @@
                 {row}
                 fields={table.fields}
                 captions={data.captions}
-                canUpdate={!row.isNew && data.can('update', row.id)}
-                canDelete={!row.isNew && data.can('delete', row.id)}
-                resolved={row.isNew || data.resolved(row.id)}
+                canUpdate={!row.isNew && data.can('update')}
+                canDelete={!row.isNew && data.can('delete')}
                 editable={editMode === 'inline'}
                 busy={!!data.saving[row.id]}
                 errors={data.errors[row.id]}

@@ -147,21 +147,22 @@ test('back button restores the previous filter', async ({ page }) => {
     .toEqual(new Set(['won']))
 })
 
-test('as ops, delete shows only on owned deals', async ({ page }) => {
+test('as ops, the server refuses deleting a deal not owned', async ({
+  page,
+}) => {
   await signInAs(page, 'ops')
   const owned = encodeURIComponent(JSON.stringify([OPS_AM]))
 
-  await page.goto(`/#/entity/deals?accountManager.in=${owned}`)
-  await expect(rows(page).first()).toBeVisible()
-  const n = await rows(page).count()
-  await expect(page.getByRole('button', { name: 'Delete row' })).toHaveCount(n)
-  await expect(page.locator('tbody').getByTitle('Read only')).toHaveCount(0)
-
   await page.goto(`/#/entity/deals?accountManager.nin=${owned}`)
   await expect(rows(page)).toHaveCount(25)
-  // the per row answer arrived once the read only marks show
-  await expect(page.locator('tbody').getByTitle('Read only')).toHaveCount(25)
-  await expect(page.getByRole('button', { name: 'Delete row' })).toHaveCount(0)
+  // a function rule: the UI leaves delete open, the server decides
+  await rows(page).first().hover()
+  await rows(page).first().getByRole('button', { name: 'Delete row' }).click()
+  await page.getByRole('button', { name: 'Confirm delete' }).click()
+  await expect(
+    page.getByRole('region', { name: 'Notifications' }),
+  ).toContainText('Delete failed')
+  await expect(rows(page)).toHaveCount(25)
 })
 
 test('entity without insert, update or delete hides New and delete', async ({

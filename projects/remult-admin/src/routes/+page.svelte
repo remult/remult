@@ -93,13 +93,22 @@
             <td class="num">{t.fields.length}</td>
             <td class="num hide-sm">{t.relations.length}</td>
             <td class="acc"
-              ><AccessMark state={accessState(t.permissions.insert)} /></td
+              ><AccessMark
+                state={accessState(t.permissions.insert)}
+                rule={t.rules.insert}
+              /></td
             >
             <td class="acc"
-              ><AccessMark state={accessState(t.permissions.update)} /></td
+              ><AccessMark
+                state={accessState(t.permissions.update)}
+                rule={t.rules.update}
+              /></td
             >
             <td class="acc"
-              ><AccessMark state={accessState(t.permissions.delete)} /></td
+              ><AccessMark
+                state={accessState(t.permissions.delete)}
+                rule={t.rules.delete}
+              /></td
             >
             <td class="acc"
               ><AccessMark

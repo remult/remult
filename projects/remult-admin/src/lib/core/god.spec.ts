@@ -18,6 +18,7 @@ const info = (fields: EntityUIInfo['fields']): EntityUIInfo =>
     editModeLocked: false,
     apiPrefilter: false,
     permissions: { insert: true, update: true, delete: true },
+    rules: { insert: 'bool', update: 'bool', delete: 'bool' },
   }) as EntityUIInfo
 
 describe('buildTables', () => {
@@ -39,7 +40,7 @@ describe('buildTables', () => {
   })
 })
 
-describe('god.reload and rowPermissions', () => {
+describe('god.reload', () => {
   const am = field({
     key: 'owner',
     relationToOne: {
@@ -53,12 +54,10 @@ describe('god.reload and rowPermissions', () => {
     settings.customHeaders = ''
   })
 
-  it('reload clears captions; rowPermissions sends custom headers and flags a 401', async () => {
+  it('reload clears captions', async () => {
     const fetchMock = vi.fn(
       async (input: RequestInfo | URL, _init?: RequestInit) => {
         const url = String(input)
-        if (url.endsWith('/__row-permissions'))
-          return new Response('', { status: 401 })
         return new Response(url.endsWith('/me') ? 'null' : '[]', {
           status: 200,
         })
@@ -70,14 +69,5 @@ describe('god.reload and rowPermissions', () => {
     await god.reload()
     expect(captions.get(am, 'u1')).toBeUndefined()
     expect(god.unauthorized).toBe(false)
-    await expect(god.rowPermissions('things', ['1'])).rejects.toThrow('401')
-    expect(god.unauthorized).toBe(true)
-    const init = fetchMock.mock.calls.find(([u]) =>
-      String(u).endsWith('/__row-permissions'),
-    )![1]!
-    expect(init.headers).toMatchObject({
-      'content-type': 'application/json',
-      'x-tenant': 't1',
-    })
   })
 })

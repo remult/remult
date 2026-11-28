@@ -85,9 +85,8 @@
       ? String(table.repo.metadata.idMetadata.getId(row.item))
       : undefined,
   )
-  const canEdit = $derived(!!row && (isNew || data.can('update', row.id)))
-  const canDelete = $derived(!!row && !isNew && data.can('delete', row.id))
-  const pending = $derived(!!row && !isNew && !data.resolved(row.id))
+  const canEdit = $derived(!!row && (isNew || data.can('update')))
+  const canDelete = $derived(!!row && !isNew && data.can('delete'))
   const busy = $derived(!!row && !!data.saving[row.id])
   const errors = $derived(row ? data.errors[row.id] : undefined)
   const unparsed = $derived(Object.values(parseErrors).some(Boolean))
@@ -215,9 +214,7 @@
                   >
                 </span>
               </button>
-              {#if pending}
-                <span class="tag">Checking access</span>
-              {:else if !canEdit}
+              {#if !canEdit}
                 <span class="tag"><Icon name="lock" size={11} /> Read only</span
                 >
               {:else if unsaved}
